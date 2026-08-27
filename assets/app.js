@@ -28,6 +28,7 @@ function load(){
   state.params = state.params || {}; state.boxes = state.boxes || [];
   state.progress = state.progress || {}; state.facts = state.facts || ['scope.defined'];
   state.ui = state.ui || {};
+  state.artifacts = state.artifacts || { users: [], hashes: [], creds: [] };
 }
 function save(){ localStorage.setItem(LS_KEY, JSON.stringify(state)); }
 
@@ -47,7 +48,13 @@ function applicable(card, facts){
 function renderCmd(run){
   // Only registered placeholders are substituted; anything else (e.g. literal
   // Jinja2 {{7*7}} / {{config}} payloads in SSTI cards) passes through untouched.
-  return run.replace(/{{(\w+)}}/g, (m, k) => PARAMS.includes(k) && state.params[k] ? state.params[k] : m);
+  // base_dn falls back to a derivation from domain (DC=corp,DC=local) when unset.
+  return run.replace(/{{(\w+)}}/g, (m, k) => {
+    if (PARAMS.includes(k) && state.params[k]) return state.params[k];
+    if (k === 'base_dn' && state.params.domain)
+      return state.params.domain.split('.').map(p => 'DC=' + p).join(',');
+    return m;
+  });
 }
 
 // Command option switches: per-command checkboxes (flags) and text inputs (args)
@@ -60,8 +67,17 @@ function optsState(cardId, oi){
 }
 function renderCmdWithOpts(cmd, ost){
   let out = renderCmd(cmd.run);
+  const scripts = [];
   (cmd.opts || []).forEach((o, k) => {
-    if (o.flag){ if (ost.f && ost.f[k]) out += ' ' + o.flag; }
+    if (o.radio){
+      // Exclusive group: only the stored selection appends its value.
+      if (ost.r && ost.r[o.radio] === k) out += ' ' + o.value;
+    }
+    else if (o.script){ if (ost.f && ost.f[k]) scripts.push(o.script); }
+    else if (o.flag){
+      // Append a checked flag only if the base command doesn't already carry it.
+      if (ost.f && ost.f[k] && !new RegExp('(^|\\s)' + o.flag.replace(/[.*+?^${}()|[\]\\]/g, '\\$&') + '(\\s|$)').test(out)) out += ' ' + o.flag;
+    }
     else {
       const v = (((ost || {}).a || {})[k] || '').trim();
       if (!v) return;
@@ -71,21 +87,45 @@ function renderCmdWithOpts(cmd, ost){
       out = re.test(out) ? out.replace(re, o.arg + ' ' + q) : out + ' ' + o.arg + ' ' + q;
     }
   });
+  if (scripts.length) out += ' --script ' + scripts.join(',');
   return out;
 }
-function optsHTML(c, cmd, oi, ost){
+// Presets: one click sets a whole batch of opt selections (radios, flags, args).
+function applyPreset(cardId, oi, cmd, preset){
+  const ost = optsState(cardId, oi);
+  ost.f = {}; ost.a = {}; ost.r = {};
+  for (const k of preset.f || []) ost.f[k] = true;
+  for (const [k, v] of Object.entries(preset.a || {})) ost.a[k] = v;
+  for (const [g, k] of Object.entries(preset.r || {})) ost.r[g] = k;
+  save();
+}
+function optsHTML(c, cmd, oi, ost, facts){
   if (!cmd.opts || !cmd.opts.length) return '';
-  return '<div class="cmd-opts">' + cmd.opts.map((o, k) => {
-    if (o.flag) return '<label class="opt"><input type="checkbox" data-optflag="' + k + '"' + (ost.f && ost.f[k] ? ' checked' : '') + '> <code>' + esc(o.flag) + '</code>' + (o.tip ? '<span class="opt-tip">' + esc(o.tip) + '</span>' : '') + '</label>';
+  const sug = (o) => o.needs && facts && o.needs.some(f => facts.has(f));
+  let html = '';
+  if (cmd.presets && cmd.presets.length){
+    html += '<div class="preset-row">' + cmd.presets.map((p, pi) =>
+      '<span class="variant-pill" data-preset="' + pi + '" title="' + esc(p.summary) + '">' + esc(p.name) + '</span>').join('') + '</div>';
+  }
+  html += '<div class="cmd-opts">' + cmd.opts.map((o, k) => {
+    const star = sug(o) ? '<span class="opt-sug">suggested</span>' : '';
+    if (o.radio){
+      const on = ost.r && ost.r[o.radio] === k;
+      return '<label class="opt"><input type="radio" name="rdo-' + esc(c.id + '-' + oi + '-' + o.radio) + '" data-optradio="' + esc(o.radio) + '" data-optidx="' + k + '"' + (on ? ' checked' : '') + '> <code>' + esc(o.value) + '</code>' + (o.tip ? '<span class="opt-tip">' + esc(o.tip) + '</span>' : '') + '</label>';
+    }
+    if (o.script)
+      return '<label class="opt"><input type="checkbox" data-optflag="' + k + '"' + (ost.f && ost.f[k] ? ' checked' : '') + '> <code>' + esc(o.script) + '</code>' + star + (o.tip ? '<span class="opt-tip">' + esc(o.tip) + '</span>' : '') + '</label>';
+    if (o.flag) return '<label class="opt"><input type="checkbox" data-optflag="' + k + '"' + (ost.f && ost.f[k] ? ' checked' : '') + '> <code>' + esc(o.flag) + '</code>' + star + (o.tip ? '<span class="opt-tip">' + esc(o.tip) + '</span>' : '') + '</label>';
     return '<label class="opt opt-arg-row"><span class="opt-lab">' + esc(o.label || o.arg) + '</span><input class="opt-arg" data-optarg="' + k + '" value="' + esc((ost.a || {})[k] || '') + '" placeholder="' + esc(o.placeholder || '') + '">' + (o.tip ? '<span class="opt-tip">' + esc(o.tip) + '</span>' : '') + '</label>';
   }).join('') + '</div>';
+  return html;
 }
 
 // ---------- sidebar ----------
 // Example values per parameter — shown as placeholders so users know what good input looks like.
 const PARAM_HINTS = {
   target:'10.10.11.5', targets:'10.10.11.0/24 or targets.txt', domain:'corp.local',
-  username:'j.smith', password:'Password123', hash:'aad3b435b51404ee…:31d6cfe0d16ae931…',
+  username:'j.smith', user:'j.smith', password:'Password123', hash:'aad3b435b51404ee…:31d6cfe0d16ae931…',
   dc_ip:'10.10.11.10', lhost:'10.10.14.5', lport:'4444', url:'http://10.10.11.5/login.php',
   wordlist:'/usr/share/wordlists/rockyou.txt', userlist:'/home/kali/labs/users.txt',
   passlist:'/usr/share/seclists/Passwords/xato-net-10-million-passwords-1000.txt',
@@ -116,6 +156,12 @@ function renderSidebar(){
   renderFacts();
 }
 function renderFacts(){
+  const al = $('#artifacts-line');
+  if (al){
+    const a = state.artifacts || { users: [], hashes: [], creds: [] };
+    const total = a.users.length + a.hashes.length + a.creds.length;
+    al.innerHTML = total ? '⬡ <a href="#/intake" style="color:var(--info)">' + a.users.length + ' users · ' + a.hashes.length + ' hashes · ' + a.creds.length + ' creds</a>' : '';
+  }
   $('#facts-list').innerHTML = state.facts.map(f =>
     '<span class="fact" title="click to remove">' + esc(f) + '</span>').join('');
   $('#facts-list').querySelectorAll('.fact').forEach(el => el.addEventListener('click', () => {
@@ -158,7 +204,7 @@ function renderBanner(){
   const b = $('#banner');
   if (state.ui.bannerDismissed){ b.classList.add('hidden'); return; }
   b.classList.remove('hidden');
-  b.innerHTML = '<div><b>Quick start:</b> ① fill parameters in the sidebar → ② <a href="#/boxes">Boxes</a> → Ingest nmap scan → ③ applicable cards light up in Map/Lanes → ④ run commands, paste key output into each card\'s evidence box, <b>Mark tried / succeeded</b> (that\'s what builds your report) → ⑤ <a href="#/report">Report</a> assembles the draft. <a href="#/guide">Full guide →</a></div><span id="banner-x" title="dismiss">✕</span>';
+  b.innerHTML = '<div><b>Quick start:</b> ① fill parameters in the sidebar → ② <a href="#/boxes">Boxes</a> → Ingest nmap scan (or <a href="#/intake">Intake</a> for any tool output) → ③ <a href="#/path">Path</a> shows what your evidence opens → ④ run commands, paste key output into each card\'s evidence box, <b>Mark tried / succeeded</b> (that\'s what builds your report) → ⑤ <a href="#/report">Report</a> assembles the draft. <a href="#/guide">Full guide →</a></div><span id="banner-x" title="dismiss">✕</span>';
   $('#banner-x').onclick = () => { state.ui.bannerDismissed = true; save(); b.classList.add('hidden'); };
 }
 
@@ -203,7 +249,7 @@ function cardHTML(c, facts, expanded){
     html += '<div class="cmd-block" data-oid="' + esc(c.id + ':' + oi) + '"><span class="tool"><a href="#/tools/' + encodeURIComponent(cmd.tool) + '" style="color:inherit" title="All ' + esc(cmd.tool) + ' commands">' + esc(cmd.tool) + '</a></span>'
       + '<button class="copy-btn" data-copy>Copy</button><br><code>' + esc(renderCmdWithOpts(cmd, ost)) + '</code>'
       + (cmd.note ? '<div class="note">→ ' + esc(cmd.note) + '</div>' : '')
-      + optsHTML(c, cmd, oi, ost) + '</div>';
+      + optsHTML(c, cmd, oi, ost, facts) + '</div>';
   }
   if (c.wl && window.OBOL_WORDLISTS){
     const cats = c.wl.map(id => window.OBOL_WORDLISTS.categories.find(x => x.id === id)).filter(Boolean);
@@ -236,6 +282,7 @@ function cardHTML(c, facts, expanded){
     + '<button class="btn tried-btn" data-mark="tried">Mark tried</button>'
     + '<button class="btn done-btn" data-mark="done">Mark succeeded</button>'
     + (st !== 'new' ? '<button class="btn" data-mark="new">Reset</button>' : '')
+    + '<button class="btn" data-distill title="Send the evidence box to Intake (facts + artifacts)">⬡ Intake</button>'
     + '</div>'
     + '<textarea class="evidence" placeholder="Paste key output here — it feeds your report evidence.">' + esc(ev) + '</textarea>';
   return html + '</div></div>';
@@ -282,11 +329,27 @@ function bindCards(root){
     const cmd = c.commands[oi];
     const ost = optsState(cardId, oi);
     block.querySelectorAll('.cmd-opts input').forEach(x => {
-      if (x.dataset.optflag !== undefined){ if (x.checked) ost.f[x.dataset.optflag] = true; else delete ost.f[x.dataset.optflag]; }
+      if (x.dataset.optradio !== undefined){ if (x.checked){ ost.r = ost.r || {}; ost.r[x.dataset.optradio] = +x.dataset.optidx; } }
+      else if (x.dataset.optflag !== undefined){ if (x.checked) ost.f[x.dataset.optflag] = true; else delete ost.f[x.dataset.optflag]; }
       else ost.a[x.dataset.optarg] = x.value;
     });
     save();
     block.querySelector('code').textContent = renderCmdWithOpts(cmd, ost);
+  }));
+  root.querySelectorAll('[data-preset]').forEach(p => p.addEventListener('click', e => {
+    e.stopPropagation();
+    const block = p.closest('.cmd-block');
+    const cardId = block.closest('.card').querySelector('.card-head').dataset.card;
+    const oi = +block.dataset.oid.split(':').pop();
+    const cmd = CARDS[cardId].commands[oi];
+    applyPreset(cardId, oi, cmd, cmd.presets[+p.dataset.preset]);
+    route();
+  }));
+  root.querySelectorAll('[data-distill]').forEach(b => b.addEventListener('click', e => {
+    e.stopPropagation();
+    const ta = b.closest('.card').querySelector('.evidence');
+    intakePrefill = ta ? ta.value : '';
+    location.hash = '#/intake';
   }));
   root.querySelectorAll('.evidence').forEach(t => t.addEventListener('input', () => {
     const id = t.closest('.card').querySelector('.card-head').dataset.card;
@@ -298,25 +361,23 @@ function bindCards(root){
 
 // ---------- views ----------
 function viewMap(){
+  let html = '<h2>Methodology Map</h2><p class="subtitle">The engagement lifecycle as a board — click a lane to open it. Progress and live applicability shown per lane. To jump from your current position instead, use <a href="#/path" style="color:var(--info)">Path</a>.</p>';
   const facts = factsSet();
-  let html = '<h2>Methodology Map</h2><p class="subtitle">Two ways to navigate: the engagement lifecycle (below — click a phase to open its lanes), or your evidence state (further down — cards applicable from where you actually are).</p>'
-    + '<div class="phase-ribbon">'
-    + lanePhases().map((ph, i) => {
-        const firstLane = LANES.find(l => l.phase === ph).lane;
-        return '<span class="phase-chip" data-lane="' + firstLane + '">' + (i+1) + ' · ' + esc(ph) + '</span>';
-      }).join('<span class="phase-arrow">→</span>')
-    + '</div>'
-    + '<h3 style="margin:22px 0 12px;color:var(--dim)">…or jump straight from your current position:</h3><div class="states">';
-  for (const s of STATES){
-    const sf = factsSet(s.facts);
-    const appl = LANES.flatMap(l => l.cards).filter(c => applicable(c, sf));
-    html += '<div class="state-card" data-state="' + s.id + '"><h4>' + esc(s.name) + '</h4><p>' + esc(s.desc) + '</p>'
-      + '<div class="count">' + appl.length + ' applicable cards</div></div>';
+  for (const ph of lanePhases()){
+    const lanes = LANES.filter(l => l.phase === ph);
+    html += '<h3 style="color:var(--accent2);margin:18px 0 8px">' + esc(ph) + '</h3><div class="cards-grid">';
+    for (const l of lanes){
+      const total = l.cards.length;
+      const done = l.cards.filter(c => statusOf(c.id) === 'done').length;
+      const appl = l.cards.filter(c => applicable(c, facts)).length;
+      html += '<div class="card"><div class="card-head" data-lane="' + l.lane + '"><span class="title">' + esc(l.title) + '</span></div>'
+        + '<div class="card-body" style="cursor:pointer" data-lane="' + l.lane + '">'
+        + '<div class="hint">' + done + '/' + total + ' done · ' + appl + ' applicable now</div></div></div>';
+    }
+    html += '</div>';
   }
-  html += '</div>';
   $('#view').innerHTML = html;
-  $('#view').querySelectorAll('.state-card').forEach(el => el.addEventListener('click', () => location.hash = '#/state/' + el.dataset.state));
-  $('#view').querySelectorAll('.phase-chip').forEach(el => el.addEventListener('click', () => location.hash = '#/lanes/' + el.dataset.lane));
+  $('#view').querySelectorAll('[data-lane]').forEach(el => el.addEventListener('click', () => location.hash = '#/lanes/' + el.dataset.lane));
 }
 
 function viewState(sid){
@@ -340,6 +401,14 @@ function lanePhases(){
   return PHASE_ORDER.filter(p => present.includes(p)).concat(present.filter(p => !PHASE_ORDER.includes(p)));
 }
 
+// A card is "grounded" when its prereqs connect to what you've actually observed
+// (facts beyond the universal scope.defined) — i.e. relevant to THIS target.
+function grounded(c){
+  const p = c.prereq || {};
+  const need = (p.all || []).concat(p.any || []);
+  return need.some(f => f !== 'scope.defined' && state.facts.includes(f));
+}
+
 function viewLanes(laneId){
   const q = (location.hash.match(/[?&]q=([^&]+)/) || [])[1] || '';
   let tabs = '<span class="lane-tab' + (!laneId ? ' active' : '') + '" data-lane="">All</span>';
@@ -350,18 +419,43 @@ function viewLanes(laneId){
   });
   let html = '<h2>Lanes</h2><p class="subtitle">' + LANES.length + ' lanes, ' + Object.keys(CARDS).length + ' technique cards, grouped by engagement phase. Click a card to expand commands.</p>'
     + '<input class="search" id="lane-search" placeholder="Search cards, tools, concepts…" value="' + esc(decodeURIComponent(q)) + '">'
-    + '<div class="lane-tabs">' + tabs + '</div><div id="lane-cards" class="cards-grid"></div>';
+    + '<label class="opt" id="rel-wrap" style="margin:0 0 12px;display:inline-flex"><input type="checkbox" id="rel-toggle"> <span class="opt-tip">Only cards relevant to my ingested scan</span></label>'
+    + '<div class="lane-tabs">' + tabs + '</div><div id="lane-cards" class="cards-grid"></div><div id="other-lanes"></div>';
   $('#view').innerHTML = html;
+  const hasEvidence = state.facts.some(f => f !== 'scope.defined');
+  $('#rel-wrap').style.display = hasEvidence ? '' : 'none';
   const draw = () => {
     const query = $('#lane-search').value.toLowerCase();
     const facts = factsSet();
+    const relOnly = hasEvidence && $('#rel-toggle').checked;
     let cards = LANES.flatMap(l => l.cards);
     if (laneId) cards = cards.filter(c => c.lane === laneId);
     if (query) cards = cards.filter(c => (c.title + ' ' + c.hypothesis + ' ' + (c.tools||[]).join(' ') + ' ' + c.commands.map(x=>x.run).join(' ')).toLowerCase().includes(query));
+    if (relOnly) cards = cards.filter(grounded);
     $('#lane-cards').innerHTML = cards.map(c => cardHTML(c, facts, false)).join('') || '<p class="empty">No matching cards.</p>';
     bindCards($('#lane-cards'));
+    // Cross-lane strip: cards from OTHER lanes your facts make applicable.
+    const strip = $('#other-lanes');
+    if (laneId && !query){
+      const others = LANES.flatMap(l => l.cards).filter(c => c.lane !== laneId && applicable(c, facts) && grounded(c) && statusOf(c.id) !== 'done');
+      if (others.length){
+        strip.innerHTML = '<h3 style="color:var(--accent2);margin:18px 0 10px">Applicable from other lanes right now</h3>'
+          + '<div class="cards-grid">' + others.slice(0, 9).map(c =>
+            '<div class="card"><div class="card-head" data-card="' + c.id + '"><span class="badge applicable">applicable</span> <span class="title">' + esc(c.title) + '</span> <span class="hint">' + esc(c.lane) + '</span></div></div>').join('') + '</div>';
+        strip.querySelectorAll('.card-head').forEach(h => h.addEventListener('click', () => location.hash = '#/card/' + h.dataset.card));
+      } else strip.innerHTML = '';
+    } else if (laneId && query && !cards.length){
+      // Search widening: nothing here — check globally.
+      const global = LANES.flatMap(l => l.cards).filter(c => (c.title + ' ' + c.hypothesis + ' ' + (c.tools||[]).join(' ')).toLowerCase().includes(query));
+      strip.innerHTML = global.length
+        ? '<p class="hint" style="margin:10px 0">' + global.length + ' match(es) in <b>other lanes</b>:</p>'
+          + global.slice(0, 8).map(c => '<div class="failure" style="cursor:pointer" data-goto2="' + c.id + '"><b>' + esc(c.title) + '</b> <span class="hint">— ' + esc(c.lane) + ' lane</span></div>').join('')
+        : '';
+      strip.querySelectorAll('[data-goto2]').forEach(el => el.addEventListener('click', () => location.hash = '#/card/' + el.dataset.goto2));
+    } else strip.innerHTML = '';
   };
   $('#lane-search').addEventListener('input', draw);
+  $('#rel-toggle').addEventListener('change', draw);
   $('#view').querySelectorAll('.lane-tab').forEach(t => t.addEventListener('click', () => location.hash = '#/lanes' + (t.dataset.lane ? '/' + t.dataset.lane : '')));
   draw();
 }
@@ -374,13 +468,44 @@ function viewCard(id){
   bindCards($('#view'));
 }
 
-function viewStuck(){
+function viewPath(){
   const facts = factsSet();
   const appl = LANES.flatMap(l => l.cards).filter(c => applicable(c, facts) && statusOf(c.id) !== 'done');
   const failed = Object.entries(state.progress).filter(([,p]) => p.status === 'tried').map(([id]) => CARDS[id]).filter(Boolean);
-  let html = '<h2>Stuck?</h2><p class="subtitle">Cards your current facts make applicable but not yet succeeded — plus next-step branches from things you tried.</p>';
+  const hasEvidence = state.facts.some(f => f !== 'scope.defined');
+  const rel = appl.filter(grounded);
+  const showAll = state.ui.stuckShowAll && hasEvidence;
+  const shown = (hasEvidence && !showAll) ? rel : appl;
+  const ord = { critical:0, high:1, medium:2, low:3, informational:4, info:4 };
+  shown.sort((a,b) => (ord[(a.report||{}).severity] ?? 9) - (ord[(b.report||{}).severity] ?? 9));
+  let html = '<h2>Path</h2><p class="subtitle">Where you are and what it opens. Position shortcuts below; beneath them, cards your facts make applicable — plus branches from things you tried that failed.</p>';
+
+  // Position shortcuts: evidence-state cards (the "jump from your current position" board).
+  html += '<h3 style="color:var(--accent2);margin-bottom:8px">Your position</h3><div class="states">';
+  for (const s of STATES){
+    const sf = factsSet(s.facts);
+    const n = LANES.flatMap(l => l.cards).filter(c => applicable(c, sf)).length;
+    html += '<div class="state-card" data-state="' + s.id + '"><h4>' + esc(s.name) + '</h4><p>' + esc(s.desc) + '</p>'
+      + '<div class="count">' + n + ' applicable cards</div></div>';
+  }
+  html += '</div>';
+
+  // Last-intake delta: what the most recent paste unlocked.
+  const li = state.ui.lastIntake;
+  if (li && (li.facts.length || (li.newly || []).length)){
+    html += '<h3 style="color:var(--accent2);margin:18px 0 8px">From your last intake <span class="hint">(' + li.at.slice(0,16).replace('T',' ') + 'Z)</span></h3>';
+    if (li.facts.length)
+      html += '<p class="hint" style="margin-bottom:8px">Facts gained: ' + li.facts.map(f => '<code>' + esc(f) + '</code>').join(' ') + '</p>';
+    const nc = (li.newly || []).map(id => CARDS[id]).filter(Boolean);
+    if (nc.length){
+      html += '<div class="cards-grid">'
+        + nc.slice(0, 9).map(c => '<div class="card"><div class="card-head" data-card="' + c.id + '"><span class="badge applicable">newly applicable</span> <span class="title">' + esc(c.title) + '</span> <span class="hint">' + esc(c.lane) + '</span></div></div>').join('')
+        + '</div>';
+    }
+  }
+
   if (failed.length){
-    html += '<h3 style="color:var(--accent2);margin-bottom:8px">From things you tried</h3>';
+    html += '<h3 style="color:var(--accent2);margin:18px 0 8px">From things you tried</h3>';
     for (const c of failed){
       if (!c.onFailure) continue;
       for (const [pat, fb] of Object.entries(c.onFailure)){
@@ -390,13 +515,19 @@ function viewStuck(){
     }
     html += '<br>';
   }
-  html += '<h3 style="color:var(--accent2);margin-bottom:8px">Applicable right now (' + appl.length + ')</h3>';
-  html += '<p class="hint">Facts drive this list. Add facts in the sidebar as you learn things (e.g. <code>foothold.linux</code>, <code>credential.available</code>).</p><br>';
+  html += '<h3 style="color:var(--accent2);margin-bottom:8px">Applicable right now (' + shown.length + (hasEvidence ? ' — matched to your scan' : '') + ')</h3>';
+  if (hasEvidence)
+    html += '<p class="hint" style="margin-bottom:10px">Showing cards tied to services you have actually found. <span class="lnk" id="stuck-toggle">' + (showAll ? 'Show only relevant (' + rel.length + ')' : 'Show all applicable (' + appl.length + ')') + '</span></p>';
+  else
+    html += '<p class="hint">Facts drive this list. Ingest a scan or paste tool output in <a href="#/intake" style="color:var(--info)">Intake</a> and this list narrows to the services you actually found.</p><br>';
   html += '<div class="cards-grid">';
-  for (const c of appl) html += cardHTML(c, facts, false);
+  for (const c of shown) html += cardHTML(c, facts, false);
   html += '</div>';
   $('#view').innerHTML = html || '<p class="empty">Nothing applicable — add facts or go enumerate more.</p>';
   bindCards($('#view'));
+  $('#view').querySelectorAll('.state-card').forEach(el => el.addEventListener('click', () => location.hash = '#/state/' + el.dataset.state));
+  const tog = $('#stuck-toggle');
+  if (tog) tog.onclick = () => { state.ui.stuckShowAll = !state.ui.stuckShowAll; save(); viewPath(); };
 }
 
 const HASH_HELPERS = [
@@ -669,7 +800,7 @@ function viewTools(tool){
         const ost = optsState(c.id, oi);
         body += '<div class="cmd-block" data-oid="' + esc(c.id + ':' + oi) + '"><span class="tool">' + esc(e.cmd.tool) + '</span><button class="copy-btn" data-copy>Copy</button><br><code>' + esc(renderCmdWithOpts(e.cmd, ost)) + '</code>'
           + (e.cmd.note ? '<div class="note">→ ' + esc(e.cmd.note) + '</div>' : '')
-          + optsHTML(c, e.cmd, oi, ost) + '</div>';
+          + optsHTML(c, e.cmd, oi, ost, facts) + '</div>';
       }
       body += '</div></div>';
     }
@@ -686,11 +817,21 @@ function viewTools(tool){
       const cmd = c.commands[oi];
       const ost = optsState(cardId, oi);
       block.querySelectorAll('.cmd-opts input').forEach(x => {
-        if (x.dataset.optflag !== undefined){ if (x.checked) ost.f[x.dataset.optflag] = true; else delete ost.f[x.dataset.optflag]; }
+        if (x.dataset.optradio !== undefined){ if (x.checked){ ost.r = ost.r || {}; ost.r[x.dataset.optradio] = +x.dataset.optidx; } }
+        else if (x.dataset.optflag !== undefined){ if (x.checked) ost.f[x.dataset.optflag] = true; else delete ost.f[x.dataset.optflag]; }
         else ost.a[x.dataset.optarg] = x.value;
       });
       save();
       block.querySelector('code').textContent = renderCmdWithOpts(cmd, ost);
+    }));
+    $('#tool-body').querySelectorAll('[data-preset]').forEach(p => p.addEventListener('click', e => {
+      e.stopPropagation();
+      const block = p.closest('.cmd-block');
+      const cardId = block.closest('.card').querySelector('.card-head').dataset.card;
+      const oi = +block.dataset.oid.split(':').pop();
+      const cmd = CARDS[cardId].commands[oi];
+      applyPreset(cardId, oi, cmd, cmd.presets[+p.dataset.preset]);
+      route();
     }));
     $('#tool-body').querySelectorAll('.card-head').forEach(h => h.addEventListener('click', () => location.hash = '#/card/' + h.dataset.card));
     const ct = $('#copy-tool');
@@ -706,7 +847,8 @@ function viewBoxes(){
     + '<div class="card-actions no-print" style="margin-bottom:14px">'
     + '<button class="btn" id="add-box">+ Add box</button>'
     + '<button class="btn" id="nmap-paste">Ingest nmap scan</button>'
-    + '<button class="btn" id="bh-paste">Ingest BloodHound</button></div>'
+    + '<button class="btn" id="bh-paste">Ingest BloodHound</button>'
+    + '<button class="btn" id="distill-open" title="Paste any tool output → facts, artifacts, params">⬡ Intake (any tool output)</button></div>'
     + '<table class="tracker"><thead><tr><th>Box</th><th>Creds</th><th>Flags</th><th>What pwned it</th><th></th></tr></thead><tbody>';
   state.boxes.forEach((b, i) => {
     html += '<tr>'
@@ -733,6 +875,7 @@ function viewBoxes(){
   $('#add-box').onclick = () => { state.boxes.push({ name:'', ip:'', hostname:'', domain:'', os:'', creds:[], flags:[], notes:'', pwned:'', ports:[] }); save(); viewBoxes(); };
   $('#nmap-paste').onclick = nmapModal;
   $('#bh-paste').onclick = () => window.OBOL_BH.modal({ state, save, esc, modal, closeModal, renderSidebar, route, toast });
+  $('#distill-open').onclick = () => { intakePrefill = ''; location.hash = '#/intake'; };
   $('#view').querySelectorAll('input[data-b], textarea[data-b]').forEach(el => el.addEventListener('input', () => {
     const b = state.boxes[+el.dataset.b];
     if (el.dataset.cred !== undefined) b.creds[+el.dataset.cred][el.dataset.f] = el.value;
@@ -743,6 +886,224 @@ function viewBoxes(){
   $('#view').querySelectorAll('[data-addcred]').forEach(b => b.onclick = () => { state.boxes[+b.dataset.addcred].creds = state.boxes[+b.dataset.addcred].creds || []; state.boxes[+b.dataset.addcred].creds.push({user:'',secret:'',source:'',validated:false}); save(); viewBoxes(); });
   $('#view').querySelectorAll('[data-addflag]').forEach(b => b.onclick = () => { state.boxes[+b.dataset.addflag].flags = state.boxes[+b.dataset.addflag].flags || []; state.boxes[+b.dataset.addflag].flags.push({label:'',value:''}); save(); viewBoxes(); });
   $('#view').querySelectorAll('[data-delbox]').forEach(b => b.onclick = () => { if (confirm('Delete this box?')) { state.boxes.splice(+b.dataset.delbox,1); save(); viewBoxes(); } });
+}
+
+
+// ---------- artifacts: distill tool output into users / hashes / creds ----------
+// Parses pasted tool output (nxc --users tables, secretsdump, Responder,
+// GetNPUsers/GetUserSPNs, kerbrute VALID lines) into clean lists. Preview is
+// editable before saving; saved artifacts show in the Artifacts view + report.
+function parseArtifacts(text, mode, dropNoise){
+  const users = new Set(), hashes = new Set(), creds = new Set();
+  const isNoise = (t) => /\$$/.test(t) || /^SM_[0-9a-f]/i.test(t) || /^HealthMailbox/i.test(t);
+  const addUser = (t) => {
+    if (!t) return;
+    t = t.replace(/^[^\\\s]{1,64}\\/, '').trim();
+    if (!/^[A-Za-z0-9][A-Za-z0-9._-]{0,40}$/.test(t)) return;
+    if (/^-?username-?$/i.test(t) || /^\d+\.\d+\.\d+/.test(t)) return;
+    if (dropNoise && isNoise(t)) return;
+    users.add(t);
+  };
+  const protoRe = /^(SMB|LDAP|WINRM|MSSQL|SSH|FTP|RDP|NFS|VNC|SMTP)\s/i;
+  for (const raw of text.split(/\r?\n/)){
+    const line = raw.trim(); if (!line) continue;
+    let m = line.match(/^([^\s:\\]{1,64}\\)?([^\s:]{1,64}):(\d+):([0-9a-fA-F]{32}):([0-9a-fA-F]{32}):::/); // secretsdump
+    if (m && mode !== 'creds'){ addUser(m[2]); hashes.add(line); if (m[5] !== 'aad3b435b51404eeaad3b435b51404ee') creds.add(m[2] + ' (NT: ' + m[5] + ')'); continue; }
+    if (/\$krb5(asrep|tgs)\$/i.test(line) && mode !== 'creds'){ // kerberos tickets
+      hashes.add(line);
+      const um = line.match(/\$krb5(?:asrep|tgs)\$(?:\d+)?\$?\*?([A-Za-z0-9._-]+)[@$]/i);
+      if (um) addUser(um[1]);
+      continue;
+    }
+    m = line.match(/^([^\s:]{1,64})::([^\s:]{0,64}):[0-9a-fA-F]{16,}:/); // NetNTLMv2 (responder)
+    if (m && mode !== 'creds'){ addUser(m[1]); hashes.add(line); continue; }
+    if (mode === 'creds'){
+      const cm = line.match(/([A-Za-z0-9_.\\-]{1,64}):([^\s].{0,127})$/);
+      if (cm && !/^\[|^\*|^SMB|^LDAP/i.test(line)) creds.add(cm[1] + ':' + cm[2]);
+      continue;
+    }
+    if (mode === 'hashes') continue;
+    // kerbrute: "… user@domain.com VALID" lines
+    if (/\bVALID\b/.test(line)){
+      const km = line.match(/\b([A-Za-z0-9._-]{2,40})@[A-Za-z0-9.-]+\.[A-Za-z]{2,}\b/);
+      if (km) addUser(km[1]);
+      continue;
+    }
+    // nxc-style columnar: PROTO  ip  port  HOST   data…
+    const cols = line.split(/\s{2,}/).map(c => c.trim()).filter(Boolean);
+    if (protoRe.test(line) && cols.length >= 5) addUser(cols[4].split(/\s/)[0].replace(/^-+|-+$/g, ''));
+    else if (mode === 'nxc' && cols.length >= 2) addUser(cols[0].replace(/^-+|-+$/g, ''));
+  }
+  return { users: [...users], hashes: [...hashes], creds: [...creds] };
+}
+
+// ---------- intake: universal paste → facts / params / artifacts ----------
+// One front door for any tool output. intakeAnalyze() detects the tool (or
+// takes the user's mode), mines facts via data/signatures.js rules, extracts
+// artifacts via parseArtifacts(), and suggests params. viewIntake() renders
+// paste → review → apply → "what changed" delta. Nothing applies silently.
+let intakePrefill = '';
+
+function intakeAnalyze(text, mode){
+  const SIG = window.OBOL_SIGNATURES;
+  if (mode === 'auto'){
+    for (const [src, flags, m] of SIG.detect){
+      if (new RegExp(src, flags).test(text)){ mode = m; break; }
+    }
+    if (mode === 'auto') mode = 'generic';
+  }
+  const facts = {}, params = {};
+  for (const r of SIG.rules){
+    if (!r.modes.includes('*') && !r.modes.includes(mode)) continue;
+    const re = new RegExp(r.re, r.flags);
+    const m = text.match(re);
+    if (!m) continue;
+    for (const [f, why] of Object.entries(r.facts || {}))
+      if (!facts[f]) facts[f] = { why, evidence: (m[0] || '').slice(0, 120) };
+    for (const [p, gi] of Object.entries(r.params || {}))
+      if (m[gi] && !params[p]) params[p] = m[gi].trim();
+    if (r.portRows)
+      for (const mm of text.matchAll(new RegExp(r.re, r.flags)))
+        facts['port:' + mm[1]] = { why: 'Open port in scan output', evidence: mm[0].slice(0, 80) };
+  }
+  // Structured nmap parse adds reachability facts, hosts (→ Boxes) and intel params.
+  let hosts = [], intel = {};
+  if (mode === 'nmap' && window.OBOL_NMAP){
+    const res = window.OBOL_NMAP.parse(text);
+    hosts = res.hosts; intel = res.intel || {};
+    for (const f of res.facts) if (!facts[f]) facts[f] = { why: 'from nmap scan', evidence: '' };
+    if (intel.domain && !params.domain) params.domain = intel.domain;
+    if (intel.netbios && !params.dc_netbios) params.dc_netbios = intel.netbios;
+    if (intel.domain && !params.base_dn) params.base_dn = intel.domain.split('.').map(p => 'DC=' + p).join(',');
+  }
+  const amap = { nxc:'nxc', ldap:'nxc', kerbrute:'auto', responder:'auto', secretsdump:'auto', roast:'auto', hydra:'creds', generic:'auto', nmap:'auto' };
+  const artifacts = parseArtifacts(text, amap[mode] || 'auto', true);
+  return { mode, facts, params, artifacts, hosts };
+}
+
+function viewIntake(){
+  const a = state.artifacts;
+  const block = (kind, label, hint) => {
+    const items = a[kind] || [];
+    if (!items.length) return '';
+    return '<div class="card"><div class="card-body"><h4 style="color:var(--accent);margin-bottom:4px">' + label + ' <span class="hint">(' + items.length + ')</span></h4>'
+      + '<p class="hint" style="margin-bottom:8px">' + hint + '</p>'
+      + '<div class="card-actions" style="margin-bottom:8px">'
+      + '<button class="btn" data-acopy="' + kind + '">Copy</button>'
+      + '<button class="btn" data-adl="' + kind + '">Download ' + kind + '.txt</button>'
+      + '<button class="btn" data-aclear="' + kind + '" style="border-color:var(--danger);color:var(--danger)">Clear</button></div>'
+      + '<pre class="report" style="max-height:260px;overflow:auto">' + esc(items.join('\n')) + '</pre></div></div>';
+  };
+  const total = a.users.length + a.hashes.length + a.creds.length;
+  $('#view').innerHTML = '<h2>Intake</h2><p class="subtitle">Paste output from <b>any</b> tool. Obol detects what it is, then proposes <b>facts</b> (which narrow your <a href="#/path" style="color:var(--info)">Path</a>), <b>artifacts</b> (clean users / hashes / creds lists for your working files), and <b>params</b> (domain, netbios…). Nothing applies until you review it.</p>'
+    + '<div class="card"><div class="card-body">'
+    + '<div style="display:flex;gap:12px;align-items:center;flex-wrap:wrap;margin-bottom:8px">'
+    + '<select id="in-mode" style="background:var(--bg);color:var(--text);border:1px solid var(--line);border-radius:8px;padding:7px">'
+    + window.OBOL_SIGNATURES.modes.map(m => '<option value="' + m.id + '">' + esc(m.label) + '</option>').join('') + '</select>'
+    + '<label class="opt"><input type="checkbox" id="in-facts" checked> <span class="opt-tip">apply facts</span></label>'
+    + '<label class="opt"><input type="checkbox" id="in-art" checked> <span class="opt-tip">save artifacts</span></label>'
+    + '<label class="opt"><input type="checkbox" id="in-params" checked> <span class="opt-tip">suggest params (never overwrites)</span></label>'
+    + '</div>'
+    + '<textarea class="bigpaste" id="in-text" spellcheck="false" placeholder="Paste tool output here — nmap, nxc, kerbrute, Responder, secretsdump, roast output, hydra, ldapsearch…">' + esc(intakePrefill) + '</textarea>'
+    + '<div class="modal-actions"><button class="btn" id="in-analyze">Analyze</button></div>'
+    + '<div id="in-review"></div></div></div>'
+    + '<h3 style="color:var(--accent2);margin:18px 0 10px">Artifact store</h3>'
+    + (total ? '' : '<p class="empty">Nothing distilled yet — paste tool output above, or use ⬡ Intake on any card\'s evidence box.</p>')
+    + block('users', '👤 Users', 'Valid account names — feed username enum, spraying, AS-REP roasting.')
+    + block('hashes', '⬢ Hashes', 'NTLM / NetNTLMv2 / Kerberos tickets — crack, relay, or pass-the-hash.')
+    + block('creds', '🔑 Creds', 'Recovered or confirmed credentials — validate with nxc before reuse.');
+  const pre = intakePrefill; intakePrefill = '';
+  $('#in-analyze').onclick = () => analyzeInto($('#in-text').value);
+  $('#view').querySelectorAll('[data-acopy]').forEach(b => b.onclick = () => {
+    navigator.clipboard.writeText(state.artifacts[b.dataset.acopy].join('\n'))
+      .then(() => { b.textContent = 'Copied ✓'; setTimeout(() => b.textContent = 'Copy', 900); });
+  });
+  $('#view').querySelectorAll('[data-adl]').forEach(b => b.onclick = () =>
+    window.OBOL_REPORT.download(b.dataset.adl + '.txt', state.artifacts[b.dataset.adl].join('\n')));
+  $('#view').querySelectorAll('[data-aclear]').forEach(b => b.onclick = () => {
+    if (confirm('Clear all ' + b.dataset.aclear + '?')){ state.artifacts[b.dataset.aclear] = []; save(); renderFacts(); viewIntake(); }
+  });
+  if (pre.trim()) analyzeInto(pre);
+
+  function analyzeInto(text){
+    if (!text.trim()){ $('#in-review').innerHTML = '<p class="empty">Paste something first.</p>'; return; }
+    const res = intakeAnalyze(text, $('#in-mode').value);
+    const modeLabel = (window.OBOL_SIGNATURES.modes.find(m => m.id === res.mode) || {}).label || res.mode;
+    const fentries = Object.entries(res.facts);
+    const pentries = Object.entries(res.params);
+    const kinds = [['users','👤 Users'], ['hashes','⬢ Hashes'], ['creds','🔑 Creds']];
+    const wantF = $('#in-facts').checked, wantA = $('#in-art').checked, wantP = $('#in-params').checked;
+    let h = '<div class="d-group" style="border-top:1px solid var(--line);margin-top:14px;padding-top:12px">';
+    h += '<p class="hint">Detected: <b>' + esc(modeLabel) + '</b> · ' + fentries.length + ' facts · ' + pentries.length + ' params · '
+      + (res.artifacts.users.length + res.artifacts.hashes.length + res.artifacts.creds.length) + ' artifacts'
+      + (res.hosts.length ? ' · ' + res.hosts.length + ' host(s) → Boxes' : '') + '</p>';
+    let any = false;
+    if (wantF && fentries.length){
+      any = true;
+      h += '<h4 style="color:var(--accent);margin:10px 0 4px">Facts</h4>' + fentries.map(([f, d]) => {
+        const have = state.facts.includes(f);
+        return '<label class="opt" style="display:flex;flex-wrap:wrap"><input type="checkbox" data-rfact="' + esc(f) + '"' + (have ? ' disabled' : ' checked') + '> <code>' + esc(f) + '</code>'
+          + (have ? '<span class="opt-tip">(already set)</span>' : '')
+          + (d.why ? '<span class="opt-tip">— ' + esc(d.why) + '</span>' : '') + '</label>';
+      }).join('');
+    }
+    if (wantP && pentries.length){
+      any = true;
+      h += '<h4 style="color:var(--accent);margin:10px 0 4px">Params (only empty fields are filled)</h4>' + pentries.map(([p, v]) => {
+        const have = state.params[p];
+        return '<label class="opt" style="display:flex;flex-wrap:wrap"><input type="checkbox" data-rparam="' + esc(p) + '"' + (have ? ' disabled' : ' checked') + '> <code>' + esc(p) + ' = ' + esc(v) + '</code>'
+          + (have ? '<span class="opt-tip">(keeping yours)</span>' : '') + '</label>';
+      }).join('');
+    }
+    if (wantA && kinds.some(([k]) => res.artifacts[k].length)){
+      any = true;
+      h += kinds.filter(([k]) => res.artifacts[k].length).map(([k, label]) =>
+        '<h4 style="color:var(--accent);margin:10px 0 4px">' + label + ' (' + res.artifacts[k].length + ' — edit before saving)</h4>'
+        + '<textarea class="d-edit" data-rkind="' + k + '" spellcheck="false">' + esc(res.artifacts[k].join('\n')) + '</textarea>').join('');
+    }
+    if (!any){ $('#in-review').innerHTML = h + '<p class="empty">Nothing recognizable — try a different mode, or check the paste.</p></div>'; return; }
+    h += '<div class="modal-actions"><button class="btn" id="in-apply" style="border-color:var(--accent);color:var(--accent)">Apply intake</button></div></div>';
+    $('#in-review').innerHTML = h;
+    $('#in-apply').onclick = () => applyIntake(res);
+  }
+
+  function applyIntake(res){
+    const before = new Set(LANES.flatMap(l => l.cards).filter(c => applicable(c, factsSet()) && grounded(c) && statusOf(c.id) !== 'done').map(c => c.id));
+    const gainedFacts = [];
+    $('#in-review').querySelectorAll('[data-rfact]:checked:not([disabled])').forEach(x => {
+      if (!state.facts.includes(x.dataset.rfact)){ state.facts.push(x.dataset.rfact); gainedFacts.push(x.dataset.rfact); }
+    });
+    $('#in-review').querySelectorAll('[data-rparam]:checked:not([disabled])').forEach(x => {
+      state.params[x.dataset.rparam] = res.params[x.dataset.rparam];
+    });
+    const counts = {};
+    $('#in-review').querySelectorAll('[data-rkind]').forEach(t => {
+      const vals = t.value.split(/\r?\n/).map(v => v.trim()).filter(Boolean);
+      const set = new Set(state.artifacts[t.dataset.rkind]); vals.forEach(v => set.add(v));
+      state.artifacts[t.dataset.rkind] = [...set]; counts[t.dataset.rkind] = vals.length;
+    });
+    let addedHosts = 0;
+    for (const hst of res.hosts){
+      if (!state.boxes.some(b => b.ip === hst.ip)){
+        state.boxes.push({ name:'', ip:hst.ip, hostname:hst.hostname, domain:'', os:'', creds:[], flags:[], notes:'', pwned:'', ports:hst.ports });
+        addedHosts++;
+      }
+    }
+    if (res.hosts[0] && !state.params.target) state.params.target = res.hosts[0].ip;
+    const newly = LANES.flatMap(l => l.cards).filter(c => applicable(c, factsSet()) && grounded(c) && statusOf(c.id) !== 'done' && !before.has(c.id));
+    state.ui.lastIntake = { at: new Date().toISOString(), facts: gainedFacts, counts, newly: newly.map(c => c.id) };
+    save(); renderSidebar(); renderProgress();
+    $('#in-review').innerHTML = '<div class="d-group" style="border-top:1px solid var(--line);margin-top:14px;padding-top:12px">'
+      + '<p><b>Applied ✓</b> ' + gainedFacts.length + ' new facts · ' + ((counts.users||0) + (counts.hashes||0) + (counts.creds||0)) + ' artifacts'
+      + (addedHosts ? ' · ' + addedHosts + ' host(s) → Boxes' : '') + '. <a href="#/path" style="color:var(--info)">See your Path →</a></p>'
+      + (newly.length ? '<p class="hint" style="margin-bottom:8px">Newly available because of this intake:</p>'
+        + newly.slice(0, 10).map(c => '<div class="failure" style="cursor:pointer" data-goto2="' + c.id + '"><b>' + esc(c.title) + '</b> <span class="hint">— ' + esc(c.lane) + ' lane</span></div>').join('')
+        : '')
+      + '</div>';
+    $('#in-review').querySelectorAll('[data-goto2]').forEach(el => el.addEventListener('click', () => location.hash = '#/card/' + el.dataset.goto2));
+    $('#in-text').value = '';
+    toast('Intake applied — Path and artifact store updated.');
+  }
 }
 
 function nmapModal(){
@@ -763,8 +1124,21 @@ function nmapModal(){
     }
     for (const f of res.facts) if (!state.facts.includes(f)) state.facts.push(f);
     if (res.hosts[0] && !state.params.target) state.params.target = res.hosts[0].ip;
+    // Apply mined intel to params (never overwrite what the user typed).
+    const intel = res.intel || {};
+    const applied = [];
+    const setP = (k, v) => { if (v && !state.params[k]){ state.params[k] = v; applied.push(k + ' = ' + v); } };
+    setP('domain', intel.domain);
+    if (intel.domain) setP('base_dn', intel.domain.split('.').map(p => 'DC=' + p).join(','));
+    setP('dc_netbios', intel.netbios);
+    if (intel.os && res.hosts[0]){ const b = state.boxes.find(x => x.ip === res.hosts[0].ip); if (b && !b.os) b.os = intel.os; }
     save(); renderSidebar(); closeModal();
-    modal('<h3>Ingested</h3><p>' + res.hosts.length + ' host(s), ' + res.facts.length + ' facts set.</p><pre class="report">' + esc(res.facts.join('\n')) + '</pre>');
+    const intelLines = [intel.domain && 'domain: ' + intel.domain, intel.netbios && 'netbios: ' + intel.netbios,
+      intel.os && 'os: ' + intel.os, intel.signingRequired && 'SMB signing: REQUIRED (relay-to-SMB is dead here)',
+      intel.clockSkew && 'clock skew: ' + intel.clockSkew + ' (sync before Kerberos: sudo ntpdate ' + (state.params.target || '<dc-ip>') + ')'].filter(Boolean);
+    modal('<h3>Ingested</h3><p>' + res.hosts.length + ' host(s), ' + res.facts.length + ' facts set' + (applied.length ? ', params auto-filled: ' + esc(applied.join(' · ')) : '') + '.</p>'
+      + (intelLines.length ? '<pre class="report">' + esc(intelLines.join('\n')) + '</pre>' : '')
+      + '<pre class="report">' + esc(res.facts.join('\n')) + '</pre>');
     $('#modal-close').onclick = closeModal;
   };
 }
@@ -793,63 +1167,84 @@ function viewReport(){
 }
 
 function viewGuide(){
-  const sec = (title, body, open) => '<details class="guide-sec"' + (open ? ' open' : '') + '><summary>' + esc(title) + '</summary><div class="guide-body">' + body + '</div></details>';
-  const li = (a) => '<li>' + a + '</li>';
-  let html = '<h2>Guide</h2><p class="subtitle">Everything Obol does, in order of how much you need it. Read the first section and you can work a box; open the rest as you hit them.</p>';
-
-  html += sec('① The 60-second version',
-    '<ol class="guide-list">'
-    + li('Fill the sidebar <b>parameters</b> (left / ⚙ menu on mobile) — <code>target</code>, <code>lhost</code>, <code>domain</code>… Grey example text in each box shows what good input looks like.')
-    + li('<a href="#/boxes">Boxes</a> → <b>Ingest nmap scan</b> — paste your <code>nmap -sV</code> output. Hosts, ports and service banners auto-fill, and matching cards light up.')
-    + li('Work cards from <a href="#/map">Map</a> or <a href="#/lanes">Lanes</a>: run the commands yourself, paste key output into the card\'s <b>evidence box</b>, hit <b>Mark succeeded</b>.')
-    + li('Open <a href="#/report">Report</a> — your draft assembled itself from those marks. Download .md or print to PDF.')
-    + li('Click the <b>timer</b> in the header → countdown for an exam window (OSCP = 23h 45m), stopwatch for labs.')
-    + '</ol><p class="hint">Obol never runs anything for you. Every command is copy → paste into your own terminal → paste results back. That is deliberate: it keeps the tool exam-legal and keeps you learning the commands.</p>', true);
-
-  html += sec('② The sidebar: parameters & facts',
-    '<p><b>Parameters</b> are fill-in blanks for every command. Set <code>lhost</code> once and every reverse shell, listener and file-transfer command in the app carries your IP. They persist across reloads. The <i>advanced</i> section holds the niche ones (CA names, SIDs, template names…).</p>'
-    + '<p><b>Facts</b> are things that are true about the engagement right now — <code>port:445</code>, <code>credential.available</code>, <code>foothold.linux</code>. They drive what Obol shows you:</p>'
-    + '<ul class="guide-list">'
-    + li('A card whose prerequisites match your facts is marked <span class="badge applicable">applicable</span>.')
-    + li('nmap ingest sets port/service facts automatically.')
-    + li('Marking a card <b>succeeded</b> adds the facts that technique produces (a shell, a hash, a user) — which lights up the next cards.')
-    + li('Add facts by hand in the sidebar box; click a fact pill to remove it.')
-    + '</ul>');
-
-  html += sec('③ Anatomy of a card',
-    '<ul class="guide-list">'
-    + li('<b>Hypothesis</b> — when this technique is worth your time and when it isn\'t.')
-    + li('<b>Variant pills</b> (some cards) — same technique, several ways. e.g. ligolo-ng vs chisel. Pick per situation; your choice persists.')
-    + li('<b>Command blocks</b> — copy button top-right. Parameters substitute automatically.')
-    + li('<b>Option switches</b> — checkboxes add flags (<code>-u</code>, <code>-k</code>…), text fields fill arguments. The command rewrites itself before you copy it.')
-    + li('<b>Success looks like / If it fails</b> — the output to expect, and the next card to branch to when a signature failure appears.')
-    + li('<b>Evidence box + Mark tried / succeeded</b> — the single most important habit. Evidence + marks are what the report is built from.')
-    + li('<b>Defender\'s view</b> — what the blue team sees; becomes the detection note in client reports.')
-    + '</ul>');
-
-  html += sec('④ The views, one line each',
-    '<ul class="guide-list">'
-    + li('<b>Map</b> — the engagement lifecycle as phases, plus "where am I?" states that list cards applicable from your current position.')
-    + li('<b>Lanes</b> — all technique cards grouped by phase, searchable.')
-    + li('<b>Tools</b> — every command in Obol grouped by tool (the nxc armory lives here), plus four reference tabs: <b>Wordlists</b>, <b>Hash helpers</b> (file → hash → crack mode), <b>Repos &amp; refs</b>, and <b>Scripts</b> (copy/paste helpers with WHEN/WHERE/HOW).')
-    + li('<b>Boxes</b> — target tracker: creds, flags, what pwned it. Also where nmap and BloodHound ingest live.')
-    + li('<b>Stuck?</b> — everything applicable that you haven\'t finished, plus branches from things you tried that failed.')
-    + li('<b>Report</b> — two modes: <b>Standard</b> (client-style findings with severity, MITRE/CVE/NIST/CWE references, remediation) and <b>OSCP</b> (per-target sections, reproducible steps, proof checklist, submission rules).')
-    + li('<b>Data</b> — export/import your whole workspace as JSON. Everything lives in your browser; export before you close a long engagement.')
-    + '</ul>');
-
-  html += sec('⑤ BloodHound & PlumHound ingest',
-    '<p>Boxes → <b>Ingest BloodHound</b> accepts SharpHound/BloodHound CE <code>.zip</code>, loose JSON, or PlumHound <code>--csv</code> exports. Obol parses it locally (nothing leaves the browser) and gives you: attack-path findings with a suggested next card, and copyable <b>target lists</b> (kerberoastable users, AS-REP roastable, DCSync principals) — save one as <code>users.txt</code>, set it as your <code>userlist</code> parameter, and the roasting commands are ready. Domain and base_dn auto-fill from the data.</p>');
-
-  html += sec('⑥ Working a lab vs working the OSCP exam',
-    '<ul class="guide-list">'
-    + li('Timer: 23h45m countdown, and the OSCP report mode includes the OffSec pre-submission checklist (PDF → unencrypted .7z, exact filename, MD5).')
-    + li('Fill <code>osid</code> in advanced params — it lands on the OSCP report header.')
-    + li('sqlmap is <b>not allowed</b> on the exam — the Web lane carries full manual SQLi methodology; the sqlmap card is flagged accordingly. Metasploit/Meterpreter: one target max — Obol keeps manual variants on every lane.')
-    + li('No AI assistants during the exam; Obol is a static offline ledger of your own methodology — treat it as your notes, and verify what is permitted with OffSec rules before exam day.')
-    + '</ul>');
-
+  const secs = [
+    ['start', '① The 60-second start',
+      '<ol class="guide-list">'
+      + '<li>Fill the sidebar <b>parameters</b> (left / ⚙ menu on mobile) — <code>target</code>, <code>lhost</code>, <code>domain</code>… Grey example text in each box shows what good input looks like.</li>'
+      + '<li><a href="#/boxes">Boxes</a> → <b>Ingest nmap scan</b> — paste your <code>nmap -sV</code> output. Hosts, ports and service banners auto-fill; domain, OS, SMB-signing and clock-skew intel lands in your params and facts.</li>'
+      + '<li>Open <a href="#/path">Path</a> — cards your evidence makes applicable, sorted by severity. Work them from there or from <a href="#/lanes">Lanes</a>.</li>'
+      + '<li>Run the commands yourself, paste key output into the card\'s <b>evidence box</b>, hit <b>Mark succeeded</b>.</li>'
+      + '<li>Paste tool output into <a href="#/intake">Intake</a> — it becomes facts, artifacts and params, and your Path narrows.</li>'
+      + '<li>Open <a href="#/report">Report</a> — your draft assembled itself from those marks. Download .md or print to PDF.</li>'
+      + '</ol><p class="hint">Obol never runs anything for you. Every command is copy → paste into your own terminal → paste results back. That is deliberate: it keeps the tool exam-legal and keeps you learning the commands.</p>'],
+    ['loop', '② The loop',
+      '<p>Every box is the same five-beat loop, and Obol has a surface for each:</p>'
+      + '<ol class="guide-list">'
+      + '<li><b>Scan</b> — the Nmap Command Builder card (Recon lane) builds any scan: presets per moment (first contact, canonical, deep dive, UDP, vuln sweep, AD enum, post-foothold pivot), full switch panel, NSE script chips that highlight when they match your services.</li>'
+      + '<li><b>Ingest</b> — Boxes → Ingest nmap / BloodHound for structured imports; <b>Intake</b> for everything else.</li>'
+      + '<li><b>Work</b> — Path or Lanes. Run commands, paste evidence, mark tried/succeeded. Failure branches on each card tell you where to go when something doesn\'t work.</li>'
+      + '<li><b>Distill</b> — every card\'s evidence box has a <b>⬡ Intake</b> button: output becomes clean users/hashes/creds lists and new facts, without leaving context.</li>'
+      + '<li><b>Report</b> — findings, evidence, commands, CVE correlation, and the artifact appendix assemble themselves from your marks.</li>'
+      + '</ol>'],
+    ['sidebar', '③ Sidebar: parameters & facts',
+      '<p><b>Parameters</b> are fill-in blanks for every command. Set <code>lhost</code> once and every reverse shell, listener and file-transfer command in the app carries your IP. They persist across reloads. The <i>advanced</i> section holds the niche ones (CA names, SIDs, template names…). <code>base_dn</code> derives itself from <code>domain</code> if you leave it empty.</p>'
+      + '<p><b>Facts</b> are things that are true about the engagement right now — <code>port:445</code>, <code>credential.available</code>, <code>foothold.linux</code>. They drive what Obol shows you:</p>'
+      + '<ul class="guide-list">'
+      + '<li>A card whose prerequisites match your facts is marked <span class="badge applicable">applicable</span>.</li>'
+      + '<li>Ingest and Intake set facts automatically from tool output.</li>'
+      + '<li>Marking a card <b>succeeded</b> adds the facts that technique produces — which lights up the next cards.</li>'
+      + '<li>Add facts by hand in the sidebar box; click a fact pill to remove it.</li>'
+      + '</ul>'],
+    ['intake', '④ Intake (paste anything)',
+      '<p>Intake is the universal front door for tool output. Paste, pick a mode (or leave Auto-detect), hit <b>Analyze</b>:</p>'
+      + '<ul class="guide-list">'
+      + '<li><b>Facts</b> — signature rules recognize what the output proves: <code>smb.signing_required</code> (relay dead), <code>kerberos.clock_skew</code> (sync time first), <code>ad.user_list</code> (kerbrute VALIDs), <code>hash.asrep</code>/<code>hash.tgs</code>, <code>credential.available</code> (Pwn3d!, nxc [+] lines, hydra)… Each proposal shows the evidence line. These narrow your Path.</li>'
+      + '<li><b>Artifacts</b> — clean users / hashes / creds lists extracted from nxc tables, secretsdump, Responder, roast output. Editable before saving; copy or download as <code>users.txt</code> / <code>hashes.txt</code>; everything lands in the report appendix.</li>'
+      + '<li><b>Params</b> — domain, netbios name, base DN suggested into empty fields only. Your values are never overwritten.</li>'
+      + '<li><b>What changed</b> — after applying, Intake lists the cards that just became applicable, and Path shows them under "From your last intake".</li>'
+      + '</ul><p class="hint">Supported modes: auto-detect, nmap, netexec/crackmapexec, kerbrute, Responder/Inveigh, secretsdump/NTDS, AS-REP/Kerberoast hashes, ldapsearch/enum4linux, hydra/medusa, generic text. nmap and BloodHound keep their own deeper importers under Boxes.</p>'],
+    ['views', '⑤ The views',
+      '<ul class="guide-list">'
+      + '<li><b>Map</b> — the engagement lifecycle as a board: every phase, its lanes, and your progress per lane. Click a lane to open it.</li>'
+      + '<li><b>Path</b> — where you are and what it opens: position shortcuts, what your last intake unlocked, branches from failed cards, and everything applicable — defaulting to cards matched to the services you actually found.</li>'
+      + '<li><b>Lanes</b> — the full catalog of technique cards, grouped by phase, searchable, with an optional "only cards relevant to my scan" filter.</li>'
+      + '<li><b>Tools</b> — every command in Obol grouped by tool (the nxc armory lives here), plus pinned references: Wordlists, Hash helpers, Repos &amp; refs, Scripts, and the Exploit Workshop (fixing downloaded PoCs).</li>'
+      + '<li><b>Boxes</b> — target tracker: creds, flags, what pwned it; nmap and BloodHound ingest.</li>'
+      + '<li><b>Intake</b> — universal paste: tool output → facts, artifacts, params (see ④).</li>'
+      + '<li><b>Report</b> — two modes: <b>Standard</b> (client-style findings with severity, MITRE/CVE/NIST/CWE references, remediation) and <b>OSCP</b> (per-target sections, reproducible steps, proof checklist, submission rules).</li>'
+      + '<li><b>Data</b> — export/import your whole workspace as JSON. Everything lives in your browser; export before you close a long engagement.</li>'
+      + '</ul>'],
+    ['cards', '⑥ Anatomy of a card',
+      '<ul class="guide-list">'
+      + '<li><b>Hypothesis</b> — when this technique is worth your time and when it isn\'t.</li>'
+      + '<li><b>Variant pills</b> (some cards) — same technique, several ways (ligolo-ng vs chisel, GodPotato vs PrintSpoofer). Pick per situation; your choice persists.</li>'
+      + '<li><b>Command blocks</b> — copy button top-right; parameters substitute automatically.</li>'
+      + '<li><b>Option switches</b> — checkboxes add flags, text fields fill arguments, radio groups pick mutually-exclusive modes, script chips compose <code>--script</code> lists. Chips marked <span class="opt-sug">suggested</span> match your ingested services. Preset pills (Nmap builder) set a whole batch at once.</li>'
+      + '<li><b>Success looks like / If it fails</b> — the output to expect, and the next card to branch to when a signature failure appears.</li>'
+      + '<li><b>Evidence box + Mark tried / succeeded</b> — the single most important habit. Evidence + marks are what the report is built from. ⬡ Intake on each card sends the evidence straight into extraction.</li>'
+      + '<li><b>Defender\'s view</b> — what the blue team sees; becomes the detection note in client reports.</li>'
+      + '</ul>'],
+    ['bh', '⑦ BloodHound & PlumHound ingest',
+      '<p>Boxes → <b>Ingest BloodHound</b> accepts SharpHound/BloodHound CE <code>.zip</code>, loose JSON, or PlumHound <code>--csv</code> exports. Obol parses it locally (nothing leaves the browser) and gives you: attack-path findings with a suggested next card, and copyable <b>target lists</b> (kerberoastable users, AS-REP roastable, DCSync principals) — save one as <code>users.txt</code>, set it as your <code>userlist</code> parameter, and the roasting commands are ready. Domain and base_dn auto-fill from the data.</p>'],
+    ['exam', '⑧ Labs vs the OSCP exam',
+      '<ul class="guide-list">'
+      + '<li>Timer: click the header clock — 23h45m countdown for exams, stopwatch for labs.</li>'
+      + '<li>Fill <code>osid</code> in advanced params — it lands on the OSCP report header.</li>'
+      + '<li>sqlmap is <b>not allowed</b> on the exam — the Web lane carries full manual SQLi methodology; the sqlmap card is flagged accordingly. Metasploit/Meterpreter: one target max — Obol keeps manual variants on every lane.</li>'
+      + '<li>No AI assistants during the exam; Obol is a static offline ledger of your own methodology — treat it as your notes, and verify what is permitted with OffSec rules before exam day.</li>'
+      + '</ul>']
+  ];
+  let html = '<h2>Guide</h2><p class="subtitle">Everything Obol does, in order of how much you need it.</p>'
+    + '<div class="guide-layout"><div class="guide-nav">'
+    + secs.map(([id, t]) => '<a href="javascript:void(0)" data-gs="' + id + '">' + esc(t) + '</a>').join('')
+    + '</div><div class="guide-content">'
+    + secs.map(([id, t, body]) => '<section id="gs-' + id + '" class="guide-sec" open><h3>' + esc(t) + '</h3><div class="guide-body">' + body + '</div></section>').join('<hr style="border-color:var(--line);margin:18px 0">')
+    + '</div></div>';
   $('#view').innerHTML = html;
+  $('#view').querySelectorAll('[data-gs]').forEach(a => a.addEventListener('click', () => {
+    const el = document.getElementById('gs-' + a.dataset.gs);
+    if (el) el.scrollIntoView({ behavior:'smooth', block:'start' });
+  }));
 }
 
 function viewSettings(){
@@ -912,16 +1307,17 @@ function fmtT(d){
 function route(){
   const hash = location.hash || '#/map';
   const parts = hash.slice(2).split('/');
-  document.querySelectorAll('nav a').forEach(a => a.classList.toggle('active', a.dataset.nav === parts[0] || (parts[0]==='card' && a.dataset.nav==='lanes') || (parts[0]==='state' && a.dataset.nav==='map')));
+  document.querySelectorAll('nav a').forEach(a => a.classList.toggle('active', a.dataset.nav === parts[0] || (parts[0]==='card' && a.dataset.nav==='lanes') || ((parts[0]==='state') && a.dataset.nav==='path') || (parts[0]==='stuck' && a.dataset.nav==='path')));
   if (parts[0] === 'map' || !parts[0]) viewMap();
   else if (parts[0] === 'state') viewState(parts[1]);
   else if (parts[0] === 'lanes') viewLanes(parts[1]);
   else if (parts[0] === 'tools') viewTools(parts[1] ? decodeURIComponent(parts[1]) : null);
   else if (parts[0] === 'card') viewCard(parts[1]);
-  else if (parts[0] === 'stuck') viewStuck();
+  else if (parts[0] === 'path' || parts[0] === 'stuck') viewPath();
   else if (parts[0] === 'boxes') viewBoxes();
   else if (parts[0] === 'report') viewReport();
   else if (parts[0] === 'guide') viewGuide();
+  else if (parts[0] === 'artifacts' || parts[0] === 'intake') viewIntake();
   else if (parts[0] === 'settings') viewSettings();
   window.scrollTo(0,0);
 }

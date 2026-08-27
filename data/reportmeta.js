@@ -2,11 +2,7 @@
 // keyed by card id. Consumed by assets/report.js. Lane defaults cover anything unlisted.
 window.OBOL_REPORTMETA = {
   cards: {
-    'host-discovery': { mitre: ['T1018 — Remote System Discovery'], fix: 'Restrict ICMP/ARP visibility where feasible; monitor for sweep patterns.' },
-    'port-scan-quick': { mitre: ['T1046 — Network Service Discovery'], fix: 'Minimizes exposed services; alert on port-sweep behavior.' },
-    'port-scan-full': { mitre: ['T1046 — Network Service Discovery'], fix: 'Close unused ports; segment services; alert on full-range scans.' },
-    'udp-scan': { mitre: ['T1046 — Network Service Discovery'], fix: 'Audit UDP services (SNMP/DNS/IKE) — they are frequently forgotten.' },
-    'nse-vuln-scan': { mitre: ['T1595.002 — Active Scanning: Vulnerability Scanning'], fix: 'Patch per scanner output; scanners only find known issues.' },
+    'nmap-builder': { mitre: ['T1046 — Network Service Discovery', 'T1595.002 — Active Scanning: Vulnerability Scanning'], fix: 'Minimize exposed services; alert on sweep patterns; patch per scanner output.' },
     'vuln-scanners': { mitre: ['T1595.002 — Active Scanning: Vulnerability Scanning'], fix: 'Run authenticated scans regularly and remediate by severity.' },
     'exploit-search': { mitre: ['T1588.005 — Obtain Capabilities: Exploits'], fix: 'Track versions in a CMDB; map to advisories; patch or isolate.' },
     'dns-enum': { mitre: ['T1590.002 — Gather Victim Network Information: DNS'], fix: 'Restrict zone transfers to secondaries; split-horizon DNS.' },
