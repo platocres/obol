@@ -1,0 +1,66 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Obol — Offensive Box Operations Ledger</title>
+<link rel="stylesheet" href="assets/obol.css">
+</head>
+<body>
+<header>
+  <div class="brand">
+    <span class="coin">◉</span>
+    <div>
+      <h1>OBOL</h1>
+      <p class="tagline">Offensive Box Operations Ledger</p>
+    </div>
+  </div>
+  <nav>
+    <a href="#/map" data-nav="map">Map</a>
+    <a href="#/lanes" data-nav="lanes">Lanes</a>
+    <a href="#/tools" data-nav="tools">Tools</a>
+    <a href="#/boxes" data-nav="boxes">Boxes</a>
+    <a href="#/stuck" data-nav="stuck">Stuck?</a>
+    <a href="#/report" data-nav="report">Report</a>
+    <a href="#/guide" data-nav="guide">Guide</a>
+    <a href="#/settings" data-nav="settings">Data</a>
+  </nav>
+  <div class="progress-pill" id="progress" title="Cards marked tried / succeeded — click for Report">0 tried · 0 done</div>
+  <div class="timer" id="timer" title="Exam timer — click to set">--:--:--</div>
+</header>
+
+<div id="banner" class="hidden"></div>
+
+<div class="layout">
+  <aside id="sidebar">
+    <details id="side-details" open>
+      <summary>⚙ Parameters &amp; facts</summary>
+      <h3>Engagement Parameters</h3>
+      <div id="params"></div>
+      <h3>Facts</h3>
+      <div id="facts-panel">
+        <div id="facts-list"></div>
+        <input id="fact-input" placeholder="add fact, e.g. port:445">
+      </div>
+    </details>
+  </aside>
+  <main id="view"></main>
+</div>
+
+<div id="modal-backdrop" class="hidden">
+  <div id="modal"></div>
+</div>
+<div id="toast" class="hidden"></div>
+
+<script src="data/lanes.js"></script>
+<script src="data/lanes-notes.js"></script>
+<script src="data/wordlists.js"></script>
+  <script src="data/scripts.js"></script>
+<script src="data/reportmeta.js"></script>
+<script src="assets/nmap.js"></script>
+<script src="assets/report.js"></script>
+<script src="assets/jszip.min.js"></script>
+  <script src="assets/bh.js"></script>
+  <script src="assets/app.js"></script>
+</body>
+</html>
