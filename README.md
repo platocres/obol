@@ -4,125 +4,139 @@ Obol is a static, offline-capable study companion, methodology ledger, command-b
 
 **Human-run commands only.** Obol never executes commands, installs tools, creates pivots, or exploits targets. It helps the operator decide what to try, build the command, preserve what happened, understand what remains unknown, and turn the historical ledger into a reproducible report draft.
 
-## Obol v3.1
+## Obol v3.2
 
-v3.1 is a website usability and workflow release built on the v3.0 information architecture. The main correction is simple: Nmap is not merely another evidence source after a target already exists. It is often how the operator discovers the hosts and services that define the target set in the first place.
+v3.2 is a usability correction to the v3.0/v3.1 site redesign. v3.1 correctly promoted Nmap earlier in the workflow, but the interface then repeated the same concept too aggressively: Home contained a Nmap launchpad, Discover contained another Nmap launchpad, Evidence carried a dedicated Nmap bridge, and the workflow ribbon repeated navigation that already existed in the header.
 
-The release therefore moves Nmap into the beginning of the workflow, connects discovery output directly to host/context creation, and gives the site a more deliberate visual hierarchy without changing Obol's human-run execution model.
+v3.2 applies a **single-owner rule** to the interface: each major workflow has one obvious primary surface, while related pages consume the resulting state without advertising the same tool again.
 
-### Discovery-first workflow
+The result is less tool-centric, less repetitive, and closer to how Obol is actually used during a lab.
 
-The five primary destinations remain intentionally compact, but the second destination is now **Discover** instead of **Targets**:
+### Primary navigation
 
-- **Home** — resume the engagement and start discovery quickly
-- **Discover** — build Nmap discovery/scan commands, ingest results, and manage known targets
-- **Evidence** — review general pasted tool output and preserved artifacts
+The five primary destinations are now:
+
+- **Home** — resume the current context and see only what needs attention
+- **Targets** — manage host scope and launch discovery or baseline scanning when needed
+- **Evidence** — review general tool output and structured evidence
 - **Next Steps** — evidence-ranked methodology recommendations
-- **Report** — proof readiness and report output
+- **Report** — proof readiness and reproducible reporting
 
-Reference and advanced sections remain under **More**: Engagement Map, Methodology, Tool Library, Planned Work, Workspace Search, Evidence Lineage, Guide, and Workspace Data.
+The v3.1 label **Discover** returns to **Targets** because the page represents a persistent object in the workspace, not a single tool or action. Discovery remains an action available from Targets.
 
-The workflow ribbon now expresses the real early-lab sequence more clearly:
+The **More** menu is reordered around frequency of use:
 
-`Discover → Evidence → Decide → Execute → Document`
+1. Planned Work
+2. Workspace Search
+3. Methodology
+4. Tool Library
+5. Evidence Lineage
+6. Engagement Map
+7. Guide
+8. Workspace Data
 
-### First-class Nmap launchpad
+This ordering is also inherited by the global Ctrl/Cmd+K navigation palette.
 
-Home and Discover now expose the same connected Nmap workflow rather than hiding Nmap behind a secondary target-management button.
+### Nmap has one primary home
 
-The launchpad can build operator-run commands for:
+Nmap remains first-class, but it is no longer repeated across the site.
 
-- host discovery
-- quick TCP scanning
-- full TCP scanning
-- service/version plus default-script scanning
-- common UDP scanning
+**Targets owns the Nmap workflow.** A single **Scan / discover** action opens a focused modal that can:
 
-The builder supports meaningful scan controls including:
+- choose host discovery, quick TCP, full TCP, service/script, or common UDP profiles
+- target an authorized IP, CIDR, or range
+- control output basename, ports, timing, minimum rate, retries, reasons, service detection, default scripts, OS detection, and DNS resolution
+- generate a copyable operator-run Nmap command
+- accept pasted normal, grepable, XML, or host-discovery output
+- apply the result through Obol's existing host/fact/context pipeline
 
-- authorized IP / CIDR / range target specification
-- output basename using `-oA`
-- optional custom port scope
-- timing profile
-- minimum packet rate
-- retry limit
-- port-state reasons
-- service version detection
-- default scripts
-- OS detection
-- optional DNS resolution
+The v3.1 `-sn` parser improvement is retained, so live hosts can still be created without open-port rows.
 
-The generated command is copyable, but Obol still never executes it.
+Home no longer embeds the Nmap builder. Evidence no longer displays a dedicated Nmap callout. General Evidence Intake still supports Nmap output through its normal source detection because Nmap remains valid evidence; it simply is not promoted as a second competing workflow.
 
-### Discovery output creates real Obol targets
+### Targets is an inventory first
 
-The Nmap launchpad is connected to the existing evidence pipeline. After the operator runs the command, pasted Nmap output is parsed and applied through the same host/fact/context model that powers Path and reporting.
+The Targets page now emphasizes the objects the operator is actually working on.
 
-This means scan ingestion can:
+- the full inline Nmap launchpad is removed from the page
+- a compact **Scan / discover** button opens the Nmap workflow only when needed
+- the page shows target and scanned-target counts without turning scan status into a separate dashboard
+- each target exposes a contextual **Scan** or **Rescan** action with the target IP prefilled
+- scanned vs unscanned status remains visible on the card
+- Name, Hostname, Domain, OS, and Notes editing is collapsed under **Edit target details** so host cards remain readable during normal use
+- ports and key identity remain visible without opening the editor
+- empty workspaces get a simple target-oriented empty state instead of a wall of scan controls
 
-- create newly discovered hosts
-- preserve hostnames when present
-- attach open ports and service information to the correct host
-- establish conservative service-reachability facts
-- carry domain/OS enrichment forward when Nmap exposes it
-- mark the host as having initial scan evidence
-- make the first discovered host the active working context
-- immediately affect evidence-ranked Next Steps
+All existing host/context semantics remain intact. Moving controls into a collapsible section does not change their event handling or storage.
 
-Known target cards now show whether each target has baseline scan evidence.
+### Evidence owns evidence imports
 
-### Nmap host discovery no longer requires open ports
+Evidence Intake is restored to a general-purpose evidence surface.
 
-Earlier parser behavior favored service scans: a host generally needed at least one open-port row before it became a parsed host.
+- the v3.1 Nmap bridge banner is removed
+- the paste placeholder is generic rather than enumerating one preferred tool
+- **Analyze** becomes **Review evidence** to match the review-first semantics
+- the source selector is labeled explicitly
+- BloodHound import moves from Targets to Evidence, where structured graph data fits the information architecture better
+- the artifact section is labeled **Extracted artifacts**
 
-v3.1 extends the Nmap layer so live hosts from `-sn`/host-discovery output are retained even when no port rows exist. Normal, grepable, and XML discovery output can therefore establish host context before service enumeration begins.
+Nmap, NetExec, LDAP, terminal transcripts, and other supported text remain available through the existing intake parser. BloodHound continues to use the existing local parsing and evidence-update pipeline.
 
-This is important to the website flow because Discover can now genuinely be the first step instead of pretending the operator already knows every host.
+### Home becomes a resume dashboard, not a second tool shelf
 
-### Smarter Home resume behavior
+v3.2 removes several layers of duplicated guidance from Home:
 
-The Home dashboard now understands discovery state:
+- no embedded Nmap launchpad
+- no workflow ribbon duplicating the primary navigation
+- no second working-context card when the active context is already visible in the header
+- no separate **Suggested next move** card duplicating the stage-aware Continue action
+- no large Quick Actions grid duplicating header navigation and the More menu
 
-- an empty workspace points to **Run host discovery**
-- a manually added host with no evidence points to **Scan this target**
-- scanned/evidence-rich contexts continue into the existing Path, queue, and reporting logic
+Home now concentrates on four things:
 
-The Home view also exposes a compact Nmap launchpad directly below the resume action, so a new engagement can begin without navigating through several conceptual layers first.
+1. the stage-aware **Continue** action
+2. compact workspace metrics
+3. an **Attention** panel that appears only for unresolved items such as unscanned targets, broken network paths, proof gaps, or planned work
+4. recent recorded activity
 
-### Evidence remains general-purpose
+This makes the first screen useful both at the beginning of a lab and after several hours of accumulated state.
 
-Nmap is promoted earlier, but **Evidence Intake** remains the place for general tool output and continues to support Nmap pastes as well.
+### Navigation and visual hierarchy cleanup
 
-Evidence Intake now includes a visible bridge back to Discover so the relationship is clear:
+v3.2 removes UI elements that had started competing with each other:
 
-- Discover is where host/network discovery starts
-- Evidence is where arbitrary tool output is reviewed and distilled
+- repeated workflow ribbons are suppressed because the primary navigation already expresses the site structure
+- the release banner is removed from the persistent workspace shell
+- the old tried/succeeded progress pill is removed from the header; progress remains available in workspace state and reporting
+- page guidance becomes a quiet one-line introduction instead of a second highlighted navigation layer
+- the context sidebar is labeled **Context details** with a simpler **Parameters** heading
+- the main reading width is reduced so cards do not stretch unnecessarily on wide monitors
+- non-interactive cards no longer receive strong hover emphasis
+- target editing, scan controls, and evidence actions use clearer visual grouping
+- mobile behavior, keyboard focus visibility, skip navigation, the context drawer, Ctrl/Cmd+K search, and report print behavior remain intact
 
-The underlying review-first evidence semantics are unchanged.
+The v3.1 dark green/gold aesthetic is retained, but visual emphasis is reserved for things the operator can actually act on.
 
-### Visual and interaction refinement
+### Connected behavior retained
 
-v3.1 also makes the website feel more intentional without treating styling as an isolated skin pass.
+v3.2 intentionally changes information architecture without cutting the underlying graph of functionality.
 
-The new visual hierarchy follows functional importance:
-
-- discovery gets a prominent launchpad with generated-command and paste-result sections
-- known targets are visually separated from discovery controls
-- scanned vs unscanned target state is visible on target cards
-- generated commands use a dedicated high-contrast surface
-- scan controls collapse naturally on smaller screens
-- Home/Discover cards use stronger depth, spacing, and state emphasis
-- the existing green/gold Obol palette is retained but used more deliberately
-- responsive layouts preserve the discovery workflow on narrow screens
-
-The v3.0 accessibility improvements remain in place: keyboard focus visibility, skip navigation, mobile bottom navigation, collapsible/off-canvas parameters, and report print behavior.
+- Nmap results still create/merge hosts and attach service evidence.
+- Nmap results still establish conservative reachability facts and initial-scan state.
+- Scan evidence still recalculates Next Steps immediately.
+- Host discovery without open ports remains supported.
+- Target context still scopes facts, activities, artifacts, progress, and reports.
+- BloodHound still feeds the same evidence-update model, now from the Evidence page.
+- Existing browser-local v2/v3 workspaces coerce forward automatically.
+- Existing routes remain valid, including `#/boxes` and `#/intake`.
+- Advanced/reference sections remain available under More and through quick navigation/search.
 
 ### Foundations retained
 
 - Host/domain-scoped facts, evidence, activity, credentials, and progress.
 - Supported/refuted/inconclusive knowledge semantics.
-- Evidence-ranked Path with information gain, downstream unlocks, workflow depth, coverage gaps, and explicit reachability relevance.
-- Persistent operator Queue with priority, notes, done/deferred state, and report history.
+- Evidence-ranked Next Steps with information gain, downstream unlocks, workflow depth, coverage gaps, and explicit reachability relevance.
+- Persistent operator Planned Work with priority, notes, done/deferred state, and report history.
 - Maneuver-first methodology with preferred tools and practical fallbacks.
 - Kali-aware install/verification help without executing anything.
 - Semantic command builders with grouped controls, presets, and optional advanced switches.
@@ -141,21 +155,24 @@ The v3.0 accessibility improvements remain in place: keyboard focus visibility, 
 
 ### To-Do - For Agents
 
-Completed or materially advanced in v3.1:
+Completed or materially advanced in v3.2:
 
-- Move Nmap to the beginning of the user workflow instead of treating it only as later evidence intake.
-- Add an integrated Nmap launchpad to Home and Discover.
-- Connect Nmap command generation, pasted output, host creation, port/service evidence, context selection, and Path recalculation.
-- Retain live hosts from host-discovery scans even when no port rows exist.
-- Add scan-aware Home resume guidance and scanned/unscanned target state.
-- Clarify the relationship between Discover and general Evidence Intake.
-- Improve visual hierarchy, spacing, command surfaces, responsive scan controls, and target-state presentation.
+- Remove duplicate Nmap surfaces from Home and Evidence while preserving all Nmap functionality.
+- Return the primary page label from Discover to Targets and make discovery an action rather than an information-architecture category.
+- Replace the permanently expanded Nmap launchpad with one focused Targets modal.
+- Add per-target Scan/Rescan actions that prefill target context.
+- Collapse rarely edited target metadata without breaking existing bindings.
+- Move BloodHound import from Targets to Evidence.
+- Simplify Home around Continue, metrics, unresolved attention, and recent activity.
+- Remove repeated workflow ribbons, persistent release messaging, and redundant header progress UI.
+- Reorder More and quick navigation around likely operator frequency.
+- Reduce visual weight on explanatory and non-interactive surfaces.
 
 Next priorities:
 
+- Test v3.2 against real lab sessions before adding any new primary navigation concepts.
 - Continue the switch-coverage audit for long-tail tools, but only add controls that materially change operator intent or scope.
-- Continue refining the Nmap launchpad around multi-pass scan progression and target-specific follow-up without duplicating methodology cards.
-- Add specialized builders for remaining multi-step scripts where real runtime choices exist.
+- Refine multi-pass Nmap progression inside the single Targets scan workflow rather than creating new Nmap surfaces.
 - Expand Intake normalization and extraction for more BloodHound, Certipy, NetExec module, Impacket, PEAS, web-fuzzer, database-client, and shell edge cases.
 - Grow the transcript fixture corpus across Linux, Windows, AD, web, database, and pivoting sessions, including malformed/partial output.
 - Improve lineage beyond card-level dependency inference by linking consumers to exact activity IDs when that evidence exists.
@@ -165,7 +182,6 @@ Next priorities:
 - Continue methodology depth around credential reuse, AD trusts, delegation, certificate paths, service-specific enumeration, and post-foothold evidence requirements.
 - Expand proof-readiness templates for finding categories while keeping all screenshot-content checks operator-confirmed.
 - Continue improving direct artifact bindings for commands whose option semantics cannot be inferred safely from labels/placeholders alone.
-- Keep the v3 information architecture simple as features grow; new features should not automatically become new primary navigation items.
 
 ## Run locally
 
@@ -191,9 +207,10 @@ node tests/run-v2.8-tests.js
 node tests/run-v2.9-tests.js
 node tests/run-v3.0-tests.js
 node tests/run-v3.1-tests.js
+node tests/run-v3.2-tests.js
 ```
 
-The v3.1 suite covers release-state initialization, discovery-first navigation, scan-aware resume logic, Nmap command profiles, port-scope overrides, `-sn` host retention, preservation of service-scan parsing, v3.1 Home/Discover wiring, index order, and inherited sanitized-export redaction. GitHub Actions runs the complete regression chain on `main`, release branches, and pull requests.
+The v3.2 suite covers release-state initialization, entity-first primary navigation, More-menu ordering, target-oriented Home guidance, unscanned-target attention, preservation of the v3.1 Nmap builder/parser, single-owner UI wiring, v3.2 CSS/index order, and inherited sanitized-export redaction. GitHub Actions runs the complete regression chain on `main`, release branches, and pull requests.
 
 ## Legal / ethics
 
