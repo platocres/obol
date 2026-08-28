@@ -198,6 +198,8 @@ North Star:
 - This project is modeling its design off of the Orange Cyber Defense mind map: https://orange-cyberdefense.github.io/ocd-mindmaps/img/mindmap_ad_dark_classic_2025.03.excalidraw.svg
 - Never remove this section from the readme, and never update the link to the Orange Cyber Defense mind map or this north star section.
 - Always be checking the mind map and how it compares to where the project is at.
+- Create infrastructure to keep up with how much of the Orange Cyber Defense mind map and its decision path and tools has been fully implemented and how much remains to be implemented within Obol.
+- Consider whether the tools from the Orange Cyber Defense mind map are actually the best, most user friendly tools and if they are not, add better tools to the path.
 - Make sure the Orange Defense Mindmap for 2025 is being fully implemented, gather data from it for use in this and future builds and improve upon it.
 - Make sure the path considers whether a user is operating from Kali or from a Windows host on any given step of the path.
 
