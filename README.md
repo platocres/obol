@@ -6,6 +6,27 @@ It is plain HTML/CSS/JavaScript with no backend, no build step, and no telemetry
 
 **Human-run commands only.** Obol never executes commands, installs tools, creates pivots, scans targets, or exploits systems. It helps the operator decide what to try, build the command, preserve what happened, understand what remains unknown, and turn the historical ledger into a reproducible report draft.
 
+## Obol v4.9
+
+v4.9 is the **single North Star dashboard** release.
+
+It directly implements the v4.8 README requirement that all of Obol's Orange Cyberdefense methodology work, tool decisions, command UX, copy/paste Evidence handling, Next Steps integration, Kali/Windows execution metadata, and reporting traceability be tracked in **a single dashboard** on the website with **hard numbers and percentages**.
+
+Home now owns one consolidated project dashboard instead of scattering project-health status across multiple Orange/SCCM/persistence cards. The dashboard uses live repository state and shows raw counts beside every percentage for canonical methodology completion, represented coverage, Run → Evidence loop readiness, explicit Evidence profiles, explicit execution-side metadata, decision-path mapping, reporting traceability, and structured tool-choice review. It also shows mapped command counts, GUI-adjustable versus intentionally fixed commands, active-context Orange progress, report proof readiness, canonical backlog concentration, and strict release-to-release methodology trend.
+
+The dashboard composes the existing audit systems rather than creating a competing denominator. Fixed commands are not automatically treated as defects, partial Orange coverage does not count as fully implemented, and parser/reporting/dashboard work does not inflate the 127-section methodology denominator.
+
+v4.9 is accounting and UX infrastructure, so the strict live canonical baseline remains:
+
+- **52 / 127 canonical sections fully implemented**
+- **49 partial**
+- **26 explicit gaps**
+- **0 stale implemented mappings**
+- **41% fully implemented**
+- **80% represented**
+
+See `docs/v4.9.md` for the dashboard contract and metric semantics.
+
 ## Obol v4.8
 
 v4.8 is the **domain persistence branch depth and lifecycle** release.
@@ -260,6 +281,7 @@ Optional users, active users, exports, groups, computers, DCs, SID, password pol
 - SCCM branch progress with separate credential, relay/takeover, execution, cleanup, and post-map proof semantics.
 - Retroactive Orange reporting traceability from canonical decision path and Evidence profile through proof readiness and generated report output.
 - Domain-persistence branch depth with dedicated ticket, DSRM, CA, credential-subsystem, DCShadow, ACL lifecycle, Evidence, cleanup, and reporting contracts.
+- Single Home North Star dashboard with hard counts and percentages across methodology, operator-loop, Evidence, execution metadata, Next Steps mapping, tool review, reporting traceability, active-context progress, and canonical backlog.
 
 ## To-Do — for future agents
 
@@ -276,6 +298,17 @@ North Star:
 - Make sure that all elements of a path, it's tools, and that tool's evidence fit well into the reporting that Obol performs and can be utilized properly in reporting.
 - All of this applies both now and retroactively. All tools and paths and evidence collection and reporting need to be fully functional and fully useful from a user's perspective, and intuitive both from a UI and a UX perspective.
 - All of this needs to be tracked in a single dashboard I can access when I look at the Obol website with hard numbers and percentages.
+
+Completed or materially advanced in v4.9:
+
+- Add one Home North Star dashboard that tracks the project-wide requirements with hard counts and percentages.
+- Consolidate canonical Orange completion, represented coverage, run/Evidence loop readiness, Evidence-profile coverage, execution-side metadata, decision-path mapping, reporting traceability, and structured tool review.
+- Show raw denominators beside percentages so project health cannot drift into flattering or ambiguous scores.
+- Add active-context Orange stage, grounded queue, mapped-success, report-proof, SCCM, and persistence visibility inside the same dashboard.
+- Add canonical backlog concentration by Orange source file with direct Methodology drill-down.
+- Add strict release trend from the v4.2 canonical denominator through the current v4.9 live state.
+- Keep GUI-adjustable versus intentionally fixed command counts separate instead of treating fixed commands as automatic defects.
+- Preserve the strict 52/49/26/0 Orange methodology baseline and every existing North Star requirement.
 
 Completed or materially advanced in v4.8:
 
@@ -367,9 +400,12 @@ node tests/run-v4.5-tests.js
 node tests/run-v4.6-tests.js
 node tests/run-v4.7-tests.js
 node tests/run-v4.8-tests.js
+node tests/run-v4.9-tests.js
 ```
 
 The v3.4 suite locks the decision-first Next Steps redesign. The v3.5 suite covers field-observed Evidence classification, proof semantics, Report cleanup/export, Evidence normalization, and lineage repair. The v3.6 suite adds Rubeus workbench/state coverage, Kerberos command intent and conservative outcome inference, S4U integration, exact-command lineage, workflow handoffs, North Star retention, and inherited secret redaction. The v3.7 suite adds target-specific reachability, pivot freshness, consumer lineage repair, multi-hop compromise paths, artifact neighborhoods, and mixed full-session regression coverage. The v3.8 suite adds pivot operational history, listener-health ranking semantics, transition-aware compromise summaries, transition proof templates, and another mixed full-session fixture. The v3.9 suite adds broader Impacket/PEASS-ng/SQLmap activity intent, conservative explicit outcome proof, Evidence coverage summaries, and mixed-session regression. The v4.0 suite adds per-context operator execution state, platform-aware Path signals, command-side guidance, and historical execution provenance. The v4.1 suite adds the Orange methodology coverage ledger, tool-review accounting, explicit execution metadata auditing, and live card-reference validation. The v4.2 suite adds the version-pinned canonical Orange AD source inventory, stable completion denominator, snapshot-integrity validation, and persistent completion visibility. The v4.3 suite adds live canonical reconciliation, RBCD stale-mapping repair, audited AD Hashcat modes, release-delta accounting, and card-level Orange provenance. The v4.4 suite adds context-safe Orange decision-stage progress, Next Steps ranking signals, canonical recommendation queues, and engagement-facing decision-path UI. The v4.5 suite adds Orange run/evidence contracts, GUI-control gap fixes, conservative copy/paste profiles, and operator-loop readiness visibility. The v4.6 suite adds deep SCCM branch methodology, SCCM-specific run/evidence contracts, per-context SCCM progression, and strict canonical coverage updates. The v4.7 suite adds retroactive Orange reporting traceability, path/context versus finding separation, draft reporting-gap visibility, and generated-report integration. The v4.8 suite adds domain-persistence branch depth, conservative persistence Evidence contracts, context-scoped persistence progress, and cleanup-aware report integration.
+
+The v4.9 suite adds the unified North Star dashboard, hard-number metric accounting, broad execution-metadata audit, tool-review percentages, active-context isolation, and canonical backlog tracking.
 
 GitHub Actions runs the complete regression chain on `main`, release branches, and pull requests.
 
