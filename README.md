@@ -6,6 +6,20 @@ It is plain HTML/CSS/JavaScript with no backend, no build step, and no telemetry
 
 **Human-run commands only.** Obol never executes commands, installs tools, creates pivots, scans targets, or exploits systems. It helps the operator decide what to try, build the command, preserve what happened, understand what remains unknown, and turn the historical ledger into a reproducible report draft.
 
+## Obol v4.7
+
+v4.7 is the **retroactive reporting traceability** release. It directly implements the v4.6 README requirement that every path, tool, and Evidence flow fit cleanly into Obol reporting and remain fully useful from a user's perspective across UI and UX.
+
+Every live Orange-mapped methodology card now has a reporting contract that keeps finding-bearing work distinct from path/context methodology. Successful mapped activity is traceable through its Orange decision stage, canonical source keys, exact historical activity, Evidence profile, proof-readiness state, and generated report output.
+
+Generated Standard and OSCP working drafts now include **Orange Decision Path & Reporting Traceability** when mapped successes exist. Successful non-finding work such as ticket hygiene or mapping remains visible as path/context and is not forced into the Findings section. Drafts also surface unresolved ledger proof as **Draft Reporting Gaps** without changing recorded activity success or manufacturing findings.
+
+The Report UI adds a **Path → evidence → report** summary, and mapped methodology cards show their report role and Evidence family. This work is retroactive across existing Orange-mapped cards and composes with v4.4 decision stages, v4.5 run/evidence contracts, v4.6 SCCM progress, and the Kali/Windows execution-context model.
+
+v4.7 is reporting infrastructure, so canonical methodology completion remains strict at **48 / 127 fully implemented**, **45 partial**, **34 gaps**, **0 stale**, **38% fully implemented**, and **73% represented**.
+
+See `docs/v4.7.md` for the reporting contract and regression semantics.
+
 ## Obol v4.6
 
 v4.6 is the **SCCM branch depth and operator-loop** release.
@@ -217,6 +231,7 @@ Optional users, active users, exports, groups, computers, DCs, SID, password pol
 - Orange-mapped Next Steps guidance that can boost an already-applicable card without manufacturing applicability or success.
 - Run/evidence contract accounting for Orange-mapped cards, including GUI command-control and terminal-profile visibility.
 - SCCM branch progress with separate credential, relay/takeover, execution, cleanup, and post-map proof semantics.
+- Retroactive Orange reporting traceability from canonical decision path and Evidence profile through proof readiness and generated report output.
 
 ## To-Do — for future agents
 
@@ -232,6 +247,16 @@ North Star:
 - Make sure that each tool for each step of the path is not only proper, but has the proper GUI based toggles to adjust commands and that OBOL is able to interpret copy/paste evidence from user terminals to improve its ability to determine next steps.
 - Make sure that all elements of a path, it's tools, and that tool's evidence fit well into the reporting that Obol performs and can be utilized properly in reporting.
 - All of this applies both now and retroactively. All tools and paths and evidence collection and reporting need to be fully functional and fully useful from a user's perspective, and intuitive both from a UI and a UX perspective.
+
+Completed or materially advanced in v4.7:
+
+- Add a report contract to every live Orange-mapped methodology card.
+- Keep finding-bearing work separate from path/context methodology so reporting stays useful without inflating findings.
+- Add Orange decision-path and canonical-source traceability to generated Standard and OSCP working drafts.
+- Surface draft reporting gaps from existing proof-readiness requirements without mutating success state.
+- Add Report-page and mapped-card visibility for reporting role, Evidence family, and proof readiness.
+- Apply the reporting requirement retroactively while preserving the strict 48/45/34/0 Orange coverage baseline.
+- Preserve all North Star, Next Steps, GUI-control, Evidence, and Kali/Windows requirements.
 
 Completed or materially advanced in v4.6:
 
@@ -300,6 +325,7 @@ node tests/run-v4.3-tests.js
 node tests/run-v4.4-tests.js
 node tests/run-v4.5-tests.js
 node tests/run-v4.6-tests.js
+node tests/run-v4.7-tests.js
 ```
 
 The v3.4 suite locks the decision-first Next Steps redesign. The v3.5 suite covers field-observed Evidence classification, proof semantics, Report cleanup/export, Evidence normalization, and lineage repair. The v3.6 suite adds Rubeus workbench/state coverage, Kerberos command intent and conservative outcome inference, S4U integration, exact-command lineage, workflow handoffs, North Star retention, and inherited secret redaction. The v3.7 suite adds target-specific reachability, pivot freshness, consumer lineage repair, multi-hop compromise paths, artifact neighborhoods, and mixed full-session regression coverage. The v3.8 suite adds pivot operational history, listener-health ranking semantics, transition-aware compromise summaries, transition proof templates, and another mixed full-session fixture. The v3.9 suite adds broader Impacket/PEASS-ng/SQLmap activity intent, conservative explicit outcome proof, Evidence coverage summaries, and mixed-session regression. The v4.0 suite adds per-context operator execution state, platform-aware Path signals, command-side guidance, and historical execution provenance. The v4.1 suite adds the Orange methodology coverage ledger, tool-review accounting, explicit execution metadata auditing, and live card-reference validation. The v4.2 suite adds the version-pinned canonical Orange AD source inventory, stable completion denominator, snapshot-integrity validation, and persistent completion visibility. The v4.3 suite adds live canonical reconciliation, RBCD stale-mapping repair, audited AD Hashcat modes, release-delta accounting, and card-level Orange provenance. The v4.4 suite adds context-safe Orange decision-stage progress, Next Steps ranking signals, canonical recommendation queues, and engagement-facing decision-path UI. The v4.5 suite adds Orange run/evidence contracts, GUI-control gap fixes, conservative copy/paste profiles, and operator-loop readiness visibility. The v4.6 suite adds deep SCCM branch methodology, SCCM-specific run/evidence contracts, per-context SCCM progression, and strict canonical coverage updates.
