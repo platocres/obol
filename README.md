@@ -6,6 +6,113 @@ It is plain HTML/CSS/JavaScript with no backend, no build step, and no telemetry
 
 **Human-run commands only.** Obol never executes commands, installs tools, creates pivots, scans targets, or exploits systems. It helps the operator decide what to try, build the command, preserve what happened, understand what remains unknown, and turn the historical ledger into a reproducible report draft.
 
+## Obol v4.3
+
+v4.3 is the **canonical reconciliation and cracking-contract audit** release.
+
+v4.2 established a durable 127-section Orange Cyberdefense 2025.03 Active Directory denominator. v4.3 reviews that denominator against the methodology that already exists in Obol, repairs the stale RBCD mapping exposed by v4.2, recognizes mature workflows that the first canonical pass under-counted, and expands the Active Directory Hashcat reference with audited current modes.
+
+The pinned Orange source snapshot remains immutable in `data/orange-ad-2025.03.js`. Current-release coverage changes live in `data/methodology-v4.3.js`. This preserves a reproducible v4.2 historical baseline while allowing later releases to improve live mappings without rewriting the source inventory.
+
+### v4.3 live coverage
+
+After reconciliation:
+
+- **42 / 127 canonical sections fully implemented**
+- **39 partial**
+- **46 explicit gaps**
+- **0 stale implemented mappings**
+- **33% fully implemented**
+- **64% represented** when implemented and partial coverage are combined
+
+Compared with the validated v4.2 live baseline, v4.3 adds **17 fully implemented sections**, removes **16 gaps**, clears the **1 stale mapping**, raises strict completion by **13 percentage points**, and raises represented coverage by **14 percentage points**.
+
+A substantial part of that gain is reconciliation of functionality that already existed in Obol, not a claim that seventeen brand-new offensive techniques were invented in this release.
+
+### RBCD stale mapping repaired
+
+v4.2 correctly detected that the canonical RBCD section referenced a nonexistent legacy `rbcd` card ID.
+
+v4.3 maps the canonical Resource-Based Constrained Delegation workflow to the real Obol implementation:
+
+- `ad-machine-account-quota-v25` for readiness and machine-account preconditions
+- `delegation-abuse` for the delegation workflow
+- `getst-impersonation` for the S4U payoff and ticket handoff
+
+The retained v4.1 tool-choice audit is repaired at the same time, so current coverage now has **zero stale implemented mappings**.
+
+### Existing methodology reconciled into the canonical ledger
+
+The canonical ledger now recognizes existing Obol workflows for:
+
+- domain-controller and domain identification
+- authenticated SCCM reconnaissance
+- GPP / MS14-025 credential recovery
+- MSSQL movement and linked-server paths
+- trust enumeration
+- Golden Ticket persistence
+- database quick-win paths across MSSQL, MySQL, and PostgreSQL
+
+Broad source branches remain partial when one existing card does not truthfully implement the whole Orange branch. Authenticated historical vulnerabilities, detection-only Zerologon, persistence-oriented ACL lifecycle, and SCCM PXE cracking are examples where v4.3 deliberately refuses to inflate the percentage.
+
+### Active Directory Hashcat mode audit
+
+The existing `hashcat-modes` methodology card is expanded into an audited Active Directory cracking reference.
+
+v4.3 explicitly covers:
+
+- LM — mode `3000`
+- NTLM — mode `1000`
+- NetNTLMv1 / ESS — mode `5500`
+- NetNTLMv2 — mode `5600`
+- Kerberos TGS RC4 / etype 23 — mode `13100`
+- Kerberos TGS AES128 / etype 17 — mode `19600`
+- Kerberos TGS AES256 / etype 18 — mode `19700`
+- Kerberos AS-REP RC4 / etype 23 — mode `18200`
+- MSCache2 / DCC2 — mode `2100`
+- TimeRoast / MS SNTP — mode `31300`
+- SCCM PXE AES128 — mode `19850`, retained as **partial** because the practical path depends on a dedicated external SCCM Hashcat module/fork rather than a stock Hashcat installation
+
+This also corrects the common stale mapping of NetNTLMv1 to raw-NTLM mode `1000`; the audited NetNTLMv1 mode is `5500`.
+
+### Coverage provenance and release delta are visible
+
+v4.3 keeps the v4.2 completion percentage surfaces and adds release context:
+
+- Methodology shows a **v4.3 canonical reconciliation** panel before the full canonical ledger
+- Home shows the current percentage plus the number of fully implemented sections gained since the validated v4.2 baseline
+- the persistent Orange AD header badge carries the release delta in its tooltip
+- mapped methodology-card pages show their Orange 2025.03 canonical mapping count
+- Guide includes the v4.3 release focus
+
+Canonical card provenance is attached to live methodology cards so the percentage remains traceable to actual workflows rather than becoming a disconnected project metric.
+
+### Kali / Windows execution metadata continues to deepen
+
+v4.3 keeps the existing `operatorSurface40` execution-context contract and adds explicit high-confidence metadata to reconciled workflows. Hashcat, NetExec, Nmap, Impacket, sccmhunter, smbclient, and gpp-decrypt paths are identified as Kali-side where appropriate; native trust commands such as `nltest` and PowerView remain Windows-side; neutral commands stay neutral.
+
+No competing execution-context system is introduced.
+
+### v4.3 regression focus
+
+The v4.3 suite locks:
+
+- unchanged Orange 2025.03 source commit, tree SHA, and permanent North Star
+- the 42 implemented / 39 partial / 46 gap / 0 stale live baseline
+- 33% complete and 64% represented calculations
+- exact v4.2-to-v4.3 coverage delta
+- RBCD stale-mapping repair against live cards
+- reconciled DC, SCCM, GPP, MSSQL, trust, Golden Ticket, and database mappings
+- deliberately partial broad/risky source branches
+- audited Hashcat mode contracts and the external-module PXE exception
+- explicit execution-side metadata on reconciled commands
+- retained v4.1 tool-audit consistency
+- Methodology, Home, card-provenance, and Guide UI wiring
+- release/index/workflow/README wiring
+- inherited sanitized-export secret redaction
+
+See `docs/v4.3.md` for the full reconciliation record and future-agent guidance.
+
 ## Obol v4.2
 
 v4.2 is the **canonical Orange snapshot and completion-accounting** release.
@@ -55,11 +162,11 @@ Methodology also shows the denominator, represented percentage, pinned upstream 
 
 ### Future agents do not need to reopen the visual map for routine accounting
 
-Future work should read `data/orange-ad-2025.03.js` first.
+Future work should read `data/orange-ad-2025.03.js` first, then apply the latest methodology coverage overlay such as `data/methodology-v4.3.js`.
 
 The normal workflow is now:
 
-`pinned Orange manifest → canonical coverage → priority gaps → implementation → coverage update`
+`pinned Orange manifest → current coverage overlays → canonical coverage → priority gaps → implementation → coverage update`
 
 A future agent only needs to revisit upstream Orange when refreshing the pinned snapshot, implementing a specific branch that needs exact upstream detail, checking whether upstream changed, or resolving a source-integrity mismatch.
 
@@ -89,22 +196,9 @@ This exposes audit debt that the v4.1 subset did not yet count, including trust 
 
 ### v4.2 regression focus
 
-The v4.2 suite locks:
+The v4.2 suite locks the historical source snapshot and its validated baseline so later coverage overlays cannot silently rewrite what v4.2 measured.
 
-- exact Orange 2025.03 commit and AD-tree pin
-- all 17 methodology source files and support-file records
-- the 127-section canonical denominator
-- the 25 implemented / 39 partial / 62 gap baseline plus one live stale mapping
-- 20% complete and 50% represented calculations
-- snapshot-integrity and duplicate-key checks
-- live implemented-card mappings and stale detection
-- persistent completion visibility in the header and Home
-- canonical Methodology filtering/source drill-down
-- inherited v4.1 tool-choice and execution-metadata behavior
-- release/index/workflow/README wiring
-- inherited sanitized-export secret redaction
-
-See `docs/v4.2.md` for implementation details and future-agent workflow.
+See `docs/v4.2.md` for implementation details and the original future-agent workflow.
 
 ## Obol v4.1
 
@@ -112,7 +206,7 @@ v4.1 is the **methodology coverage and audit** release. It works directly from t
 
 The release does not add another primary navigation destination. The existing **Methodology** surface owns the coverage ledger.
 
-v4.1 introduced explicit implemented / partial / gap / stale-mapping accounting, structured keep / supplement / replace / review tool decisions, and the first audited execution-side metadata for Orange-mapped commands. v4.2 retains those tool-review and execution-metadata layers but replaces the smaller v4.1 audit subset as the completion denominator.
+v4.1 introduced explicit implemented / partial / gap / stale-mapping accounting, structured keep / supplement / replace / review tool decisions, and the first audited execution-side metadata for Orange-mapped commands. v4.2 and v4.3 retain those tool-review and execution-metadata layers while using the full canonical source inventory as the completion denominator.
 
 ## Obol v4.0
 
@@ -216,7 +310,10 @@ Optional users, active users, exports, groups, computers, DCs, SID, password pol
 - Tool-review records that compare Orange source tooling to Obol-preferred workflows.
 - Audited explicit execution metadata for high-confidence Orange-mapped commands.
 - Canonical, version-pinned Orange 2025.03 AD methodology snapshot with a stable 127-section completion denominator.
-- Persistent Home/header visibility for the Orange AD fully implemented percentage.
+- Current-release coverage overlays that reconcile the immutable source snapshot without destroying historical baselines.
+- Persistent Home/header visibility for the Orange AD fully implemented percentage and release delta.
+- Live card-level Orange canonical provenance.
+- Audited Active Directory Hashcat mode reference with external-module exceptions kept explicit.
 
 ## To-Do — for future agents
 
@@ -229,33 +326,34 @@ North Star:
 - Make sure the Orange Defense Mindmap for 2025 is being fully implemented, gather data from it for use in this and future builds and improve upon it.
 - Make sure the path considers whether a user is operating from Kali or from a Windows host on any given step of the path.
 
-Completed or materially advanced in v4.2:
+Completed or materially advanced in v4.3:
 
-- Pin the complete Orange AD 2025.03 textual methodology source structure to a specific upstream commit and AD-tree SHA.
-- Normalize all 17 methodology-bearing source files plus support-file hashes into a canonical local manifest.
-- Establish a durable 127-section denominator for completion accounting.
-- Replace the smaller v4.1 audit-subset percentage with canonical 20% fully implemented / 50% represented baseline accounting.
-- Add snapshot-integrity checks, duplicate-key checks, live-card validation, and stale implemented-mapping behavior.
-- Make the completion percentage persistently visible in the header and on Home.
-- Replace the v4.1 Methodology subset panel with the canonical file/section ledger while retaining the v4.1 tool-choice audit separately.
-- Preserve the Kali-versus-Windows Path requirement and Orange North Star exactly.
+- Keep the v4.2 Orange source snapshot immutable while adding a current-release methodology coverage overlay.
+- Repair the stale RBCD canonical mapping using the actual readiness, delegation, and S4U workflow cards.
+- Reconcile existing DC discovery, SCCM reconnaissance, GPP, MSSQL, trust, Golden Ticket, and database methodology into the canonical ledger.
+- Raise live strict coverage from 25 to 42 implemented sections without counting partial or stale work as complete.
+- Reduce explicit gaps from 62 to 46 and stale mappings from one to zero.
+- Expand the Active Directory Hashcat reference and correct NetNTLMv1 to mode 5500.
+- Add explicit coverage for TGS AES, DCC2, and TimeRoast cracking while keeping SCCM PXE partial because it depends on an external Hashcat module/fork.
+- Add canonical provenance to mapped methodology cards and expose the v4.3 release delta in Home, Methodology, and the persistent Orange badge.
+- Deepen explicit Kali / Windows / neutral execution metadata on reconciled workflows.
+- Preserve the Orange North Star and Kali-versus-Windows Path requirement exactly.
 
 Next priorities:
 
-- Work from `C.mindmapPriorityGaps42(LANES)` and the canonical manifest instead of reconstructing Orange coverage manually.
-- Address high-volume canonical gaps including SCCM, domain persistence, trust abuse, authenticated historical vulnerabilities, low-hanging service/CVE paths, cracking variants, and Windows low-access branches.
-- Deepen partial AD CS, relay, delegation, ACL, certificate-movement, and authenticated-enumeration sections until they can truthfully move to implemented.
-- When Orange upstream changes, refresh the pinned manifest deliberately and review denominator changes instead of silently drifting.
+- Continue working from `C.mindmapPriorityGaps42(LANES)` after all current methodology overlays have loaded rather than reconstructing Orange coverage manually.
+- Expand SCCM beyond reconnaissance into credential recovery, relay, takeover, execution, cleanup, and post-exploitation branches.
+- Expand domain persistence beyond Golden Ticket into Silver Ticket, DSRM, Skeleton Key, Custom SSP, Golden Certificate, Diamond/Sapphire tickets, DCShadow, and persistence-specific ACL lifecycle.
+- Deepen trust abuse beyond enumeration and MSSQL linked-server paths.
+- Address Windows low-access AppLocker bypass, UAC bypass, and Kerberos-relay branches.
+- Deepen partial AD CS, relay, coercion, delegation, ACL, certificate-movement, and authenticated-enumeration sections until they can truthfully move to implemented.
+- Expand Kerberos relay handling without treating generic NTLM relay coverage as equivalent.
+- Add authenticated historical-vulnerability workflows only where they remain useful, current enough for training, and safe to present accurately.
+- Expand Evidence normalization and full-session transcript fixtures for newly reconciled workflows as their command/output contracts mature.
 - Replace more execution-side inference with explicit command metadata as methodology audits progress.
-- Continue validating Rubeus command contracts against current upstream releases as CLI behavior evolves.
-- Expand Rubeus ticket/delegation transcript fixtures and additional Kerberos workflows where they map cleanly to the methodology.
-- Continue validating command contracts against current upstream CLI help when tool versions change.
-- Expand Evidence normalization/extraction and activity-intent fixtures for more NetExec, Certipy, Impacket edge cases, web fuzzers, database clients, and shell output, including malformed and partial transcripts.
-- Grow full-session regression fixtures across Linux, Windows, AD, web, database, and pivoting workflows so classification and outcome inference are tested as complete operator sessions rather than isolated strings.
-- Continue exact activity-ID lineage through producer/consumer paths where stronger command or activity correlation becomes available.
-- Deepen multi-hop compromise-path summaries with conservative target context and transition chronology where exact evidence supports it.
-- Continue pivot troubleshooting depth with route-specific checks, source-interface context, and listener history without inferring state that the operator did not record.
-- Expand proof-readiness templates for additional finding/transition types while keeping screenshot-content checks operator-confirmed and external.
+- Continue validating Rubeus and other fast-moving command contracts against current upstream releases when tool behavior changes.
+- When Orange upstream changes, refresh the pinned manifest deliberately and review denominator changes instead of silently drifting.
+- Continue exact activity-ID lineage, multi-hop target/chronology improvements, pivot troubleshooting depth, and proof-readiness templates where stronger evidence supports them.
 - Keep the v4 information architecture simple. New functionality should not automatically become a new primary navigation destination.
 
 ## Run locally
@@ -293,9 +391,10 @@ node tests/run-v3.9-tests.js
 node tests/run-v4.0-tests.js
 node tests/run-v4.1-tests.js
 node tests/run-v4.2-tests.js
+node tests/run-v4.3-tests.js
 ```
 
-The v3.4 suite locks the decision-first Next Steps redesign. The v3.5 suite covers field-observed Evidence classification, proof semantics, Report cleanup/export, Evidence normalization, and lineage repair. The v3.6 suite adds Rubeus workbench/state coverage, Kerberos command intent and conservative outcome inference, S4U integration, exact-command lineage, workflow handoffs, North Star retention, and inherited secret redaction. The v3.7 suite adds target-specific reachability, pivot freshness, consumer lineage repair, multi-hop compromise paths, artifact neighborhoods, and mixed full-session regression coverage. The v3.8 suite adds pivot operational history, listener-health ranking semantics, transition-aware compromise summaries, transition proof templates, and another mixed full-session fixture. The v3.9 suite adds broader Impacket/PEASS-ng/SQLmap activity intent, conservative explicit outcome proof, Evidence coverage summaries, and a mixed PEAS + SQLmap + Impacket full-session regression. The v4.0 suite adds per-context operator execution state, platform-aware Path signals, command-side guidance, historical execution provenance, and release wiring. The v4.1 suite adds the Orange methodology coverage ledger, tool-review accounting, explicit execution metadata auditing, and live card-reference validation. The v4.2 suite adds the version-pinned canonical Orange AD source inventory, stable completion denominator, snapshot-integrity validation, and persistent completion visibility.
+The v3.4 suite locks the decision-first Next Steps redesign. The v3.5 suite covers field-observed Evidence classification, proof semantics, Report cleanup/export, Evidence normalization, and lineage repair. The v3.6 suite adds Rubeus workbench/state coverage, Kerberos command intent and conservative outcome inference, S4U integration, exact-command lineage, workflow handoffs, North Star retention, and inherited secret redaction. The v3.7 suite adds target-specific reachability, pivot freshness, consumer lineage repair, multi-hop compromise paths, artifact neighborhoods, and mixed full-session regression coverage. The v3.8 suite adds pivot operational history, listener-health ranking semantics, transition-aware compromise summaries, transition proof templates, and another mixed full-session fixture. The v3.9 suite adds broader Impacket/PEASS-ng/SQLmap activity intent, conservative explicit outcome proof, Evidence coverage summaries, and a mixed PEAS + SQLmap + Impacket full-session regression. The v4.0 suite adds per-context operator execution state, platform-aware Path signals, command-side guidance, historical execution provenance, and release wiring. The v4.1 suite adds the Orange methodology coverage ledger, tool-review accounting, explicit execution metadata auditing, and live card-reference validation. The v4.2 suite adds the version-pinned canonical Orange AD source inventory, stable completion denominator, snapshot-integrity validation, and persistent completion visibility. The v4.3 suite adds live canonical reconciliation, RBCD stale-mapping repair, audited AD Hashcat modes, release-delta accounting, and card-level Orange provenance.
 
 GitHub Actions runs the complete regression chain on `main`, release branches, and pull requests.
 
