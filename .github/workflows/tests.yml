@@ -38,3 +38,7 @@ jobs:
         run: node tests/run-v2.7-tests.js
       - name: Run v2.7 hardening regression suite
         run: node tests/run-v2.7-hardening-tests.js
+      - name: Validate v2.8 JavaScript syntax
+        run: node --check assets/core-v2.8.js && node --check assets/app-v2.8.js && node --check assets/report-v2.8.js
+      - name: Run v2.8 regression suite
+        run: node tests/run-v2.8-tests.js

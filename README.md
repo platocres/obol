@@ -4,82 +4,65 @@ Obol is a static, offline-capable study companion, methodology ledger, command-b
 
 **Human-run commands only.** Obol never executes commands, installs tools, or exploits targets. It helps the operator decide what to try, build the command, preserve what happened, understand what remains unknown, and turn the historical ledger into a reproducible report draft.
 
-## Obol v2.7
+## Obol v2.8
 
-v2.7 continues the evidence-reuse work from v2.6. Typed artifacts are no longer just preserved objects that can populate a shared parameter. This release starts tracking where evidence objects came from, where they were reused, how they feed specific command fields, and what post-foothold network visibility the operator has actually established.
+v2.8 takes the internal-network and artifact-lineage foundations from v2.7 and makes them operationally clearer. The main theme is explicit state: Obol now distinguishes evidence that was merely observed from evidence that is actually reachable through a direct route or an operator-recorded active pivot, exposes artifact producer/consumer history as a chronological view, and adds concrete reporting-readiness tracking for successful actions.
 
-### Artifact lineage
+### Explicit reachability and pivot state
 
-Typed artifacts now retain lightweight producer and consumer relationships.
+v2.7 could preserve internal interfaces, routes, subnets, hosts, and service observations. v2.8 adds a separate operator-controlled reachability layer.
 
-- Repeated observations of the same artifact merge provenance instead of discarding the later source.
-- Artifacts distilled from card evidence can retain the card and copied-command context that produced them.
-- Shared-parameter handoffs record consumption history.
-- Direct command-field bindings also record which card/command consumed the artifact.
-- Intake shows compact produced/consumed counts without exposing candidate-secret values.
-- Reports include a lineage summary showing how much captured evidence was later reused.
+Path now includes a **Reachability & pivots** panel where the operator can record a network path as either:
 
-The goal is a reproducible evidence graph: not only "we found this host/share/file," but also "this evidence came from here and influenced this later operator action."
+- directly reachable from the operator
+- reachable through an explicit pivot or tunnel
 
-### Direct artifact-to-command bindings
+Pivot/tunnel records can identify common mechanisms such as Ligolo, Chisel, SSH, SOCKS, port forwards, VPN paths, or another operator-defined method. Each record is context-scoped, can be activated/deactivated, and includes the reachable CIDR plus an optional endpoint/listener note.
 
-v2.6 added a generic **Use** handoff into shared engagement parameters. v2.7 goes deeper.
+Observed hosts and services are classified conservatively:
 
-Expanded methodology cards now inspect their command placeholders and semantic option fields for compatible typed artifacts already present in the active context. When a match exists, an **Evidence inputs** panel can bind that artifact directly into the relevant field.
+- **direct** — covered by an explicit active direct path, or the current host itself
+- **pivot-reachable** — covered by an explicit active pivot/tunnel path
+- **observed** — seen in evidence but not covered by any explicit active path
+- **unknown** — no grounded visibility exists
 
-Examples include:
+Obol does not infer a pivot or promote an observed internal service to reachable merely because a route or subnet appeared in pasted output.
 
-- host artifacts → target/host fields
-- URLs → URL/endpoint fields
-- shares → share/UNC fields
-- files, tickets, and certificates → path/file/ticket/certificate fields
-- subnets → subnet/network/route fields
-- candidate secrets → password/hash/token fields when compatible
+### Lineage explorer
 
-This keeps command construction tied to previously observed evidence instead of requiring another round of transcription.
+v2.7 began recording lightweight producer and consumer relationships for typed artifacts. v2.8 makes those relationships inspectable.
 
-### Post-foothold internal network visibility
+A new **Lineage** view shows typed artifacts in the active context and lets the operator open a chronological chain for each object. The chain can include:
 
-Intake now recognizes more network structure from shell transcripts and tool output:
+- producer source
+- producer card
+- captured command context
+- later command/card consumers
+- consumed field or parameter
+- timestamps
+- links back to related methodology cards
 
-- Linux interfaces and `inet` addresses
-- Windows adapter/IPv4 output
-- Linux route-table entries including routed internal CIDRs
-- Windows route-table rows
-- NetExec-style service observations for common protocols
+Candidate-secret values remain masked in the UI.
 
-Reviewed observations are stored in a context-scoped internal network model. Path can surface an **Internal network visibility** card showing observed interfaces, routes, subnets, hosts, and service visibility without pretending that an unobserved route exists.
+Intake artifact rows now include a **Trace** action that jumps directly to the artifact’s lineage history.
 
-Route CIDRs and service hosts can also feed the typed-artifact workspace for later handoff.
+### Reporting readiness
 
-### Mixed transcript structure and regression fixtures
+The Report view now evaluates every successful activity in the active context against three concrete requirements:
 
-v2.7 starts testing Intake against a realistic mixed terminal session rather than only isolated strings.
+- evidence snapshot recorded
+- command snapshot recorded
+- screenshot capture explicitly confirmed by the operator
 
-- Common Bash, PowerShell, and cmd-style prompt boundaries are segmented into command/output blocks.
-- Evidence matching can still operate across the complete paste while Obol preserves command boundaries for provenance and regression work.
-- A committed mixed-session fixture exercises interfaces, routes, NetExec output, Windows networking, Certipy output, certificate files, and web requests in one transcript.
+The readiness panel shows which successful actions are complete, which are missing evidence or commands, and which still need screenshot confirmation. Screenshot state is never inferred automatically.
 
-### Search filters
+Reports also include compact summaries for:
 
-Workspace Search now supports practical filters for larger engagements:
+- direct vs pivot-reachable vs merely observed internal visibility
+- active explicit network paths
+- successful-activity readiness counts
 
-- object type
-- typed-artifact family
-- source
-- activity result
-- age window
-
-Filters remain browser-local and do not change Path ranking.
-
-### Reporting
-
-Reports now add compact summaries for:
-
-- evidence lineage and artifact reuse
-- internal network visibility
-
-Existing typed-artifact and negative-evidence summaries remain intact. Candidate-secret values are not emitted by these summaries.
+Existing lineage, typed-artifact, negative-evidence, Queue, methodology, and compromise-chain report sections remain intact.
 
 ### Foundations retained
 
@@ -91,23 +74,25 @@ Existing typed-artifact and negative-evidence summaries remain intact. Candidate
 - Kali-aware install/verification help without executing anything.
 - Semantic command builders with grouped controls, presets, and optional advanced switches.
 - Nmap host/OS/domain enrichment and LDAP/NetExec username distillation.
-- First-class typed artifacts and evidence-to-command handoffs.
+- First-class typed artifacts and direct evidence-to-command handoffs.
+- Producer/consumer artifact lineage with context-safe deduplication.
+- Review-first typed-artifact and network-observation intake gates.
 - Offline script library with filtering, contextual guidance, builders, and one-click copy.
 - AD methodology decision map and MachineAccountQuota/RBCD readiness coverage.
-- ANSI/prompt/terminal normalization before Intake matching.
+- ANSI/prompt/terminal normalization and mixed-command transcript segmentation.
+- Post-foothold interface, route, subnet, host, and service visibility modeling.
 - Strong negative-evidence semantics for tool failure, inconclusive results, service rejection, and true refutation.
-- Compromise-chain reporting, secret redaction, OSCP mode, evidence/screenshot readiness, Queue history, methodology coverage, typed-artifact summaries, and lineage/network summaries.
+- Workspace Search filters for object type, artifact family, source, result, and time.
 - Browser-local state and sanitized workspace export.
 
 ### To-Do - For Agents
 
-Completed or materially advanced in v2.7:
+Completed or materially advanced in v2.8:
 
-- Add richer artifact relationships between producing evidence and later consuming actions.
-- Improve direct artifact-to-builder integration beyond shared engagement parameters.
-- Expand post-foothold network modeling around interfaces, routes, discovered hosts, and internal service visibility.
-- Add search filters for object type, artifact family, source, activity result, and time.
-- Add a committed mixed-terminal regression fixture and command/output segmentation.
+- Make artifact lineage easier to inspect as a chronological chain and support jumping back to related cards.
+- Make network modeling pivot-aware without assuming reachability from an observed route or subnet.
+- Track explicit direct/pivot network-path state and distinguish direct, pivot-reachable, and merely observed internal services.
+- Tie reporting readiness to evidence snapshots, command snapshots, artifact provenance context, and explicit screenshot confirmation.
 
 Next priorities:
 
@@ -115,11 +100,11 @@ Next priorities:
 - Add specialized builders for remaining multi-step scripts where real runtime choices exist.
 - Expand Intake normalization and extraction for more BloodHound, Certipy, NetExec module, Impacket, PEAS, web-fuzzer, database-client, and shell edge cases.
 - Grow the transcript fixture corpus across Linux, Windows, AD, web, database, and pivoting sessions, including malformed/partial output.
-- Make artifact lineage easier to inspect as a graph or chronological chain and support jumping from an artifact to its producer/consumer activity.
-- Make network modeling pivot-aware so routes, interfaces, and discovered subnets can influence which enumeration actions are relevant to which host/context without assuming reachability.
-- Track explicit pivot/tunnel state and distinguish directly reachable, pivot-reachable, and merely observed internal services.
+- Add richer lineage visualization across multiple artifacts and activities, including cross-artifact dependency chains.
+- Let explicit reachability state influence Path relevance for pivot-specific enumeration without allowing unverified reachability assumptions.
+- Add stronger pivot lifecycle modeling for listener/tunnel notes, source host, destination network, and inactive/broken states.
 - Continue methodology depth around credential reuse, AD trusts, delegation, certificate paths, service-specific enumeration, and post-foothold evidence requirements.
-- Tie reporting readiness more directly to artifact provenance, successful state transitions, and required screenshot/evidence captures.
+- Improve report-readiness rules for finding-specific proof obligations and OSCP screenshot requirements.
 - Continue improving direct artifact bindings for commands whose option semantics cannot be inferred safely from labels/placeholders alone.
 - Keep this to-do list current as new gaps are found.
 
@@ -142,9 +127,11 @@ node tests/run-v2.4-tests.js
 node tests/run-v2.5-tests.js
 node tests/run-v2.6-tests.js
 node tests/run-v2.7-tests.js
+node tests/run-v2.7-hardening-tests.js
+node tests/run-v2.8-tests.js
 ```
 
-The v2.7 suite covers release-state initialization, producer/consumer artifact lineage, direct artifact-to-command option binding, mixed-transcript command segmentation, Linux/Windows interface and route extraction, NetExec-style service visibility, network-model deduplication, and filtered workspace search. GitHub Actions runs all regression suites on `main`, release branches, and pull requests.
+The v2.8 suite covers release-state initialization, explicit direct/pivot reachability, conservative observed-only state, active/inactive pivot behavior, CIDR validation/deduplication, chronological producer/consumer lineage, report-readiness requirements, and inherited sanitized-export redaction. GitHub Actions runs the complete regression chain on `main`, release branches, and pull requests.
 
 ## Legal / ethics
 
