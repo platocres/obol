@@ -6,100 +6,110 @@ It is plain HTML/CSS/JavaScript with no backend, no build step, and no telemetry
 
 **Human-run commands only.** Obol never executes commands, installs tools, creates pivots, scans targets, or exploits systems. It helps the operator decide what to try, build the command, preserve what happened, understand what remains unknown, and turn the historical ledger into a reproducible report draft.
 
-## Obol v4.0
+## Obol v4.1
 
-v4.0 is the execution-context release. It works directly from the v3.9 README requirement that Path consider whether the operator is operating from Kali or from a Windows host on any given step of the path.
+v4.1 is the **methodology coverage and audit** release. It works directly from the v4.0 README requirement to create infrastructure that keeps track of how much of the Orange Cyberdefense 2025.03 Active Directory mindmap has actually been implemented, what is only partially represented, and what still remains.
 
-The release does not add another primary navigation destination and does not change Obol's human-run model. Instead, it adds a context-scoped execution-side model that affects command guidance, a small Next Steps ranking signal, activity provenance, and reporting.
+The release does not add another primary navigation destination. The existing **Methodology** surface owns the new coverage ledger.
 
-### Per-context operator execution state
+### Orange mindmap coverage becomes explicit
 
-Each active host/domain context can now record one planning mode:
+The project now has a machine-readable coverage registry tied to the Orange 2025.03 source containers.
 
-- **Either** — decide per step; preserve the prior neutral ranking behavior
-- **Kali** — prefer identified Kali-side implementations
-- **Windows host** — prefer identified Windows-side implementations
+Tracked areas include major branches such as:
 
-The selection is scoped to the active engagement context. Switching targets does not silently carry the same execution-side assumption into another target.
+- no credentials
+- valid user / no password
+- authenticated mapping
+- man-in-the-middle / relay
+- ACL / ACE abuse
+- Kerberos delegation
+- AD CS
+- lateral movement
+- admin / credential extraction
+- SCCM
+- domain-admin endgame
+- persistence
 
-The default is **Either**, so old workspaces do not suddenly receive a new ranking preference.
+Each tracked node records one explicit coverage state:
 
-### Execution-side command classification
+- **implemented** — Obol has a mapped workflow that the audit considers materially complete for that node
+- **partial** — Obol has meaningful coverage, but the Orange branch is broader than the current implementation
+- **gap** — the branch is intentionally tracked as missing rather than being silently ignored
+- **stale mapping** — a node previously declared implemented references a card that no longer exists
 
-v4.0 introduces a reusable command-side contract:
+A broad card no longer implies that an entire Orange source branch is complete.
 
-- `kali`
-- `windows`
-- `target`
-- `either`
+### Methodology coverage ledger
 
-Explicit future command metadata can set `operatorSurface40`; otherwise v4.0 uses conservative tool/command-shape inference.
+The Methodology page now exposes an **AD methodology coverage ledger** with:
 
-The first pass recognizes strongly associated project families such as:
+- implemented / partial / gap totals
+- explicit completion percentage
+- audited execution-metadata percentage
+- highest-priority audit debt
+- status filtering
+- mapped Obol cards
+- Orange source-file links
+- tool-review details
 
-- Kali-side: NetExec, Impacket, Certipy, BloodHound Python, Evil-WinRM, xfreerdp, common Kali cracking/fuzzing/enumeration tools
-- Windows-side: Rubeus, mimikatz, SharpHound, PowerView, PowerShell/native AD tooling, Windows service/registry tooling
-- target-local: local-shell techniques such as Linux privilege enumeration
-- either: commands where Obol cannot safely identify one side
+This is project methodology metadata only. It does not mutate engagement evidence or Path applicability.
 
-Target-local and neutral commands are not penalized by the Kali/Windows selector.
+### Tool choices are reviewed, not copied blindly
 
-### Path becomes execution-context aware
+The v4.0 README also requires future agents to consider whether tools on the Orange mindmap are still the best and most user-friendly choice.
 
-Execution side is a small recommendation signal, not a methodology prerequisite.
+v4.1 gives that requirement a structured home. Coverage nodes can now record:
 
-When an explicit mode is selected:
+- tools shown by the Orange source
+- Obol-preferred tools
+- a decision to **keep**, **supplement**, **replace**, or **review**
+- a short rationale
 
-- cards with a matching implementation receive a small positive signal
-- target-local or neutral implementations remain neutral
-- cards with only an identified opposite-side implementation receive a small negative signal
-- the technique remains applicable and visible
+Examples in the first audit include keeping Nmap/NetExec for discovery, keeping NetExec as the compact preferred SMB/LDAP workflow while retaining specialized fallbacks, supplementing DNS with dnsrecon, retaining both Kali and Windows Kerberos implementations, and explicitly tracking PXE/NAA, TimeRoasting, SCCM, and persistence as review/gap work.
 
-Evidence, prerequisites, information gain, reachability, prior activity, pivot state, and the other existing ranking inputs remain authoritative.
+### Explicit execution-side metadata starts replacing inference
 
-This is especially useful for AD workflows that have both Kali and Windows approaches, such as Impacket versus Rubeus, BloodHound Python versus SharpHound, secretsdump versus mimikatz, and remote Kali tooling versus native Windows tooling.
+v4.0 introduced Kali / Windows / target-local / neutral command-side inference.
 
-### Next Steps and Methodology guidance
+v4.1 begins replacing that inference with audited explicit metadata on commands linked to the Orange coverage ledger.
 
-Next Steps now includes a **Working from** control for Either, Kali, or Windows host.
+High-confidence examples include:
 
-Recommendations can explain the execution-side signal and show how many Kali-side, Windows-side, and target-local implementations are identified on the card.
+- NetExec, Impacket, Certipy, BloodHound Python → Kali
+- Rubeus, mimikatz, SharpHound, PowerView, native PowerShell AD tooling → Windows
+- clearly local Linux enumeration → target-local
 
-Expanded methodology cards show the current execution context and label each command block with its execution side. Commands and variants compatible with the selected side are highlighted, while non-matching fallbacks remain visible.
+The existing v4.0 `operatorSurface40` contract remains the single execution-context mechanism. Explicit metadata wins; unaudited commands continue using the conservative v4.0 fallback.
 
-### Historical execution provenance
+Expanded methodology cards label audited execution metadata, and Next Steps shows the current explicit-vs-fallback audit count for Orange-mapped commands.
 
-New activities snapshot:
+### v4.1 regression focus
 
-- the operator planning mode selected when the activity was recorded
-- the execution side inferred from the exact historical command snapshot
+The v4.1 suite covers:
 
-Changing the selector later does not rewrite old activity provenance.
-
-Existing activity is not backfilled with guessed execution context.
-
-### Report integration
-
-Generated reports gain an **Operator Execution Context** section when v4.0 provenance exists. It records recent activity with timestamp, engagement context, activity, planning side, and inferred command side.
-
-The section is provenance only. It does not prove that a command ran successfully.
-
-### v4.0 regression focus
-
-The v4.0 suite covers:
-
-- current v4.0 state/version coercion
-- per-context operator-mode isolation
-- Kali / Windows / target-local / neutral command classification
-- mixed Kali + Windows implementation summaries
-- positive and negative execution-side Path signals
-- target-local neutrality
-- activity execution-provenance snapshots
-- v4.0 report/UI/index/workflow/README wiring
-- North Star retention
+- current v4.1 state/version coercion
+- exact Orange 2025.03 North Star retention
+- upstream Orange source-container registry
+- implemented / partial / gap accounting
+- no false 100% coverage claim
+- live card-reference validation and stale-mapping behavior
+- explicit Kali / Windows command metadata on audited AD implementations
+- execution-metadata audit accounting
+- keep / supplement / review tool decisions
+- Methodology coverage-ledger UI wiring
+- index / workflow / README release wiring
 - inherited sanitized-export secret redaction
 
-See `docs/v4.0.md` for release-specific implementation notes and remaining priorities.
+See `docs/v4.1.md` for release-specific implementation notes and the initial coverage baseline.
+
+## Obol v4.0
+
+v4.0 is the **execution-context** release. It works directly from the earlier README requirement to make sure the Path considers whether a user is **operating from Kali or from a Windows host** on any given step of the path.
+
+Each active host/domain context can record **Either**, **Kali**, or **Windows host**. The choice influences a small Next Steps ranking signal and command guidance without becoming a methodology prerequisite.
+
+v4.0 introduced Kali / Windows / target-local / neutral command classification, highlighted compatible implementations, preserved opposite-side fallbacks, snapshotted operator planning mode and command execution side on new activity history, and added **Operator Execution Context** provenance to generated reports.
 
 ## Obol v3.9
 
@@ -167,7 +177,7 @@ Optional users, active users, exports, groups, computers, DCs, SID, password pol
 
 - Host/domain-scoped facts, evidence, activity, credentials, and progress.
 - Supported/refuted/inconclusive knowledge semantics.
-- Evidence-ranked Next Steps with information gain, downstream unlocks, workflow depth, coverage gaps, reachability relevance, and now execution-context relevance.
+- Evidence-ranked Next Steps with information gain, downstream unlocks, workflow depth, coverage gaps, reachability relevance, and execution-context relevance.
 - Persistent Planned Work with priority, notes, done/deferred state, and report history.
 - Maneuver-first methodology with preferred tools and practical fallbacks.
 - Kali-aware install/verification help without executing anything.
@@ -191,6 +201,9 @@ Optional users, active users, exports, groups, computers, DCs, SID, password pol
 - High-confidence Impacket, PEASS-ng, and SQLmap Evidence intent profiles with conservative outcome proof.
 - Evidence intent coverage transparency in the active Evidence workflow.
 - Per-context Kali/Windows operator execution state, command-side guidance, and activity execution provenance.
+- Orange 2025.03 methodology coverage ledger with explicit implemented / partial / gap accounting.
+- Tool-review records that compare Orange source tooling to Obol-preferred workflows.
+- Audited explicit execution metadata for high-confidence Orange-mapped commands.
 
 ## To-Do — for future agents
 
@@ -203,22 +216,24 @@ North Star:
 - Make sure the Orange Defense Mindmap for 2025 is being fully implemented, gather data from it for use in this and future builds and improve upon it.
 - Make sure the path considers whether a user is operating from Kali or from a Windows host on any given step of the path.
 
-Completed or materially advanced in v4.0:
+Completed or materially advanced in v4.1:
 
-- Add a per-context Either / Kali / Windows-host operator execution mode.
-- Make Next Steps consider execution-side compatibility without turning it into an applicability gate.
-- Add conservative Kali / Windows / target-local / neutral command-side classification.
-- Highlight matching implementations while preserving fallbacks.
-- Snapshot planning mode and inferred execution side onto new activity history.
-- Add execution-side provenance to generated reports.
-- Preserve the v3 single-owner information architecture and Orange Cyberdefense mindmap North Star.
+- Create a machine-readable Orange 2025.03 methodology coverage ledger.
+- Track implemented, partial, gap, and stale-mapping states instead of implying broad completeness.
+- Link tracked Orange nodes to live Obol methodology cards and source files.
+- Add a structured tool-review record for keep / supplement / replace / review decisions.
+- Surface the coverage ledger inside Methodology without adding primary navigation clutter.
+- Start replacing v4.0 execution-side inference with audited explicit command metadata.
+- Track explicit-vs-fallback execution metadata for Orange-mapped commands.
+- Preserve the Kali-versus-Windows Path requirement and Orange North Star exactly.
 
 Next priorities:
 
-- Replace execution-side inference with explicit command metadata where future methodology audits can provide stronger contracts.
+- Expand the coverage registry from major Orange containers into finer technique-level nodes.
+- Work the explicit gaps exposed by v4.1, especially PXE/NAA, TimeRoasting, SCCM, persistence, delegation depth, and newer AD CS branches.
+- Replace more execution-side inference with explicit command metadata as methodology audits progress.
 - Continue validating Rubeus command contracts against current upstream releases as CLI behavior evolves.
 - Expand Rubeus ticket/delegation transcript fixtures and additional Kerberos workflows where they map cleanly to the methodology.
-- Make sure the Orange Defense Mindmap for 2025 is being fully implemented, gather data from it for use in this and future builds.
 - Continue validating command contracts against current upstream CLI help when tool versions change.
 - Expand Evidence normalization/extraction and activity-intent fixtures for more NetExec, Certipy, Impacket edge cases, web fuzzers, database clients, and shell output, including malformed and partial transcripts.
 - Grow full-session regression fixtures across Linux, Windows, AD, web, database, and pivoting workflows so classification and outcome inference are tested as complete operator sessions rather than isolated strings.
@@ -261,9 +276,10 @@ node tests/run-v3.7-tests.js
 node tests/run-v3.8-tests.js
 node tests/run-v3.9-tests.js
 node tests/run-v4.0-tests.js
+node tests/run-v4.1-tests.js
 ```
 
-The v3.4 suite locks the decision-first Next Steps redesign. The v3.5 suite covers field-observed Evidence classification, proof semantics, Report cleanup/export, Evidence normalization, and lineage repair. The v3.6 suite adds Rubeus workbench/state coverage, Kerberos command intent and conservative outcome inference, S4U integration, exact-command lineage, workflow handoffs, North Star retention, and inherited secret redaction. The v3.7 suite adds target-specific reachability, pivot freshness, consumer lineage repair, multi-hop compromise paths, artifact neighborhoods, and mixed full-session regression coverage. The v3.8 suite adds pivot operational history, listener-health ranking semantics, transition-aware compromise summaries, transition proof templates, and another mixed full-session fixture. The v3.9 suite adds broader Impacket/PEASS-ng/SQLmap activity intent, conservative explicit outcome proof, Evidence coverage summaries, and a mixed PEAS + SQLmap + Impacket full-session regression. The v4.0 suite adds per-context operator execution state, platform-aware Path signals, command-side guidance, historical execution provenance, and release wiring.
+The v3.4 suite locks the decision-first Next Steps redesign. The v3.5 suite covers field-observed Evidence classification, proof semantics, Report cleanup/export, Evidence normalization, and lineage repair. The v3.6 suite adds Rubeus workbench/state coverage, Kerberos command intent and conservative outcome inference, S4U integration, exact-command lineage, workflow handoffs, North Star retention, and inherited secret redaction. The v3.7 suite adds target-specific reachability, pivot freshness, consumer lineage repair, multi-hop compromise paths, artifact neighborhoods, and mixed full-session regression coverage. The v3.8 suite adds pivot operational history, listener-health ranking semantics, transition-aware compromise summaries, transition proof templates, and another mixed full-session fixture. The v3.9 suite adds broader Impacket/PEASS-ng/SQLmap activity intent, conservative explicit outcome proof, Evidence coverage summaries, and a mixed PEAS + SQLmap + Impacket full-session regression. The v4.0 suite adds per-context operator execution state, platform-aware Path signals, command-side guidance, historical execution provenance, and release wiring. The v4.1 suite adds the Orange methodology coverage ledger, tool-review accounting, explicit execution metadata auditing, and live card-reference validation.
 
 GitHub Actions runs the complete regression chain on `main`, release branches, and pull requests.
 
