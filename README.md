@@ -50,6 +50,16 @@ Obol already distinguishes successful material state transitions from routine ac
 - Compromise-chain reporting, secret redaction, OSCP mode, and evidence/screenshot readiness.
 - Browser-local state and sanitized workspace export.
 
+### To-Do - For Agents
+
+- Scripts need relevant switch toggles as well as it makes sense in the context in which they are ran.
+- Scripts should update based on engagement parameters, just like tools.
+- All remaining tools need switch toggles that make sense in the context in which they are ran.
+- Make sure we are considering how all methodology paths should work and what additional methodologies should be employes and what commands should be attached to them and what switches should be provided for those commands.
+- Analyze and take inspiration from here: https://raw.githubusercontent.com/esidate/pentesting-active-directory/a8e37705542720cb1f9b65ec9039f67b70b61ca6/v2/pentesting_active_directory.svg
+- Evidence intake needs to be improved to consider more and different kinds of evidence and to handle edge cases and to normalize evidence, provide useful artifacts from it, and make the path more intuitive, and prepare useful tool commands.
+- Future versions should update this to-do list with more ideas
+
 ## Run locally
 
 Open `index.html` in a browser. No server or package install is required.
