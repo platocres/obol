@@ -99,7 +99,7 @@ The README is intentionally reserved for current project purpose, architecture, 
 
 - Expanded high-confidence command-intent and outcome handling for Impacket Kerberos, secretsdump/DCSync, Impacket remote execution, PEASS-ng, and SQLmap.
 - Kept command recognition separate from proven outcomes.
-- Added mixed full-session regression coverage and Evidence intent-coverage transparency.
+- Added mixed full-session transcript regression coverage and Evidence intent-coverage transparency.
 
 ## v3.8 — pivot operational state
 
@@ -110,7 +110,7 @@ The README is intentionally reserved for current project purpose, architecture, 
 
 - Added target-specific reachability and pivot verification freshness.
 - Added conservative consumer activity-ID repair.
-- Added multi-hop compromise paths, artifact neighborhoods, and broader full-session regression fixtures.
+- Added multi-hop compromise paths, artifact neighborhoods, and broader full-session transcript regression fixtures.
 
 ## v3.6 — Rubeus workbench
 
@@ -123,11 +123,13 @@ The README is intentionally reserved for current project purpose, architecture, 
 - Corrected overloaded-tool activity classification and anonymous LDAP outcome handling.
 - Consolidated Report around proof readiness, external screenshot confirmation, rendered preview, and PDF export.
 - Strengthened lineage repair and retained Evidence normalization.
+- Remaining priorities included multi-hop navigation and broader transcript handling.
 
 ## v3.4 — decision-first Next Steps
 
 - Made the recommendation queue the center of Next Steps.
 - Added active target/reachability context, compact decision metrics, lane/status filters, planning signals, and exact activity-ID handoff from methodology cards.
+- Remaining priorities included stronger transcript classification and deeper pivot handling.
 
 ## v3.3 — command-behavior audit
 
