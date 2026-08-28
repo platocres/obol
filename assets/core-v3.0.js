@@ -38,7 +38,7 @@ function artifactsForContext(state,ctx){
 }
 function workspaceOverview(state,lanes,ctx){
   ensure30(state);lanes=lanes||[];const context=C.normalizeContext(state,ctx||state.activeContext),key=C.contextKey(context);
-  const facts=C.effectiveFactRecords?C.effectiveFactRecords(state,context):[],artifacts=artifactsForContext(state,context),activities=(state.activities||[]).filter(a=>a.contextKey===key).slice().sort((a,b)=>String(b.at||'').localeCompare(String(a.at||''))),queue=(state.workQueue||[]).filter(w=>w.contextKey===key),planned=queue.filter(w=>!['done','deferred'].includes(w.status)),success=activities.filter(a=>a.result==='success'),tried=activities.filter(a=>a.result==='tried');
+  const facts=(C.effectiveFactRecords?C.effectiveFactRecords(state,context):[]).filter(f=>f.id!=='scope.defined'),artifacts=artifactsForContext(state,context),activities=(state.activities||[]).filter(a=>a.contextKey===key).slice().sort((a,b)=>String(b.at||'').localeCompare(String(a.at||''))),queue=(state.workQueue||[]).filter(w=>w.contextKey===key),planned=queue.filter(w=>!['done','deferred'].includes(w.status)),success=activities.filter(a=>a.result==='success'),tried=activities.filter(a=>a.result==='tried');
   let readiness={total:0,ready:0,rows:[]};try{if(C.reportReadiness)readiness=C.reportReadiness(state,lanes,context)||readiness;}catch(e){}
   let ranked=[];try{if(C.rankedApplicable)ranked=C.rankedApplicable(state,lanes,context,{showAll:false})||[];}catch(e){}
   let network={reachabilityCounts:{},paths:[]};try{if(C.networkSummary)network=C.networkSummary(state,context)||network;}catch(e){}
