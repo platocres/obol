@@ -410,7 +410,7 @@ Optional users, active users, exports, groups, computers, DCs, SID, password pol
 ## To-Do — for future agents
 
 North Star:
-- This project is modeling its design off of the Orange Cyber Defense mind map: https://orange-cyberdefense.github.io/ocd-mindmaps/img/mindmap_ad_dark_classic_2025.03.excalidraw.svg
+- This project is modeling its design off of the Orange Cyber Defense mind map: https://orange-cyberdefense.github.io/ocd-mindmaps/img/mindmap_ad_dark_classic_2025.03.excalidraw.svg and https://github.com/Orange-Cyberdefense/ocd-mindmaps/tree/main
 - Never remove this section from the readme, and never update the link to the Orange Cyber Defense mind map or this north star section.
 - Always be checking the mind map and how it compares to where the project is at.
 - Create infrastructure to keep up with how much of the Orange Cyber Defense mind map and its decision path and tools has been fully implemented and how much remains to be implemented within Obol.
@@ -418,6 +418,7 @@ North Star:
 - Make sure the Orange Defense Mindmap for 2025 is being fully implemented, gather data from it for use in this and future builds and improve upon it.
 - Make sure the path considers whether a user is operating from Kali or from a Windows host on any given step of the path.
 - Make sure that the data being integrated from the Orange Cyber Defense mind map is improving "Next Steps" and that as users complete each step they are being properly led down the mind map's decision path.
+- Make sure that each tool for each step of the path is not only proper, but has the proper GUI based toggles to adjust commands and that OBOL is able to interpret copy/paste evidence from user terminals to improve its ability to determine next steps.
 
 Completed or materially advanced in v4.4:
 
