@@ -36,11 +36,16 @@ function outcomes35(cardId,command,output,current){
   return out;
 }
 function repairActivity35(a,lanes){
-  const id=intentCard35(a.command);if(!id)return a;const cards=cardMap35(lanes),c=cards[id];if(!c)return a;
-  const changed=a.cardId!==id;if(changed){a.cardId=id;a.title=c.title;a.reason='Command intent matched '+c.title+'. '+String(a.reason||'');a.fingerprint='terminal:'+(C.simpleHash?C.simpleHash(id+'|'+norm35(a.command)+'|'+String(a.outputSnippet||a.evidence||'').slice(0,800)):id);}
+  const id=intentCard35(a.command);if(!id)return{activity:a,changed:false,newFacts:[]};const cards=cardMap35(lanes),c=cards[id];if(!c)return{activity:a,changed:false,newFacts:[]};
+  const beforeFacts=[...(a.outcomeFacts||[])],beforeId=a.cardId;if(beforeId!==id){a.cardId=id;a.title=c.title;a.reason='Command intent matched '+c.title+'. '+String(a.reason||'');a.fingerprint='terminal:'+(C.simpleHash?C.simpleHash(id+'|'+norm35(a.command)+'|'+String(a.outputSnippet||a.evidence||'').slice(0,800)):id);}
   if(a.result==='success')a.outcomeFacts=outcomes35(id,a.command,a.evidence||a.outputSnippet,a.outcomeFacts);
-  return a;
+  const newFacts=(a.outcomeFacts||[]).filter(x=>!beforeFacts.includes(x));return{activity:a,changed:beforeId!==id||newFacts.length>0,newFacts};
 }
-T.analyzeTerminal=function(text,lanes,state,ctx){const r=oldAnalyze(text,lanes,state,ctx);r.activities=(r.activities||[]).map(a=>repairActivity35(a,lanes));const seen=new Set();r.activities=r.activities.filter(a=>{if(seen.has(a.fingerprint))return false;seen.add(a.fingerprint);return true;});return r;};
-root.OBOL_INTAKE_V35={version:'3.5.0',intentCard35,outcomes35,repairActivity35};
+function repairWorkspace35(state,lanes){
+  if(!state||!Array.isArray(state.activities))return 0;let changed=0;
+  for(const a of state.activities){const r=repairActivity35(a,lanes);if(!r.changed)continue;changed++;for(const f of r.newFacts){if(C.addFact)C.addFact(state,f,{context:a.context||state.activeContext,source:'activity-repair:v3.5',evidence:String(a.evidence||a.outputSnippet||'').slice(0,500),confidence:a.confidence||'high',observedAt:a.at});if(C.recordKnowledge)C.recordKnowledge(state,f,'supported',{context:a.context||state.activeContext,source:'activity-repair:v3.5',evidence:String(a.evidence||a.outputSnippet||'').slice(0,500),confidence:a.confidence||'high',observedAt:a.at});}}
+  if(changed)state.updatedAt=C.now();return changed;
+}
+T.analyzeTerminal=function(text,lanes,state,ctx){const r=oldAnalyze(text,lanes,state,ctx);r.activities=(r.activities||[]).map(a=>repairActivity35(a,lanes).activity);const seen=new Set();r.activities=r.activities.filter(a=>{if(seen.has(a.fingerprint))return false;seen.add(a.fingerprint);return true;});return r;};
+root.OBOL_INTAKE_V35={version:'3.5.0',intentCard35,outcomes35,repairActivity35,repairWorkspace35};
 })(typeof window!=='undefined'?window:globalThis);
