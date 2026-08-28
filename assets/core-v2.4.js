@@ -14,8 +14,8 @@ C.newState=function(){return ensure24(oldNew());};
 C.coerceState=function(raw){return ensure24(oldCoerce(raw));};
 C.migrateV1=function(raw){return ensure24(oldMigrate(raw));};
 function queueFor(state,ctx,opts){
-  ensure24(state);opts=opts||{};const key=C.contextKey(C.normalizeContext(state,ctx||state.activeContext));
-  return state.workQueue.filter(x=>(opts.allContexts||x.contextKey===key)&&(!opts.status||x.status===opts.status)).slice().sort((a,b)=>({high:0,normal:1,low:2}[a.priority]-({high:0,normal:1,low:2}[b.priority])||String(a.createdAt).localeCompare(String(b.createdAt)));
+  ensure24(state);opts=opts||{};const key=C.contextKey(C.normalizeContext(state,ctx||state.activeContext)),order={high:0,normal:1,low:2};
+  return state.workQueue.filter(x=>(opts.allContexts||x.contextKey===key)&&(!opts.status||x.status===opts.status)).slice().sort((a,b)=>(order[a.priority]-order[b.priority])||String(a.createdAt).localeCompare(String(b.createdAt)));
 }
 function queueItem(state,cardId,ctx){ensure24(state);const c=C.normalizeContext(state,ctx||state.activeContext),key=C.contextKey(c);return state.workQueue.find(x=>x.cardId===cardId&&x.contextKey===key&&x.status==='planned')||null;}
 function addToQueue(state,cardId,ctx,opts){
