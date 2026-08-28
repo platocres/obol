@@ -4,7 +4,7 @@ Obol is a static, offline-capable study companion, methodology ledger, command-b
 
 Live site: `https://platocres.github.io/obol/`
 
-Current release: **v5.0**
+Current release: **v5.1**
 
 Release history belongs in [`CHANGELOG.md`](CHANGELOG.md). Build agents should review both this README and the changelog before changing architecture, methodology, Evidence behavior, reporting, or project metrics.
 
@@ -32,7 +32,7 @@ Primary navigation stays intentionally small:
 
 The **More** menu contains:
 
-- **North Star Dashboard** — the single in-app location for project-wide methodology, command UX, Evidence, execution-context, Next Steps mapping, tool-review, reporting, UI/UX, trend, and backlog metrics
+- **North Star Dashboard** — the single in-app location for project-wide methodology, command UX, Evidence, execution-context, Next Steps mapping, tool-review, reporting, UI/UX, trend, backlog, and delivery-debt metrics
 - Engagement Map
 - Methodology
 - Tool Library
@@ -100,6 +100,7 @@ A fixed command is not automatically a UX defect. Single-purpose/native commands
 ## Current priorities
 
 - Work from the canonical backlog and Run/Evidence contract audits together so newly implemented methodology arrives with usable command controls, conservative Evidence handling, execution-side metadata, Next Steps integration, and reporting traceability.
+- Use the v5.1 Dashboard delivery-debt drill-down to close missing run, Evidence, execution-metadata, and reporting contracts on already mapped workflows before allowing implementation counts to drift ahead of usability.
 - Finish the remaining SCCM PXE/NAA, client-push lifecycle, policy-request credential, and site-database decryption gaps with full operator-loop contracts.
 - Deepen the partial persistence workflows with broader target-version fixtures, exact cleanup validation, and stronger service-use proof where appropriate.
 - Deepen trust abuse beyond enumeration and MSSQL linked-server paths.
@@ -140,7 +141,7 @@ The repository is designed to serve directly from `main` and `/ (root)`.
 GitHub Actions runs the complete regression chain on `main`, release branches, and pull requests. The current release suite is:
 
 ```bash
-node tests/run-v5.0-tests.js
+node tests/run-v5.1-tests.js
 ```
 
 Historical suite ownership and release-specific regression notes live in `CHANGELOG.md` and the files under `tests/` and `docs/`.
