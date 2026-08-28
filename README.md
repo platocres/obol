@@ -284,6 +284,11 @@ Tool Library families continue to be classified as reusable contracts, dedicated
 - Browser-local state and sanitized workspace export.
 
 ## To-Do — for future agents
+North Star:
+- This project is modeling its design off of the Orange Cyber Defense mind map: https://orange-cyberdefense.github.io/ocd-mindmaps/img/mindmap_ad_dark_classic_2025.03.excalidraw.svg
+- Never remove this section from the readme, and never update the link to the Orange Cyber Defense mind map or this north star section.
+- Always be checking the mind map and how it compares to where the project is at.
+- Make sure the Orange Defense Mindmap for 2025 is being fully implemented, gather data from it for use in this and future builds and improve upon it.
 
 Completed or materially advanced in v3.5:
 
@@ -298,6 +303,8 @@ Completed or materially advanced in v3.5:
 
 Next priorities:
 
+- AS-REP Roasting mentions Rubeus for windows but has no interface for the user. This needs to be fixed, and Rubeus as a tool needs all of the toggles relevant to crafting commands for that tool.
+- Make sure the Orange Defense Mindmap for 2025 is being fully implemented, gather data from it for use in this and future builds.
 - Continue validating command contracts against current upstream CLI help when tool versions change.
 - Expand Evidence normalization/extraction and activity-intent fixtures for more NetExec, Certipy, Impacket, PEAS, web-fuzzer, database-client, and shell output edge cases, including malformed and partial transcripts.
 - Grow full-session regression fixtures across Linux, Windows, AD, web, database, and pivoting workflows so classification and outcome inference are tested as complete operator sessions rather than isolated strings.
