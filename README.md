@@ -1,148 +1,138 @@
 # Obol — Offensive Box Operations Ledger
 
-Obol is a static, offline-capable study companion, methodology ledger, command-building assistant, and report-writing aid for OSCP-style labs, Active Directory practice, and CTFs. The live site is served at `https://platocres.github.io/obol/`. It is plain HTML/CSS/JavaScript with no backend, no build step, and no telemetry. All engagement state stays in the browser unless you explicitly export it.
+Obol is a static, offline-capable study companion, methodology ledger, command-building assistant, evidence reviewer, and report-writing aid for OSCP-style labs, Active Directory practice, and CTFs. The live site is served at `https://platocres.github.io/obol/`. It is plain HTML/CSS/JavaScript with no backend, no build step, and no telemetry. Engagement state stays in the browser unless you explicitly export it.
 
-**Human-run commands only.** Obol never executes commands, installs tools, creates pivots, or exploits targets. It helps the operator decide what to try, build the command, preserve what happened, understand what remains unknown, and turn the historical ledger into a reproducible report draft.
+**Human-run commands only.** Obol never executes commands, installs tools, creates pivots, scans targets, or exploits systems. It helps the operator decide what to try, build the command, preserve what happened, understand what remains unknown, and turn the historical ledger into a reproducible report draft.
 
-## Obol v3.2
+## Obol v3.3
 
-v3.2 is a usability correction to the v3.0/v3.1 site redesign. v3.1 correctly promoted Nmap earlier in the workflow, but the interface then repeated the same concept too aggressively: Home contained a Nmap launchpad, Discover contained another Nmap launchpad, Evidence carried a dedicated Nmap bridge, and the workflow ribbon repeated navigation that already existed in the header.
+v3.3 is a command-behavior and usability audit. The trigger was a real UI failure: the **Anonymous LDAP Enumeration** card displayed a NetExec command with `--users` baked into the default even though user enumeration should be one selectable action among several. The same class of problem can happen anywhere a command card quietly decides scope, filtering, output, or enumeration intent for the operator.
 
-v3.2 applies a **single-owner rule** to the interface: each major workflow has one obvious primary surface, while related pages consume the resulting state without advertising the same tool again.
+v3.3 establishes a stricter rule:
 
-The result is less tool-centric, less repetitive, and closer to how Obol is actually used during a lab.
+> **The base command performs the minimum useful action for the maneuver. Optional enumeration, scope, performance, filtering, authentication, and output behavior belongs in explicit semantic controls unless that action is the maneuver itself.**
 
-### Primary navigation
+That rule is applied through the command data layer, so it affects generated commands, copy behavior, the Tool Library, Evidence handoff, recorded activity, and downstream reporting rather than just changing labels.
 
-The five primary destinations are now:
+### LDAP correction
 
-- **Home** — resume the current context and see only what needs attention
-- **Targets** — manage host scope and launch discovery or baseline scanning when needed
-- **Evidence** — review general tool output and structured evidence
+The NetExec baseline on **Anonymous LDAP Enumeration** is now:
+
+```bash
+nxc ldap {{target}} -u '' -p ''
+```
+
+It tests the anonymous bind and profiles the LDAP endpoint. Nothing else is silently selected.
+
+The builder now exposes LDAP choices including:
+
+- domain users
+- active users
+- user export to `users.txt`
+- domain groups
+- computers
+- domain controllers
+- domain SID
+- password policy
+- fine-grained password policy
+- base-DN override
+
+`--users` is therefore an option, not the meaning of the whole card. The card also explains the difference between its **baseline behavior** and the optional output controls.
+
+The existing evidence flow remains connected. Pasted NetExec/LDAP user rows still feed the user artifact pipeline, and the resulting list can still become the shared `userlist` parameter. `--users-export` provides a direct clean-file route when that is more convenient.
+
+### Tool-builder audit
+
+v3.3 traverses the command inventory and classifies every Tool Library family as one of:
+
+- **contract** — a reusable CLI where semantic controls can be applied consistently
+- **dedicated builder** — a richer purpose-built interface such as the v3.1/v3.2 Nmap workflow
+- **card-specific** — a multi-step or position-sensitive tool where generic flags would be more likely to generate bad commands than help
+- **reviewed card-specific** — deliberately left at the card level rather than receiving speculative generic controls
+
+This keeps the audit broad without pretending every CLI should have the same style of builder.
+
+Shared option coverage is expanded or normalized for common enumeration and evidence-producing tools, including:
+
+- NetExec protocol enumeration
+- `ldapsearch`
+- `ffuf`
+- `feroxbuster`
+- `gobuster`
+- `wpscan`
+- `nikto`
+- `whatweb`
+- `dnsrecon`
+- `searchsploit`
+- MySQL and PostgreSQL clients
+- `redis-cli`
+- AWS CLI
+- `kubectl`
+
+Earlier v2.x coverage remains in force for Nmap, curl, Hydra, Hashcat, John, Responder, SNMP, Kerbrute, BloodHound collection, Certipy, Impacket utilities, Evil-WinRM, SMB/RPC tools, and other existing builders.
+
+### Output quality matters
+
+The v3.3 pass is not just about adding switches. Where supported, builders now emphasize controls that make output easier to review and preserve:
+
+- machine-readable or structured output formats
+- explicit output files
+- clean LDAP/terminal formatting
+- response/status/size filters
+- thread/rate/timeout controls
+- database and cloud output shaping
+
+That makes generated commands more useful to the rest of Obol because Evidence Intake and historical activity depend on readable, reproducible operator output.
+
+### User-facing copy cleanup
+
+Tool cards should explain methodology, not assume the reader recognizes a particular retired lab, write-up author, or private project shorthand. v3.3 removes user-facing references such as **“Forest-style”** and `0xdf`-specific shorthand from the active methodology copy while preserving the underlying technique.
+
+The result is more understandable to somebody learning the workflow for the first time.
+
+### UI behavior
+
+The v3.3 UI adds a compact **Command behavior** block to commands that need explicit baseline-vs-option guidance. For Anonymous LDAP it tells the operator:
+
+- what the command does with no selector enabled
+- that nothing is silently enumerated
+- what output types have been selected
+- how the output connects back into Evidence and the user-list pipeline
+
+The Tool Environment view also exposes the current command-audit classification rather than implying that every tool is treated identically.
+
+No new primary navigation destination was added. v3.2's single-owner information architecture remains intact.
+
+## Current information architecture
+
+Primary navigation remains intentionally small:
+
+- **Home** — resume the current context and see unresolved attention
+- **Targets** — manage target scope and launch the single Nmap discovery/scan workflow
+- **Evidence** — review terminal/tool output and structured imports
 - **Next Steps** — evidence-ranked methodology recommendations
 - **Report** — proof readiness and reproducible reporting
 
-The v3.1 label **Discover** returns to **Targets** because the page represents a persistent object in the workspace, not a single tool or action. Discovery remains an action available from Targets.
+The **More** menu contains Planned Work, Workspace Search, Methodology, Tool Library, Evidence Lineage, Engagement Map, Guide, and Workspace Data.
 
-The **More** menu is reordered around frequency of use:
+### Nmap remains single-owner
 
-1. Planned Work
-2. Workspace Search
-3. Methodology
-4. Tool Library
-5. Evidence Lineage
-6. Engagement Map
-7. Guide
-8. Workspace Data
+Targets owns Nmap. The focused scan modal continues to support host discovery, quick TCP, full TCP, service/script scans, common UDP, target/range input, output basename, custom ports, timing, minimum rate, retry limits, state reasons, version detection, default scripts, OS detection, and DNS resolution.
 
-This ordering is also inherited by the global Ctrl/Cmd+K navigation palette.
+Normal, grepable, XML, and host-discovery output still applies through the existing host/fact/context pipeline. Scan results still create or merge hosts, attach ports/services, establish conservative reachability facts, update the active context, and recalculate Next Steps.
 
-### Nmap has one primary home
-
-Nmap remains first-class, but it is no longer repeated across the site.
-
-**Targets owns the Nmap workflow.** A single **Scan / discover** action opens a focused modal that can:
-
-- choose host discovery, quick TCP, full TCP, service/script, or common UDP profiles
-- target an authorized IP, CIDR, or range
-- control output basename, ports, timing, minimum rate, retries, reasons, service detection, default scripts, OS detection, and DNS resolution
-- generate a copyable operator-run Nmap command
-- accept pasted normal, grepable, XML, or host-discovery output
-- apply the result through Obol's existing host/fact/context pipeline
-
-The v3.1 `-sn` parser improvement is retained, so live hosts can still be created without open-port rows.
-
-Home no longer embeds the Nmap builder. Evidence no longer displays a dedicated Nmap callout. General Evidence Intake still supports Nmap output through its normal source detection because Nmap remains valid evidence; it simply is not promoted as a second competing workflow.
-
-### Targets is an inventory first
-
-The Targets page now emphasizes the objects the operator is actually working on.
-
-- the full inline Nmap launchpad is removed from the page
-- a compact **Scan / discover** button opens the Nmap workflow only when needed
-- the page shows target and scanned-target counts without turning scan status into a separate dashboard
-- each target exposes a contextual **Scan** or **Rescan** action with the target IP prefilled
-- scanned vs unscanned status remains visible on the card
-- Name, Hostname, Domain, OS, and Notes editing is collapsed under **Edit target details** so host cards remain readable during normal use
-- ports and key identity remain visible without opening the editor
-- empty workspaces get a simple target-oriented empty state instead of a wall of scan controls
-
-All existing host/context semantics remain intact. Moving controls into a collapsible section does not change their event handling or storage.
-
-### Evidence owns evidence imports
-
-Evidence Intake is restored to a general-purpose evidence surface.
-
-- the v3.1 Nmap bridge banner is removed
-- the paste placeholder is generic rather than enumerating one preferred tool
-- **Analyze** becomes **Review evidence** to match the review-first semantics
-- the source selector is labeled explicitly
-- BloodHound import moves from Targets to Evidence, where structured graph data fits the information architecture better
-- the artifact section is labeled **Extracted artifacts**
-
-Nmap, NetExec, LDAP, terminal transcripts, and other supported text remain available through the existing intake parser. BloodHound continues to use the existing local parsing and evidence-update pipeline.
-
-### Home becomes a resume dashboard, not a second tool shelf
-
-v3.2 removes several layers of duplicated guidance from Home:
-
-- no embedded Nmap launchpad
-- no workflow ribbon duplicating the primary navigation
-- no second working-context card when the active context is already visible in the header
-- no separate **Suggested next move** card duplicating the stage-aware Continue action
-- no large Quick Actions grid duplicating header navigation and the More menu
-
-Home now concentrates on four things:
-
-1. the stage-aware **Continue** action
-2. compact workspace metrics
-3. an **Attention** panel that appears only for unresolved items such as unscanned targets, broken network paths, proof gaps, or planned work
-4. recent recorded activity
-
-This makes the first screen useful both at the beginning of a lab and after several hours of accumulated state.
-
-### Navigation and visual hierarchy cleanup
-
-v3.2 removes UI elements that had started competing with each other:
-
-- repeated workflow ribbons are suppressed because the primary navigation already expresses the site structure
-- the release banner is removed from the persistent workspace shell
-- the old tried/succeeded progress pill is removed from the header; progress remains available in workspace state and reporting
-- page guidance becomes a quiet one-line introduction instead of a second highlighted navigation layer
-- the context sidebar is labeled **Context details** with a simpler **Parameters** heading
-- the main reading width is reduced so cards do not stretch unnecessarily on wide monitors
-- non-interactive cards no longer receive strong hover emphasis
-- target editing, scan controls, and evidence actions use clearer visual grouping
-- mobile behavior, keyboard focus visibility, skip navigation, the context drawer, Ctrl/Cmd+K search, and report print behavior remain intact
-
-The v3.1 dark green/gold aesthetic is retained, but visual emphasis is reserved for things the operator can actually act on.
-
-### Connected behavior retained
-
-v3.2 intentionally changes information architecture without cutting the underlying graph of functionality.
-
-- Nmap results still create/merge hosts and attach service evidence.
-- Nmap results still establish conservative reachability facts and initial-scan state.
-- Scan evidence still recalculates Next Steps immediately.
-- Host discovery without open ports remains supported.
-- Target context still scopes facts, activities, artifacts, progress, and reports.
-- BloodHound still feeds the same evidence-update model, now from the Evidence page.
-- Existing browser-local v2/v3 workspaces coerce forward automatically.
-- Existing routes remain valid, including `#/boxes` and `#/intake`.
-- Advanced/reference sections remain available under More and through quick navigation/search.
-
-### Foundations retained
+## Foundations retained
 
 - Host/domain-scoped facts, evidence, activity, credentials, and progress.
 - Supported/refuted/inconclusive knowledge semantics.
-- Evidence-ranked Next Steps with information gain, downstream unlocks, workflow depth, coverage gaps, and explicit reachability relevance.
-- Persistent operator Planned Work with priority, notes, done/deferred state, and report history.
+- Evidence-ranked Next Steps with information gain, downstream unlocks, workflow depth, coverage gaps, and reachability relevance.
+- Persistent Planned Work with priority, notes, done/deferred state, and report history.
 - Maneuver-first methodology with preferred tools and practical fallbacks.
 - Kali-aware install/verification help without executing anything.
 - Semantic command builders with grouped controls, presets, and optional advanced switches.
 - Nmap host/OS/domain enrichment and LDAP/NetExec username distillation.
-- First-class typed artifacts and direct evidence-to-command handoffs.
-- Producer/consumer artifact lineage with context-safe deduplication and cross-artifact dependency chains.
+- Typed artifacts and direct evidence-to-command handoffs.
+- Artifact lineage with context-safe deduplication and cross-artifact dependency chains.
 - Review-first typed-artifact and network-observation intake gates.
 - Offline script library with filtering, contextual guidance, builders, and one-click copy.
 - AD methodology decision map and MachineAccountQuota/RBCD readiness coverage.
@@ -153,35 +143,17 @@ v3.2 intentionally changes information architecture without cutting the underlyi
 - Strong negative-evidence semantics for tool failure, inconclusive results, service rejection, and true refutation.
 - Browser-local state and sanitized workspace export.
 
-### To-Do - For Agents
+## To-Do — for future agents
 
-Completed or materially advanced in v3.2:
-
-- Remove duplicate Nmap surfaces from Home and Evidence while preserving all Nmap functionality.
-- Return the primary page label from Discover to Targets and make discovery an action rather than an information-architecture category.
-- Replace the permanently expanded Nmap launchpad with one focused Targets modal.
-- Add per-target Scan/Rescan actions that prefill target context.
-- Collapse rarely edited target metadata without breaking existing bindings.
-- Move BloodHound import from Targets to Evidence.
-- Simplify Home around Continue, metrics, unresolved attention, and recent activity.
-- Remove repeated workflow ribbons, persistent release messaging, and redundant header progress UI.
-- Reorder More and quick navigation around likely operator frequency.
-- Reduce visual weight on explanatory and non-interactive surfaces.
-
-Next priorities:
-
-- Test v3.2 against real lab sessions before adding any new primary navigation concepts.
-- Continue the switch-coverage audit for long-tail tools, but only add controls that materially change operator intent or scope.
-- Refine multi-pass Nmap progression inside the single Targets scan workflow rather than creating new Nmap surfaces.
-- Expand Intake normalization and extraction for more BloodHound, Certipy, NetExec module, Impacket, PEAS, web-fuzzer, database-client, and shell edge cases.
-- Grow the transcript fixture corpus across Linux, Windows, AD, web, database, and pivoting sessions, including malformed/partial output.
-- Improve lineage beyond card-level dependency inference by linking consumers to exact activity IDs when that evidence exists.
-- Add richer graph navigation for multi-hop artifact chains and compromise-path review.
+- Continue validating command contracts against current upstream CLI help when tool versions change.
+- Expand Evidence normalization/extraction for more NetExec, Certipy, Impacket, PEAS, web-fuzzer, database-client, and shell output edge cases.
+- Grow transcript fixtures across Linux, Windows, AD, web, database, and pivoting sessions, including malformed and partial output.
+- Improve lineage from card-level dependency inference toward exact activity-ID relationships.
+- Add richer multi-hop artifact and compromise-path navigation.
 - Make reachability relevance more target-specific when multiple internal subnets/services exist in one engagement context.
 - Continue pivot-state depth around source-interface identity, listener health notes, and route-specific troubleshooting history.
-- Continue methodology depth around credential reuse, AD trusts, delegation, certificate paths, service-specific enumeration, and post-foothold evidence requirements.
-- Expand proof-readiness templates for finding categories while keeping all screenshot-content checks operator-confirmed.
-- Continue improving direct artifact bindings for commands whose option semantics cannot be inferred safely from labels/placeholders alone.
+- Expand proof-readiness templates while keeping screenshot-content checks operator-confirmed.
+- Avoid creating a new primary navigation item merely because a new feature exists.
 
 ## Run locally
 
@@ -208,9 +180,12 @@ node tests/run-v2.9-tests.js
 node tests/run-v3.0-tests.js
 node tests/run-v3.1-tests.js
 node tests/run-v3.2-tests.js
+node tests/run-v3.3-tests.js
 ```
 
-The v3.2 suite covers release-state initialization, entity-first primary navigation, More-menu ordering, target-oriented Home guidance, unscanned-target attention, preservation of the v3.1 Nmap builder/parser, single-owner UI wiring, v3.2 CSS/index order, and inherited sanitized-export redaction. GitHub Actions runs the complete regression chain on `main`, release branches, and pull requests.
+The v3.3 suite covers current-version coercion, the LDAP baseline/selector contract, user-list handoff continuity, removal of box-specific UI language, NetExec protocol controls, web discovery output/filter controls, data-service/cloud client controls, Tool Library audit classification, selected-output intent, v3.3 UI wiring, index load order, and inherited sanitized-export redaction.
+
+GitHub Actions runs the complete regression chain on `main`, release branches, and pull requests.
 
 ## Legal / ethics
 
