@@ -4,6 +4,17 @@ This file is the release-history source for Obol. Future build work should revie
 
 The README is intentionally reserved for current project purpose, architecture, permanent requirements, a compact summary of only the latest three releases, and forward priorities.
 
+## v5.3 — implemented-quality delivery repair wave
+
+- Followed the v5.2 Build next priority order by repairing already-implemented methodology before increasing the canonical implementation count.
+- Added explicit v5.3 Evidence profiles for Anonymous SMB Enumeration, DNS zone transfer, Kerberos ticket hygiene, LAPS reads, Windows local enumeration, SeImpersonatePrivilege verification, DPAPI credential recovery, and Windows stored-credential hunting.
+- Added audited execution-side metadata to remaining commands on those workflows so delivery readiness no longer depends on fallback platform inference.
+- Kept proof boundaries narrow: LAPS/DPAPI/stored credential discovery does not create access facts, saved/listed Kerberos tickets do not create privilege facts, and SeImpersonatePrivilege presence does not create SYSTEM without explicit SYSTEM output.
+- Updated the inherited reporting-contract metadata for repaired cards so their Evidence profile provenance stays aligned with the live v5.3 contract.
+- Added a dedicated North Star Dashboard repair panel showing repaired profiles, execution mappings, implemented sections served, and remaining implemented-quality debt.
+- Kept the strict canonical baseline unchanged at 52 implemented / 49 partial / 26 gaps / 0 stale, 41% fully implemented and 80% represented.
+- Added v5.3 state coercion, sanitized-export compatibility, release wiring, documentation, CSS, Evidence regression fixtures, and complete historical CI coverage.
+
 ## v5.2 — delivery-ready canonical accounting and build-next queue
 
 - Added delivery-ready canonical accounting on top of the existing 127-section methodology ledger without rewriting canonical status.
