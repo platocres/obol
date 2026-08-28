@@ -118,3 +118,7 @@ jobs:
         run: node --check data/methodology-v4.7.js && node --check assets/core-v4.7.js && node --check assets/report-v4.7.js && node --check assets/app-v4.7.js
       - name: Run v4.7 regression suite
         run: node tests/run-v4.7-tests.js
+      - name: Validate v4.8 JavaScript syntax
+        run: node --check data/methodology-v4.8.js && node --check assets/core-v4.8.js && node --check assets/intake-v4.8.js && node --check assets/report-v4.8.js && node --check assets/app-v4.8.js
+      - name: Run v4.8 regression suite
+        run: node tests/run-v4.8-tests.js
