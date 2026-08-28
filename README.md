@@ -298,6 +298,7 @@ North Star:
 - Make sure that all elements of a path, it's tools, and that tool's evidence fit well into the reporting that Obol performs and can be utilized properly in reporting.
 - All of this applies both now and retroactively. All tools and paths and evidence collection and reporting need to be fully functional and fully useful from a user's perspective, and intuitive both from a UI and a UX perspective.
 - All of this needs to be tracked in a single dashboard I can access when I look at the Obol website with hard numbers and percentages.
+- The readme is not a changelog and should never contain overviews on changes form the last 3 versions. A changelog should be created and maintained with more verbose history of all changes over time and agents are obliged to check it for a sense of the history of the project on each build attempt. This includes "foundations kept" and parts of the "to-do" list that belong in a change log.
 
 Completed or materially advanced in v4.9:
 
