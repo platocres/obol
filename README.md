@@ -325,6 +325,7 @@ North Star:
 - Consider whether the tools from the Orange Cyber Defense mind map are actually the best, most user friendly tools and if they are not, add better tools to the path.
 - Make sure the Orange Defense Mindmap for 2025 is being fully implemented, gather data from it for use in this and future builds and improve upon it.
 - Make sure the path considers whether a user is operating from Kali or from a Windows host on any given step of the path.
+- Make sure that the data being integrated from the Orange Cyber Defense mind map is improving "Next Steps" and that as users complete each step they are being properly led down the mind map's decision path.
 
 Completed or materially advanced in v4.3:
 
