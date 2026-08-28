@@ -4,6 +4,15 @@ This file is the release-history source for Obol. Future build work should revie
 
 The README is intentionally reserved for current project purpose, architecture, permanent requirements, and forward priorities.
 
+## v5.1 — delivery-debt drill-down and dashboard quality gates
+
+- Added mapped-workflow delivery-debt accounting to the dedicated North Star Dashboard.
+- Added searchable/filterable visibility for missing runnable command contracts, explicit copy/paste Evidence profiles, explicit execution-side metadata, and reporting contracts.
+- Kept the delivery-debt model diagnostic only: it does not create facts, change applicability, mark success, or inflate methodology completion.
+- Preserved the five-item primary workflow and single Dashboard ownership established in v5.0.
+- Preserved the strict canonical baseline at 52 implemented / 49 partial / 26 gaps / 0 stale, 41% fully implemented and 80% represented.
+- Added v5.1 state coercion, sanitized-export compatibility, release wiring, documentation, CSS, and regression coverage.
+
 ## v5.0 — dashboard IA, changelog separation, and UI hygiene
 
 - Moved the full project-health dashboard off Home into a dedicated **North Star Dashboard** entry under More.
