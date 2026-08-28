@@ -4,7 +4,7 @@ Obol is a static, offline-capable study companion, methodology ledger, command-b
 
 Live site: `https://platocres.github.io/obol/`
 
-Current release: **v5.1**
+Current release: **v5.2**
 
 Release history belongs in [`CHANGELOG.md`](CHANGELOG.md). Build agents should review both this README and the changelog before changing architecture, methodology, Evidence behavior, reporting, or project metrics.
 
@@ -32,7 +32,7 @@ Primary navigation stays intentionally small:
 
 The **More** menu contains:
 
-- **North Star Dashboard** — the single in-app location for project-wide methodology, command UX, Evidence, execution-context, Next Steps mapping, tool-review, reporting, UI/UX, trend, backlog, and delivery-debt metrics
+- **North Star Dashboard** — the single in-app location for project-wide methodology, command UX, Evidence, execution-context, Next Steps mapping, tool-review, reporting, UI/UX, trend, backlog, delivery-debt, delivery-readiness, and build-next metrics
 - Engagement Map
 - Methodology
 - Tool Library
@@ -57,7 +57,9 @@ Current live state:
 - **41% fully implemented**
 - **80% represented**
 
-These numbers are methodology accounting only. Parser coverage, reporting coverage, command controls, execution metadata, and UI/UX health have their own denominators on the North Star Dashboard and do not inflate methodology completion.
+These numbers are methodology accounting only. Parser coverage, reporting coverage, command controls, execution metadata, UI/UX health, and v5.2 delivery readiness have their own denominators on the North Star Dashboard and do not inflate methodology completion.
+
+v5.2 adds a delivery-ready view of the same repository state. A canonical implemented or partial section is delivery-ready only when at least one tracked mapped workflow has a runnable command contract, an explicit copy/paste Evidence profile, explicit execution-side metadata, and reporting traceability. This quality floor is diagnostic and does not rewrite the canonical 52 / 49 / 26 / 0 status.
 
 ## Evidence and proof rules
 
@@ -97,10 +99,26 @@ A fixed command is not automatically a UX defect. Single-purpose/native commands
 - The readme is not a changelog and should only contain overviews on changes from the last 3 versions. A changelog should be created and maintained with more verbose history of all changes over time and agents are obliged to check it for a sense of the history of the project on each build attempt. This includes "foundations kept" and parts of the "to-do" list that belong in a change log. There should be a to-do list that lists the north star objectives in one section, recent changes in another section, and a section for what should be built next that the agent should prioritize for the next version.
 - The UI and UX should always be reviewed to make sure it is sensible and that version mentions and past aesthetic choices are not bleeding over into various places. Version numbers should be kept up-to-date everywhere.
 
-## Current priorities
+## To-do
 
-- Work from the canonical backlog and Run/Evidence contract audits together so newly implemented methodology arrives with usable command controls, conservative Evidence handling, execution-side metadata, Next Steps integration, and reporting traceability.
-- Use the v5.1 Dashboard delivery-debt drill-down to close missing run, Evidence, execution-metadata, and reporting contracts on already mapped workflows before allowing implementation counts to drift ahead of usability.
+### North Star objectives
+
+- Keep the pinned 2025.03 methodology denominator, source provenance, decision path, and tool review reproducible and visible from the single North Star Dashboard.
+- Make every represented workflow usable end to end: sensible command controls, explicit Kali/Windows execution context, conservative copy/paste Evidence, Next Steps integration, and reporting traceability.
+- Close canonical gaps without inflating completion from parser, UI, reporting, or metadata work alone.
+- Prefer tools and command surfaces that are current, understandable, practical for OSCP-style labs, and better for the operator than blindly mirroring an upstream tool choice.
+- Preserve context isolation, proof boundaries, lineage, reachability, cleanup obligations, and browser-local compatibility while methodology depth increases.
+
+### Recent changes
+
+- **v5.2** — added delivery-ready canonical accounting and a prioritized Build next queue that repairs implemented quality debt before ordinary mapped debt and new canonical gaps.
+- **v5.1** — added searchable mapped-workflow delivery-debt drill-down for Run, Evidence, execution metadata, and reporting contracts.
+- **v5.0** — moved full project health into the dedicated North Star Dashboard, separated verbose release history into `CHANGELOG.md`, and tightened live UI/version hygiene.
+
+### Build next
+
+- Work from the v5.2 Build next queue. Repair implemented canonical sections that lack a delivery-ready mapped workflow before expanding the strict implementation count.
+- Then close remaining v5.1 delivery debt on already mapped workflows so Run, Evidence, execution metadata, and reporting remain aligned.
 - Finish the remaining SCCM PXE/NAA, client-push lifecycle, policy-request credential, and site-database decryption gaps with full operator-loop contracts.
 - Deepen the partial persistence workflows with broader target-version fixtures, exact cleanup validation, and stronger service-use proof where appropriate.
 - Deepen trust abuse beyond enumeration and MSSQL linked-server paths.
@@ -121,7 +139,7 @@ Before every build:
 
 - read this README
 - read `CHANGELOG.md`
-- inspect the current North Star Dashboard metrics and canonical backlog
+- inspect the current North Star Dashboard metrics, delivery-readiness view, Build next queue, and canonical backlog
 - branch from refreshed current `main`
 - preserve browser-local state compatibility when practical
 - update code, tests, docs, changelog, release wiring, and README only when current requirements change
@@ -141,7 +159,7 @@ The repository is designed to serve directly from `main` and `/ (root)`.
 GitHub Actions runs the complete regression chain on `main`, release branches, and pull requests. The current release suite is:
 
 ```bash
-node tests/run-v5.1-tests.js
+node tests/run-v5.2-tests.js
 ```
 
 Historical suite ownership and release-specific regression notes live in `CHANGELOG.md` and the files under `tests/` and `docs/`.
