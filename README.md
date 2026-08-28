@@ -6,6 +6,33 @@ It is plain HTML/CSS/JavaScript with no backend, no build step, and no telemetry
 
 **Human-run commands only.** Obol never executes commands, installs tools, creates pivots, scans targets, or exploits systems. It helps the operator decide what to try, build the command, preserve what happened, understand what remains unknown, and turn the historical ledger into a reproducible report draft.
 
+## Obol v4.8
+
+v4.8 is the **domain persistence branch depth and lifecycle** release.
+
+It directly advances the v4.7 README priority to expand domain persistence beyond Golden Ticket while enforcing the newer project-wide rule that every Orange-mapped workflow needs a usable run contract, conservative copy/paste Evidence handling, Kali/Windows execution context, Next Steps integration, cleanup semantics, and reporting traceability.
+
+v4.8 adds dedicated persistence owners for **Silver Ticket**, **DSRM**, **Golden Certificate**, **credential-subsystem persistence (Skeleton Key / Custom SSP)**, **Diamond/Sapphire tickets**, **DCShadow**, and an **ACL persistence lifecycle** with explicit DACL backup and restore. Advanced target-dependent techniques remain partial rather than being overclaimed.
+
+The new persistence branch follows the existing human-run operator loop:
+
+`Next Steps → choose implementation → build/copy command → operator runs externally → paste Evidence → review facts/activity → recalculate Next Steps → report and clean up`
+
+Terminal proof remains conservative. A saved forged ticket does not prove service access. CA backup does not automatically prove Golden Certificate persistence. DSRM requires explicit registry verification. Skeleton Key, Custom SSP, and DCShadow startup text remain attempted activity until explicit success output is present. ACL writes do not manufacture administrator state.
+
+v4.8 also adds a context-scoped persistence lifecycle and a **Domain Persistence Lifecycle** report section so successful persistence work remains tied to canonical Orange provenance, Evidence family, proof readiness, and cleanup/remediation obligations.
+
+The live canonical baseline moves from 48 / 45 / 34 / 0 to:
+
+- **52 / 127 canonical sections fully implemented**
+- **49 partial**
+- **26 explicit gaps**
+- **0 stale implemented mappings**
+- **41% fully implemented**
+- **80% represented**
+
+See `docs/v4.8.md` for the full persistence branch contract.
+
 ## Obol v4.7
 
 v4.7 is the **retroactive reporting traceability** release. It directly implements the v4.6 README requirement that every path, tool, and Evidence flow fit cleanly into Obol reporting and remain fully useful from a user's perspective across UI and UX.
@@ -232,6 +259,7 @@ Optional users, active users, exports, groups, computers, DCs, SID, password pol
 - Run/evidence contract accounting for Orange-mapped cards, including GUI command-control and terminal-profile visibility.
 - SCCM branch progress with separate credential, relay/takeover, execution, cleanup, and post-map proof semantics.
 - Retroactive Orange reporting traceability from canonical decision path and Evidence profile through proof readiness and generated report output.
+- Domain-persistence branch depth with dedicated ticket, DSRM, CA, credential-subsystem, DCShadow, ACL lifecycle, Evidence, cleanup, and reporting contracts.
 
 ## To-Do — for future agents
 
@@ -247,6 +275,17 @@ North Star:
 - Make sure that each tool for each step of the path is not only proper, but has the proper GUI based toggles to adjust commands and that OBOL is able to interpret copy/paste evidence from user terminals to improve its ability to determine next steps.
 - Make sure that all elements of a path, it's tools, and that tool's evidence fit well into the reporting that Obol performs and can be utilized properly in reporting.
 - All of this applies both now and retroactively. All tools and paths and evidence collection and reporting need to be fully functional and fully useful from a user's perspective, and intuitive both from a UI and a UX perspective.
+
+Completed or materially advanced in v4.8:
+
+- Add dedicated Silver Ticket, DSRM, Golden Certificate, credential-subsystem, advanced forged-ticket, DCShadow, and ACL-persistence lifecycle cards.
+- Add conservative copy/paste Evidence profiles for each new persistence workflow.
+- Add explicit Kali / Windows / target-local execution metadata and retain the single v4.0 execution-context contract.
+- Add persistence-focused Next Steps progress without adding a new primary navigation destination.
+- Add Domain Persistence Lifecycle reporting with cleanup/remediation notes.
+- Move Silver Ticket, DSRM, Golden Certificate, and ACL persistence to implemented while keeping Skeleton Key, Custom SSP, Diamond/Sapphire tickets, and DCShadow partial.
+- Raise strict Orange completion to 41% and represented coverage to 80% while preserving the pinned 127-section denominator.
+- Preserve every North Star, reporting, GUI-control, copy/paste Evidence, Next Steps, and Kali/Windows requirement.
 
 Completed or materially advanced in v4.7:
 
@@ -273,7 +312,7 @@ Next priorities:
 
 - Use `C.orangeContractCoverage45(LANES)` together with `C.mindmapPriorityGaps42(LANES)` so newly implemented Orange work lands with both usable command controls and conservative Evidence profiles.
 - Finish the remaining SCCM PXE/NAA, client-push lifecycle, policy-request credential, and site-database decryption gaps with full run/evidence contracts.
-- Expand domain persistence beyond Golden Ticket into Silver Ticket, DSRM, Skeleton Key, Custom SSP, Golden Certificate, Diamond/Sapphire tickets, DCShadow, and persistence-specific ACL lifecycle.
+- Deepen the v4.8 partial persistence workflows with broader target-version fixtures, exact cleanup validation, and stronger service-use proof where appropriate.
 - Deepen trust abuse beyond enumeration and MSSQL linked-server paths.
 - Address Windows low-access AppLocker bypass, UAC bypass, and Kerberos-relay branches.
 - Deepen partial AD CS, relay, coercion, delegation, ACL, certificate-movement, and authenticated-enumeration sections until they can truthfully move to implemented.
@@ -326,9 +365,10 @@ node tests/run-v4.4-tests.js
 node tests/run-v4.5-tests.js
 node tests/run-v4.6-tests.js
 node tests/run-v4.7-tests.js
+node tests/run-v4.8-tests.js
 ```
 
-The v3.4 suite locks the decision-first Next Steps redesign. The v3.5 suite covers field-observed Evidence classification, proof semantics, Report cleanup/export, Evidence normalization, and lineage repair. The v3.6 suite adds Rubeus workbench/state coverage, Kerberos command intent and conservative outcome inference, S4U integration, exact-command lineage, workflow handoffs, North Star retention, and inherited secret redaction. The v3.7 suite adds target-specific reachability, pivot freshness, consumer lineage repair, multi-hop compromise paths, artifact neighborhoods, and mixed full-session regression coverage. The v3.8 suite adds pivot operational history, listener-health ranking semantics, transition-aware compromise summaries, transition proof templates, and another mixed full-session fixture. The v3.9 suite adds broader Impacket/PEASS-ng/SQLmap activity intent, conservative explicit outcome proof, Evidence coverage summaries, and mixed-session regression. The v4.0 suite adds per-context operator execution state, platform-aware Path signals, command-side guidance, and historical execution provenance. The v4.1 suite adds the Orange methodology coverage ledger, tool-review accounting, explicit execution metadata auditing, and live card-reference validation. The v4.2 suite adds the version-pinned canonical Orange AD source inventory, stable completion denominator, snapshot-integrity validation, and persistent completion visibility. The v4.3 suite adds live canonical reconciliation, RBCD stale-mapping repair, audited AD Hashcat modes, release-delta accounting, and card-level Orange provenance. The v4.4 suite adds context-safe Orange decision-stage progress, Next Steps ranking signals, canonical recommendation queues, and engagement-facing decision-path UI. The v4.5 suite adds Orange run/evidence contracts, GUI-control gap fixes, conservative copy/paste profiles, and operator-loop readiness visibility. The v4.6 suite adds deep SCCM branch methodology, SCCM-specific run/evidence contracts, per-context SCCM progression, and strict canonical coverage updates.
+The v3.4 suite locks the decision-first Next Steps redesign. The v3.5 suite covers field-observed Evidence classification, proof semantics, Report cleanup/export, Evidence normalization, and lineage repair. The v3.6 suite adds Rubeus workbench/state coverage, Kerberos command intent and conservative outcome inference, S4U integration, exact-command lineage, workflow handoffs, North Star retention, and inherited secret redaction. The v3.7 suite adds target-specific reachability, pivot freshness, consumer lineage repair, multi-hop compromise paths, artifact neighborhoods, and mixed full-session regression coverage. The v3.8 suite adds pivot operational history, listener-health ranking semantics, transition-aware compromise summaries, transition proof templates, and another mixed full-session fixture. The v3.9 suite adds broader Impacket/PEASS-ng/SQLmap activity intent, conservative explicit outcome proof, Evidence coverage summaries, and mixed-session regression. The v4.0 suite adds per-context operator execution state, platform-aware Path signals, command-side guidance, and historical execution provenance. The v4.1 suite adds the Orange methodology coverage ledger, tool-review accounting, explicit execution metadata auditing, and live card-reference validation. The v4.2 suite adds the version-pinned canonical Orange AD source inventory, stable completion denominator, snapshot-integrity validation, and persistent completion visibility. The v4.3 suite adds live canonical reconciliation, RBCD stale-mapping repair, audited AD Hashcat modes, release-delta accounting, and card-level Orange provenance. The v4.4 suite adds context-safe Orange decision-stage progress, Next Steps ranking signals, canonical recommendation queues, and engagement-facing decision-path UI. The v4.5 suite adds Orange run/evidence contracts, GUI-control gap fixes, conservative copy/paste profiles, and operator-loop readiness visibility. The v4.6 suite adds deep SCCM branch methodology, SCCM-specific run/evidence contracts, per-context SCCM progression, and strict canonical coverage updates. The v4.7 suite adds retroactive Orange reporting traceability, path/context versus finding separation, draft reporting-gap visibility, and generated-report integration. The v4.8 suite adds domain-persistence branch depth, conservative persistence Evidence contracts, context-scoped persistence progress, and cleanup-aware report integration.
 
 GitHub Actions runs the complete regression chain on `main`, release branches, and pull requests.
 
