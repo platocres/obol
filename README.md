@@ -32,16 +32,16 @@ The canonical denominator contains **127 canonical methodology sections**.
 
 ### v4.2 completion baseline
 
-At the v4.2 baseline:
+At the validated v4.2 baseline:
 
-- **26 / 127 canonical sections fully implemented**
+- **25 / 127 canonical sections fully implemented**
 - **39 partial**
 - **62 explicit gaps**
-- **0 stale implemented mappings**
+- **1 stale implemented mapping** surfaced by live card validation
 - **20% fully implemented**
-- **51% represented** when implemented and partial coverage are combined
+- **50% represented** when implemented and partial coverage are combined
 
-The completion percentage counts only `implemented` sections. Partial coverage does not inflate the number.
+The completion percentage counts only live `implemented` sections. Partial coverage and stale mappings do not inflate the number.
 
 ### Completion percentage is easy to see
 
@@ -94,8 +94,8 @@ The v4.2 suite locks:
 - exact Orange 2025.03 commit and AD-tree pin
 - all 17 methodology source files and support-file records
 - the 127-section canonical denominator
-- the 26 implemented / 39 partial / 62 gap baseline
-- 20% complete and 51% represented calculations
+- the 25 implemented / 39 partial / 62 gap baseline plus one live stale mapping
+- 20% complete and 50% represented calculations
 - snapshot-integrity and duplicate-key checks
 - live implemented-card mappings and stale detection
 - persistent completion visibility in the header and Home
@@ -234,7 +234,7 @@ Completed or materially advanced in v4.2:
 - Pin the complete Orange AD 2025.03 textual methodology source structure to a specific upstream commit and AD-tree SHA.
 - Normalize all 17 methodology-bearing source files plus support-file hashes into a canonical local manifest.
 - Establish a durable 127-section denominator for completion accounting.
-- Replace the smaller v4.1 audit-subset percentage with canonical 20% fully implemented / 51% represented baseline accounting.
+- Replace the smaller v4.1 audit-subset percentage with canonical 20% fully implemented / 50% represented baseline accounting.
 - Add snapshot-integrity checks, duplicate-key checks, live-card validation, and stale implemented-mapping behavior.
 - Make the completion percentage persistently visible in the header and on Home.
 - Replace the v4.1 Methodology subset panel with the canonical file/section ledger while retaining the v4.1 tool-choice audit separately.
