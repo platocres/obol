@@ -2,67 +2,64 @@
 
 Obol is a static, offline-capable study companion, methodology ledger, command-building assistant, and report-writing aid for OSCP-style labs, Active Directory practice, and CTFs. It is plain HTML/CSS/JavaScript with no backend, no build step, and no telemetry. All engagement state stays in the browser unless you explicitly export it.
 
-**Human-run commands only.** Obol never executes commands, installs tools, or exploits targets. It helps the operator decide what to try, build the command, preserve what happened, understand what remains unknown, and turn the historical ledger into a reproducible report draft.
+**Human-run commands only.** Obol never executes commands, installs tools, creates pivots, or exploits targets. It helps the operator decide what to try, build the command, preserve what happened, understand what remains unknown, and turn the historical ledger into a reproducible report draft.
 
-## Obol v2.8
+## Obol v2.9
 
-v2.8 takes the internal-network and artifact-lineage foundations from v2.7 and makes them operationally clearer. The main theme is explicit state: Obol now distinguishes evidence that was merely observed from evidence that is actually reachable through a direct route or an operator-recorded active pivot, exposes artifact producer/consumer history as a chronological view, and adds concrete reporting-readiness tracking for successful actions.
+v2.9 turns the explicit-state foundations from v2.8 into better planning and reporting signals without relaxing the conservative evidence model. The release makes Path aware of operator-confirmed reachability, adds real pivot lifecycle state, links preserved artifacts into cross-artifact dependency chains, and evaluates successful actions against finding-specific proof obligations.
 
-### Explicit reachability and pivot state
+### Reachability-aware Path relevance
 
-v2.7 could preserve internal interfaces, routes, subnets, hosts, and service observations. v2.8 adds a separate operator-controlled reachability layer.
+v2.8 distinguished direct, pivot-reachable, observed-only, and unknown network visibility. v2.9 now allows that explicit reachability state to influence Path ranking.
 
-Path now includes a **Reachability & pivots** panel where the operator can record a network path as either:
+The rule remains conservative:
 
-- directly reachable from the operator
-- reachable through an explicit pivot or tunnel
+- an observed internal service alone does not receive a reachability boost
+- a service card can receive a relevance boost only when an explicit active direct route or pivot covers the observed target
+- pivot-specific methodology can be deprioritized when a pivot is already active
+- broken pivot state can increase the relevance of repair/re-establishment work
 
-Pivot/tunnel records can identify common mechanisms such as Ligolo, Chisel, SSH, SOCKS, port forwards, VPN paths, or another operator-defined method. Each record is context-scoped, can be activated/deactivated, and includes the reachable CIDR plus an optional endpoint/listener note.
+Path now surfaces a compact **Reachability-aware Path signals** panel so the operator can see which recommendations moved and why.
 
-Observed hosts and services are classified conservatively:
+### Pivot lifecycle
 
-- **direct** — covered by an explicit active direct path, or the current host itself
-- **pivot-reachable** — covered by an explicit active pivot/tunnel path
-- **observed** — seen in evidence but not covered by any explicit active path
-- **unknown** — no grounded visibility exists
+Explicit network paths now retain more operational context:
 
-Obol does not infer a pivot or promote an observed internal service to reachable merely because a route or subnet appeared in pasted output.
+- active, inactive, or broken state
+- source host / pivot host
+- reachable destination CIDR
+- tunnel or listener endpoint note
+- free-form lifecycle note
+- explicit last-verified timestamp
 
-### Lineage explorer
+Path provides operator controls to mark a path verified, broken, active, inactive, or removed. A broken path is never treated as active reachability.
 
-v2.7 began recording lightweight producer and consumer relationships for typed artifacts. v2.8 makes those relationships inspectable.
+This is still a record of operator state. Obol does not create, repair, or test a tunnel itself.
 
-A new **Lineage** view shows typed artifacts in the active context and lets the operator open a chronological chain for each object. The chain can include:
+### Cross-artifact dependency lineage
 
-- producer source
-- producer card
-- captured command context
-- later command/card consumers
-- consumed field or parameter
-- timestamps
-- links back to related methodology cards
+The Lineage view now exposes conservative dependency chains across multiple preserved artifacts.
 
-Candidate-secret values remain masked in the UI.
+When one artifact is recorded as consumed by a methodology card and another artifact is later recorded as produced by that same card, Obol can display a chain such as:
 
-Intake artifact rows now include a **Trace** action that jumps directly to the artifact’s lineage history.
+`host → SMB enumeration card → share`
 
-### Reporting readiness
+The dependency view is derived only from recorded producer/consumer lineage. Candidate-secret values remain masked.
 
-The Report view now evaluates every successful activity in the active context against three concrete requirements:
+### Finding proof obligations
 
-- evidence snapshot recorded
-- command snapshot recorded
-- screenshot capture explicitly confirmed by the operator
+v2.8 required evidence, a command snapshot, and explicit screenshot confirmation for every successful activity. v2.9 adds proof obligations based on the material transition and finding context.
 
-The readiness panel shows which successful actions are complete, which are missing evidence or commands, and which still need screenshot confirmation. Screenshot state is never inferred automatically.
+Examples include:
 
-Reports also include compact summaries for:
+- credential transitions require preserved artifact provenance
+- foothold and privilege transitions require operator-confirmed target identity visibility
+- foothold and privilege transitions require operator-confirmed user/root/SYSTEM identity visibility
+- privilege transitions can require explicit proof/local evidence confirmation
+- network-transition successes require an explicit active network-path record
+- methodology cards with finding metadata preserve the finding/severity context in readiness views
 
-- direct vs pivot-reachable vs merely observed internal visibility
-- active explicit network paths
-- successful-activity readiness counts
-
-Existing lineage, typed-artifact, negative-evidence, Queue, methodology, and compromise-chain report sections remain intact.
+These checks are designed for OSCP-style evidence discipline without pretending Obol can inspect or validate a screenshot it has not been given.
 
 ### Foundations retained
 
@@ -81,18 +78,19 @@ Existing lineage, typed-artifact, negative-evidence, Queue, methodology, and com
 - AD methodology decision map and MachineAccountQuota/RBCD readiness coverage.
 - ANSI/prompt/terminal normalization and mixed-command transcript segmentation.
 - Post-foothold interface, route, subnet, host, and service visibility modeling.
+- Explicit direct/pivot reachability state without inferred reachability.
 - Strong negative-evidence semantics for tool failure, inconclusive results, service rejection, and true refutation.
 - Workspace Search filters for object type, artifact family, source, result, and time.
 - Browser-local state and sanitized workspace export.
 
 ### To-Do - For Agents
 
-Completed or materially advanced in v2.8:
+Completed or materially advanced in v2.9:
 
-- Make artifact lineage easier to inspect as a chronological chain and support jumping back to related cards.
-- Make network modeling pivot-aware without assuming reachability from an observed route or subnet.
-- Track explicit direct/pivot network-path state and distinguish direct, pivot-reachable, and merely observed internal services.
-- Tie reporting readiness to evidence snapshots, command snapshots, artifact provenance context, and explicit screenshot confirmation.
+- Let explicit reachability influence Path relevance without promoting observed-only targets.
+- Add stronger pivot lifecycle modeling for source host, destination network, endpoint notes, verification, and broken state.
+- Add cross-artifact dependency chains to the Lineage experience.
+- Improve report readiness with finding/transition-specific proof obligations and explicit OSCP-style screenshot-content confirmation.
 
 Next priorities:
 
@@ -100,11 +98,12 @@ Next priorities:
 - Add specialized builders for remaining multi-step scripts where real runtime choices exist.
 - Expand Intake normalization and extraction for more BloodHound, Certipy, NetExec module, Impacket, PEAS, web-fuzzer, database-client, and shell edge cases.
 - Grow the transcript fixture corpus across Linux, Windows, AD, web, database, and pivoting sessions, including malformed/partial output.
-- Add richer lineage visualization across multiple artifacts and activities, including cross-artifact dependency chains.
-- Let explicit reachability state influence Path relevance for pivot-specific enumeration without allowing unverified reachability assumptions.
-- Add stronger pivot lifecycle modeling for listener/tunnel notes, source host, destination network, and inactive/broken states.
+- Improve lineage beyond card-level dependency inference by linking consumers to exact activity IDs when that evidence exists.
+- Add richer graph navigation for multi-hop artifact chains and compromise-path review.
+- Make reachability relevance more target-specific when multiple internal subnets/services exist in one engagement context.
+- Continue pivot-state depth around source-interface identity, listener health notes, and route-specific troubleshooting history.
 - Continue methodology depth around credential reuse, AD trusts, delegation, certificate paths, service-specific enumeration, and post-foothold evidence requirements.
-- Improve report-readiness rules for finding-specific proof obligations and OSCP screenshot requirements.
+- Expand proof-readiness templates for finding categories while keeping all screenshot-content checks operator-confirmed.
 - Continue improving direct artifact bindings for commands whose option semantics cannot be inferred safely from labels/placeholders alone.
 - Keep this to-do list current as new gaps are found.
 
@@ -129,9 +128,10 @@ node tests/run-v2.6-tests.js
 node tests/run-v2.7-tests.js
 node tests/run-v2.7-hardening-tests.js
 node tests/run-v2.8-tests.js
+node tests/run-v2.9-tests.js
 ```
 
-The v2.8 suite covers release-state initialization, explicit direct/pivot reachability, conservative observed-only state, active/inactive pivot behavior, CIDR validation/deduplication, chronological producer/consumer lineage, report-readiness requirements, and inherited sanitized-export redaction. GitHub Actions runs the complete regression chain on `main`, release branches, and pull requests.
+The v2.9 suite covers release-state initialization, pivot lifecycle metadata, broken/verified path behavior, conservative reachability-aware relevance, broken-pivot repair relevance, cross-artifact dependency lineage, finding-specific foothold proof obligations, credential provenance requirements, and inherited sanitized-export redaction. GitHub Actions runs the complete regression chain on `main`, release branches, and pull requests.
 
 ## Legal / ethics
 
