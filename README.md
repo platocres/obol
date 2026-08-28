@@ -101,6 +101,8 @@ See `docs/v3.7.md` for the release-specific implementation notes and remaining p
 
 v3.6 advances the Active Directory and evidence priorities carried forward from v3.5. The biggest user-facing addition is a first-class **Rubeus workbench** inside Tool Library, connected to existing methodology cards, Evidence review, historical command snapshots, and artifact/activity lineage.
 
+The v3.5 backlog explicitly said **AS-REP Roasting mentions Rubeus** for Windows but lacked a real interface; v3.6 closes that gap without adding another primary navigation destination.
+
 ### First-class Rubeus workbench
 
 Tool Library provides dedicated Rubeus command planning for:
