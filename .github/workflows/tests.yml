@@ -90,3 +90,7 @@ jobs:
         run: node --check assets/core-v4.0.js && node --check assets/report-v4.0.js && node --check assets/app-v4.0.js
       - name: Run v4.0 regression suite
         run: node tests/run-v4.0-tests.js
+      - name: Validate v4.1 JavaScript syntax
+        run: node --check data/methodology-v4.1.js && node --check assets/core-v4.1.js && node --check assets/app-v4.1.js
+      - name: Run v4.1 regression suite
+        run: node tests/run-v4.1-tests.js
