@@ -34,3 +34,5 @@ jobs:
         run: node tests/run-v2.5-tests.js
       - name: Run v2.6 regression suite
         run: node tests/run-v2.6-tests.js
+      - name: Run v2.7 regression suite
+        run: node tests/run-v2.7-tests.js

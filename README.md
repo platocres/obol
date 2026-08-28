@@ -4,61 +4,82 @@ Obol is a static, offline-capable study companion, methodology ledger, command-b
 
 **Human-run commands only.** Obol never executes commands, installs tools, or exploits targets. It helps the operator decide what to try, build the command, preserve what happened, understand what remains unknown, and turn the historical ledger into a reproducible report draft.
 
-## Obol v2.6
+## Obol v2.7
 
-v2.6 works directly down the remaining v2.5 agent to-do list. The focus is not adding more disconnected commands. It is making the evidence ledger more reusable and more semantically precise once real terminal output starts accumulating.
+v2.7 continues the evidence-reuse work from v2.6. Typed artifacts are no longer just preserved objects that can populate a shared parameter. This release starts tracking where evidence objects came from, where they were reused, how they feed specific command fields, and what post-foothold network visibility the operator has actually established.
 
-### First-class typed artifacts
+### Artifact lineage
 
-Intake can now preserve more than users, hashes, and credentials. v2.6 extracts and stores additional operator objects as typed artifacts:
+Typed artifacts now retain lightweight producer and consumer relationships.
 
-- hosts and IP addresses
-- SMB/UNC shares
-- URLs
-- files and paths
-- Kerberos ticket material such as `.ccache` and `.kirbi`
-- certificate material such as `.pfx`, `.p12`, `.pem`, `.crt`, and `.cer`
-- internal subnets
-- candidate secrets and tokens
+- Repeated observations of the same artifact merge provenance instead of discarding the later source.
+- Artifacts distilled from card evidence can retain the card and copied-command context that produced them.
+- Shared-parameter handoffs record consumption history.
+- Direct command-field bindings also record which card/command consumed the artifact.
+- Intake shows compact produced/consumed counts without exposing candidate-secret values.
+- Reports include a lineage summary showing how much captured evidence was later reused.
 
-These objects retain context and provenance in the browser workspace instead of disappearing into pasted evidence.
+The goal is a reproducible evidence graph: not only "we found this host/share/file," but also "this evidence came from here and influenced this later operator action."
 
-Compatible artifacts also get a direct **Use** handoff. A host can populate `target`, a URL can populate `url`, a share can populate `share`, file/ticket/certificate artifacts can populate `file`, subnets can populate `subnet`, and candidate secrets can populate `password` or `hash` as appropriate. This keeps command construction tied to evidence already collected instead of forcing repeated manual transcription.
+### Direct artifact-to-command bindings
 
-Sanitized workspace export redacts typed candidate secrets.
+v2.6 added a generic **Use** handoff into shared engagement parameters. v2.7 goes deeper.
 
-### Stronger negative-evidence semantics
+Expanded methodology cards now inspect their command placeholders and semantic option fields for compatible typed artifacts already present in the active context. When a match exists, an **Evidence inputs** panel can bind that artifact directly into the relevant field.
 
-A failed attempt no longer has to mean one undifferentiated thing.
+Examples include:
 
-Expanded cards now let the operator classify a non-successful attempt as:
+- host artifacts → target/host fields
+- URLs → URL/endpoint fields
+- shares → share/UNC fields
+- files, tickets, and certificates → path/file/ticket/certificate fields
+- subnets → subnet/network/route fields
+- candidate secrets → password/hash/token fields when compatible
 
-- attempted / no conclusion
-- tool or environment failure
-- inconclusive evidence
-- service rejected technique
-- underlying hypothesis refuted
+This keeps command construction tied to previously observed evidence instead of requiring another round of transcription.
 
-Path treats those differently. A tool failure remains retryable with very little ranking penalty. Inconclusive results remain testable. Service rejection is penalized more heavily. A hypothesis explicitly marked refuted is removed from the normal Path view while remaining visible in show-all methodology views.
+### Post-foothold internal network visibility
 
-This avoids teaching the planner that a broken local dependency disproves an attack hypothesis, while also preventing truly refuted branches from endlessly resurfacing.
+Intake now recognizes more network structure from shell transcripts and tool output:
 
-### Workspace search
+- Linux interfaces and `inet` addresses
+- Windows adapter/IPv4 output
+- Linux route-table entries including routed internal CIDRs
+- Windows route-table rows
+- NetExec-style service observations for common protocols
 
-v2.6 adds a lightweight Search view across the active context. Search covers:
+Reviewed observations are stored in a context-scoped internal network model. Path can surface an **Internal network visibility** card showing observed interfaces, routes, subnets, hosts, and service visibility without pretending that an unobserved route exists.
 
-- facts and fact evidence
-- typed artifacts
-- activity history and command snapshots
-- Queue notes
-- methodology cards
-- command text and tool names
+Route CIDRs and service hosts can also feed the typed-artifact workspace for later handoff.
 
-Search is local-only and does not change Path ranking or execute anything.
+### Mixed transcript structure and regression fixtures
+
+v2.7 starts testing Intake against a realistic mixed terminal session rather than only isolated strings.
+
+- Common Bash, PowerShell, and cmd-style prompt boundaries are segmented into command/output blocks.
+- Evidence matching can still operate across the complete paste while Obol preserves command boundaries for provenance and regression work.
+- A committed mixed-session fixture exercises interfaces, routes, NetExec output, Windows networking, Certipy output, certificate files, and web requests in one transcript.
+
+### Search filters
+
+Workspace Search now supports practical filters for larger engagements:
+
+- object type
+- typed-artifact family
+- source
+- activity result
+- age window
+
+Filters remain browser-local and do not change Path ranking.
 
 ### Reporting
 
-Reports now add compact summaries for typed-artifact counts and negative-evidence classifications when either exists in the active context. Candidate secret values are not emitted by these summaries.
+Reports now add compact summaries for:
+
+- evidence lineage and artifact reuse
+- internal network visibility
+
+Existing typed-artifact and negative-evidence summaries remain intact. Candidate-secret values are not emitted by these summaries.
 
 ### Foundations retained
 
@@ -70,34 +91,36 @@ Reports now add compact summaries for typed-artifact counts and negative-evidenc
 - Kali-aware install/verification help without executing anything.
 - Semantic command builders with grouped controls, presets, and optional advanced switches.
 - Nmap host/OS/domain enrichment and LDAP/NetExec username distillation.
-- Evidence-to-artifact handoffs for users and hashes.
+- First-class typed artifacts and evidence-to-command handoffs.
 - Offline script library with filtering, contextual guidance, builders, and one-click copy.
 - AD methodology decision map and MachineAccountQuota/RBCD readiness coverage.
 - ANSI/prompt/terminal normalization before Intake matching.
-- Compromise-chain reporting, secret redaction, OSCP mode, evidence/screenshot readiness, Queue history, and methodology coverage.
+- Strong negative-evidence semantics for tool failure, inconclusive results, service rejection, and true refutation.
+- Compromise-chain reporting, secret redaction, OSCP mode, evidence/screenshot readiness, Queue history, methodology coverage, typed-artifact summaries, and lineage/network summaries.
 - Browser-local state and sanitized workspace export.
 
 ### To-Do - For Agents
 
-Completed or materially advanced in v2.6:
+Completed or materially advanced in v2.7:
 
-- Improve artifact typing beyond users/hashes/credentials.
-- Let artifact objects hand off into compatible command parameters.
-- Add stronger negative-evidence semantics for tool failure, rejection, inconclusive evidence, and true refutation.
-- Add a lightweight workspace search across facts, artifacts, activity, Queue notes, cards, and commands.
-- Preserve typed secret redaction in sanitized export.
+- Add richer artifact relationships between producing evidence and later consuming actions.
+- Improve direct artifact-to-builder integration beyond shared engagement parameters.
+- Expand post-foothold network modeling around interfaces, routes, discovered hosts, and internal service visibility.
+- Add search filters for object type, artifact family, source, activity result, and time.
+- Add a committed mixed-terminal regression fixture and command/output segmentation.
 
 Next priorities:
 
 - Continue the switch-coverage audit for long-tail tools, but only add controls that materially change operator intent or scope.
 - Add specialized builders for remaining multi-step scripts where real runtime choices exist.
-- Expand Intake normalization and extraction for BloodHound, Certipy, NetExec modules, Impacket, PEAS, web fuzzers, database clients, shell transcripts, and mixed multi-command paste sessions.
-- Add richer artifact relationships so an object can retain which command/activity produced it and which later action consumed it.
-- Improve direct artifact-to-builder integration so compatible artifacts can populate specific command option fields, not only shared engagement parameters.
-- Expand post-foothold network modeling around interfaces, routes, discovered hosts, pivots, and internal service visibility.
-- Continue methodology depth around credential reuse, AD trust/delegation/certificate paths, service-specific enumeration, and reporting evidence requirements.
-- Add transcript regression fixtures derived from messy real-world terminal formatting and mixed-command sessions.
-- Add search filters for artifact type, source, context, activity result, and time when the workspace becomes large enough to need them.
+- Expand Intake normalization and extraction for more BloodHound, Certipy, NetExec module, Impacket, PEAS, web-fuzzer, database-client, and shell edge cases.
+- Grow the transcript fixture corpus across Linux, Windows, AD, web, database, and pivoting sessions, including malformed/partial output.
+- Make artifact lineage easier to inspect as a graph or chronological chain and support jumping from an artifact to its producer/consumer activity.
+- Make network modeling pivot-aware so routes, interfaces, and discovered subnets can influence which enumeration actions are relevant to which host/context without assuming reachability.
+- Track explicit pivot/tunnel state and distinguish directly reachable, pivot-reachable, and merely observed internal services.
+- Continue methodology depth around credential reuse, AD trusts, delegation, certificate paths, service-specific enumeration, and post-foothold evidence requirements.
+- Tie reporting readiness more directly to artifact provenance, successful state transitions, and required screenshot/evidence captures.
+- Continue improving direct artifact bindings for commands whose option semantics cannot be inferred safely from labels/placeholders alone.
 - Keep this to-do list current as new gaps are found.
 
 ## Run locally
@@ -118,9 +141,10 @@ node tests/run-v2.3-tests.js
 node tests/run-v2.4-tests.js
 node tests/run-v2.5-tests.js
 node tests/run-v2.6-tests.js
+node tests/run-v2.7-tests.js
 ```
 
-The v2.6 suite covers release-state initialization, typed artifact extraction/deduplication, artifact-to-parameter handoffs, sanitized secret redaction, negative-evidence persistence, refuted-vs-retryable Path behavior, and cross-workspace search. GitHub Actions runs all regression suites on `main`, release branches, and pull requests.
+The v2.7 suite covers release-state initialization, producer/consumer artifact lineage, direct artifact-to-command option binding, mixed-transcript command segmentation, Linux/Windows interface and route extraction, NetExec-style service visibility, network-model deduplication, and filtered workspace search. GitHub Actions runs all regression suites on `main`, release branches, and pull requests.
 
 ## Legal / ethics
 

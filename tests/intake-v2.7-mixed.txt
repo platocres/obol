@@ -1,0 +1,27 @@
+kali@kali:~/labs$ cat route.txt
+2: eth0: <BROADCAST,MULTICAST,UP,LOWER_UP>
+    inet 10.10.14.22/24 brd 10.10.14.255 scope global eth0
+3: eth1: <BROADCAST,MULTICAST,UP,LOWER_UP>
+    inet 172.16.50.10/24 brd 172.16.50.255 scope global eth1
+172.16.60.0/24 via 172.16.50.1 dev eth1
+
+kali@kali:~/labs$ nxc smb 172.16.60.20 -u alice -p 'LabOnly!'
+SMB         172.16.60.20   445    FILE01           [*] Windows 10 / Server
+SMB         172.16.60.20   445    FILE01           [+] LAB\alice:LabOnly!
+
+PS C:\Users\alice> ipconfig
+Ethernet adapter Ethernet 2:
+   IPv4 Address. . . . . . . . . . . : 172.16.50.25
+
+PS C:\Users\alice> certipy find -u alice -p LabOnly! -dc-ip 172.16.50.5
+Certipy v5.0
+Certificate Authorities
+    CA Name                             : LAB-CA
+    Web Enrollment                     : Enabled
+Saved output to C:\Users\Public\lab-find.json
+
+PS C:\Users\alice> dir C:\Users\Public\*.pfx
+08/28/2026  02:45 AM             3,112 alice.pfx
+
+kali@kali:~/labs$ curl -I http://172.16.60.20/admin
+HTTP/1.1 200 OK
