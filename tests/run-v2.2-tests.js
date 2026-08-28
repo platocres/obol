@@ -1,0 +1,27 @@
+'use strict';
+const assert=require('assert'),fs=require('fs'),vm=require('vm'),path=require('path');
+global.window=globalThis;
+function run(file){vm.runInThisContext(fs.readFileSync(file,'utf8'),{filename:file});}
+const root=path.join(__dirname,'..');
+run(path.join(root,'assets','core-v2-base.js'));run(path.join(root,'assets','core-v2.js'));run(path.join(root,'assets','core-v2.1.js'));
+run(path.join(root,'data','tools-v2.2.js'));run(path.join(root,'assets','core-v2.2.js'));
+run(path.join(root,'data','lanes.js'));run(path.join(root,'data','methodology-v2.2.js'));
+require(path.join(root,'assets','report-v2.js'));require(path.join(root,'assets','report-v2.1.js'));require(path.join(root,'assets','report-v2.2.js'));
+require(path.join(root,'assets','intake-v2.1.js'));require(path.join(root,'assets','intake-v2.2.js'));
+const C=global.OBOL_CORE_V2,T=global.OBOL_INTAKE_V21,LANES=global.OBOL_LANES;let passed=0;
+function test(name,fn){try{fn();console.log('ok - '+name);passed++;}catch(e){console.error('FAIL - '+name);throw e;}}
+function findCard(id){for(const l of LANES)for(const c of l.cards||[])if(c.id===id)return c;throw new Error('missing card '+id);}
+
+test('v2.2 state initializes tool profile and report evidence',()=>{const s=C.newState();assert.strictEqual(C.VERSION,'2.2.0');assert.strictEqual(s.obolVersion,'2.2.0');assert.deepStrictEqual(s.toolProfile,{});assert.deepStrictEqual(s.reportEvidence,{});});
+test('normal Kali tools are assumed available and explicit missing overrides that',()=>{const s=C.newState();assert.strictEqual(C.toolState(s,'nxc').status,'assumed');C.setToolState(s,'nxc','missing');assert.strictEqual(C.toolState(s,'nxc').status,'missing');});
+test('NetExec is preferred for SMB when usable and falls back when marked missing',()=>{const s=C.newState(),c=findCard('smb-depth-v22');assert.strictEqual(C.preferredImplementation(s,c).tool.id,'nxc');C.setToolState(s,'nxc','missing');assert.notStrictEqual(C.preferredImplementation(s,c).tool.id,'nxc');});
+test('NetExec SMB commands receive semantic enumeration switches',()=>{const c=findCard('smb-depth-v22'),cmd=c.commands.find(x=>x.tool==='nxc');assert(cmd.opts.some(x=>x.flag==='--shares'&&x.semantic));assert(cmd.opts.some(x=>x.flag==='--pass-pol'));assert(cmd.presets.some(x=>x.name==='Domain Enum'));});
+test('multiple tool implementations remain one maneuver',()=>{const c=findCard('smb-depth-v22');assert(c.commands.length>=4);assert.strictEqual(C.maneuverKey(c),'smb-deep-enumeration');});
+test('service depth counts the maneuver, not each command implementation',()=>{const s=C.newState(),h=C.mergeHost(s,{ip:'10.0.0.2'}),ctx={type:'host',id:h.id};C.addFact(s,'smb.reachable',{context:ctx});const rows=C.serviceDepth(s,LANES,ctx),smb=rows.find(x=>x.service==='smb');assert(smb);assert(smb.relevant < 20,'SMB depth should count cards/maneuvers, not every command variant');});
+test('terminal tool-not-found is inconclusive rather than refuting a maneuver',()=>{const r=T.analyzeTerminal("kali@kali:~$ nxc smb 10.0.0.2 -u '' -p '' --shares\nbash: nxc: command not found\n",LANES,C.newState(),{type:'global',id:'global'});const a=r.activities.find(x=>/nxc smb/.test(x.command));assert(a);assert.strictEqual(a.assessment,'inconclusive');assert.strictEqual(a.result,'tried');});
+test('post-foothold routing output creates conservative network state',()=>{const r=T.analyzeTerminal('kali@kali:~$ ip route\ndefault via 10.10.10.1 dev eth0\n10.20.0.0/24 via 10.10.10.254 dev eth0\n',LANES,C.newState(),{type:'global',id:'global'});assert(r.facts.some(f=>f.id==='network.internal'));});
+test('material state transitions are attached to activity history',()=>{const s=C.newState(),h=C.mergeHost(s,{ip:'10.0.0.3'}),ctx={type:'host',id:h.id};const a=C.recordActivity(s,{cardId:'x',context:ctx,result:'success',outcomeFacts:['foothold.linux'],command:'id',evidence:'uid=1000(user)'});assert(a.transitions.includes('foothold'));assert.strictEqual(C.transitionTimeline(s,ctx).length,1);});
+test('report readiness improves when screenshots are explicitly marked captured',()=>{const s=C.newState(),h=C.mergeHost(s,{ip:'10.0.0.4',os:'linux'}),ctx={type:'host',id:h.id};C.recordActivity(s,{cardId:'x',context:ctx,result:'success',outcomeFacts:['foothold.linux','access.root'],command:'sudo -n sh -c id',evidence:'uid=0(root)'});let r=global.OBOL_REPORT_V2._requiredEvidence(s,LANES,ctx);const before=r.score;C.setReportEvidence(s,ctx,'initial-access-screenshot',true);C.setReportEvidence(s,ctx,'privilege-screenshot',true);C.setReportEvidence(s,ctx,'proof-screenshot',true);r=global.OBOL_REPORT_V2._requiredEvidence(s,LANES,ctx);assert(r.score>before);});
+test('v2.2 report contains compromise chains and evidence readiness',()=>{const s=C.newState(),h=C.mergeHost(s,{ip:'10.0.0.5',os:'linux'}),ctx={type:'host',id:h.id};C.recordActivity(s,{cardId:'linux-enum',context:ctx,result:'success',outcomeFacts:['foothold.linux'],command:'id',evidence:'uid=1000(user)'});const md=global.OBOL_REPORT_V2.generate(s,LANES,'standard',{includeSecrets:false});assert(md.includes('## Compromise Chains'));assert(md.includes('## Evidence and Screenshot Readiness'));assert(md.includes('Generated by Obol v2.2'));});
+test('workflow depth exposes post-foothold privilege work',()=>{const s=C.newState(),h=C.mergeHost(s,{ip:'10.0.0.6'}),ctx={type:'host',id:h.id};C.addFact(s,'foothold.linux',{context:ctx});const rows=C.workflowRows(s,LANES,ctx);assert(rows.some(x=>x.id==='linux-privesc'&&x.total>0));});
+console.log(`\n${passed} v2.2 tests passed`);
