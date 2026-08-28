@@ -1,0 +1,31 @@
+'use strict';
+const assert=require('assert'),fs=require('fs'),vm=require('vm'),path=require('path');
+global.window=globalThis;
+for(const f of ['core-v2-base.js','core-v2.js','core-v2.1.js'])vm.runInThisContext(fs.readFileSync(path.join(__dirname,'../assets',f),'utf8'),{filename:f});
+require('../assets/report-v2.js');require('../assets/report-v2.1.js');require('../assets/intake-v2.1.js');
+const C=global.OBOL_CORE_V2,T=global.OBOL_INTAKE_V21;let passed=0;
+function test(name,fn){try{fn();console.log('ok - '+name);passed++;}catch(e){console.error('FAIL - '+name);throw e;}}
+function lanes(){return[
+ {lane:'recon',phase:'Recon & Scanning',title:'Recon',cards:[
+  {id:'scan',lane:'recon',title:'Nmap scan',hypothesis:'Map exposed services.',prereq:{any:['scope.defined']},produces:['scan.initial'],commands:[{tool:'nmap',run:'nmap -sC -sV {{target}}'}],expected:['Nmap done'],report:{finding:'Enumeration',severity:'informational'}},
+  {id:'smb',lane:'recon',title:'Anonymous SMB',hypothesis:'Shares may be exposed.',prereq:{any:['smb.reachable']},produces:['smb.shares'],commands:[{tool:'smbclient',run:'smbclient -L //{{target}} -N'}],expected:['Sharename'],report:{finding:'Anonymous SMB',severity:'medium'}},
+  {id:'follow',lane:'recon',title:'Inspect shares',hypothesis:'Shares may contain loot.',prereq:{any:['smb.shares']},produces:['credential.candidate'],commands:[{tool:'smbclient',run:'smbclient //{{target}}/share -N'}],expected:['smb:'],report:{finding:'',severity:'informational'}}]},
+ {lane:'linux-privesc',phase:'Privesc & Post-Exploitation',title:'Linux Privilege Escalation',cards:[
+  {id:'linux-enum',lane:'linux-privesc',title:'Local Enumeration Sweep',hypothesis:'Enumerate first.',prereq:{any:['foothold.linux']},produces:['privesc.leads'],commands:[{tool:'sh',run:'sudo -l && id'}],expected:['NOPASSWD'],report:{finding:'Local Privilege Escalation Vector',severity:'high'}},
+  {id:'sudo-abuse',lane:'linux-privesc',title:'sudo / GTFOBins Abuse',hypothesis:'sudo may grant root.',prereq:{any:['foothold.linux']},produces:['access.root'],commands:[{tool:'sh',run:'sudo -l'}],expected:['NOPASSWD','(root)'],onFailure:{'not in sudoers':{note:'dead end'}},report:{finding:'sudo Misconfiguration',severity:'critical'}}]},
+ {lane:'ad',phase:'Active Directory',title:'AD',cards:[
+  {id:'lateral',lane:'ad',title:'Remote execution',hypothesis:'Valid creds may work remotely.',prereq:{any:['credential.available']},produces:['foothold.windows'],commands:[{tool:'nxc',run:"nxc smb {{target}} -u {{user}} -p '{{password}}'"}],expected:['Pwn3d!'],report:{finding:'Lateral movement',severity:'high'}}]}
+];}
+
+test('v2.1 state wrapper stamps version and knowledge store',()=>{const s=C.newState();assert.strictEqual(C.VERSION,'2.1.0');assert.strictEqual(s.obolVersion,'2.1.0');assert(Array.isArray(s.knowledge));});
+test('knowledge can preserve contradictory observations',()=>{const s=C.newState(),h=C.mergeHost(s,{ip:'10.0.0.1'}),ctx={type:'host',id:h.id};C.recordKnowledge(s,'smb.anonymous','supported',{context:ctx});C.recordKnowledge(s,'smb.anonymous','refuted',{context:ctx});assert.strictEqual(C.knowledgeStatus(s,'smb.anonymous',ctx),'refuted');assert.strictEqual(C.knowledgeFor(s,'smb.anonymous',ctx).length,2);});
+test('unlock potential sees downstream methodology edges',()=>{const s=C.newState(),ls=lanes(),f=new Set(['smb.reachable']);const u=C.unlockPotential(ls[0].cards[1],ls,f);assert(u.cards.includes('follow'));});
+test('relevant coverage ignores unrelated lanes before they are grounded',()=>{const s=C.newState(),h=C.mergeHost(s,{ip:'10.0.0.1'}),ctx={type:'host',id:h.id};C.addFact(s,'smb.reachable',{context:ctx});const c=C.coverageSummary(s,lanes(),ctx);assert(c.lanes.some(x=>x.lane==='recon'));assert(!c.lanes.some(x=>x.lane==='ad'));});
+test('terminal intake recognizes attempted sudo card',()=>{const r=T.analyzeTerminal('kali@kali:~$ sudo -l\nSorry, user kali may not run sudo\n',lanes(),C.newState(),{type:'global',id:'global'});assert(r.activities.some(a=>a.cardId==='sudo-abuse'&&a.result==='tried'));});
+test('terminal intake recognizes strong sudo finding without inventing root',()=>{const r=T.analyzeTerminal('kali@kali:~$ sudo -l\nUser may run the following commands:\n    (root) NOPASSWD: /usr/bin/find\n',lanes(),C.newState(),{type:'global',id:'global'});const a=r.activities.find(x=>x.cardId==='sudo-abuse');assert(a);assert.strictEqual(a.result,'success');assert(!a.outcomeFacts.includes('access.root'));});
+test('terminal intake recognizes nxc admin success and facts',()=>{const r=T.analyzeTerminal("kali@kali:~$ nxc smb 10.0.0.2 -u alice -p Password123\nSMB 10.0.0.2 445 DC01 [+] CORP\\alice:Password123 (Pwn3d!)\n",lanes(),C.newState(),{type:'global',id:'global'});assert(r.activities.some(a=>a.cardId==='lateral'&&a.result==='success'));assert(r.facts.some(f=>f.id==='access.admin'));});
+test('activity import fingerprints suppress duplicates',()=>{const s=C.newState();C.recordActivity(s,{cardId:'scan',result:'tried',importFingerprint:'terminal:abc'});assert(C.activityExists(s,'terminal:abc',{type:'global',id:'global'}));});
+test('report readiness flags successful activity without evidence',()=>{const s=C.newState();C.recordActivity(s,{cardId:'scan',result:'success',outcomeFacts:['scan.initial'],command:'nmap 10.0.0.1'});const q=global.OBOL_REPORT_V2._qualityChecks(s,lanes());assert(q.some(x=>/without an evidence excerpt/.test(x.message)));});
+test('report redacts known credential secrets from historical commands',()=>{const s=C.newState();C.addCredential(s,{username:'alice',secret:'Secret123!'},{domain:'corp.local'});C.recordActivity(s,{cardId:'lateral',result:'success',outcomeFacts:['foothold.windows'],command:"nxc smb 10.0.0.2 -u alice -p 'Secret123!'",evidence:'Pwn3d!'});const md=global.OBOL_REPORT_V2.generate(s,lanes(),'standard',{includeSecrets:false});assert(md.includes('[REDACTED]'));assert(!md.includes('Secret123!'));});
+test('stuck analysis highlights untested credentials on reachable services',()=>{const s=C.newState(),h=C.mergeHost(s,{ip:'10.0.0.2'}),ctx={type:'host',id:h.id};C.addFact(s,'smb.reachable',{context:ctx});C.addCredential(s,{username:'alice',secret:'x'},{context:ctx});const z=C.stuckAnalysis(s,lanes(),ctx);assert(z.issues.some(x=>x.type==='credential'));});
+console.log(`\n${passed} v2.1 tests passed`);
