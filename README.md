@@ -6,6 +6,116 @@ It is plain HTML/CSS/JavaScript with no backend, no build step, and no telemetry
 
 **Human-run commands only.** Obol never executes commands, installs tools, creates pivots, scans targets, or exploits systems. It helps the operator decide what to try, build the command, preserve what happened, understand what remains unknown, and turn the historical ledger into a reproducible report draft.
 
+## Obol v4.4
+
+v4.4 is the **Orange decision-path integration** release.
+
+v4.2 gave Obol a canonical Orange Cyberdefense 2025.03 Active Directory denominator, and v4.3 reconciled that denominator against live methodology. v4.4 takes the next step required by the README North Star: the Orange data now materially improves **Next Steps** and helps lead the operator through the mindmap's decision path as evidence is recorded.
+
+The release remains advisory and human-run. Orange guidance never creates facts, never marks success, never makes a technique applicable, never hides fallback methodology, and never overrides reachability, evidence, or the existing Kali/Windows execution-context model.
+
+### Orange decision stages
+
+The canonical mappings are now grouped into a deliberately small engagement progression:
+
+1. **Identify the environment**
+2. **Obtain or validate credentials**
+3. **Map authenticated AD**
+4. **Test control paths**
+5. **Move with proven access**
+6. **Deepen host control**
+7. **Assess domain-level control**
+8. **Document persistence options**
+
+This is not a forced linear script. The Orange map branches, and Obol keeps its normal prerequisite/evidence engine authoritative. The stage model provides a bounded progression signal so the canonical data can inform the recommendation queue without replacing it.
+
+### Per-context progress
+
+Successful mapped activity now advances an Orange decision stage only inside the active host/domain context.
+
+The progress model also uses a conservative fact floor so reviewed/imported evidence can place the operator appropriately even when the evidence did not originate from an expanded methodology card.
+
+Examples include:
+
+- domain/scan evidence → identify the environment
+- validated credential or ticket material → obtain/validate credentials
+- graph/attack-path facts → authenticated mapping
+- control-path/certificate facts → control-path testing
+- foothold/lateral facts → movement
+- admin/SYSTEM facts → host control
+- NTDS/krbtgt facts → domain-level control
+
+Another host's activity never advances the current context.
+
+### Next Steps ranking now uses Orange path context
+
+Mapped cards receive only a small **positive** ranking signal when they fit the current Orange stage:
+
+- current stage → continuation boost
+- immediately next stage → strongest Orange-path boost
+- one stage beyond → small future-branch boost
+- earlier or much later stages → no negative penalty
+
+This means Orange can help choose between several already-valid recommendations while the normal evidence, prerequisites, information gain, workflow depth, reachability, pivot state, prior activity, and operator execution side remain authoritative.
+
+### Next Steps UI
+
+Next Steps now includes an **Orange 2025.03 decision path** panel showing:
+
+- the current decision stage
+- the next stage
+- evidence-grounded canonical directions that already map to live Obol cards
+- recent successful mapped activity in the active context
+- a clear reminder that Orange path context is advisory only
+
+Recommendations that receive an Orange boost show the reason and magnitude.
+
+Canonical project gaps are not presented as user actions until Obol has a real mapped workflow for them.
+
+### Home and card provenance
+
+Home shows the active context's current Orange decision stage alongside the existing project-completion card.
+
+Mapped methodology cards show both:
+
+- their v4.3 canonical Orange provenance
+- their v4.4 Orange decision stage
+
+This keeps project coverage, engagement guidance, and actual methodology traceable to the same canonical source.
+
+### Coverage remains strict
+
+v4.4 improves engagement guidance without pretending that guidance work implemented new Orange techniques.
+
+The live project-coverage baseline therefore remains:
+
+- **42 / 127 canonical sections fully implemented**
+- **39 partial**
+- **46 explicit gaps**
+- **0 stale implemented mappings**
+- **33% fully implemented**
+- **64% represented**
+
+### v4.4 regression focus
+
+The v4.4 suite locks:
+
+- unchanged Orange 2025.03 source commit, tree SHA, and permanent North Star
+- unchanged 42 implemented / 39 partial / 46 gap / 0 stale project baseline
+- representative card-to-decision-stage assignments
+- active-context isolation
+- successful mapped activity advancing the decision stage
+- current/next-stage positive ranking signals
+- no Orange applicability gate or negative penalty
+- decision queue containing only live applicable mapped cards
+- `nextStepsOverview34` decision-path payload
+- coexistence with the Kali/Windows execution-context model
+- Next Steps, Home, card-provenance, and Guide UI wiring
+- release/index/workflow/README wiring
+- inherited sanitized-export secret redaction
+
+See `docs/v4.4.md` for the decision-stage contract and future-agent guidance.
+
 ## Obol v4.3
 
 v4.3 is the **canonical reconciliation and cracking-contract audit** release.
@@ -162,37 +272,17 @@ Methodology also shows the denominator, represented percentage, pinned upstream 
 
 ### Future agents do not need to reopen the visual map for routine accounting
 
-Future work should read `data/orange-ad-2025.03.js` first, then apply the latest methodology coverage overlay such as `data/methodology-v4.3.js`.
+Future work should read `data/orange-ad-2025.03.js` first, then apply the latest methodology coverage overlays such as `data/methodology-v4.3.js` and `data/methodology-v4.4.js`.
 
 The normal workflow is now:
 
-`pinned Orange manifest → current coverage overlays → canonical coverage → priority gaps → implementation → coverage update`
+`pinned Orange manifest → current coverage/path overlays → canonical coverage → priority gaps → implementation → coverage update`
 
 A future agent only needs to revisit upstream Orange when refreshing the pinned snapshot, implementing a specific branch that needs exact upstream detail, checking whether upstream changed, or resolving a source-integrity mismatch.
 
 ### Full source-container coverage
 
-The canonical methodology inventory includes:
-
-- ACL / ACE abuse
-- AD CS
-- admin credential extraction
-- authenticated enumeration
-- hash cracking
-- Kerberos delegation
-- domain-admin endgame
-- authenticated historical vulnerabilities
-- lateral movement
-- Windows low-access privilege escalation
-- low-hanging / quick-compromise paths
-- relay / man-in-the-middle
-- no-credential enumeration
-- domain persistence
-- SCCM
-- domain and forest trusts
-- valid-user / no-password paths
-
-This exposes audit debt that the v4.1 subset did not yet count, including trust abuse, low-hanging historical/service paths, cracking variants, deeper Windows low-access paths, and the complete SCCM and persistence source containers.
+The canonical methodology inventory includes ACL / ACE abuse, AD CS, admin credential extraction, authenticated enumeration, hash cracking, Kerberos delegation, domain-admin endgame, authenticated historical vulnerabilities, lateral movement, Windows low-access privilege escalation, low-hanging / quick-compromise paths, relay / man-in-the-middle, no-credential enumeration, domain persistence, SCCM, domain and forest trusts, and valid-user / no-password paths.
 
 ### v4.2 regression focus
 
@@ -206,7 +296,7 @@ v4.1 is the **methodology coverage and audit** release. It works directly from t
 
 The release does not add another primary navigation destination. The existing **Methodology** surface owns the coverage ledger.
 
-v4.1 introduced explicit implemented / partial / gap / stale-mapping accounting, structured keep / supplement / replace / review tool decisions, and the first audited execution-side metadata for Orange-mapped commands. v4.2 and v4.3 retain those tool-review and execution-metadata layers while using the full canonical source inventory as the completion denominator.
+v4.1 introduced explicit implemented / partial / gap / stale-mapping accounting, structured keep / supplement / replace / review tool decisions, and the first audited execution-side metadata for Orange-mapped commands. v4.2 through v4.4 retain those tool-review and execution-metadata layers while using the full canonical source inventory as the completion denominator.
 
 ## Obol v4.0
 
@@ -282,7 +372,7 @@ Optional users, active users, exports, groups, computers, DCs, SID, password pol
 
 - Host/domain-scoped facts, evidence, activity, credentials, and progress.
 - Supported/refuted/inconclusive knowledge semantics.
-- Evidence-ranked Next Steps with information gain, downstream unlocks, workflow depth, coverage gaps, reachability relevance, and execution-context relevance.
+- Evidence-ranked Next Steps with information gain, downstream unlocks, workflow depth, coverage gaps, reachability relevance, execution-context relevance, and a bounded Orange decision-path signal.
 - Persistent Planned Work with priority, notes, done/deferred state, and report history.
 - Maneuver-first methodology with preferred tools and practical fallbacks.
 - Kali-aware install/verification help without executing anything.
@@ -314,6 +404,8 @@ Optional users, active users, exports, groups, computers, DCs, SID, password pol
 - Persistent Home/header visibility for the Orange AD fully implemented percentage and release delta.
 - Live card-level Orange canonical provenance.
 - Audited Active Directory Hashcat mode reference with external-module exceptions kept explicit.
+- Per-context Orange decision-stage progress derived from recorded activity and reviewed facts.
+- Orange-mapped Next Steps guidance that can boost an already-applicable card without manufacturing applicability or success.
 
 ## To-Do — for future agents
 
@@ -327,18 +419,17 @@ North Star:
 - Make sure the path considers whether a user is operating from Kali or from a Windows host on any given step of the path.
 - Make sure that the data being integrated from the Orange Cyber Defense mind map is improving "Next Steps" and that as users complete each step they are being properly led down the mind map's decision path.
 
-Completed or materially advanced in v4.3:
+Completed or materially advanced in v4.4:
 
-- Keep the v4.2 Orange source snapshot immutable while adding a current-release methodology coverage overlay.
-- Repair the stale RBCD canonical mapping using the actual readiness, delegation, and S4U workflow cards.
-- Reconcile existing DC discovery, SCCM reconnaissance, GPP, MSSQL, trust, Golden Ticket, and database methodology into the canonical ledger.
-- Raise live strict coverage from 25 to 42 implemented sections without counting partial or stale work as complete.
-- Reduce explicit gaps from 62 to 46 and stale mappings from one to zero.
-- Expand the Active Directory Hashcat reference and correct NetNTLMv1 to mode 5500.
-- Add explicit coverage for TGS AES, DCC2, and TimeRoast cracking while keeping SCCM PXE partial because it depends on an external Hashcat module/fork.
-- Add canonical provenance to mapped methodology cards and expose the v4.3 release delta in Home, Methodology, and the persistent Orange badge.
-- Deepen explicit Kali / Windows / neutral execution metadata on reconciled workflows.
-- Preserve the Orange North Star and Kali-versus-Windows Path requirement exactly.
+- Convert canonical Orange card provenance into an engagement-facing decision-stage model.
+- Add per-context Orange progress derived from successful mapped activity and conservative fact floors.
+- Feed Orange decision-stage context into Next Steps as a small positive ranking signal only.
+- Keep applicability, evidence, reachability, information gain, workflow depth, pivot state, and the Kali/Windows execution model authoritative.
+- Add an evidence-grounded canonical recommendation queue containing only live applicable Obol cards.
+- Add current/next Orange decision-stage visibility to Next Steps and Home.
+- Add decision-stage provenance to mapped methodology-card pages.
+- Preserve the strict v4.3 42/39/46/0 coverage baseline rather than inflating project completion for guidance-only work.
+- Preserve the Orange North Star and all README requirements exactly.
 
 Next priorities:
 
@@ -393,9 +484,10 @@ node tests/run-v4.0-tests.js
 node tests/run-v4.1-tests.js
 node tests/run-v4.2-tests.js
 node tests/run-v4.3-tests.js
+node tests/run-v4.4-tests.js
 ```
 
-The v3.4 suite locks the decision-first Next Steps redesign. The v3.5 suite covers field-observed Evidence classification, proof semantics, Report cleanup/export, Evidence normalization, and lineage repair. The v3.6 suite adds Rubeus workbench/state coverage, Kerberos command intent and conservative outcome inference, S4U integration, exact-command lineage, workflow handoffs, North Star retention, and inherited secret redaction. The v3.7 suite adds target-specific reachability, pivot freshness, consumer lineage repair, multi-hop compromise paths, artifact neighborhoods, and mixed full-session regression coverage. The v3.8 suite adds pivot operational history, listener-health ranking semantics, transition-aware compromise summaries, transition proof templates, and another mixed full-session fixture. The v3.9 suite adds broader Impacket/PEASS-ng/SQLmap activity intent, conservative explicit outcome proof, Evidence coverage summaries, and a mixed PEAS + SQLmap + Impacket full-session regression. The v4.0 suite adds per-context operator execution state, platform-aware Path signals, command-side guidance, historical execution provenance, and release wiring. The v4.1 suite adds the Orange methodology coverage ledger, tool-review accounting, explicit execution metadata auditing, and live card-reference validation. The v4.2 suite adds the version-pinned canonical Orange AD source inventory, stable completion denominator, snapshot-integrity validation, and persistent completion visibility. The v4.3 suite adds live canonical reconciliation, RBCD stale-mapping repair, audited AD Hashcat modes, release-delta accounting, and card-level Orange provenance.
+The v3.4 suite locks the decision-first Next Steps redesign. The v3.5 suite covers field-observed Evidence classification, proof semantics, Report cleanup/export, Evidence normalization, and lineage repair. The v3.6 suite adds Rubeus workbench/state coverage, Kerberos command intent and conservative outcome inference, S4U integration, exact-command lineage, workflow handoffs, North Star retention, and inherited secret redaction. The v3.7 suite adds target-specific reachability, pivot freshness, consumer lineage repair, multi-hop compromise paths, artifact neighborhoods, and mixed full-session regression coverage. The v3.8 suite adds pivot operational history, listener-health ranking semantics, transition-aware compromise summaries, transition proof templates, and another mixed full-session fixture. The v3.9 suite adds broader Impacket/PEASS-ng/SQLmap activity intent, conservative explicit outcome proof, Evidence coverage summaries, and a mixed PEAS + SQLmap + Impacket full-session regression. The v4.0 suite adds per-context operator execution state, platform-aware Path signals, command-side guidance, historical execution provenance, and release wiring. The v4.1 suite adds the Orange methodology coverage ledger, tool-review accounting, explicit execution metadata auditing, and live card-reference validation. The v4.2 suite adds the version-pinned canonical Orange AD source inventory, stable completion denominator, snapshot-integrity validation, and persistent completion visibility. The v4.3 suite adds live canonical reconciliation, RBCD stale-mapping repair, audited AD Hashcat modes, release-delta accounting, and card-level Orange provenance. The v4.4 suite adds context-safe Orange decision-stage progress, Next Steps ranking signals, canonical recommendation queues, and engagement-facing decision-path UI.
 
 GitHub Actions runs the complete regression chain on `main`, release branches, and pull requests.
 
