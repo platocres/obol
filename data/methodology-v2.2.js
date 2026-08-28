@@ -83,5 +83,17 @@ addCard('windows-privesc',{id:'windows-network-baseline-v22',maneuver:'post-foot
  {tool:'powershell',run:'Get-NetTCPConnection -State Listen | Sort-Object LocalPort | Format-Table -AutoSize',note:'PowerShell listener inventory.'}
 ],expected:['DNS Servers','0.0.0.0','Listen'],report:{finding:'Internal Network Surface Identified',severity:'informational'},tools:['cmd','powershell']});
 
+// Run a final normalization pass after v2.2 cards are appended so newly-added
+// implementations receive the same semantic switches/presets as inherited cards.
+for(const lane of lanes)for(const card of lane.cards||[]){
+  card.maneuver=card.maneuver||card.id;
+  card.workflow=card.workflow||(/linux-privesc/.test(card.lane)?'linux-privesc':/windows-privesc/.test(card.lane)?'windows-privesc':card.lane);
+  for(const cmd of card.commands||[]){
+    if(String(cmd.tool||'').toLowerCase()==='nxc')augmentNxc(cmd);
+    augmentFuzzer(cmd);
+    (cmd.opts||[]).forEach(semanticize);
+  }
+}
+
 root.OBOL_METHODOLOGY_V22={version:'2.2.0'};
 })(typeof window!=='undefined'?window:globalThis);
