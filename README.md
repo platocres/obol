@@ -6,162 +6,135 @@ It is plain HTML/CSS/JavaScript with no backend, no build step, and no telemetry
 
 **Human-run commands only.** Obol never executes commands, installs tools, creates pivots, scans targets, or exploits systems. It helps the operator decide what to try, build the command, preserve what happened, understand what remains unknown, and turn the historical ledger into a reproducible report draft.
 
-## Obol v3.7
+## Obol v3.9
 
-v3.7 advances the multi-host planning, reachability, lineage, and full-session regression priorities carried forward from v3.6.
+v3.9 advances the Evidence normalization, activity-intent, and full-session regression priorities carried forward from v3.8.
 
-The release keeps the v3 information architecture small. It deepens existing workflow owners instead of adding another destination:
+The release keeps the v3 information architecture small and deepens the existing **Evidence** owner rather than creating a new page. It adds broader high-confidence transcript handling for Impacket Kerberos, secretsdump, Impacket remote execution, PEASS-ng, and SQLmap while preserving the rule that command classification and evidence proof are separate decisions.
 
-- **Next Steps** gains target-specific reachability context.
-- **Evidence Lineage** gains multi-hop compromise-path navigation.
-- **Reachability & pivot lifecycle** gains verification-freshness semantics.
-- Existing artifact consumer records gain conservative exact activity-ID repair.
+### Broader Impacket intent coverage
 
-### Target-specific reachability
+Evidence now recognizes additional operator command families and maps them to the methodology activity they actually represent:
 
-Earlier Obol releases could distinguish direct, pivot-reachable, observed-only, and broken-path state, but a service-level recommendation could still summarize several same-service observations too broadly in a larger engagement.
+- `impacket-GetNPUsers` / `GetNPUsers.py` → **AS-REP Roasting**
+- `impacket-GetUserSPNs` / `GetUserSPNs.py` → **Kerberoasting**
+- `impacket-getTGT` / `getTGT.py` → **Kerberos tickets**
+- `impacket-secretsdump` → **Credential Dumping**
+- secretsdump with `-just-dc`, `-just-dc-user`, or `-just-dc-ntlm` → **DCSync**
+- `impacket-psexec`, `impacket-wmiexec`, `impacket-smbexec`, and `impacket-atexec` → **Authenticated Remote Execution**
 
-v3.7 carries actual observed destination addresses into the recommendation signal. For a service-oriented recommendation, the ranking model now retains:
+The generic matcher remains available for everything else. v3.9 only overrides activity intent when the command family is specific enough to be safer than a fuzzy match.
 
-- observed target address
-- service family
-- direct / pivot / observed reachability state
-- covering path when one exists
-- path verification freshness
-- matching broken path when one exists
+### Conservative Impacket outcomes
 
-Next Steps surfaces these as **Grounded targets** so the operator can see which addresses a recommendation actually applies to.
+Recognizing a command does not make it successful.
 
-### Pivot verification freshness
+v3.9 only promotes the new Impacket activities when explicit output proves the corresponding state:
 
-An active path is no longer treated as equally trustworthy forever.
+- `$krb5asrep$` → `kerberos.asrep_hash`
+- `$krb5tgs$` → `kerberos.tgs_hash`
+- explicit saved `.ccache` / `.kirbi` ticket output → `kerberos.ticket`
+- canonical secretsdump hash rows → `hash.ntlm`
+- a canonical `krbtgt` DCSync row → `hash.krbtgt`
+- explicit `NT AUTHORITY\SYSTEM` remote-execution output can establish the Windows foothold/SYSTEM state
 
-v3.7 classifies path verification as:
+Startup banners, SMB dialect messages, tool versions, or merely launching a command remain attempts rather than findings.
 
-- **fresh** — verified within 30 minutes
-- **aging** — verified within four hours
-- **stale** — older than four hours
-- **unverified** — active but never explicitly verified
-- **broken / inactive** — lifecycle state remains authoritative
+### PEASS-ng without privilege inflation
 
-Fresh pivot coverage receives the strongest service-reachability boost. Aging paths receive a smaller boost and an explicit re-verification hint. Stale or never-verified pivot state remains recorded but does not receive the same recommendation weight as a recently verified path.
+Common linPEAS and winPEAS command shapes now map to the existing `linux-enum` and `windows-enum` methodology cards.
 
-Obol does not silently deactivate or delete a path. The operator still owns lifecycle state.
+That mapping is intentionally classification-only. PEASS-ng output is broad and heuristic. Scanner headings, colored warnings, or interesting-looking lines do not automatically establish root, SYSTEM, or a working privilege-escalation path. The operator still validates the concrete lead and records the validating action separately.
 
-### Multi-hop compromise paths
+### SQLmap evidence handling
 
-The existing dependency graph already linked artifacts conservatively when one preserved artifact was consumed by a methodology card that later produced another preserved artifact.
+The existing `sqlmap-automation` methodology card is now recoverable from pasted terminal sessions.
 
-v3.7 turns those edges into navigable multi-hop chains:
+When SQLmap explicitly reports that a parameter appears injectable or identifies the backend DBMS, Evidence can establish `web.sqli_confirmed`. It does **not** automatically establish database credentials, command execution, a shell, or a webshell.
 
-`artifact → methodology → artifact → methodology → artifact`
+This keeps the post-confirmation SQLmap workflow useful in labs without letting one parser string invent downstream compromise state.
 
-The Lineage overview now shows grounded compromise paths, longest first, with bounded configurable traversal depth. Cycles are handled conservatively and candidate-secret values remain masked.
+### Mixed-session transcript segmentation
 
-Selecting an artifact also shows its upstream and downstream neighborhood so the operator can move through a recorded compromise path while retaining the artifact's exact chronological lineage view.
+v3.9 adds supplemental command segmentation for the new tool families. Large copied terminal sessions can contain PEAS, SQLmap, and Impacket commands in one paste; Obol now separates those command/output blocks before activity repair.
 
-### Consumer-side exact activity lineage repair
+The v3.5 NetExec/Certipy intent layer and the v3.6 Rubeus layer remain in force, so a mixed transcript can preserve multiple distinct methodology activities instead of collapsing into whichever card happens to score highest generically.
 
-Producer activity-ID repair was strengthened in v3.5 and v3.6. v3.7 extends the same conservative principle to artifact consumers.
+### Evidence intent coverage transparency
 
-A consumer record missing an activity ID is repaired only when:
+The Evidence page now includes an **Evidence intent coverage** panel.
 
-- the consumer has a methodology card ID
-- consumer and activity share the same context
-- timestamps are within five seconds
-- exactly one activity for that card matches the window
+It explains which tool families have explicit high-confidence profiles and what they are allowed to claim automatically. It also summarizes covered historical tool families already recorded in the active context.
 
-If more than one activity qualifies, the record remains unresolved rather than guessing.
+That transparency is deliberate: the operator should be able to see why a pasted transcript can create one fact but not another.
 
-### Full-session regression coverage
+### v3.9 regression focus
 
-v3.7 starts the broader full-session fixture work called out in the v3.6 README.
+The v3.9 suite covers:
 
-The first mixed-session regression covers anonymous NetExec LDAP enumeration followed by Rubeus AS-REP roasting in one operator transcript. The test verifies that separate commands remain separate methodology activities and that only the Rubeus evidence establishes the AS-REP hash outcome.
-
-### v3.7 regression focus
-
-The v3.7 suite covers:
-
-- current v3.7 state/version coercion
-- target-specific same-service separation by address
-- fresh versus stale pivot ranking behavior
-- broken-path non-promotion
-- conservative consumer activity-ID repair
-- ambiguity preservation when consumer correlation is not unique
-- multi-hop compromise-chain derivation
-- upstream/downstream artifact neighborhoods
-- mixed full-session AD transcript classification
+- current v3.9 state/version coercion
+- Impacket AS-REP and Kerberoast intent plus explicit hash proof
+- Impacket TGT acquisition plus explicit ticket proof
+- secretsdump versus DCSync intent separation
+- canonical NTLM / krbtgt outcome inference
+- Impacket remote-execution classification without weak-output privilege inflation
+- linPEAS and winPEAS classification-only behavior
+- SQLmap explicit SQLi confirmation without shell/credential overclaiming
+- a mixed full-session PEAS + SQLmap + Impacket transcript
+- Evidence coverage summaries by active context
 - release/index/workflow/README wiring
 - inherited sanitized-export secret redaction
 
-See `docs/v3.7.md` for the release-specific implementation notes and remaining priorities.
+See `docs/v3.9.md` for release-specific implementation notes and remaining priorities.
+
+## Obol v3.8
+
+v3.8 advances the pivot-state, compromise-path, proof-readiness, and full-session regression priorities carried forward from v3.7.
+
+- **Reachability & pivot lifecycle** gained source-interface identity, listener health, and bounded operational history.
+- **Next Steps** began adjusting pivot-backed confidence using listener health as well as verification freshness.
+- **Evidence Lineage** gained transition-aware multi-hop compromise summaries when exact activity lineage exists.
+- **Report** gained additional automatic proof requirements for foothold, privilege, objective, and operational network transitions.
+
+An active pivot is not treated as equally trustworthy forever. Listener health can be unknown, healthy, degraded, or down, and operational checks remain separate from lifecycle state. Recording a listener down does not silently mark the path broken.
+
+The Reachability workspace keeps a lightweight pivot operations journal with source-interface, listener/route notes, health checks, verification timestamps, and history.
+
+Transition-aware compromise paths only label a hop when producer/consumer lineage points to one exact activity. Ambiguous hops remain methodology links rather than guesses.
+
+The v3.8 proof templates require recorded outcome facts for foothold, privilege, and objective transitions, and an operationally verified path for network transitions. Manual screenshot proof remains external and operator-confirmed.
+
+## Obol v3.7
+
+v3.7 advances multi-host planning, target-specific reachability, lineage depth, and full-session regression coverage.
+
+Service-level recommendations now retain the concrete observed destination addresses they apply to. Next Steps surfaces those **Grounded targets**, and pivot verification freshness distinguishes fresh, aging, stale, unverified, broken, and inactive state.
+
+Evidence Lineage gained bounded, cycle-safe **multi-hop** compromise paths and upstream/downstream artifact neighborhoods. Consumer activity lineage can recover an exact activity-ID only when card, context, and timestamp correlation are unique; ambiguous cases remain unresolved.
+
+The first broader full-session transcript regression combined anonymous NetExec LDAP enumeration with Rubeus AS-REP roasting and verified that only the Rubeus activity established the roast hash.
 
 ## Obol v3.6
 
-v3.6 advances the Active Directory and evidence priorities carried forward from v3.5. The biggest user-facing addition is a first-class **Rubeus workbench** inside Tool Library, connected to existing methodology cards, Evidence review, historical command snapshots, and artifact/activity lineage.
+v3.6 introduced the first-class **Rubeus workbench** in Tool Library and connected it to Methodology, Evidence, historical command snapshots, and lineage.
 
-The v3.5 backlog explicitly said **AS-REP Roasting mentions Rubeus** for Windows but lacked a real interface; v3.6 closes that gap without adding another primary navigation destination.
+The v3.5 backlog explicitly said **AS-REP Roasting mentions Rubeus** for Windows but lacked a real interface; v3.6 closed that gap.
 
-### First-class Rubeus workbench
+The workbench covers AS-REP Roast, Kerberoast, Ask TGT, Pass the Ticket, and S4U / Delegation with action-specific controls. Rubeus output inference remains conservative: roast hashes can establish their matching hash facts, strong ticket output can establish `kerberos.ticket`, and ticket acquisition never automatically establishes `access.admin`.
 
-Tool Library provides dedicated Rubeus command planning for:
-
-- **AS-REP Roast** → `asrep-roast`
-- **Kerberoast** → `kerberoast`
-- **Ask TGT** → `kerberos-tickets`
-- **Pass the Ticket** → `kerberos-tickets`
-- **S4U / Delegation** → `delegation-abuse`
-
-The builder exposes action-specific controls for user, domain, domain controller, output file, SPN, ticket material, impersonation identity, alternate service, credential material type, credential value, Hashcat-format output where relevant, `/nowrap`, and `/ptt`.
-
-Current engagement parameters are reused where appropriate and empty optional switches are omitted instead of emitting meaningless placeholders.
-
-### Methodology and Evidence stay connected
-
-Copying a generated Rubeus command records the exact command against the mapped methodology card's historical command state. **Review output in Evidence** carries the generated command into Evidence together with card/context lineage, so the operator can run it manually, paste the resulting output, review proposals, and approve only what the evidence actually establishes.
-
-The existing `delegation-abuse` methodology also includes a Windows Rubeus S4U implementation while retaining the methodology card as the owner of the technique.
-
-### Rubeus-aware Evidence classification
-
-v3.6 recognizes command intent for:
-
-- `Rubeus.exe asreproast`
-- `Rubeus.exe kerberoast`
-- `Rubeus.exe asktgt`
-- `Rubeus.exe ptt`
-- `Rubeus.exe s4u`
-
-Messy terminal input is normalized before activity matching, including ANSI output and common copied shell prompts.
-
-Outcome inference remains deliberately conservative:
-
-- `$krb5asrep$` evidence can establish `kerberos.asrep_hash`
-- `$krb5tgs$` evidence can establish `kerberos.tgs_hash`
-- strong TGT/ticket-import evidence can establish `kerberos.ticket`
-- strong S4U evidence can establish `kerberos.ticket`
-- obtaining or importing a Kerberos ticket does **not** automatically establish `access.admin`
-
-### Exact-command lineage
-
-For a producer missing an activity ID, Obol first normalizes the preserved command and searches the same context for an exact normalized command match. The activity ID is attached only when exactly one activity matches. If the same command maps to multiple activities, lineage remains unresolved.
-
-The older unique timestamp fallback remains available only when the producer has no preserved command.
-
-### Rubeus is a first-class tool family
-
-Rubeus is registered in Tool Library metadata with GhostPack upstream source/help information and Kerberos/AD capabilities. Install guidance remains descriptive only. Obol does not download, build, install, launch, or execute Rubeus.
-
-The Orange Cyberdefense 2025.03 Active Directory mindmap remains the project North Star and is linked from the Rubeus workbench as a secondary methodology reference.
+Exact-command producer lineage is repaired only when one normalized command match exists in the same context. Ambiguous matches remain unresolved.
 
 ## Obol v3.5
 
-v3.5 is the field-tested Evidence and reporting release that corrected overloaded-tool activity classification, repaired proven Anonymous LDAP outcomes, consolidated Report around one activity-grounded proof model, made screenshot proof explicitly external and transition-aware, added rendered/PDF report export, and introduced conservative lineage repair for older intake/network producers.
+v3.5 is the field-tested Evidence and Report release that corrected overloaded-tool **activity classification**, repaired proven Anonymous LDAP outcomes, removed stale Evidence implementation callouts, consolidated Report around one activity-grounded proof model, made screenshot proof explicitly external and transition-aware, added rendered/PDF report export, and introduced conservative lineage repair for older intake/network producers.
+
+The release kept **Evidence normalization** behavior while moving the historical implementation detail out of the active Evidence UI. Its remaining priorities explicitly included richer transcript coverage, more exact lineage, multi-hop compromise navigation, reachability depth, and broader proof-readiness.
 
 ## Obol v3.4
 
-v3.4 is the decision-first Next Steps release. It makes the recommendation queue the center of the page, surfaces active target/service/reachability context on recommendations, preserves deep diagnostics under technical context, and carries exact activity IDs from methodology-card evidence handoff when available.
+v3.4 is the **decision-first** Next Steps release. It makes the recommendation queue the center of the page, surfaces active target/service/reachability context, keeps deep diagnostics under Technical context & controls, and carries the **exact activity-ID** from methodology-card evidence handoff when available.
+
+Its future-agent priorities included stronger transcript classification, more exact lineage, pivot depth, and multi-hop evidence navigation.
 
 ## Current information architecture
 
@@ -209,12 +182,7 @@ Optional users, active users, exports, groups, computers, DCs, SID, password pol
 - Typed artifacts and direct evidence-to-command handoffs.
 - Artifact lineage with context-safe deduplication and cross-artifact dependency chains.
 - Review-first typed-artifact and network-observation intake gates.
-- Offline script library with filtering, contextual guidance, builders, and one-click copy.
-- AD methodology decision map and MachineAccountQuota/RBCD readiness coverage.
 - ANSI/prompt/terminal normalization and mixed-command transcript segmentation.
-- Post-foothold interface, route, subnet, host, and service visibility modeling.
-- Explicit direct/pivot reachability plus active/inactive/broken pivot lifecycle state.
-- Finding/transition-specific report proof obligations.
 - Strong negative-evidence semantics for tool failure, inconclusive results, service rejection, and true refutation.
 - Browser-local state and sanitized workspace export.
 - Rubeus workbench with methodology/Evidence integration and conservative Kerberos outcome inference.
@@ -222,6 +190,11 @@ Optional users, active users, exports, groups, computers, DCs, SID, password pol
 - Target-specific reachability ranking with verification freshness.
 - Multi-hop compromise-path and artifact-neighborhood navigation.
 - Conservative consumer activity-ID repair.
+- Pivot source-interface and listener-health operational state with bounded history.
+- Transition-aware compromise-path summaries when exact activity lineage exists.
+- Transition-specific automatic proof templates for foothold, privilege, objective, and network activity.
+- High-confidence Impacket, PEASS-ng, and SQLmap Evidence intent profiles with conservative outcome proof.
+- Evidence intent coverage transparency in the active Evidence workflow.
 
 ## To-Do — for future agents
 
@@ -232,15 +205,16 @@ North Star:
 - Make sure the Orange Defense Mindmap for 2025 is being fully implemented, gather data from it for use in this and future builds and improve upon it.
 - Make sure the path considers whether a user is operating from Kali or from a Windows host on any given step of the path.
 
-Completed or materially advanced in v3.7:
+Completed or materially advanced in v3.9:
 
-- Make service reachability ranking target-specific when multiple same-service observations exist.
-- Surface grounded destination addresses directly on Next Steps recommendations.
-- Add path verification freshness so stale pivots do not receive the same ranking weight as recently verified paths.
-- Add multi-hop compromise-path derivation and navigation to Evidence Lineage.
-- Add upstream/downstream artifact neighborhood navigation.
-- Extend conservative exact activity-ID repair to artifact consumers.
-- Add the first mixed full-session AD transcript regression.
+- Expand high-confidence Evidence activity-intent coverage to Impacket Kerberos, secretsdump/DCSync, Impacket remote execution, PEASS-ng, and SQLmap.
+- Keep command classification separate from outcome proof so weak startup text does not create compromise facts.
+- Add canonical Impacket roast, ticket, NTLM, and krbtgt evidence handling.
+- Add linPEAS/winPEAS classification without automatic privilege inflation.
+- Add SQLmap SQLi confirmation without automatically claiming database credentials or shells.
+- Add mixed-session segmentation for the new tool families while retaining inherited NetExec, Certipy, and Rubeus handling.
+- Add an Evidence intent coverage panel explaining automatic-claim boundaries.
+- Add another broader full-session regression spanning PEAS, SQLmap, and Impacket.
 - Preserve the v3 single-owner information architecture and Orange Cyberdefense mindmap North Star.
 
 Next priorities:
@@ -249,11 +223,11 @@ Next priorities:
 - Expand Rubeus ticket/delegation transcript fixtures and additional Kerberos workflows where they map cleanly to the methodology.
 - Make sure the Orange Defense Mindmap for 2025 is being fully implemented, gather data from it for use in this and future builds.
 - Continue validating command contracts against current upstream CLI help when tool versions change.
-- Expand Evidence normalization/extraction and activity-intent fixtures for more NetExec, Certipy, Impacket, PEAS, web-fuzzer, database-client, and shell output edge cases, including malformed and partial transcripts.
+- Expand Evidence normalization/extraction and activity-intent fixtures for more NetExec, Certipy, Impacket edge cases, web fuzzers, database clients, and shell output, including malformed and partial transcripts.
 - Grow full-session regression fixtures across Linux, Windows, AD, web, database, and pivoting workflows so classification and outcome inference are tested as complete operator sessions rather than isolated strings.
 - Continue exact activity-ID lineage through producer/consumer paths where stronger command or activity correlation becomes available.
-- Deepen multi-hop compromise-path navigation with transition-aware summaries and target pivots when the recorded evidence can support them conservatively.
-- Continue pivot-state depth around source-interface identity, listener health notes, route-specific troubleshooting history, and verification semantics.
+- Deepen multi-hop compromise-path summaries with conservative target context and transition chronology where exact evidence supports it.
+- Continue pivot troubleshooting depth with route-specific checks, source-interface context, and listener history without inferring state that the operator did not record.
 - Expand proof-readiness templates for additional finding/transition types while keeping screenshot-content checks operator-confirmed and external.
 - Keep the v3 information architecture simple. New functionality should not automatically become a new primary navigation destination.
 
@@ -287,9 +261,11 @@ node tests/run-v3.4-tests.js
 node tests/run-v3.5-tests.js
 node tests/run-v3.6-tests.js
 node tests/run-v3.7-tests.js
+node tests/run-v3.8-tests.js
+node tests/run-v3.9-tests.js
 ```
 
-The v3.4 suite locks the decision-first Next Steps redesign. The v3.5 suite covers field-observed Evidence classification, proof semantics, Report cleanup/export, and lineage repair. The v3.6 suite adds Rubeus workbench/state coverage, Kerberos command intent and conservative outcome inference, S4U integration, exact-command lineage, workflow handoffs, release wiring, North Star retention, and inherited secret redaction. The v3.7 suite adds target-specific reachability, pivot freshness, consumer lineage repair, multi-hop compromise paths, artifact neighborhoods, and mixed full-session regression coverage.
+The v3.4 suite locks the decision-first Next Steps redesign. The v3.5 suite covers field-observed Evidence classification, proof semantics, Report cleanup/export, Evidence normalization, and lineage repair. The v3.6 suite adds Rubeus workbench/state coverage, Kerberos command intent and conservative outcome inference, S4U integration, exact-command lineage, workflow handoffs, North Star retention, and inherited secret redaction. The v3.7 suite adds target-specific reachability, pivot freshness, consumer lineage repair, multi-hop compromise paths, artifact neighborhoods, and mixed full-session regression coverage. The v3.8 suite adds pivot operational history, listener-health ranking semantics, transition-aware compromise summaries, transition proof templates, and another mixed full-session fixture. The v3.9 suite adds broader Impacket/PEASS-ng/SQLmap activity intent, conservative explicit outcome proof, Evidence coverage summaries, and a mixed PEAS + SQLmap + Impacket full-session regression.
 
 GitHub Actions runs the complete regression chain on `main`, release branches, and pull requests.
 

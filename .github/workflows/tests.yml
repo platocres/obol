@@ -78,3 +78,11 @@ jobs:
         run: node --check assets/core-v3.7.js && node --check assets/app-v3.7.js
       - name: Run v3.7 regression suite
         run: node tests/run-v3.7-tests.js
+      - name: Validate v3.8 JavaScript syntax
+        run: node --check assets/core-v3.8.js && node --check assets/app-v3.8.js
+      - name: Run v3.8 regression suite
+        run: node tests/run-v3.8-tests.js
+      - name: Validate v3.9 JavaScript syntax
+        run: node --check assets/core-v3.9.js && node --check assets/intake-v3.9.js && node --check assets/app-v3.9.js
+      - name: Run v3.9 regression suite
+        run: node tests/run-v3.9-tests.js
