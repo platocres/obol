@@ -6,6 +6,96 @@ It is plain HTML/CSS/JavaScript with no backend, no build step, and no telemetry
 
 **Human-run commands only.** Obol never executes commands, installs tools, creates pivots, scans targets, or exploits systems. It helps the operator decide what to try, build the command, preserve what happened, understand what remains unknown, and turn the historical ledger into a reproducible report draft.
 
+## Obol v3.5
+
+v3.5 is a field-tested Evidence and reporting release built from a real v3.4 workspace rather than a synthetic UI review. The initial Targets → Nmap → Evidence → Next Steps loop was working well, but live use exposed three connected problems: a stale v2.5 implementation note leaking into Evidence, terminal activity classification assigning an LDAP enumeration command to the wrong methodology card, and a Report page that stacked several generations of readiness UI while implying screenshot capabilities Obol does not actually have.
+
+v3.5 fixes those problems at the state, parser, lineage, reporting, and presentation layers instead of only reskinning them.
+
+### Evidence stays focused on evidence
+
+The inherited **“v2.5 normalization”** callout is removed from the active Evidence UI. ANSI/prompt/terminal normalization still happens in the intake pipeline; the implementation detail simply no longer occupies permanent page space.
+
+The current Evidence page remains centered on:
+
+- source selection
+- terminal/tool output review
+- explicit fact/artifact/activity proposals
+- operator approval before state changes
+- structured imports such as BloodHound
+
+Normalization remains functional and testable without being advertised as a historical release note.
+
+### Terminal activity classification follows command intent
+
+A real v3.4 workspace showed this command being recorded as **Identify the Domain Controller and Domain** even though it came from **Anonymous LDAP Enumeration**:
+
+```bash
+nxc ldap 10.129.95.210 -u '' -p '' --users --users-export "users.txt"
+```
+
+v3.5 adds a command-intent correction layer for overloaded tools. High-confidence selectors now disambiguate the methodology action before activity is recorded. The first pass covers the ambiguous families that matter most in current workflows, including:
+
+- NetExec LDAP enumeration, AS-REP roasting, Kerberoasting, BloodHound collection, and LAPS
+- NetExec SMB relay-list generation, secrets dumping, remote execution, and RID enumeration
+- BloodHound Python collection
+- Certipy find/request/auth flows
+
+For Anonymous LDAP Enumeration specifically, successful output can now attach the activity outcomes that the evidence actually proves, including anonymous bind and user-list establishment. This prevents the report ledger from saying a command “succeeded but no explicit outcome facts were selected” when the reviewed output already proved those outcomes.
+
+The generic v2.1 terminal matcher remains as the fallback. v3.5 only overrides it when command intent is specific enough to be safer than the generic best-match score.
+
+### Report becomes one coherent workspace
+
+The old Report page had accumulated multiple overlapping systems: report-quality warnings, per-target readiness, finding proof readiness, mode controls, and a raw Markdown preview. v3.5 replaces the active page with one report workspace driven by the same historical activities, evidence, lineage, and proof state.
+
+The page now has:
+
+- one workspace-level proof-readiness summary
+- one successful-activity proof list instead of three competing readiness panels
+- Standard and OSCP draft modes with an explanation of what the mode changes
+- secrets-off-by-default export behavior
+- a rendered report preview plus exact Markdown-source view
+- direct Markdown download
+- a first-class **Export PDF** action using the browser print/PDF flow
+- a report-focused print stylesheet so the PDF contains the rendered report rather than the surrounding application chrome
+
+### Screenshot semantics are explicit
+
+Obol still does not take screenshots, store image files, or inspect screenshot contents.
+
+v3.5 changes screenshot readiness from a generic requirement on every success to a transition-aware external-proof requirement. A screenshot checkbox appears only when the recorded activity represents a material foothold, privilege, or objective transition that genuinely needs operator-confirmed proof.
+
+The UI labels this **Proof screenshot recorded externally** and explains exactly what it means.
+
+Routine enumeration evidence with a preserved command and evidence snapshot no longer fails readiness just because an unrelated screenshot checkbox was never checked.
+
+### Report preview is useful before export
+
+The report generator still produces Markdown as the portable source format, but v3.5 adds a local renderer for the structures Obol emits: headings, paragraphs, tables, lists, blockquotes, inline code, code blocks, and separators.
+
+That rendered document is the PDF print surface. The Markdown source remains one click away for exact review or editing in another tool.
+
+The report-generator footer and proof wording are also normalized to the current Obol release rather than leaking old v2.1 text into v3.x exports.
+
+### Exact lineage repair for older intake paths
+
+v3.4 began attaching exact activity IDs when evidence was distilled directly from a methodology card. The field-tested workspace showed another gap: network-derived typed artifacts created during terminal intake could be timestamp-adjacent to the activity they came from while still carrying an empty activity ID.
+
+v3.5 adds a conservative repair pass. A legacy intake/network producer receives an exact activity ID only when:
+
+- producer and activity share the same context
+- their timestamps are within five seconds
+- exactly one activity satisfies that correlation window
+
+Ambiguous cases remain untouched. This advances exact lineage without replacing uncertainty with a guess.
+
+### Next Steps remains decision-first
+
+The v3.4 Next Steps redesign remains intact. The live LDAP test successfully unlocked AS-REP Roasting, password-spray and wordlist work, demonstrating that the Evidence → ranked recommendation loop is functioning as intended.
+
+v3.5 does not loosen or rewrite the ranking model merely because the surrounding workflow was improved. Target-specific reachability scoring across more complex multi-host/internal-network contexts remains a separate future priority.
+
 ## Obol v3.4
 
 v3.4 is a planning and information-hierarchy release centered on **Next Steps**.
@@ -195,25 +285,27 @@ Tool Library families continue to be classified as reusable contracts, dedicated
 
 ## To-Do — for future agents
 
-Completed or materially advanced in v3.4:
+Completed or materially advanced in v3.5:
 
-- Redesign Next Steps around the recommendation queue instead of diagnostic panels.
-- Make recommendation rationale, planning state, target context, and reachability influence visible at the point of decision.
-- Keep detailed Path/reachability/coverage diagnostics available without letting them dominate the page.
-- Populate exact activity-ID producer lineage when card evidence is distilled and an activity ID exists.
-- Eliminate stale current-version presentation and make future Home/version display derive from the current core version.
-- Remove stale Boxes-era workflow labels from active methodology copy.
+- Remove stale release-layer implementation callouts from the active Evidence experience while retaining normalization behavior.
+- Correct terminal activity classification for high-confidence overloaded-tool command intent, including the real Anonymous LDAP user-enumeration workflow observed during v3.4 testing.
+- Repair proven Anonymous LDAP activity outcomes so reporting and history agree with reviewed evidence.
+- Replace stacked Report readiness generations with one activity-grounded proof model.
+- Make screenshot readiness explicitly external and transition-aware instead of a blanket requirement on enumeration success.
+- Add rendered report preview and report-focused browser PDF export while keeping Markdown as the portable source format.
+- Repair exact activity-ID lineage for uniquely correlated legacy network/intake producers.
+- Keep the v3.4 decision-first Next Steps layout and ranking semantics intact while improving the workflow around it.
 
 Next priorities:
 
 - Continue validating command contracts against current upstream CLI help when tool versions change.
-- Expand Evidence normalization/extraction for more NetExec, Certipy, Impacket, PEAS, web-fuzzer, database-client, and shell output edge cases.
-- Grow transcript fixtures across Linux, Windows, AD, web, database, and pivoting sessions, including malformed and partial output.
-- Continue exact activity-ID lineage through more producer/consumer paths beyond card-to-Evidence handoff.
+- Expand Evidence normalization/extraction and activity-intent fixtures for more NetExec, Certipy, Impacket, PEAS, web-fuzzer, database-client, and shell output edge cases, including malformed and partial transcripts.
+- Grow full-session regression fixtures across Linux, Windows, AD, web, database, and pivoting workflows so classification and outcome inference are tested as complete operator sessions rather than isolated strings.
+- Continue exact activity-ID lineage through producer/consumer paths that cannot yet be correlated conservatively.
 - Add richer multi-hop artifact and compromise-path navigation.
-- Make reachability ranking itself more target-specific when multiple internal subnets/services exist in one engagement context; v3.4 improves presentation, not the conservative scoring model.
-- Continue pivot-state depth around source-interface identity, listener health notes, and route-specific troubleshooting history.
-- Expand proof-readiness templates while keeping screenshot-content checks operator-confirmed.
+- Make reachability ranking itself more target-specific when multiple internal subnets, hosts, and same-service observations coexist in one engagement context.
+- Continue pivot-state depth around source-interface identity, listener health notes, route-specific troubleshooting history, and verification freshness.
+- Expand proof-readiness templates for additional finding/transition types while keeping screenshot-content checks operator-confirmed and external.
 - Keep the v3 information architecture simple. New functionality should not automatically become a new primary navigation destination.
 
 ## Run locally
@@ -243,9 +335,10 @@ node tests/run-v3.1-tests.js
 node tests/run-v3.2-tests.js
 node tests/run-v3.3-tests.js
 node tests/run-v3.4-tests.js
+node tests/run-v3.5-tests.js
 ```
 
-The v3.4 suite covers current-version coercion, planner preferences, active-target recommendation context, recommendation filters, Planned Work signals, exact activity-ID lineage handoff, Next Steps UI/CSS wiring, current-version presentation, index load order, README release documentation, and inherited sanitized-export redaction.
+The v3.4 suite continues to lock the decision-first Next Steps redesign. The v3.5 suite adds current-version coercion, field-observed LDAP activity classification, activity outcome repair, transition-aware report proof requirements, exact lineage repair, Evidence cleanup, rendered/PDF Report wiring, current-version presentation, and inherited sanitized-export redaction.
 
 GitHub Actions runs the complete regression chain on `main`, release branches, and pull requests.
 
