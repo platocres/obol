@@ -50,3 +50,7 @@ jobs:
         run: node --check assets/core-v3.0.js && node --check assets/app-v3.0.js
       - name: Run v3.0 regression suite
         run: node tests/run-v3.0-tests.js
+      - name: Validate v3.1 JavaScript syntax
+        run: node --check assets/core-v3.1.js && node --check assets/nmap-v3.1.js && node --check assets/app-v3.1.js
+      - name: Run v3.1 regression suite
+        run: node tests/run-v3.1-tests.js
