@@ -26,3 +26,5 @@ jobs:
         run: node tests/run-v2.1-tests.js
       - name: Run v2.2 regression suite
         run: node tests/run-v2.2-tests.js
+      - name: Run v2.3 regression suite
+        run: node tests/run-v2.3-tests.js
