@@ -1,0 +1,72 @@
+name: Wire Obol v4.7 release
+
+on:
+  push:
+    branches:
+      - release/obol-v4.7
+
+permissions:
+  contents: write
+
+jobs:
+  wire:
+    if: github.event.head_commit.message == 'Wire Obol v4.7 release files'
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: release/obol-v4.7
+          fetch-depth: 0
+      - name: Wire release
+        shell: bash
+        run: |
+          python3 - <<'PY'
+          from pathlib import Path
+
+          p=Path('index.html')
+          s=p.read_text()
+          s=s.replace('<title>Obol v4.6 — Offensive Box Operations Ledger</title>','<title>Obol v4.7 — Offensive Box Operations Ledger</title>')
+          if 'Obol v4.6 compatibility marker retained for regression' not in s:
+              marker='<!-- Obol v4.5 compatibility marker retained for regression: Offensive Box Operations Ledger · v4.5 -->'
+              s=s.replace(marker,marker+'\n<!-- Obol v4.6 compatibility marker retained for regression: Offensive Box Operations Ledger · v4.6 -->')
+          s=s.replace('<link rel="stylesheet" href="assets/obol-v4.6.css">','<link rel="stylesheet" href="assets/obol-v4.6.css">\n<link rel="stylesheet" href="assets/obol-v4.7.css">')
+          s=s.replace('Offensive Box Operations Ledger · v4.6</p>','Offensive Box Operations Ledger · v4.7</p>')
+          s=s.replace('<script src="data/methodology-v4.6.js"></script>','<script src="data/methodology-v4.6.js"></script>\n<script src="data/methodology-v4.7.js"></script>')
+          s=s.replace('<script src="assets/core-v4.6.js"></script>','<script src="assets/core-v4.6.js"></script>\n<script src="assets/core-v4.7.js"></script>')
+          s=s.replace('<script src="assets/report-v4.0.js"></script>','<script src="assets/report-v4.0.js"></script>\n<script src="assets/report-v4.7.js"></script>')
+          s=s.replace('<script src="assets/app-v4.6.js"></script>','<script src="assets/app-v4.6.js"></script>\n<script src="assets/app-v4.7.js"></script>')
+          p.write_text(s)
+
+          p=Path('.github/workflows/tests.yml')
+          s=p.read_text()
+          if 'Validate v4.7 JavaScript syntax' not in s:
+              s=s.rstrip()+'''\n      - name: Validate v4.7 JavaScript syntax\n        run: node --check data/methodology-v4.7.js && node --check assets/core-v4.7.js && node --check assets/report-v4.7.js && node --check assets/app-v4.7.js\n      - name: Run v4.7 regression suite\n        run: node tests/run-v4.7-tests.js\n'''
+          p.write_text(s)
+
+          p=Path('README.md')
+          s=p.read_text()
+          section='''## Obol v4.7\n\nv4.7 is the **retroactive reporting traceability** release. It directly implements the v4.6 README requirement that every path, tool, and Evidence flow fit cleanly into Obol reporting and remain fully useful from a user's perspective across UI and UX.\n\nEvery live Orange-mapped methodology card now has a reporting contract that keeps finding-bearing work distinct from path/context methodology. Successful mapped activity is traceable through its Orange decision stage, canonical source keys, exact historical activity, Evidence profile, proof-readiness state, and generated report output.\n\nGenerated Standard and OSCP working drafts now include **Orange Decision Path & Reporting Traceability** when mapped successes exist. Successful non-finding work such as ticket hygiene or mapping remains visible as path/context and is not forced into the Findings section. Drafts also surface unresolved ledger proof as **Draft Reporting Gaps** without changing recorded activity success or manufacturing findings.\n\nThe Report UI adds a **Path → evidence → report** summary, and mapped methodology cards show their report role and Evidence family. This work is retroactive across existing Orange-mapped cards and composes with v4.4 decision stages, v4.5 run/evidence contracts, v4.6 SCCM progress, and the Kali/Windows execution-context model.\n\nv4.7 is reporting infrastructure, so canonical methodology completion remains strict at **48 / 127 fully implemented**, **45 partial**, **34 gaps**, **0 stale**, **38% fully implemented**, and **73% represented**.\n\nSee `docs/v4.7.md` for the reporting contract and regression semantics.\n\n'''
+          if '## Obol v4.7' not in s:
+              s=s.replace('## Obol v4.6',section+'## Obol v4.6',1)
+          foundation='- Retroactive Orange reporting traceability from canonical decision path and Evidence profile through proof readiness and generated report output.\n'
+          needle='- SCCM branch progress with separate credential, relay/takeover, execution, cleanup, and post-map proof semantics.\n'
+          if foundation.strip() not in s and needle in s:
+              s=s.replace(needle,needle+foundation,1)
+          completed='''Completed or materially advanced in v4.7:\n\n- Add a report contract to every live Orange-mapped methodology card.\n- Keep finding-bearing work separate from path/context methodology so reporting stays useful without inflating findings.\n- Add Orange decision-path and canonical-source traceability to generated Standard and OSCP working drafts.\n- Surface draft reporting gaps from existing proof-readiness requirements without mutating success state.\n- Add Report-page and mapped-card visibility for reporting role, Evidence family, and proof readiness.\n- Apply the reporting requirement retroactively while preserving the strict 48/45/34/0 Orange coverage baseline.\n- Preserve all North Star, Next Steps, GUI-control, Evidence, and Kali/Windows requirements.\n\n'''
+          if 'Completed or materially advanced in v4.7:' not in s:
+              s=s.replace('Completed or materially advanced in v4.6:',completed+'Completed or materially advanced in v4.6:',1)
+          if 'node tests/run-v4.7-tests.js' not in s:
+              s=s.replace('node tests/run-v4.6-tests.js','node tests/run-v4.6-tests.js\nnode tests/run-v4.7-tests.js')
+          if 'The v4.7 suite adds retroactive Orange reporting traceability' not in s:
+              anchor='GitHub Actions runs the complete regression chain on `main`, release branches, and pull requests.'
+              add='The v4.7 suite adds retroactive Orange reporting traceability, path/context versus finding separation, draft reporting-gap visibility, and generated-report integration.\n\n'
+              s=s.replace(anchor,add+anchor,1)
+          p.write_text(s)
+
+          Path('.github/workflows/v47-wire.yml').unlink()
+          PY
+          git config user.name "platocres"
+          git config user.email "49848326+platocres@users.noreply.github.com"
+          git add README.md index.html .github/workflows/tests.yml .github/workflows/v47-wire.yml
+          git commit -m "Wire Obol v4.7 release and reporting requirements"
+          git push origin HEAD:release/obol-v4.7
