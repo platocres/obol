@@ -46,3 +46,7 @@ jobs:
         run: node --check assets/core-v2.9.js && node --check assets/app-v2.9.js && node --check assets/report-v2.9.js
       - name: Run v2.9 regression suite
         run: node tests/run-v2.9-tests.js
+      - name: Validate v3.0 JavaScript syntax
+        run: node --check assets/core-v3.0.js && node --check assets/app-v3.0.js
+      - name: Run v3.0 regression suite
+        run: node tests/run-v3.0-tests.js

@@ -1,96 +1,118 @@
 # Obol — Offensive Box Operations Ledger
 
-Obol is a static, offline-capable study companion, methodology ledger, command-building assistant, and report-writing aid for OSCP-style labs, Active Directory practice, and CTFs. It is plain HTML/CSS/JavaScript with no backend, no build step, and no telemetry. All engagement state stays in the browser unless you explicitly export it.
+Obol is a static, offline-capable study companion, methodology ledger, command-building assistant, and report-writing aid for OSCP-style labs, Active Directory practice, and CTFs. The live site is served at `https://platocres.github.io/obol/`. It is plain HTML/CSS/JavaScript with no backend, no build step, and no telemetry. All engagement state stays in the browser unless you explicitly export it.
 
 **Human-run commands only.** Obol never executes commands, installs tools, creates pivots, or exploits targets. It helps the operator decide what to try, build the command, preserve what happened, understand what remains unknown, and turn the historical ledger into a reproducible report draft.
 
-## Obol v2.9
+## Obol v3.0
 
-v2.9 turns the explicit-state foundations from v2.8 into better planning and reporting signals without relaxing the conservative evidence model. The release makes Path aware of operator-confirmed reachability, adds real pivot lifecycle state, links preserved artifacts into cross-artifact dependency chains, and evaluates successful actions against finding-specific proof obligations.
+v3.0 is a usability-focused release. The underlying evidence, methodology, reachability, lineage, and reporting model from v2.9 remains intact, but the website shell is reorganized around the way an operator actually moves through a lab: choose a target, ingest evidence, decide what to do next, execute manually, and document the result.
 
-### Reachability-aware Path relevance
+### Workflow-first navigation
 
-v2.8 distinguished direct, pivot-reachable, observed-only, and unknown network visibility. v2.9 now allows that explicit reachability state to influence Path ranking.
+The previous header exposed a dozen destinations at the same visual level. v3.0 reduces the primary navigation to five clear workflow destinations:
 
-The rule remains conservative:
+- **Home** — resume the engagement and see what needs attention
+- **Targets** — hosts, domains, ports, flags, and target metadata
+- **Evidence** — Intake and evidence review
+- **Next Steps** — evidence-ranked Path recommendations
+- **Report** — proof readiness and report output
 
-- an observed internal service alone does not receive a reachability boost
-- a service card can receive a relevance boost only when an explicit active direct route or pivot covers the observed target
-- pivot-specific methodology can be deprioritized when a pivot is already active
-- broken pivot state can increase the relevance of repair/re-establishment work
+Advanced/reference destinations remain one click away in a **More** menu: Engagement Map, Methodology, Tool Library, Planned Work, Workspace Search, Evidence Lineage, Guide, and Workspace Data.
 
-Path now surfaces a compact **Reachability-aware Path signals** panel so the operator can see which recommendations moved and why.
+A compact workflow ribbon reinforces the mental model:
 
-### Pivot lifecycle
+`Target → Evidence → Decide → Execute → Document`
 
-Explicit network paths now retain more operational context:
+### Home dashboard
 
-- active, inactive, or broken state
-- source host / pivot host
-- reachable destination CIDR
-- tunnel or listener endpoint note
-- free-form lifecycle note
-- explicit last-verified timestamp
+A new Home view gives the site a useful landing page instead of dropping the operator into a feature view without context.
 
-Path provides operator controls to mark a path verified, broken, active, inactive, or removed. A broken path is never treated as active reachability.
+Home shows:
 
-This is still a record of operator state. Obol does not create, repair, or test a tunnel itself.
+- the active working context
+- a stage-aware **Continue** action
+- target, evidence, planned-work, and report-readiness totals
+- the strongest evidence-grounded next recommendation
+- direct / pivot / observed network visibility
+- broken pivot count
+- recent recorded activity
+- quick links to common tasks
 
-### Cross-artifact dependency lineage
+The suggested resume action is conservative and state-driven. For example, a new workspace points to target setup, a scoped target with no evidence points to Intake, incomplete proof obligations point to Report, and queued work points back to Planned Work.
 
-The Lineage view now exposes conservative dependency chains across multiple preserved artifacts.
+### Clearer terminology and page guidance
 
-When one artifact is recorded as consumed by a methodology card and another artifact is later recorded as produced by that same card, Obol can display a chain such as:
+The website now uses more immediately understandable labels in the shell:
 
-`host → SMB enumeration card → share`
+- Boxes → **Targets**
+- Intake → **Evidence Intake**
+- Path → **Next Steps**
+- Queue → **Planned Work**
+- Lanes → **Methodology**
+- Data → **Workspace Data**
 
-The dependency view is derived only from recorded producer/consumer lineage. Candidate-secret values remain masked.
+Each major page gets a short **What this is for** explanation. This keeps Obol's specialized concepts without requiring a new user to decode the vocabulary before using the site.
 
-### Finding proof obligations
+### Faster navigation
 
-v2.8 required evidence, a command snapshot, and explicit screenshot confirmation for every successful activity. v2.9 adds proof obligations based on the material transition and finding context.
+v3.0 adds a global quick navigation/search palette available from the header or with **Ctrl/Cmd+K**.
 
-Examples include:
+The palette can:
 
-- credential transitions require preserved artifact provenance
-- foothold and privilege transitions require operator-confirmed target identity visibility
-- foothold and privilege transitions require operator-confirmed user/root/SYSTEM identity visibility
-- privilege transitions can require explicit proof/local evidence confirmation
-- network-transition successes require an explicit active network-path record
-- methodology cards with finding metadata preserve the finding/severity context in readiness views
+- jump directly to any Obol section
+- search the active context using the existing workspace search index
+- open matching facts, artifacts, activities, cards, and commands
 
-These checks are designed for OSCP-style evidence discipline without pretending Obol can inspect or validate a screenshot it has not been given.
+### Context and sidebar usability
+
+The active working context is now visible in the header at all times. Clicking it opens the parameters/facts panel.
+
+The left parameter/fact sidebar can be collapsed on desktop to give dense methodology and command cards more room. On smaller screens it becomes an off-canvas panel instead of permanently consuming horizontal space.
+
+### Responsive and accessibility improvements
+
+- five-item bottom navigation on smaller screens
+- larger, clearer touch targets
+- keyboard-visible focus states
+- skip-to-workspace link
+- improved main-content width and spacing for readability
+- responsive Home metrics, workflow ribbon, activity list, and quick actions
+- preserved print behavior for reports
 
 ### Foundations retained
 
 - Host/domain-scoped facts, evidence, activity, credentials, and progress.
 - Supported/refuted/inconclusive knowledge semantics.
-- Evidence-ranked Path with information gain, downstream unlocks, workflow depth, and coverage gaps.
+- Evidence-ranked Path with information gain, downstream unlocks, workflow depth, coverage gaps, and explicit reachability relevance.
 - Persistent operator Queue with priority, notes, done/deferred state, and report history.
 - Maneuver-first methodology with preferred tools and practical fallbacks.
 - Kali-aware install/verification help without executing anything.
 - Semantic command builders with grouped controls, presets, and optional advanced switches.
 - Nmap host/OS/domain enrichment and LDAP/NetExec username distillation.
 - First-class typed artifacts and direct evidence-to-command handoffs.
-- Producer/consumer artifact lineage with context-safe deduplication.
+- Producer/consumer artifact lineage with context-safe deduplication and cross-artifact dependency chains.
 - Review-first typed-artifact and network-observation intake gates.
 - Offline script library with filtering, contextual guidance, builders, and one-click copy.
 - AD methodology decision map and MachineAccountQuota/RBCD readiness coverage.
 - ANSI/prompt/terminal normalization and mixed-command transcript segmentation.
 - Post-foothold interface, route, subnet, host, and service visibility modeling.
-- Explicit direct/pivot reachability state without inferred reachability.
+- Explicit direct/pivot reachability plus active/inactive/broken pivot lifecycle state.
+- Finding/transition-specific report proof obligations.
 - Strong negative-evidence semantics for tool failure, inconclusive results, service rejection, and true refutation.
-- Workspace Search filters for object type, artifact family, source, result, and time.
 - Browser-local state and sanitized workspace export.
 
 ### To-Do - For Agents
 
-Completed or materially advanced in v2.9:
+Completed or materially advanced in v3.0:
 
-- Let explicit reachability influence Path relevance without promoting observed-only targets.
-- Add stronger pivot lifecycle modeling for source host, destination network, endpoint notes, verification, and broken state.
-- Add cross-artifact dependency chains to the Lineage experience.
-- Improve report readiness with finding/transition-specific proof obligations and explicit OSCP-style screenshot-content confirmation.
+- Reduce top-level navigation overload and group the site around the operator workflow.
+- Add a real landing/resume dashboard.
+- Keep the active working context visible globally.
+- Make the parameters/facts sidebar collapsible and mobile-friendly.
+- Add global quick navigation/search and keyboard access.
+- Add page-level explanatory guidance and clearer user-facing terminology.
+- Improve responsive navigation, focus visibility, and basic accessibility.
 
 Next priorities:
 
@@ -105,7 +127,7 @@ Next priorities:
 - Continue methodology depth around credential reuse, AD trusts, delegation, certificate paths, service-specific enumeration, and post-foothold evidence requirements.
 - Expand proof-readiness templates for finding categories while keeping all screenshot-content checks operator-confirmed.
 - Continue improving direct artifact bindings for commands whose option semantics cannot be inferred safely from labels/placeholders alone.
-- Keep this to-do list current as new gaps are found.
+- Keep the v3 information architecture simple as features grow; new features should not automatically become new primary navigation items.
 
 ## Run locally
 
@@ -129,9 +151,10 @@ node tests/run-v2.7-tests.js
 node tests/run-v2.7-hardening-tests.js
 node tests/run-v2.8-tests.js
 node tests/run-v2.9-tests.js
+node tests/run-v3.0-tests.js
 ```
 
-The v2.9 suite covers release-state initialization, pivot lifecycle metadata, broken/verified path behavior, conservative reachability-aware relevance, broken-pivot repair relevance, cross-artifact dependency lineage, finding-specific foothold proof obligations, credential provenance requirements, and inherited sanitized-export redaction. GitHub Actions runs the complete regression chain on `main`, release branches, and pull requests.
+The v3.0 suite covers release-state initialization, the simplified navigation model, stage-aware Home guidance, context-scoped workspace overview counts, v3 shell wiring, and inherited sanitized-export redaction. GitHub Actions runs the complete regression chain on `main`, release branches, and pull requests.
 
 ## Legal / ethics
 
