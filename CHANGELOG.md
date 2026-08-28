@@ -2,7 +2,18 @@
 
 This file is the release-history source for Obol. Future build work should review this changelog together with the current README before changing architecture or methodology.
 
-The README is intentionally reserved for current project purpose, architecture, permanent requirements, and forward priorities.
+The README is intentionally reserved for current project purpose, architecture, permanent requirements, a compact summary of only the latest three releases, and forward priorities.
+
+## v5.2 — delivery-ready canonical accounting and build-next queue
+
+- Added delivery-ready canonical accounting on top of the existing 127-section methodology ledger without rewriting canonical status.
+- A represented canonical section is now considered delivery-ready only when at least one tracked mapped workflow has all four established delivery contracts: runnable command, explicit Evidence profile, explicit execution-side metadata, and reporting traceability.
+- Added a dedicated delivery-readiness metric to the North Star Dashboard with separate accounting for implemented quality debt and delivery-ready partial coverage.
+- Added a prioritized **Build next** queue that orders repository work as: implemented canonical quality debt first, remaining mapped-workflow delivery debt second, and new canonical gaps third.
+- Added direct source-file drill-down from Build next rows into Methodology while keeping the five-item primary navigation unchanged.
+- Restructured README To-do content into North Star objectives, summaries of the latest three releases, and explicit next-build priorities as required by the current README contract.
+- Kept the strict canonical methodology baseline unchanged at 52 implemented / 49 partial / 26 gaps / 0 stale, 41% fully implemented and 80% represented.
+- Made inherited v5.1 release-wiring regression future-safe so later releases can remain current without breaking historical tests.
 
 ## v5.1 — delivery-debt drill-down and dashboard quality gates
 
