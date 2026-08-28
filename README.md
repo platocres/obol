@@ -275,6 +275,7 @@ North Star:
 - Make sure that each tool for each step of the path is not only proper, but has the proper GUI based toggles to adjust commands and that OBOL is able to interpret copy/paste evidence from user terminals to improve its ability to determine next steps.
 - Make sure that all elements of a path, it's tools, and that tool's evidence fit well into the reporting that Obol performs and can be utilized properly in reporting.
 - All of this applies both now and retroactively. All tools and paths and evidence collection and reporting need to be fully functional and fully useful from a user's perspective, and intuitive both from a UI and a UX perspective.
+- All of this needs to be tracked in a single dashboard I can access when I look at the Obol website with hard numbers and percentages.
 
 Completed or materially advanced in v4.8:
 
