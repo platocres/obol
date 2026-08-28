@@ -126,3 +126,7 @@ jobs:
         run: node --check data/dashboard-v4.9.js && node --check assets/core-v4.9.js && node --check assets/app-v4.9.js
       - name: Run v4.9 regression suite
         run: node tests/run-v4.9-tests.js
+      - name: Validate v5.0 JavaScript syntax
+        run: node --check data/dashboard-v5.0.js && node --check assets/core-v5.0.js && node --check assets/report-v5.0.js && node --check assets/app-v5.0.js
+      - name: Run v5.0 regression suite
+        run: node tests/run-v5.0-tests.js
