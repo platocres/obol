@@ -70,3 +70,7 @@ jobs:
         run: node --check assets/core-v3.5.js && node --check assets/intake-v3.5.js && node --check assets/report-v3.5.js && node --check assets/app-v3.5.js && node --check assets/app-v3.5-runtime.js
       - name: Run v3.5 regression suite
         run: node tests/run-v3.5-tests.js
+      - name: Validate v3.6 JavaScript syntax
+        run: node --check data/methodology-v3.6.js && node --check assets/core-v3.6.js && node --check assets/intake-v3.6.js && node --check assets/app-v3.6.js
+      - name: Run v3.6 regression suite
+        run: node tests/run-v3.6-tests.js
