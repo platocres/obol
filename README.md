@@ -4,75 +4,52 @@ Obol is a static, offline-capable study companion, methodology ledger, command-b
 
 **Human-run commands only.** Obol never executes commands, installs tools, or exploits targets. It helps the operator decide what to try, build the command, preserve what happened, understand what remains unknown, and turn the historical ledger into a reproducible report draft.
 
-## Obol v2.2
+## Obol v2.3
 
-v2.2 builds on the scoped evidence model from v2.0 and the evidence-intelligence/reporting work from v2.1. The focus is practical lab flow: deeper methodology, interchangeable tool implementations, easier command customization, Kali-aware tool help, stronger state transitions, and better report evidence readiness.
+v2.3 focuses on turning evidence into useful next actions. It retains the v2.2 maneuver-first methodology, tool fallback model, service-depth tracking, compromise-chain reporting, and evidence-readiness checks while tightening the day-to-day lab workflow.
 
-### Maneuver-first methodology
+### Evidence intake that carries forward
 
-- The methodology unit is the **maneuver**, not the tool used to perform it.
-- Multiple implementations of the same maneuver do not inflate or punish methodology coverage.
-- Existing cards with multiple tools are resolved through a common preference layer.
-- New depth cards cover SMB deep enumeration, web source/JavaScript/backup review, upload validation, Linux/Windows credential hunting, and post-foothold network baselines.
-- Workflow and service-depth views show how deeply the relevant surface has actually been explored.
+- Forest-style Nmap output now enriches the host record from script/service evidence, including computer name, FQDN/domain context, and detailed OS text when present.
+- NetExec LDAP `--users` output is distilled into a clean username artifact instead of remaining opaque terminal text.
+- LDIF `sAMAccountName` and `userPrincipalName` fields are also distilled into usernames.
+- Common AD noise such as HealthMailbox, `SM_` service-mailbox objects, machine accounts, Guest, DefaultAccount, and krbtgt is filtered from generated user lists.
+- Applying reviewed username artifacts establishes `ad.user_list`, so Path can immediately rank username-driven AD follow-ups rather than leaving the list disconnected from methodology state.
+- Intake can **Download + use as userlist**, saving `users.txt` and setting the shared `userlist` parameter to that filename for command builders.
 
-### Preferred tools and practical fallbacks
+### Command Builder v2.3
 
-- Obol prefers the strongest practical implementation that is not marked missing.
-- **NetExec (`nxc`) receives an explicit preference boost** for SMB/LDAP/WinRM/RDP/MSSQL and other supported network-service workflows where it is a strong consolidated choice.
-- Alternatives such as `smbclient`, `enum4linux-ng`, `rpcclient`, `smbmap`, `ffuf`, `feroxbuster`, `gobuster`, and direct protocol tools remain available.
-- Missing a preferred tool never blocks the maneuver; Obol promotes the next usable implementation.
-- Tool availability is local browser state and can be changed at any time.
+v2.3 expands practical switch coverage beyond the v2.2 NetExec/fuzzer work while keeping controls grouped by operator intent.
 
-### Kali-aware tool environment
+- Nmap: host discovery, DNS behavior, open-only/reason output, timing profiles, retry/rate controls, and `-oA` evidence output.
+- ldapsearch: simple bind, clean LDIF, scope, paging, bind DN, and password prompting.
+- curl: redirects, TLS handling, headers, cookies, response output, verbosity, and time limits.
+- Hydra: tasks, waits, first-success behavior, TLS, verbosity, and output files.
+- Hashcat and John: workload/rules/formats/status/show/output controls.
+- Responder: interface, analyze-only mode, verbosity, and common response modules.
+- SNMP tools: version/community/input/output/timeout controls.
+- Evil-WinRM: SSL, port, scripts/executables directories, and session logging.
+- WhatWeb, smbclient, and rpcclient receive additional practical controls as well.
 
-Obol assumes a normal Kali build unless the operator records an exception.
+The real switch remains visible beside its human-readable label. Advanced controls can stay hidden until needed. Generated commands remain operator-run and are snapshotted into activity history when recorded.
 
-- Tools are tagged as expected/common on Kali or optional/external.
-- **I don't have this tool** opens install/verification help and official project links.
-- Tool help provides copyable package-install commands where a Kali package exists.
-- The Tools → Environment view lets the operator review or override availability without maintaining an inventory up front.
-- Obol never runs the install command itself.
+### Scripts library UX
 
-Examples currently encoded in the registry include NetExec (`sudo apt install netexec`), Nmap, ffuf, feroxbuster, enum4linux-ng, smbclient, ldap-utils, Evil-WinRM, Certipy, BloodHound tooling, Chisel, Ligolo-ng, Hashcat, and others.
+The offline script library remains part of Obol under **Tools → Scripts**.
 
-### Command Builder v2.2
+- Search scripts by name, category, description, or use case.
+- Each script exposes its **when**, **where**, and **how** guidance alongside the code.
+- One-click copy is available directly from the script card.
+- Scripts remain parameter-aware through Obol placeholders and are never executed by the application.
 
-- Existing card option switches are preserved and normalized into a reusable semantic command-builder UI.
-- Controls are grouped by intent such as Enumeration, Authentication, Performance, Network, Filtering, Discovery, and Output.
-- Human-readable labels sit next to the real switch so the UI teaches both intent and syntax.
-- Advanced switches can be hidden during normal use and exposed when needed.
-- NetExec commands gain common global controls including threads, timeout, jitter, DNS server, logging, verbose/debug output, plus SMB-specific enumeration controls where applicable.
-- Web fuzzers gain reusable tuning/output controls.
-- Semantic presets can select switches without depending on fragile numeric option positions.
-- Exact generated commands are still snapshotted into activity history for reporting.
+### v2.2 foundations retained
 
-### Evidence, state, and Intake improvements
-
-- v2.1 supported/refuted/inconclusive knowledge is retained.
-- Tool/runtime failures such as `command not found` are treated as **inconclusive**, not as proof that the underlying hypothesis is false.
-- Transport failures are similarly prevented from killing a methodology branch when the test itself was not valid.
-- Terminal Intake adds conservative recognition for sudo enumeration, NOPASSWD, SUID/capability evidence, Windows privilege output, local listeners, interfaces/routes, RPC user enumeration, LDAP naming contexts, SMB share access, and common web-content discovery output.
-- Material state transitions are tagged separately from routine activity: credential, foothold, privilege, domain, lateral-movement, and new-network visibility.
-
-### Path, Stuck, and coverage
-
-- Path keeps v2.1 information-gain/downstream-unlock ranking.
-- Relevant coverage now reports **maneuver** coverage rather than command/tool count.
-- Service depth highlights shallow SMB, web, LDAP/Kerberos, privilege-escalation, and other workflows.
-- Active workflows expose individual steps as new, tried, or succeeded.
-- Existing Stuck analysis continues to use coverage gaps, untested credentials, contradictions, repeated dead ends, and high-information next steps.
-
-### Report v2.2
-
-Reporting remains a first-class end goal.
-
-- v2.1 executive summaries, target context, findings, attack-path history, remediation, defensive notes, references, secret redaction, and OSCP mode remain intact.
-- **Compromise Chains** now separate material state transitions from routine enumeration so the successful path is easier to explain and reproduce.
-- Per-target **Evidence and Screenshot Readiness** combines automatically verifiable ledger evidence with explicit operator screenshot checkboxes.
-- Screenshot readiness tracks initial-access evidence, privilege evidence, and proof/local evidence when applicable.
-- Report readiness warnings surface missing screenshot items alongside existing missing-command/evidence/confidence checks.
-- Manual screenshot state is stored locally with the workspace and is included in the report-generation state model.
+- Maneuvers, not redundant tool implementations, are the methodology/coverage unit.
+- NetExec remains preferred where it is the strongest consolidated implementation, with practical alternatives when a tool is missing.
+- Tool/runtime and transport failures remain inconclusive rather than incorrectly refuting a maneuver.
+- Path uses evidence relevance, downstream unlocks, service/workflow depth, and prior activity to rank next actions.
+- Reporting includes executive/technical narrative, reproducible attack history, compromise chains, remediation context, secret redaction, OSCP mode, and per-target evidence/screenshot readiness.
+- All state remains local to the browser unless explicitly exported.
 
 ## Run locally
 
@@ -88,11 +65,10 @@ The repository is designed to serve directly from `main` and `/ (root)`.
 node tests/run-tests.js
 node tests/run-v2.1-tests.js
 node tests/run-v2.2-tests.js
+node tests/run-v2.3-tests.js
 ```
 
-The v2.2 suite covers Kali tool assumptions, explicit missing-tool overrides, NetExec preference/fallback behavior, semantic NXC switches, maneuver-vs-tool semantics, service-depth counting, inconclusive missing-tool Intake behavior, post-foothold network evidence, material transition history, report screenshot readiness, compromise-chain output, and workflow depth.
-
-GitHub Actions runs all three suites on `main`, release branches, and pull requests.
+The v2.3 suite specifically covers release-state migration, Forest-style Nmap host enrichment, NetExec/LDIF username distillation, artifact-to-`ad.user_list` handoff, and representative command-builder switch coverage. GitHub Actions runs all regression suites on `main`, release branches, and pull requests.
 
 ## Legal / ethics
 
