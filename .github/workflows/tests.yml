@@ -94,3 +94,7 @@ jobs:
         run: node --check data/methodology-v4.1.js && node --check assets/core-v4.1.js && node --check assets/app-v4.1.js
       - name: Run v4.1 regression suite
         run: node tests/run-v4.1-tests.js
+      - name: Validate v4.2 JavaScript syntax
+        run: node --check data/orange-ad-2025.03.js && node --check assets/core-v4.2.js && node --check assets/app-v4.2.js
+      - name: Run v4.2 regression suite
+        run: node tests/run-v4.2-tests.js
