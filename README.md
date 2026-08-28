@@ -6,125 +6,126 @@ It is plain HTML/CSS/JavaScript with no backend, no build step, and no telemetry
 
 **Human-run commands only.** Obol never executes commands, installs tools, creates pivots, scans targets, or exploits systems. It helps the operator decide what to try, build the command, preserve what happened, understand what remains unknown, and turn the historical ledger into a reproducible report draft.
 
-## Obol v4.5
+## Obol v4.6
 
-v4.5 is the **Orange operator-loop contract** release.
+v4.6 is the **SCCM branch depth and operator-loop** release.
 
-v4.4 made the Orange Cyberdefense 2025.03 decision path materially improve **Next Steps**. v4.5 advances the next README North Star requirement: each mapped step should have a usable command surface with proper GUI based toggles where switches are meaningful, and Obol should be able to interpret copy/paste evidence from the operator terminal so the next decision can be grounded in what actually happened.
+v4.5 established reusable run/evidence contracts for Orange-mapped methodology. v4.6 applies that contract to one of the largest canonical gaps still visible in the pinned Orange Cyberdefense 2025.03 Active Directory source: SCCM beyond reconnaissance.
 
-The release remains advisory and human-run. Command controls never execute anything. Evidence profiles never manufacture success. Orange guidance still cannot make a technique applicable, override evidence, or bypass the existing Kali/Windows execution-context model.
+The release remains advisory and human-run. Obol still does not run SCCM tools, relay authentication, dispatch jobs, recover secrets, or perform cleanup. The operator runs commands externally and pastes terminal output into Evidence.
 
-### Run / evidence contracts
+### SCCM now has separate workflow owners
 
-Every live Orange-mapped methodology card can now be audited for two separate concerns:
+The existing `sccm-enum` card remains the reconnaissance owner. v4.6 adds four deeper cards so one broad SCCM card does not pretend to own every phase:
 
-- **Run contract** — does the card have real commands, and which commands have semantic GUI controls or a dedicated builder?
-- **Evidence contract** — does Obol have an explicit high-confidence copy/paste profile for the workflow, and which facts is that profile allowed to establish?
+- **SCCM Credential Recovery** — SCCMSecrets policy/files, dploot SCCM recovery, and Windows-local SharpSCCM secret recovery.
+- **SCCM Relay and Site Takeover** — ntlmrelayx site-system/MSSQL relay and SCCMHunter MSSQL takeover planning.
+- **SCCM Administrative Execution** — SharpSCCM and SCCMHunter administrative execution after a control path is actually proven.
+- **SCCM Cleanup and Post-Exploitation Mapping** — exact artifact cleanup plus SCCMHound relationship/session mapping.
 
-`assets/core-v4.5.js` exposes reusable contract coverage and queue-readiness helpers. `nextStepsOverview34()` now carries the v4.5 run/evidence payload beside the existing v4.4 Orange decision-path payload.
+Each new card ships with explicit Kali/Windows execution metadata and an Evidence contract.
 
-This is diagnostic infrastructure, not a new applicability or ranking gate.
+### Run → paste → interpret → decide continues
 
-### GUI command-control improvements
+The v4.5 operator-loop rule remains in force. New SCCM work is not considered complete merely because a command exists.
 
-v4.5 closes concrete control gaps discovered while auditing Orange-mapped steps.
+The SCCM branch now has explicit copy/paste proof boundaries:
 
-- SCCMHunter discovery commands gain an opt-in **Debug output** control rather than baking verbose behavior into the base command.
-- The connection-form `impacket-mssqlclient` workflow gains semantic controls for Kerberos cache authentication, no-password mode, NTLM hash authentication, and debug output.
-- Mature older control surfaces remain authoritative: Nmap keeps the Targets-owned scan builder, Rubeus keeps its dedicated workbench, and existing NetExec, LDAP, Hashcat, Kerbrute, Certipy, and Impacket controls are reused instead of duplicated.
-- Fixed native commands remain fixed rather than receiving meaningless switches just to improve an audit percentage.
+- credential recovery requires explicit paired credential fields before `credential.candidate` / `sccm.credentials` can be established;
+- relay/takeover requires explicit successful authenticated relay output before `relay.success` / `sccm.control_path` can be established;
+- administrative execution requires explicit successful dispatch/completion output before `sccm.execution_confirmed` can be established;
+- cleanup requires explicit removal confirmation before `sccm.cleanup_recorded` is established;
+- SCCMHound mapping can establish `sccm.post_map`, but never automatically proves administrator or SYSTEM access.
 
-### Orange copy/paste Evidence profiles
+Recognized command startup text remains a tried activity, not a success.
 
-`assets/intake-v4.5.js` adds conservative explicit intent/proof handling for several Orange workflows that previously depended mainly on generic matching:
+### SCCM decision-path progress
 
-- audited Active Directory Hashcat modes
-- BloodHound Python, SharpHound, and NetExec BloodHound collection
-- SCCMHunter discovery
-- `nltest` / PowerView trust enumeration
-- GPP password recovery
-- Certipy / Certify AD CS enumeration
-- Impacket MSSQL client sessions
-- Impacket Golden Ticket creation
+v4.6 adds a context-scoped SCCM progression model:
 
-The proof boundary stays narrow:
+1. Reconnaissance
+2. Credential recovery
+3. Relay / takeover
+4. Administrative execution
+5. Cleanup / post mapping
 
-- Hashcat needs explicit `Cracked` status before `credential.plaintext` is established.
-- BloodHound collection can establish `ad.graph.collected`, not automatically `ad.attack_paths`.
-- SCCM discovery can record successful reconnaissance without inventing credentials or admin access.
-- Trust enumeration can establish `ad.trusts` only from explicit trust output.
-- AD CS enumeration can establish `adcs.vulnerable` only from explicit ESC/vulnerability output.
-- MSSQL output can establish `db.mssql_access` without automatically claiming OS command execution or a Windows foothold.
-- Golden Ticket creation requires explicit saved `.ccache` output before persistence state is established.
+Successful SCCM activity or explicit SCCM facts can advance that progression only inside the active host/domain context.
 
-Inherited Nmap, anonymous LDAP, Rubeus, Impacket roast/ticket/secretsdump/DCSync/remote-exec, PEASS-ng, SQLmap, and other evidence handlers remain in force and are cataloged as inherited contracts rather than being reimplemented.
+Next Steps can show the current SCCM phase, the next phase, grounded SCCM recommendations, and their run/evidence readiness. This composes with the v4.4 Orange decision path rather than replacing it.
 
-### Operator-loop visibility
+### Canonical Orange coverage improves
 
-Next Steps now shows a **Run → paste → interpret → decide** audit for the current Orange-mapped recommendation queue. Each row exposes whether it has GUI-adjustable commands and whether an explicit Evidence profile exists.
+The v4.5 baseline was 42 implemented / 39 partial / 46 gaps / 0 stale.
 
-Evidence shows the current Orange copy/paste profile count. Mapped methodology-card pages show a compact Run / evidence contract summary. Guide documents the v4.5 contract model.
+v4.6 moves six SCCM sections to fully implemented and six additional SCCM sections from gap to partial. The new live baseline is:
 
-The v4.4 Orange decision-path panel remains separate and authoritative for path context: v4.4 answers *where does this fit?* while v4.5 answers *can the operator run it through Obol and feed the result back into Evidence?*
-
-### Coverage remains strict
-
-v4.5 improves command and evidence contracts. It does not claim that parser coverage or GUI switches implement new Orange techniques.
-
-The live project baseline therefore remains:
-
-- **42 / 127 canonical sections fully implemented**
-- **39 partial**
-- **46 explicit gaps**
+- **48 / 127 canonical sections fully implemented**
+- **45 partial**
+- **34 explicit gaps**
 - **0 stale implemented mappings**
-- **33% fully implemented**
-- **64% represented**
+- **38% fully implemented**
+- **73% represented**
 
-### v4.5 regression focus
+PXE/NAA remains a gap. Forced/automatic client-push setup, policy-request enrollment lifecycle, and some site-database credential variants remain partial rather than being overclaimed.
 
-The v4.5 suite locks:
+### v4.6 regression focus
 
-- unchanged Orange 2025.03 source commit, tree SHA, and permanent North Star
-- unchanged 42 / 127, 39 partial, 46 gap, 0 stale baseline
-- run/evidence contract accounting
-- SCCMHunter and Impacket MSSQL GUI-control additions
-- narrow Hashcat, BloodHound, SCCM, trust, AD CS, MSSQL, and Golden Ticket terminal-proof semantics
-- no credential/admin/foothold inflation from reconnaissance-only output
-- coexistence with v4.4 decision-path guidance and the Kali/Windows execution model
-- Next Steps, Evidence, card, Guide, index, workflow, and README wiring
+The v4.6 suite locks:
+
+- unchanged Orange 2025.03 upstream commit, AD tree, and permanent North Star
+- the new 48 / 45 / 34 / 0 live baseline
+- dedicated SCCM credential, relay/takeover, execution, cleanup, and post mappings
+- explicit Kali / Windows execution metadata
+- v4.5 run/evidence contract availability
+- v4.4 decision-stage composition
+- narrow SCCM terminal proof with no admin, foothold, or SYSTEM inflation
+- per-context SCCM progress isolation
+- Next Steps, Home, card, Guide, index, workflow, and README wiring
 - inherited sanitized-export secret redaction
 
-See `docs/v4.5.md` for the full operator-loop contract.
+See `docs/v4.6.md` for the full SCCM branch contract and remaining gaps.
+
+## Obol v4.5
+
+v4.5 is the **Orange operator-loop contract** release. It added reusable run/evidence contract accounting for live Orange-mapped cards, GUI-control gap fixes for SCCMHunter and Impacket MSSQL, and conservative explicit terminal profiles for Hashcat, BloodHound, SCCM discovery, trust enumeration, GPP, AD CS, MSSQL, and Golden Ticket workflows.
+
+Next Steps surfaces **Run → paste → interpret → decide** readiness. Evidence and mapped card pages expose explicit parser coverage. The North Star requirement that each tool have **proper GUI based toggles** where meaningful remains active.
+
+The v4.5 strict project baseline was 42 / 127 fully implemented, 39 partial, 46 gaps, and 0 stale.
 
 ## Obol v4.4
 
-v4.4 is the **Orange decision-path integration** release. Canonical Orange mappings are grouped into bounded decision stages from environment identification through credential work, authenticated mapping, control paths, movement, host control, domain-level control, and persistence. Per-context successful activity and conservative fact floors advance the stage, while Orange contributes only a small positive Next Steps ranking signal. It never creates applicability or success.
+v4.4 is the **Orange decision-path integration** release. Canonical Orange mappings are grouped into bounded decision stages from environment identification through credential work, authenticated mapping, control paths, movement, host control, domain-level control, and persistence.
 
-The v4.4 UI surfaces the current/next Orange decision stage, evidence-grounded canonical directions, recent mapped activity, and card-level decision-stage provenance. The strict 42 / 127 project baseline remains unchanged.
+Per-context successful activity and conservative fact floors advance the stage. Orange contributes only a small positive Next Steps ranking signal and never creates applicability or success. This release established the requirement that Orange data keep **improving "Next Steps"** as users move through the decision path.
 
 ## Obol v4.3
 
-v4.3 is the **canonical reconciliation and cracking-contract audit** release. It reconciles the stable 127 canonical Orange sections against live Obol methodology, repairs the RBCD stale mapping, recognizes mature DC, SCCM, GPP, MSSQL, trust, Golden Ticket, and database workflows, and expands the Active Directory Hashcat reference.
+v4.3 is the **canonical reconciliation and cracking-contract audit** release. It repaired the RBCD stale mapping, reconciled existing DC/SCCM/GPP/MSSQL/trust/Golden Ticket/database workflows, and expanded the Active Directory Hashcat reference.
 
-The reconciled baseline is **42 / 127** fully implemented, 39 partial, 46 gaps, 0 stale, 33% complete, and 64% represented. The Hashcat audit includes LM 3000, NTLM 1000, NetNTLMv1 5500, NetNTLMv2 5600, TGS RC4 13100, TGS AES128 19600, TGS AES256 19700, AS-REP 18200, MSCache2 2100, TimeRoast 31300, and the explicitly external-module SCCM PXE 19850 case.
+The v4.3 reconciled baseline was **42 / 127** fully implemented, 39 partial, 46 gaps, 0 stale, 33% complete, and 64% represented. It also corrected NetNTLMv1 to Hashcat mode 5500 and kept the SCCM PXE mode 19850 external-module dependency explicit.
 
 ## Obol v4.2
 
 v4.2 is the **canonical Orange snapshot and completion-accounting** release. `data/orange-ad-2025.03.js` pins the complete Orange 2025.03 textual Active Directory methodology structure to upstream commit `6d16ca0d1434875e0617f2f3cfa825fad0bc7d7e` and AD tree `51b414fc0c0a1a4414e86986ec5e2b5225a6d698`.
 
-The snapshot contains **127 canonical methodology sections** across all 17 methodology-bearing AD source files and preserves source hashes and links. Future builds layer current coverage on the immutable source snapshot rather than reconstructing the map for routine accounting.
+The snapshot contains **127 canonical** methodology sections across all 17 methodology-bearing AD source files and preserves source hashes and links.
 
 ## Obol v4.1
 
-v4.1 is the **methodology coverage and audit** release. It introduced implemented / partial / gap / stale-mapping accounting, structured keep / supplement / replace / review tool decisions, and audited explicit execution metadata for high-confidence Orange-mapped commands. The existing Methodology surface owns the coverage ledger rather than adding navigation clutter.
+v4.1 is the **methodology coverage and audit** release. It introduced implemented / partial / gap / stale-mapping accounting, structured keep / supplement / replace / review tool decisions, and audited explicit execution metadata.
+
+The release established this ongoing requirement: **Create infrastructure to keep up with how much of the Orange Cyber Defense mind map and its decision path and tools has been fully implemented and how much remains to be implemented within Obol.**
 
 ## Obol v4.0
 
 v4.0 is the **execution-context** release. Path considers whether the operator is **operating from Kali or from a Windows host** on a given step. Each active context can record Either, Kali, or Windows host. The choice adds a small implementation-preference signal without becoming a prerequisite and is snapshotted into new activity provenance.
 
+The Orange Cyber Defense mind map remains the design reference for this work.
+
 ## Obol v3.9
 
-v3.9 expanded **Evidence normalization**, **activity-intent** coverage, and full-session regression handling for Impacket Kerberos, secretsdump/DCSync, Impacket remote execution, PEASS-ng, and SQLmap. Command classification remains separate from outcome proof.
+v3.9 expanded **Evidence normalization**, high-confidence **activity-intent** coverage for Impacket Kerberos, secretsdump/DCSync, Impacket remote execution, PEASS-ng, and SQLmap, plus broader **full-session** regression handling. Command classification remains separate from outcome proof.
 
 ## Obol v3.8
 
@@ -140,7 +141,7 @@ v3.6 introduced the first-class Rubeus workbench and connected it to Methodology
 
 ## Obol v3.5
 
-v3.5 is the field-tested Evidence and Report release that corrected overloaded-tool **activity classification**, repaired anonymous LDAP outcomes, retained **Evidence normalization**, consolidated Report, made screenshot proof explicitly external, added rendered/PDF export, and strengthened lineage repair. Its priorities included richer transcript coverage and **multi-hop** navigation.
+v3.5 is the field-tested Evidence and Report release that corrected overloaded-tool **activity classification**, repaired anonymous LDAP outcomes, retained **Evidence normalization**, consolidated **Report**, made screenshot proof explicitly external, added rendered/PDF export, and strengthened lineage repair. Its priorities included richer transcript coverage and **multi-hop** navigation.
 
 ## Obol v3.4
 
@@ -215,6 +216,7 @@ Optional users, active users, exports, groups, computers, DCs, SID, password pol
 - Per-context Orange decision-stage progress derived from recorded activity and reviewed facts.
 - Orange-mapped Next Steps guidance that can boost an already-applicable card without manufacturing applicability or success.
 - Run/evidence contract accounting for Orange-mapped cards, including GUI command-control and terminal-profile visibility.
+- SCCM branch progress with separate credential, relay/takeover, execution, cleanup, and post-map proof semantics.
 
 ## To-Do — for future agents
 
@@ -229,20 +231,21 @@ North Star:
 - Make sure that the data being integrated from the Orange Cyber Defense mind map is improving "Next Steps" and that as users complete each step they are being properly led down the mind map's decision path.
 - Make sure that each tool for each step of the path is not only proper, but has the proper GUI based toggles to adjust commands and that OBOL is able to interpret copy/paste evidence from user terminals to improve its ability to determine next steps.
 
-Completed or materially advanced in v4.5:
+Completed or materially advanced in v4.6:
 
-- Add reusable Orange run/evidence contract accounting for every live mapped card.
-- Catalog inherited parser coverage instead of treating older working Evidence handlers as unknown.
-- Add conservative explicit Evidence profiles for Hashcat AD modes, BloodHound collection, SCCM discovery, trust enumeration, GPP recovery, AD CS enumeration, MSSQL access, and Golden Ticket creation.
-- Add GUI command controls to SCCMHunter and the Impacket MSSQL connection workflow without polluting fixed commands with meaningless switches.
-- Surface run/evidence readiness beside the v4.4 decision path in Next Steps.
-- Surface copy/paste evidence-profile coverage in Evidence and contract summaries on mapped card pages.
-- Preserve the strict 42/39/46/0 Orange coverage baseline and all North Star requirements.
+- Expand SCCM beyond reconnaissance into dedicated credential recovery, relay/site-takeover, administrative execution, cleanup, and post-exploitation mapping workflows.
+- Add conservative copy/paste Evidence profiles for each new SCCM workflow.
+- Add explicit Kali/Windows execution metadata to every new SCCM command.
+- Add meaningful GUI switches to relay/SCCMHunter commands while leaving fixed commands fixed where toggles would not improve the maneuver.
+- Add per-context SCCM branch progress and expose it through Next Steps/Home only when relevant.
+- Move six SCCM canonical sections to implemented and six additional SCCM sections from gap to partial.
+- Raise strict Orange coverage from 33% to 38% and represented coverage from 64% to 73% without claiming PXE/NAA or incomplete client-push variants as complete.
+- Preserve every existing North Star, Next Steps, GUI-control, and Kali/Windows requirement.
 
 Next priorities:
 
 - Use `C.orangeContractCoverage45(LANES)` together with `C.mindmapPriorityGaps42(LANES)` so newly implemented Orange work lands with both usable command controls and conservative Evidence profiles.
-- Expand SCCM beyond reconnaissance into credential recovery, relay, takeover, execution, cleanup, and post-exploitation branches.
+- Finish the remaining SCCM PXE/NAA, client-push lifecycle, policy-request credential, and site-database decryption gaps with full run/evidence contracts.
 - Expand domain persistence beyond Golden Ticket into Silver Ticket, DSRM, Skeleton Key, Custom SSP, Golden Certificate, Diamond/Sapphire tickets, DCShadow, and persistence-specific ACL lifecycle.
 - Deepen trust abuse beyond enumeration and MSSQL linked-server paths.
 - Address Windows low-access AppLocker bypass, UAC bypass, and Kerberos-relay branches.
@@ -294,9 +297,10 @@ node tests/run-v4.2-tests.js
 node tests/run-v4.3-tests.js
 node tests/run-v4.4-tests.js
 node tests/run-v4.5-tests.js
+node tests/run-v4.6-tests.js
 ```
 
-The v3.4 suite locks the decision-first Next Steps redesign. The v3.5 suite covers field-observed Evidence classification, proof semantics, Report cleanup/export, Evidence normalization, and lineage repair. The v3.6 suite adds Rubeus workbench/state coverage, Kerberos command intent and conservative outcome inference, S4U integration, exact-command lineage, workflow handoffs, North Star retention, and inherited secret redaction. The v3.7 suite adds target-specific reachability, pivot freshness, consumer lineage repair, multi-hop compromise paths, artifact neighborhoods, and mixed full-session regression coverage. The v3.8 suite adds pivot operational history, listener-health ranking semantics, transition-aware compromise summaries, transition proof templates, and another mixed full-session fixture. The v3.9 suite adds broader Impacket/PEASS-ng/SQLmap activity intent, conservative explicit outcome proof, Evidence coverage summaries, and mixed-session regression. The v4.0 suite adds per-context operator execution state, platform-aware Path signals, command-side guidance, and historical execution provenance. The v4.1 suite adds the Orange methodology coverage ledger, tool-review accounting, explicit execution metadata auditing, and live card-reference validation. The v4.2 suite adds the version-pinned canonical Orange AD source inventory, stable completion denominator, snapshot-integrity validation, and persistent completion visibility. The v4.3 suite adds live canonical reconciliation, RBCD stale-mapping repair, audited AD Hashcat modes, release-delta accounting, and card-level Orange provenance. The v4.4 suite adds context-safe Orange decision-stage progress, Next Steps ranking signals, canonical recommendation queues, and engagement-facing decision-path UI. The v4.5 suite adds Orange run/evidence contracts, GUI-control gap fixes, conservative copy/paste profiles, and operator-loop readiness visibility.
+The v3.4 suite locks the decision-first Next Steps redesign. The v3.5 suite covers field-observed Evidence classification, proof semantics, Report cleanup/export, Evidence normalization, and lineage repair. The v3.6 suite adds Rubeus workbench/state coverage, Kerberos command intent and conservative outcome inference, S4U integration, exact-command lineage, workflow handoffs, North Star retention, and inherited secret redaction. The v3.7 suite adds target-specific reachability, pivot freshness, consumer lineage repair, multi-hop compromise paths, artifact neighborhoods, and mixed full-session regression coverage. The v3.8 suite adds pivot operational history, listener-health ranking semantics, transition-aware compromise summaries, transition proof templates, and another mixed full-session fixture. The v3.9 suite adds broader Impacket/PEASS-ng/SQLmap activity intent, conservative explicit outcome proof, Evidence coverage summaries, and mixed-session regression. The v4.0 suite adds per-context operator execution state, platform-aware Path signals, command-side guidance, and historical execution provenance. The v4.1 suite adds the Orange methodology coverage ledger, tool-review accounting, explicit execution metadata auditing, and live card-reference validation. The v4.2 suite adds the version-pinned canonical Orange AD source inventory, stable completion denominator, snapshot-integrity validation, and persistent completion visibility. The v4.3 suite adds live canonical reconciliation, RBCD stale-mapping repair, audited AD Hashcat modes, release-delta accounting, and card-level Orange provenance. The v4.4 suite adds context-safe Orange decision-stage progress, Next Steps ranking signals, canonical recommendation queues, and engagement-facing decision-path UI. The v4.5 suite adds Orange run/evidence contracts, GUI-control gap fixes, conservative copy/paste profiles, and operator-loop readiness visibility. The v4.6 suite adds deep SCCM branch methodology, SCCM-specific run/evidence contracts, per-context SCCM progression, and strict canonical coverage updates.
 
 GitHub Actions runs the complete regression chain on `main`, release branches, and pull requests.
 
