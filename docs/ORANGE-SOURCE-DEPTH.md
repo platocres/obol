@@ -4,31 +4,55 @@
 
 Obol's 127-section Orange 2025.03 denominator is a normalized structural inventory. It answers whether a canonical Orange section is represented and how completely Obol currently owns that section. It does **not** prove that every useful subordinate Orange branch, command variant, prerequisite, decision edge, failure condition, tool choice, artifact transition, cleanup obligation, Evidence signature, Next Steps transition, GUI control, or reporting implication beneath that section has been mined.
 
-This distinction becomes critical at v6.2. The final canonical gap is closed, so Orange is now 100% represented at the normalized-section level. That is a breadth milestone, not a declaration that Orange has been exhausted as a source.
+This distinction became critical at v6.2. The final canonical gap was closed, so Orange reached 100% representation at the normalized-section level. That is a breadth milestone, not a declaration that Orange has been exhausted as a source.
 
-At the v6.2 boundary, 34 canonical sections remain partial. Those 34 sections are frozen as the initial **source-depth audit denominator**. Future builds should treat them as the main Orange quarry unless higher-priority implemented-quality or mapped-delivery debt reappears.
+At the v6.2 boundary, 34 canonical sections remained partial. Those 34 sections are frozen as the initial **source-depth audit baseline**. Future builds must preserve those baseline keys even when a broad section is later upgraded, so unfinished subordinate source work cannot disappear from accounting.
 
-## What source-depth completion means
+## v6.4 accounting model
 
-A source-depth audit should inspect the pinned Orange source beneath each partial canonical section and account for all useful operator information, including:
+v6.4 makes source-depth accounting atomic rather than section-only. North Star Dashboard now keeps three different denominators visible at the same time:
 
-- subordinate attack or enumeration variants
-- prerequisite and branch-condition distinctions
-- alternate Kali and Windows workflows
-- whether the upstream tool is still the best operator choice
-- failure and negative-result interpretation
-- artifacts produced for later steps
-- cleanup and restoration requirements
-- command options that deserve semantic GUI controls
-- copy/paste Evidence signatures and proof boundaries
-- Next Steps transitions caused by each meaningful result
-- reporting and lineage implications
+1. **Canonical breadth** — the stable 127 normalized Orange sections.
+2. **Source inventory depth** — whether the methodology-bearing Orange source files and frozen partial sections have been decomposed into meaningful subordinate source units.
+3. **Atomic source fidelity** — whether each inventoried unit has been carried through the complete Obol operator contract and given an explicit terminal disposition.
 
-A source-depth item is not complete merely because a broad Obol card already exists.
+The first atomized file is `adcs.md`. Its seven broad partial canonical parents are decomposed into 19 meaningful source units spanning AD CS enumeration plus the distinct ESC families and important variants present in the pinned source. This includes ESC1, ESC2/3, ESC4, ESC5, ESC6, ESC7, ESC8, ESC9/10, ESC11, ESC13, ESC14, and ESC15 rather than treating one broad `adcs-esc` owner as proof that all of those branches are complete.
+
+A broad owner mapping remains useful context, but it is **not** source-fidelity completion. The Dashboard therefore shows broad-owner coverage separately from atomic audit completion.
+
+## What an atomic source unit records
+
+Every source unit should preserve enough upstream structure to answer what the source actually says and what Obol must do with it. The machine-readable ledger records:
+
+- source file and pinned source hash
+- canonical parent key
+- meaningful source node / subnode path
+- prerequisite or branch-condition distinctions
+- upstream tool inventory
+- transitions to other methodology states or artifacts
+- existing broad Obol owner mappings
+- cleanup or restoration obligations when applicable
+- explicit audit state and reason
+- per-requirement review dimensions
+
+The required North Star review dimensions are:
+
+- source node / branch captured
+- prerequisites / decision edges captured
+- upstream tools captured
+- Obol owner mapping captured
+- tool suitability reviewed
+- Run contract and semantic GUI controls reviewed
+- Kali / Windows execution context reviewed
+- copy/paste Evidence and proof boundaries reviewed
+- Next Steps transitions reviewed
+- reporting and lineage reviewed
+- cleanup / restoration reviewed
+- final modeled / superseded / rejected disposition recorded
 
 ## Audit states
 
-Every v6.2 source-depth baseline item should eventually end in one of these explicit states:
+Every atomic source unit and every frozen source-depth baseline item must eventually end in one of these explicit states:
 
 - **modeled** — the useful Orange depth is represented end to end in Obol
 - **superseded** — Orange is accounted for, but Obol intentionally uses a better, clearer, more current, or more practical workflow
@@ -37,22 +61,37 @@ Every v6.2 source-depth baseline item should eventually end in one of these expl
 
 Do not copy an inferior or obsolete upstream path merely to raise a percentage. Superseding it with a better operator path is a successful audit outcome when the rationale is explicit.
 
+A terminal status alone is not enough. A source unit is fidelity-complete only when its required North Star dimensions are also complete.
+
 ## Priority order
 
-The permanent release ordering remains:
+The permanent release ordering is:
 
 1. implemented-quality repairs
 2. mapped-delivery repairs
 3. canonical gaps
-4. source-depth audits
+4. atomic source-fidelity audits for already atomized source units
+5. source-depth inventory work that decomposes the remaining broad partial sections into atomic units
 
-With v6.2 at zero quality debt and zero canonical gaps, the source-depth queue becomes the active Build Next phase. High-value broad branches such as AD CS, Kerberos delegation, ACL/ACE abuse, relay/coercion, authenticated mapping, SCCM, credential extraction, no-credential discovery, lateral movement, local privilege escalation, and hash cracking should generally be mined before narrower residual partials.
+This keeps quality debt ahead of methodology expansion while preventing broad section accounting from hiding unmined Orange detail.
 
 ## Dashboard and Build Next contract
 
-North Star Dashboard remains authoritative. v6.2 adds a separate source-depth metric so future agents cannot confuse **100% canonical representation** with **100% useful Orange-source extraction**.
+North Star Dashboard remains authoritative. The Dashboard must separately show:
 
-The Dashboard and README Build Next snapshot should show the source-depth queue once higher-priority quality debt and canonical gaps are zero. Future releases should mark reviewed baseline keys explicitly rather than silently allowing them to disappear when a partial section becomes implemented.
+- canonical implemented / partial / gap accounting
+- methodology source files atomized versus remaining
+- frozen partial baseline sections decomposed versus remaining
+- atomic source units inventoried
+- atomic units with broad Obol owners
+- atomic units reviewed and fidelity-complete
+- modeled / superseded / rejected / needs-audit outcomes
+- the aggregate North Star requirement matrix across atomic units
+- a drill-down ledger showing each unit's source family, canonical parent, existing owner, and audit state
+
+Build Next must preserve the ordering above. Once quality debt and canonical gaps are zero, already-inventoried atomic units are higher priority than still-unatomized broad sections because their missing delivery requirements are known precisely.
+
+The README Build Next block remains a compact CI-enforced snapshot. The Dashboard owns the full source-fidelity drill-down.
 
 ## Completion target
 
@@ -60,8 +99,10 @@ The Orange phase is genuinely complete only when:
 
 - canonical gaps are zero
 - implemented-quality and mapped-delivery debt are zero
-- every v6.2 source-depth baseline item has been reviewed
-- each reviewed item is explicitly modeled, superseded, or rejected
-- useful tool choices, GUI controls, Evidence handling, Next Steps transitions, execution context, cleanup, artifacts, and reporting are wired end to end
+- every methodology-bearing Orange source file has an atomic source inventory
+- every frozen v6.2 partial baseline has been decomposed or explicitly accounted for
+- every useful atomic source unit has been reviewed
+- every reviewed unit is explicitly modeled, superseded, or rejected with rationale
+- required tool choices, command controls, Evidence handling, Next Steps transitions, execution context, cleanup, artifacts, and reporting are wired end to end
 
 At that point Obol can reasonably claim that the pinned Orange 2025.03 methodology has been exhausted of useful ideas rather than merely represented structurally.
