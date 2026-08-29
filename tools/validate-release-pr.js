@@ -26,15 +26,15 @@ const requiredFiles=[
 for(const f of requiredFiles)if(!exists(f))fail.push(`missing release file: ${f}`);
 
 const index=read('index.html');
-for(const f of requiredFiles.filter(x=>/^(?:data|assets)\//.test(x)))if(!index.includes(f.replace(/^data\//,'data/').replace(/^assets\//,'assets/')))fail.push(`index.html is not wired to ${f}`);
+for(const f of requiredFiles.filter(x=>/^(?:data|assets)\//.test(x)))if(!index.includes(f))fail.push(`index.html is not wired to ${f}`);
 if(!index.includes(`Obol v${version}`))fail.push(`index.html does not expose v${version}`);
 
 const changelog=read('CHANGELOG.md');
 if(!changelog.includes(`## v${version}`))fail.push(`CHANGELOG.md is missing v${version}`);
 const sync=read('tools/sync-readme-build-next.js');
 for(const f of [`methodology-v${version}.js`,`dashboard-v${version}.js`,`core-v${version}.js`])if(!sync.includes(f))fail.push(`README generator is not wired through ${f}`);
-const workflow=read('.github/workflows/tests.yml');
-if(!workflow.includes('node tools/validate-release-pr.js'))fail.push('required test job does not run the release PR validator');
+const currentTest=read(`tests/run-v${version}-tests.js`);
+if(!currentTest.includes('validate-release-pr.js'))fail.push(`tests/run-v${version}-tests.js does not invoke the release PR validator`);
 if(!readme.includes('<!-- OBOL-BUILD-NEXT:START -->')||!readme.includes('<!-- OBOL-BUILD-NEXT:END -->'))fail.push('README Build Next markers are missing');
 
 const repoOnly=process.argv.includes('--repo-only');
