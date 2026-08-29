@@ -4,7 +4,7 @@ Obol is a static, offline-capable study companion, methodology ledger, command-b
 
 Live site: `https://platocres.github.io/obol/`
 
-Current release: **v5.7**
+Current release: **v5.8**
 
 Release history belongs in [`CHANGELOG.md`](CHANGELOG.md). Build agents should review both this README and the changelog before changing architecture, methodology, Evidence behavior, reporting, or project metrics.
 
@@ -32,7 +32,7 @@ Primary navigation stays intentionally small:
 
 The **More** menu contains North Star Dashboard, Engagement Map, Methodology, Tool Library, Planned Work, Workspace Search, Evidence Lineage, Guide, and Workspace Data.
 
-The **North Star Dashboard** is the single in-app location for project-wide methodology, command UX, Evidence, execution-context, Next Steps mapping, tool-review, reporting, UI/UX, trend, backlog, delivery-debt, delivery-readiness, build-next, quality-repair, README queue-sync, and canonical-progress metrics. Home may show a compact summary and link to it, but project-wide hard numbers belong on the Dashboard.
+The **North Star Dashboard** is the single in-app location for project-wide methodology, command UX, Evidence, execution-context, Next Steps mapping, tool-review, reporting, UI/UX, trend, backlog, delivery-debt, delivery-readiness, build-next, quality-repair, README queue-sync, canonical-progress, and release-contract metrics. Home may show a compact summary and link to it, but project-wide hard numbers belong on the Dashboard.
 
 ## Current canonical methodology status
 
@@ -40,18 +40,20 @@ The pinned 2025.03 Active Directory methodology denominator contains **127 canon
 
 Current live state:
 
-- **72 / 127 fully implemented**
+- **77 / 127 fully implemented**
 - **34 partial**
-- **21 gaps**
+- **16 gaps**
 - **0 stale implemented mappings**
-- **57% fully implemented**
-- **83% represented**
+- **61% fully implemented**
+- **87% represented**
 
 These numbers are methodology accounting only. Parser coverage, reporting coverage, command controls, execution metadata, UI/UX health, delivery readiness, and quality-repair metrics have their own denominators on the North Star Dashboard and do not inflate methodology completion.
 
 A canonical implemented or partial section is delivery-ready only when at least one tracked mapped workflow has a runnable command contract, an explicit copy/paste Evidence profile, explicit execution-side metadata, and reporting traceability.
 
-v5.7 consumes the highest-priority canonical gaps from the synchronized v5.6 Build Next queue. It adds delivery-ready owners for DNSAdmins plugin-DLL control, Entra ID / AD Connect discovery, Certifried, MS14-068, and noPac. Strict completion rises from 67/127 to 72/127 and canonical gaps fall from 26 to 21.
+v5.8 consumes the next five canonical gaps from the synchronized v5.7 Build Next queue: PrintNightmare, PrivExchange, ProxyNotShell, AppLocker bypass, and Kerberos relay. Each receives a delivery-ready owner with explicit execution context, Evidence interpretation, decision-path placement, reporting traceability, and conservative proof boundaries. Strict completion rises from 72/127 to 77/127 and canonical gaps fall from 21 to 16.
+
+v5.8 also closes the release-process hole exposed by v5.7. Release PRs must use `release/obol-vX.Y`, include a substantive description with required release sections, and pass the required `test` status check on the exact current head before merge. The validator lives at `tools/validate-release-pr.js` and is exercised inside the current release regression suite, so malformed release PRs make the required test job fail.
 
 The README/Dashboard backlog synchronization introduced in v5.4 remains permanent. The README Build next agenda is generated from the same repository model that powers **North Star Dashboard → Build Next**. The dashboard is the authoritative full drill-down, while the README contains a CI-enforced human-readable snapshot of that queue.
 
@@ -65,7 +67,7 @@ The README/Dashboard backlog synchronization introduced in v5.4 remains permanen
 - Material foothold, privilege, objective, credential, and network transitions use explicit proof requirements.
 - Screenshot checks remain operator-confirmed and external; Obol does not capture or inspect screenshots.
 - Generated tickets, certificates, relay listeners, startup banners, discovery output, configuration changes, or command presence never silently become access or compromise facts.
-- DNS plugin configuration does not imply payload execution or SYSTEM. Hybrid-identity discovery does not imply synchronization-secret recovery. Certifried certificate issuance does not imply domain-admin access. MS14-068 platform age is context only. noPac negative checks remain successful negative evidence without vulnerability facts.
+- PrintNightmare detection does not imply SYSTEM. PrivExchange coercion does not imply relay success. ProxyNotShell requires explicit remote identity output. AppLocker policy discovery is separate from bypass proof. Kerberos relay control and ticket creation are separate from SYSTEM, which requires explicit post-transition identity evidence.
 
 ## Command behavior contract
 
@@ -102,13 +104,13 @@ A fixed command is not automatically a UX defect. Single-purpose/native commands
 - Make every represented workflow usable end to end: sensible command controls, explicit Kali/Windows execution context, conservative copy/paste Evidence, Next Steps integration, and reporting traceability.
 - Close canonical gaps without inflating completion from parser, UI, reporting, or metadata work alone.
 - Prefer tools and command surfaces that are current, understandable, practical for OSCP-style labs, and better for the operator than blindly mirroring an upstream tool choice.
-- Preserve context isolation, proof boundaries, lineage, reachability, cleanup obligations, and browser-local compatibility while methodology depth increases.
+- Preserve context isolation, proof boundaries, lineage, reachability, cleanup obligations, browser-local compatibility, and release-gate integrity while methodology depth increases.
 
 ### Recent changes
 
-- **v5.7** — completed the five highest-priority canonical gaps from the synchronized v5.6 queue: DNSAdmins abuse, Entra/AD Connect discovery, Certifried, MS14-068, and noPac, raising strict completion from 53% to 57% and represented coverage from 80% to 83%.
+- **v5.8** — completed PrintNightmare, PrivExchange, ProxyNotShell, AppLocker bypass, and Kerberos relay, raising strict completion from 57% to 61% and represented coverage from 83% to 87%; also added a release PR contract so the required CI check rejects wrong release branches or missing PR descriptions.
+- **v5.7** — completed DNSAdmins abuse, Entra/AD Connect discovery, Certifried, MS14-068, and noPac, raising strict completion from 53% to 57% and represented coverage from 80% to 83%.
 - **v5.6** — cleared the remaining mapped-workflow delivery debt, strengthened Evidence proof boundaries across the live queue, and completed five mature partial branches, raising strict canonical completion from 49% to 53%.
-- **v5.5** — cleared the implemented-quality queue by repairing seven shared workflow owners, then completed five mature partial branches, raising strict canonical completion from 45% to 49%.
 
 ### Build next
 
@@ -117,22 +119,22 @@ The generated block below is the GitHub-readable agenda snapshot. **North Star D
 <!-- OBOL-BUILD-NEXT:START -->
 This block is generated from the same live repository state used by **North Star Dashboard → Build Next**. Do not edit the generated queue manually. The dashboard remains the authoritative full drill-down; this README snapshot is CI-enforced.
 
-**Current live queue:** 21 items — 0 implemented-quality repairs, 0 mapped-delivery repairs, 21 canonical gaps.
-**Canonical methodology:** 72/127 fully implemented (57%), 34 partial, 21 gaps, 83% represented.
+**Current live queue:** 16 items — 0 implemented-quality repairs, 0 mapped-delivery repairs, 16 canonical gaps.
+**Canonical methodology:** 77/127 fully implemented (61%), 34 partial, 16 gaps, 87% represented.
 
 **Highest-priority live items:**
-1. **PrintNightmare** — know_vuln_auth.md · canonical gap.
-2. **PrivExchange** — know_vuln_auth.md · canonical gap.
-3. **ProxyNotShell** — know_vuln_auth.md · canonical gap.
-4. **AppLocker bypass** — low_access.md · canonical gap.
-5. **Kerberos relay** — low_access.md · canonical gap.
-6. **UAC bypass** — low_access.md · canonical gap.
-7. **EternalBlue** — low_hanging.md · canonical gap.
-8. **Exchange quick-win path** — low_hanging.md · canonical gap.
-9. **GLPI quick-win path** — low_hanging.md · canonical gap.
-10. **Java deserialization service** — low_hanging.md · canonical gap.
-11. **Java RMI** — low_hanging.md · canonical gap.
-12. **Log4Shell** — low_hanging.md · canonical gap.
+1. **UAC bypass** — low_access.md · canonical gap.
+2. **EternalBlue** — low_hanging.md · canonical gap.
+3. **Exchange quick-win path** — low_hanging.md · canonical gap.
+4. **GLPI quick-win path** — low_hanging.md · canonical gap.
+5. **Java deserialization service** — low_hanging.md · canonical gap.
+6. **Java RMI** — low_hanging.md · canonical gap.
+7. **Log4Shell** — low_hanging.md · canonical gap.
+8. **Tomcat / JBoss manager** — low_hanging.md · canonical gap.
+9. **Veeam quick-win path** — low_hanging.md · canonical gap.
+10. **Kerberos relay** — mitm.md · canonical gap.
+11. **PXE / NAA credential path** — no_creds.md · canonical gap.
+12. **TimeRoasting** — no_creds.md · canonical gap.
 
 Generated by `node tools/sync-readme-build-next.js --write`. Verify with `node tools/sync-readme-build-next.js --check`.
 <!-- OBOL-BUILD-NEXT:END -->
@@ -145,13 +147,17 @@ Before every build:
 - read `CHANGELOG.md`
 - inspect the current North Star Dashboard metrics, delivery-readiness view, quality-repair view, Build Next queue, and canonical backlog
 - branch from refreshed current `main`
+- use a staging branch for iterative work and create exactly one final `release/obol-vX.Y` branch from the coherent tested snapshot
+- search for an existing release PR before creating one; never create a duplicate `build/obol-vX.Y` release PR
 - preserve browser-local state compatibility when practical
 - prepare code, tests, documentation, changelog, release wiring, and README as one coherent release snapshot rather than using GitHub Actions as an iterative development runner
 - regenerate the README Build Next snapshot with `node tools/sync-readme-build-next.js --write`
 - verify README/Dashboard queue synchronization with `node tools/sync-readme-build-next.js --check`
 - run `node tools/release-preflight.js` before moving the release branch
+- ensure `tools/validate-release-pr.js --repo-only` passes before the final release branch is created
 - make historical tests assert historical model invariants rather than hard-coding whichever release is currently visible in README
-- require a green non-draft pull-request regression run before merge
+- require a substantive release PR description with Summary, Canonical methodology accounting, Conservative Evidence boundaries, Release wiring, Regression coverage, and Compatibility sections
+- require a green `test` status check on the exact final PR head before merge
 - keep generated reports, Evidence semantics, Next Steps, command UX, and execution context connected to methodology changes
 
 ## Run locally
@@ -173,10 +179,16 @@ node tools/release-preflight.js
 The current release suite is:
 
 ```bash
-node tests/run-v5.7-tests.js
+node tests/run-v5.8-tests.js
 ```
 
-Non-draft pull requests and `main` run the complete historical regression chain plus the README queue synchronization check. Superseded runs on the same ref are cancelled by workflow concurrency.
+The repository-only release contract check is:
+
+```bash
+node tools/validate-release-pr.js --repo-only
+```
+
+Non-draft pull requests and `main` run the complete historical regression chain plus the README queue synchronization check. The v5.8 regression suite also validates release-branch naming and PR-description completeness during pull-request runs. Superseded runs on the same ref are cancelled by workflow concurrency.
 
 The README queue synchronization check is:
 
