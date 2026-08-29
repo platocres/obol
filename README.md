@@ -4,7 +4,7 @@ Obol is a static, offline-capable study companion, methodology ledger, command-b
 
 Live site: `https://platocres.github.io/obol/`
 
-Current release: **v5.9**
+Current release: **v6.0**
 
 Release history belongs in [`CHANGELOG.md`](CHANGELOG.md). **Build agents must review this README, [`BUILDING.md`](BUILDING.md), and the changelog before changing architecture, methodology, Evidence behavior, reporting, CI, release workflow, or project metrics.** `BUILDING.md` owns the incremental draft-PR release policy and exact-head merge-readiness rules.
 
@@ -40,20 +40,20 @@ The pinned 2025.03 Active Directory methodology denominator contains **127 canon
 
 Current live state:
 
-- **82 / 127 fully implemented**
+- **87 / 127 fully implemented**
 - **34 partial**
-- **11 gaps**
+- **6 gaps**
 - **0 stale implemented mappings**
-- **65% fully implemented**
-- **91% represented**
+- **69% fully implemented**
+- **95% represented**
 
 These numbers are methodology accounting only. Parser coverage, reporting coverage, command controls, execution metadata, UI/UX health, delivery readiness, and quality-repair metrics have their own denominators on the North Star Dashboard and do not inflate methodology completion.
 
 A canonical implemented or partial section is delivery-ready only when at least one tracked mapped workflow has a runnable command contract, an explicit copy/paste Evidence profile, explicit execution-side metadata, and reporting traceability.
 
-v5.9 consumes the next five canonical gaps from the synchronized v5.8 Build Next queue: UAC bypass, EternalBlue, Exchange quick-win / ProxyShell, GLPI quick-win, and Java deserialization service validation. Each receives a delivery-ready owner with explicit execution context, conservative Evidence interpretation, decision-path placement, reporting traceability, and bounded proof semantics. Strict completion rises from 77/127 to 82/127 and canonical gaps fall from 16 to 11.
+v6.0 consumes the next five canonical gaps from the synchronized v5.9 Build Next queue: Java RMI, Log4Shell, Tomcat / JBoss manager, Veeam quick-win, and the MITM Kerberos relay branch. Each receives a delivery-ready owner with explicit execution context, conservative Evidence interpretation, decision-path placement, reporting traceability, and bounded proof semantics. Strict completion rises from 82/127 to 87/127 and canonical gaps fall from 11 to 6.
 
-v5.9 also makes Build Next ordering a permanent release-quality invariant. `tools/validate-release-quality.js` recalculates the live queue and blocks merge readiness whenever implemented-quality or mapped-delivery debt is nonzero. The gate runs in release preflight and the protected `test` job, so canonical expansion cannot ship while higher-priority delivery debt remains.
+The release-quality invariant introduced in v5.9 remains permanent. `tools/validate-release-quality.js` recalculates the live queue and blocks merge readiness whenever implemented-quality or mapped-delivery debt is nonzero. The gate runs in release preflight and the protected `test` job, so canonical expansion cannot ship while higher-priority delivery debt remains.
 
 The release workflow is documented in [`BUILDING.md`](BUILDING.md): one `release/obol-vX.Y` branch, one visible draft PR, incremental coherent commits, intermediate red checks allowed while Draft, and exact-final-head green validation before merge readiness. Normal documentation and maintenance PRs still receive regression coverage without being forced to impersonate a release PR.
 
@@ -69,8 +69,11 @@ The README/Dashboard backlog synchronization introduced in v5.4 remains permanen
 - Material foothold, privilege, objective, credential, and network transitions use explicit proof requirements.
 - Screenshot checks remain operator-confirmed and external; Obol does not capture or inspect screenshots.
 - Generated tickets, certificates, relay listeners, startup banners, discovery output, configuration changes, exploit-module startup, or command presence never silently become access or compromise facts.
-- PrintNightmare detection does not imply SYSTEM. PrivExchange coercion does not imply relay success. ProxyNotShell requires explicit remote identity output. AppLocker policy discovery is separate from bypass proof. Kerberos relay control and ticket creation are separate from SYSTEM, which requires explicit post-transition identity evidence.
-- UAC bypass requires independent elevated integrity-level output rather than `fodhelper.exe` startup. EternalBlue keeps vulnerable detection, opened-session execution, and explicit SYSTEM identity as separate boundaries. Exchange and GLPI detection remain below privilege, and Java deserialization requires the explicit `OBOL_JAVA_DESER_OK` callback marker before remote execution is recorded.
+- Java RMI registry discovery is not execution; a vulnerability/check result remains distinct from an opened remote session.
+- A Log4Shell probe request is not proof. Only an explicit CVE/template match or independently observed callback supports the vulnerability finding.
+- Tomcat/JBoss manager reachability, authenticated manager access, deployment, and execution remain separate boundaries.
+- Veeam product presence is context only. CVE evidence, recovered reusable credentials, and remote execution each require explicit supporting output.
+- Kerberos relay listener startup is not relay success. Certificate or ticket material does not imply administrator or SYSTEM privilege.
 
 ## Command behavior contract
 
@@ -111,9 +114,9 @@ A fixed command is not automatically a UX defect. Single-purpose/native commands
 
 ### Recent changes
 
+- **v6.0** — completed Java RMI, Log4Shell, Tomcat / JBoss manager, Veeam quick-win, and MITM Kerberos relay, raising strict completion from 65% to 69% and represented coverage from 91% to 95% while preserving zero implemented-quality and mapped-delivery debt.
 - **v5.9** — made zero implemented-quality and mapped-delivery debt a generic release invariant, then completed UAC bypass, EternalBlue, Exchange ProxyShell, GLPI, and Java deserialization, raising strict completion from 61% to 65% and represented coverage from 87% to 91%.
 - **v5.8** — completed PrintNightmare, PrivExchange, ProxyNotShell, AppLocker bypass, and Kerberos relay, raising strict completion from 57% to 61% and represented coverage from 83% to 87%; also added a release PR contract so the required CI check rejects wrong release branches or missing PR descriptions.
-- **v5.7** — completed DNSAdmins abuse, Entra/AD Connect discovery, Certifried, MS14-068, and noPac, raising strict completion from 53% to 57% and represented coverage from 80% to 83%.
 
 ### Build next
 
@@ -122,21 +125,16 @@ The generated block below is the GitHub-readable agenda snapshot. **North Star D
 <!-- OBOL-BUILD-NEXT:START -->
 This block is generated from the same live repository state used by **North Star Dashboard → Build Next**. Do not edit the generated queue manually. The dashboard remains the authoritative full drill-down; this README snapshot is CI-enforced.
 
-**Current live queue:** 11 items — 0 implemented-quality repairs, 0 mapped-delivery repairs, 11 canonical gaps.
-**Canonical methodology:** 82/127 fully implemented (65%), 34 partial, 11 gaps, 91% represented.
+**Current live queue:** 6 items — 0 implemented-quality repairs, 0 mapped-delivery repairs, 6 canonical gaps.
+**Canonical methodology:** 87/127 fully implemented (69%), 34 partial, 6 gaps, 95% represented.
 
 **Highest-priority live items:**
-1. **Java RMI** — low_hanging.md · canonical gap.
-2. **Log4Shell** — low_hanging.md · canonical gap.
-3. **Tomcat / JBoss manager** — low_hanging.md · canonical gap.
-4. **Veeam quick-win path** — low_hanging.md · canonical gap.
-5. **Kerberos relay** — mitm.md · canonical gap.
-6. **PXE / NAA credential path** — no_creds.md · canonical gap.
-7. **TimeRoasting** — no_creds.md · canonical gap.
-8. **PXE / NAA credential recovery** — sccm.md · canonical gap.
-9. **Child-to-parent trust paths** — trusts.md · canonical gap.
-10. **External / forest trust paths** — trusts.md · canonical gap.
-11. **Parent-to-child trust paths** — trusts.md · canonical gap.
+1. **PXE / NAA credential path** — no_creds.md · canonical gap.
+2. **TimeRoasting** — no_creds.md · canonical gap.
+3. **PXE / NAA credential recovery** — sccm.md · canonical gap.
+4. **Child-to-parent trust paths** — trusts.md · canonical gap.
+5. **External / forest trust paths** — trusts.md · canonical gap.
+6. **Parent-to-child trust paths** — trusts.md · canonical gap.
 
 Generated by `node tools/sync-readme-build-next.js --write`. Verify with `node tools/sync-readme-build-next.js --check`.
 <!-- OBOL-BUILD-NEXT:END -->
@@ -185,7 +183,7 @@ node tools/release-preflight.js
 The current release suite is:
 
 ```bash
-node tests/run-v5.9-tests.js
+node tests/run-v6.0-tests.js
 ```
 
 The repository-only release contract check is:
