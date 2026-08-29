@@ -48,18 +48,20 @@ An atomic unit is fidelity-complete only when the relevant requirements are acco
 
 Terminal dispositions are `modeled`, `superseded`, or `rejected`, with rationale. Merely assigning one of those labels without satisfying the required review dimensions is not enough.
 
-## Current v6.6 baseline
+## Current v6.8 baseline
 
-v6.6 is an architecture-consolidation release and deliberately does not inflate methodology progress:
+v6.8 continues the already-inventoried AD CS source-fidelity queue and reconciles broad canonical parents only after every inventoried subordinate unit beneath them is fidelity-complete:
 
-- canonical: 95 / 127 implemented, 32 partial, 0 gaps, 0 stale;
-- strict completion: 75%;
+- canonical: 97 / 127 implemented, 30 partial, 0 gaps, 0 stale;
+- strict completion: 76%;
 - represented coverage: 100%;
 - methodology source files atomized: 1 / 17;
 - frozen partial baselines decomposed: 7 / 34;
-- inventoried atomic units fidelity-complete: 5 / 19;
-- remaining inventoried atomic audits: 14;
+- inventoried atomic units fidelity-complete: 11 / 19;
+- remaining inventoried atomic audits: 8;
 - remaining source-inventory/decomposition items: 27.
+
+The two canonical advances in v6.8 are accounting reconciliation, not denominator inflation. `adcs.template-misconfig` advances only because all six inventoried template branches are complete. `adcs.acl-misconfig` advances only because ESC4 and both inventoried ESC7 branches are complete. The frozen v6.2 baseline remains 34, so the fact that those broad parents are now implemented does not erase their source-depth history.
 
 These denominators must remain visible. A percentage may summarize a denominator but must never make unfinished source disappear.
 
@@ -73,13 +75,15 @@ The repository work queue is ordered by product quality, not by whichever metric
 4. atomic source-fidelity audits for already-inventoried units;
 5. source-depth inventory/decomposition for remaining broad partial baselines.
 
-This ordering is derived from the repository model and exposed through `C.projectModel66(...)` for current presentation consumers.
+This ordering is derived from the repository model and exposed through the stable `C.currentProjectModel(...)` pointer. The current versioned implementation is `C.projectModel68(...)`.
 
 ## Current-project projection rule
 
-Beginning with v6.6, project status has one current projection boundary: `C.projectModel66(...)`.
+Beginning with v6.6, project status has one current projection boundary. v6.8 adds the stable non-versioned pointer `C.currentProjectModel(...)` so current consumers do not need to hard-code whichever versioned adapter happens to be newest.
 
 The Dashboard and README may present or summarize its output, but they should not keep independent current counts or competing Build Next calculations. The underlying domain models remain the owners of canonical, delivery, and source-fidelity semantics; the project model provides a stable current view over them.
+
+Versioned adapters remain useful as historical regression boundaries. They are not an invitation for current tooling or documentation to guess the newest version-specific function name.
 
 ## Completion language
 
