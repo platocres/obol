@@ -121,12 +121,16 @@ test('README generator remains live and future-safe',()=>{
 
 test('release PR validator rejects missing descriptions and accepts the required contract',()=>{
   const tool=path.join(root,'tools','validate-release-pr.js');
-  const eventPath=path.join(os.tmpdir(),'obol-v58-pr-event.json');
-  const goodBody='## Summary\n'+('Release summary. '.repeat(50))+'\n## Canonical methodology accounting\n77/127.\n## Conservative Evidence boundaries\nProof stays bounded.\n## Release wiring\nWired.\n## Regression coverage\nCovered.\n## Compatibility\nCompatible.';
-  fs.writeFileSync(eventPath,JSON.stringify({pull_request:{head:{ref:'release/obol-v5.8'},title:'Obol v5.8 — canonical gaps and release contract',body:goodBody}}));
+  const eventPath=path.join(os.tmpdir(),'obol-release-pr-event.json');
+  const readme=fs.readFileSync(path.join(root,'README.md'),'utf8');
+  const current=readme.match(/Current release: \*\*v(\d+\.\d+)\*\*/);
+  assert(current,'current release marker');
+  const version=current[1];
+  const goodBody='## Summary\n'+('Release summary. '.repeat(50))+'\n## Canonical methodology accounting\nCurrent accounting retained.\n## Conservative Evidence boundaries\nProof stays bounded.\n## Release wiring\nWired.\n## Regression coverage\nCovered.\n## Compatibility\nCompatible.';
+  fs.writeFileSync(eventPath,JSON.stringify({pull_request:{head:{ref:`release/obol-v${version}`},title:`Obol v${version} — release contract fixture`,body:goodBody}}));
   let r=cp.spawnSync(process.execPath,[tool],{cwd:root,env:{...process.env,GITHUB_EVENT_NAME:'pull_request',GITHUB_EVENT_PATH:eventPath},encoding:'utf8'});
   assert.strictEqual(r.status,0,r.stderr||r.stdout);
-  fs.writeFileSync(eventPath,JSON.stringify({pull_request:{head:{ref:'build/obol-v5.8'},title:'Build/obol v5.8',body:''}}));
+  fs.writeFileSync(eventPath,JSON.stringify({pull_request:{head:{ref:`build/obol-v${version}`},title:`Build/obol v${version}`,body:''}}));
   r=cp.spawnSync(process.execPath,[tool],{cwd:root,env:{...process.env,GITHUB_EVENT_NAME:'pull_request',GITHUB_EVENT_PATH:eventPath},encoding:'utf8'});
   assert.notStrictEqual(r.status,0);
   fs.unlinkSync(eventPath);
