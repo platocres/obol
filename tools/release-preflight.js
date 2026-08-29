@@ -25,7 +25,7 @@ for(const dir of ['data','assets']){
     if(name.endsWith(`-v${version}.js`))syntaxFiles.push(path.join(dir,name));
   }
 }
-for(const file of ['tools/sync-readme-build-next.js','tools/release-preflight.js','tools/validate-release-pr.js','tools/validate-release-quality.js',`tests/run-v${version}-tests.js`]){
+for(const file of ['tools/release-smoke.js','tools/validate-historical-tests.js','tools/sync-readme-build-next.js','tools/release-preflight.js','tools/validate-release-pr.js','tools/validate-release-quality.js',`tests/run-v${version}-tests.js`]){
   if(fs.existsSync(path.join(root,file)))syntaxFiles.push(file);
 }
 if(!syntaxFiles.length)throw new Error(`No v${version} JavaScript release files found for syntax validation`);
@@ -36,22 +36,8 @@ for(const required of [`methodology-v${version}.js`,`dashboard-v${version}.js`,`
   if(!syncText.includes(required))throw new Error(`README Build Next generator is not wired through current release file: ${required}`);
 }
 
-const brittle=[];
-for(const name of fs.readdirSync(path.join(root,'tests')).filter(x=>/^run-v\d+\.\d+.*-tests\.js$/.test(x))){
-  const text=fs.readFileSync(path.join(root,'tests',name),'utf8');
-  if(text.includes('sync-readme-build-next.js')){
-    if(/out\.includes\(['"`]Canonical methodology:\*\* \d+\/127/.test(text))brittle.push(`${name}: exact generated canonical count`);
-    if(/out\.includes\(['"`]\d+ implemented-quality repairs/.test(text))brittle.push(`${name}: exact generated implemented-quality count`);
-    if(/out\.includes\(['"`]\*\*Current live queue:\*\* \d+/.test(text))brittle.push(`${name}: exact generated queue total`);
-  }
-  if(name!==`run-v${version}-tests.js`&&/readme\.includes\(['"`](?:Current release: )?\*\*v\d+\.\d+\*\*/.test(text))brittle.push(`${name}: hard-coded README release token`);
-}
-if(brittle.length){
-  console.error('\nHistorical/live README assertions must be future-safe. Test historical numbers against the historical model and test current README/generator output by structure.');
-  for(const item of brittle)console.error(`- ${item}`);
-  process.exit(1);
-}
-
+run('release smoke validation',['tools/release-smoke.js']);
+run('historical test future safety',['tools/validate-historical-tests.js']);
 run('repository release contract',['tools/validate-release-pr.js','--repo-only']);
 run('release quality debt gate',['tools/validate-release-quality.js']);
 run(`v${version} regression suite`,[path.relative(root,currentTest)]);
