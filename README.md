@@ -4,7 +4,7 @@ Obol is a static, offline-capable study companion, methodology ledger, command-b
 
 Live site: `https://platocres.github.io/obol/`
 
-Current release: **v5.4**
+Current release: **v5.5**
 
 Release history belongs in [`CHANGELOG.md`](CHANGELOG.md). Build agents should review both this README and the changelog before changing architecture, methodology, Evidence behavior, reporting, or project metrics.
 
@@ -50,20 +50,22 @@ The pinned 2025.03 Active Directory methodology denominator contains **127 canon
 
 Current live state:
 
-- **57 / 127 fully implemented**
-- **44 partial**
+- **62 / 127 fully implemented**
+- **39 partial**
 - **26 gaps**
 - **0 stale implemented mappings**
-- **45% fully implemented**
+- **49% fully implemented**
 - **80% represented**
 
 These numbers are methodology accounting only. Parser coverage, reporting coverage, command controls, execution metadata, UI/UX health, delivery readiness, and quality-repair metrics have their own denominators on the North Star Dashboard and do not inflate methodology completion.
 
 A canonical implemented or partial section is delivery-ready only when at least one tracked mapped workflow has a runnable command contract, an explicit copy/paste Evidence profile, explicit execution-side metadata, and reporting traceability.
 
-v5.4 moves five previously partial persistence sections to fully implemented with dedicated lifecycle owners: Skeleton Key, Custom SSP/memssp, Diamond Ticket, Sapphire Ticket, and DCShadow. Each now has explicit operator-side context, conservative Evidence handling, report traceability, and verification/cleanup semantics appropriate to the technique. Forged ticket material does not imply access or privilege, module startup text does not imply persistence, and DCShadow uses a bounded reversible description-only proof path by default.
+v5.5 consumes the synchronized v5.4 Build Next queue in priority order. The ten implemented canonical sections that were still carrying delivery-quality debt are now backed by clean mapped owners through seven shared workflows: Nmap, anonymous LDAP enumeration, username enumeration, AS-REP roasting, Kerberoasting, password spraying, and BloodHound collection. This clears implemented-quality debt before the release expands strict canonical completion.
 
-v5.4 also removes the README/Dashboard backlog ambiguity. The README Build next agenda is generated from the same repository model that powers **North Star Dashboard → Build Next**. The dashboard is the authoritative full drill-down, while the README contains a CI-enforced human-readable snapshot of that queue.
+v5.5 also moves five mature partial sections to implemented with dedicated end-to-end owners: authenticated AD CS enumeration, Kerberos delegation discovery, domain DPAPI backup-key collection, LSASS credential extraction, and token/session impersonation. Enumeration does not imply control, exported key material does not imply decrypted user secrets, LSASS collection is separate from credential recovery, and token presence or elevation startup text does not imply SYSTEM.
+
+The README/Dashboard backlog synchronization introduced in v5.4 remains permanent. The README Build next agenda is generated from the same repository model that powers **North Star Dashboard → Build Next**. The dashboard is the authoritative full drill-down, while the README contains a CI-enforced human-readable snapshot of that queue.
 
 ## Evidence and proof rules
 
@@ -115,9 +117,9 @@ A fixed command is not automatically a UX defect. Single-purpose/native commands
 
 ### Recent changes
 
+- **v5.5** — cleared the implemented-quality queue from v5.4 by repairing seven shared workflow owners, then completed five mature partial branches, raising strict canonical completion from 45% to 49%.
 - **v5.4** — synchronized the README agenda to the live North Star Build Next model with CI drift enforcement and moved five persistence sections from partial to implemented, raising strict canonical completion from 41% to 45%.
 - **v5.3** — repaired the first implemented-quality debt wave by adding explicit Evidence profiles and audited execution-side metadata to eight already-implemented or implementation-bearing workflows, with conservative proof boundaries and live Dashboard accounting.
-- **v5.2** — added delivery-ready canonical accounting and a prioritized Build next queue that repairs implemented quality debt before ordinary mapped debt and new canonical gaps.
 
 ### Build next
 
@@ -174,7 +176,7 @@ The repository is designed to serve directly from `main` and `/ (root)`.
 GitHub Actions runs the complete regression chain on `main`, release branches, and pull requests. The current release suite is:
 
 ```bash
-node tests/run-v5.4-tests.js
+node tests/run-v5.5-tests.js
 ```
 
 The README queue synchronization check is:
