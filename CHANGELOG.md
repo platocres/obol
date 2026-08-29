@@ -4,6 +4,24 @@ This file is the release-history source for Obol. Future build work should revie
 
 The README is intentionally reserved for current project purpose, architecture, permanent requirements, a compact summary of only the latest three releases, and forward priorities.
 
+## v5.9 - generic release-quality gate and canonical gap wave
+
+- Made `BUILDING.md` a mandatory release-workflow companion and aligned the README build-agent checklist with one visible draft `release/obol-vX.Y` PR, incremental coherent commits, acceptable intermediate red checks while Draft, and exact-head green merge readiness.
+- Added `tools/validate-release-quality.js`, which recalculates the live Build Next model and fails whenever implemented-quality or mapped-delivery debt is nonzero.
+- Wired the release-quality gate into `tools/release-preflight.js` and the protected full `test` job so canonical-gap expansion cannot ship while higher-priority delivery debt remains.
+- Started from a synchronized v5.8 queue with **0 implemented-quality repairs**, **0 mapped-delivery repairs**, and **16 canonical gaps**.
+- Completed the next five canonical gaps: UAC bypass, EternalBlue / MS17-010, Exchange ProxyShell quick-win, GLPI quick-win, and Java deserialization service validation.
+- Added dedicated delivery-ready owners `uac-bypass59`, `eternalblue59`, `exchange-quickwin59`, `glpi-quickwin59`, and `java-deser59` with explicit execution-side metadata, copy/paste Evidence profiles, decision-path placement, reporting traceability, and bounded proof semantics.
+- UAC bypass requires independent High/System integrity evidence; `fodhelper.exe` startup is not elevation proof.
+- EternalBlue keeps vulnerability detection, opened-session execution, and explicit SYSTEM identity as separate proof boundaries.
+- Exchange and GLPI detection remains below privilege; remote execution requires explicit shell/command evidence.
+- Java deserialization requires the unique `OBOL_JAVA_DESER_OK` callback before remote execution is recorded.
+- Moved five canonical gaps to implemented, raising strict methodology from **77 implemented / 34 partial / 16 gaps / 0 stale** to **82 implemented / 34 partial / 11 gaps / 0 stale**.
+- Raised fully implemented coverage from **61% to 65%** and represented coverage from **87% to 91%**, preserving the pinned 127-section denominator and Orange 2025.03 upstream commit.
+- Extended the North Star Dashboard through v5.9 with canonical-progress and release-quality visibility.
+- Extended README Build Next generation through v5.9 and retained CI-enforced README/Dashboard queue synchronization.
+- Kept the v5.8 historical regression suite future-safe when a later release becomes current.
+
 ## v5.8 — canonical gap wave and release-contract enforcement
 
 - Consumed the next five items from the synchronized v5.7 Build Next queue: PrintNightmare, PrivExchange, ProxyNotShell, AppLocker bypass, and Kerberos relay.
