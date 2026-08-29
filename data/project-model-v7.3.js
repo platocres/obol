@@ -12,7 +12,7 @@ root.OBOL_PROJECT_V73={
     next:'Decompose the highest-priority remaining authenticated.md source-depth baselines while preserving zero quality debt, zero canonical gaps, and conservative engagement proof boundaries.'
   },
   releaseMilestone:{
-    release:'v7.3',implemented:109,partial:18,gap:0,stale:0,coveragePct:86,representedPct:100,
+    release:'v7.3',implemented:108,partial:19,gap:0,stale:0,coveragePct:85,representedPct:100,
     label:'MITM / relay source-depth completion'
   },
   sourceWave:{
@@ -22,11 +22,11 @@ root.OBOL_PROJECT_V73={
     filesAtomizedBefore:3,
     filesAtomizedAfter:4,
     baselinesAtomizedBefore:14,
-    baselinesAtomizedAfter:16,
+    baselinesAtomizedAfter:15,
     delivered:['mitm.listen','mitm.ntlm-self-relay','mitm.ntlm-ldaps','mitm.ntlm-smb','mitm.ntlm-http','mitm.ntlm-mssql','mitm.ntlm-netlogon','mitm.kerberos-http','mitm.kerberos-smb','mitm.kerberos-ldaps'],
     modeled:['mitm.listen','mitm.ntlm-ldaps','mitm.ntlm-smb','mitm.ntlm-http','mitm.ntlm-mssql','mitm.ntlm-netlogon','mitm.kerberos-http','mitm.kerberos-smb','mitm.kerberos-ldaps'],
     superseded:['mitm.ntlm-self-relay'],
-    canonicalAdvanced:['mitm.listen','mitm.ntlm-relay']
+    canonicalAdvanced:['mitm.listen']
   }
 };
 })(typeof window!=='undefined'?window:globalThis);
