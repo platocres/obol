@@ -4,7 +4,7 @@ Obol is a static, offline-capable study companion, methodology ledger, command-b
 
 Live site: `https://platocres.github.io/obol/`
 
-Current release: **v6.0**
+Current release: **v6.1**
 
 Release history belongs in [`CHANGELOG.md`](CHANGELOG.md). **Build agents must review this README, [`BUILDING.md`](BUILDING.md), and the changelog before changing architecture, methodology, Evidence behavior, reporting, CI, release workflow, or project metrics.** `BUILDING.md` owns the incremental draft-PR release policy and exact-head merge-readiness rules.
 
@@ -40,18 +40,18 @@ The pinned 2025.03 Active Directory methodology denominator contains **127 canon
 
 Current live state:
 
-- **87 / 127 fully implemented**
+- **92 / 127 fully implemented**
 - **34 partial**
-- **6 gaps**
+- **1 gap**
 - **0 stale implemented mappings**
-- **69% fully implemented**
-- **95% represented**
+- **72% fully implemented**
+- **99% represented**
 
 These numbers are methodology accounting only. Parser coverage, reporting coverage, command controls, execution metadata, UI/UX health, delivery readiness, and quality-repair metrics have their own denominators on the North Star Dashboard and do not inflate methodology completion.
 
 A canonical implemented or partial section is delivery-ready only when at least one tracked mapped workflow has a runnable command contract, an explicit copy/paste Evidence profile, explicit execution-side metadata, and reporting traceability.
 
-v6.0 consumes the next five canonical gaps from the synchronized v5.9 Build Next queue: Java RMI, Log4Shell, Tomcat / JBoss manager, Veeam quick-win, and the MITM Kerberos relay branch. Each receives a delivery-ready owner with explicit execution context, conservative Evidence interpretation, decision-path placement, reporting traceability, and bounded proof semantics. Strict completion rises from 82/127 to 87/127 and canonical gaps fall from 11 to 6.
+v6.1 consumes the next five canonical gaps from the synchronized v6.0 Build Next queue: PXE / NAA credential discovery, TimeRoasting, the SCCM PXE / NAA recovery mapping, child-to-parent trust paths, and external / forest trust paths. The shared PXE owner covers both canonical PXE entries without duplicating operator surfaces. Strict completion rises from 87/127 to 92/127 and canonical gaps fall from 6 to 1. The only remaining canonical gap is parent-to-child trust paths.
 
 The release-quality invariant introduced in v5.9 remains permanent. `tools/validate-release-quality.js` recalculates the live queue and blocks merge readiness whenever implemented-quality or mapped-delivery debt is nonzero. The gate runs in release preflight and the protected `test` job, so canonical expansion cannot ship while higher-priority delivery debt remains.
 
@@ -74,6 +74,9 @@ The README/Dashboard backlog synchronization introduced in v5.4 remains permanen
 - Tomcat/JBoss manager reachability, authenticated manager access, deployment, and execution remain separate boundaries.
 - Veeam product presence is context only. CVE evidence, recovered reusable credentials, and remote execution each require explicit supporting output.
 - Kerberos relay listener startup is not relay success. Certificate or ticket material does not imply administrator or SYSTEM privilege.
+- PXE discovery is context only. Protected-PXE hash material and recovered NAA username/password material are separate facts.
+- TimeRoast collection produces offline SNTP-MS material; cracking it does not silently establish authenticated access.
+- Trust enumeration, recovered trust or krbtgt material, forged/saved Kerberos tickets, and successful cross-domain service access remain separate proof boundaries.
 
 ## Command behavior contract
 
@@ -114,9 +117,9 @@ A fixed command is not automatically a UX defect. Single-purpose/native commands
 
 ### Recent changes
 
+- **v6.1** — completed PXE/NAA recovery, TimeRoasting, the SCCM PXE/NAA mapping, child-to-parent trust paths, and external/forest trust paths, raising strict completion from 69% to 72% and represented coverage from 95% to 99%; one canonical gap remains.
 - **v6.0** — completed Java RMI, Log4Shell, Tomcat / JBoss manager, Veeam quick-win, and MITM Kerberos relay, raising strict completion from 65% to 69% and represented coverage from 91% to 95%; also introduced tiered smoke / preflight / final CI and automatic historical-test future-safety validation to reduce noisy intermediate regression failures without weakening merge gates.
 - **v5.9** — made zero implemented-quality and mapped-delivery debt a generic release invariant, then completed UAC bypass, EternalBlue, Exchange ProxyShell, GLPI, and Java deserialization, raising strict completion from 61% to 65% and represented coverage from 87% to 91%.
-- **v5.8** — completed PrintNightmare, PrivExchange, ProxyNotShell, AppLocker bypass, and Kerberos relay, raising strict completion from 57% to 61% and represented coverage from 83% to 87%; also added a release PR contract so the required CI check rejects wrong release branches or missing PR descriptions.
 
 ### Build next
 
@@ -125,16 +128,11 @@ The generated block below is the GitHub-readable agenda snapshot. **North Star D
 <!-- OBOL-BUILD-NEXT:START -->
 This block is generated from the same live repository state used by **North Star Dashboard → Build Next**. Do not edit the generated queue manually. The dashboard remains the authoritative full drill-down; this README snapshot is CI-enforced.
 
-**Current live queue:** 6 items — 0 implemented-quality repairs, 0 mapped-delivery repairs, 6 canonical gaps.
-**Canonical methodology:** 87/127 fully implemented (69%), 34 partial, 6 gaps, 95% represented.
+**Current live queue:** 1 items — 0 implemented-quality repairs, 0 mapped-delivery repairs, 1 canonical gaps.
+**Canonical methodology:** 92/127 fully implemented (72%), 34 partial, 1 gaps, 99% represented.
 
 **Highest-priority live items:**
-1. **PXE / NAA credential path** — no_creds.md · canonical gap.
-2. **TimeRoasting** — no_creds.md · canonical gap.
-3. **PXE / NAA credential recovery** — sccm.md · canonical gap.
-4. **Child-to-parent trust paths** — trusts.md · canonical gap.
-5. **External / forest trust paths** — trusts.md · canonical gap.
-6. **Parent-to-child trust paths** — trusts.md · canonical gap.
+1. **Parent-to-child trust paths** — trusts.md · canonical gap.
 
 Generated by `node tools/sync-readme-build-next.js --write`. Verify with `node tools/sync-readme-build-next.js --check`.
 <!-- OBOL-BUILD-NEXT:END -->
@@ -197,7 +195,7 @@ node tools/validate-historical-tests.js
 The current release suite is:
 
 ```bash
-node tests/run-v6.0-tests.js
+node tests/run-v6.1-tests.js
 ```
 
 The repository-only release contract check is:
