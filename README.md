@@ -117,7 +117,7 @@ A fixed command is not automatically a UX defect. Single-purpose/native commands
 
 ### Recent changes
 
-- **v5.5** — cleared the implemented-quality queue from v5.4 by repairing seven shared workflow owners, then completed five mature partial branches, raising strict canonical completion from 45% to 49%.
+- **v5.5** — cleared the implemented-quality queue from v5.4, completed five mature partial branches to raise strict canonical completion from 45% to 49%, and hardened release CI so release-branch pushes use a current-release preflight while pull requests and `main` own the full historical regression chain.
 - **v5.4** — synchronized the README agenda to the live North Star Build Next model with CI drift enforcement and moved five persistence sections from partial to implemented, raising strict canonical completion from 41% to 45%.
 - **v5.3** — repaired the first implemented-quality debt wave by adding explicit Evidence profiles and audited execution-side metadata to eight already-implemented or implementation-bearing workflows, with conservative proof boundaries and live Dashboard accounting.
 
@@ -157,10 +157,13 @@ Before every build:
 - inspect the current North Star Dashboard metrics, delivery-readiness view, quality-repair view, Build Next queue, and canonical backlog
 - branch from refreshed current `main`
 - preserve browser-local state compatibility when practical
+- build the release as one coherent repository state instead of using GitHub Actions as an iterative test runner
 - update code, tests, docs, changelog, release wiring, and README only when current requirements change
 - regenerate the README Build Next snapshot with `node tools/sync-readme-build-next.js --write`
-- verify README/Dashboard queue synchronization with `node tools/sync-readme-build-next.js --check`
-- run the complete historical regression chain plus the new release suite
+- run `node tools/release-preflight.js` and do not move the release branch until it passes
+- push a coherent release snapshot in one branch update whenever practical; avoid file-by-file release-branch pushes
+- open or update the pull request only after branch preflight is green; if iterative PR repair is unavoidable, keep the PR draft until the release is ready for the full regression chain
+- require a green full historical regression run on the non-draft pull request before merge
 - keep generated reports, Evidence semantics, Next Steps, command UX, and execution context connected to methodology changes
 
 ## Run locally
@@ -173,7 +176,15 @@ The repository is designed to serve directly from `main` and `/ (root)`.
 
 ## Regression tests
 
-GitHub Actions runs the complete regression chain on `main`, release branches, and pull requests. The current release suite is:
+GitHub Actions runs a lightweight current-release preflight on pushes to `release/**`. Non-draft pull requests and `main` run the complete historical regression chain. Rapid superseding runs on the same ref are cancelled automatically.
+
+The mandatory release preflight is:
+
+```bash
+node tools/release-preflight.js
+```
+
+The current release suite is:
 
 ```bash
 node tests/run-v5.5-tests.js
