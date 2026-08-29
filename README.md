@@ -4,7 +4,7 @@ Obol is a static, offline-capable study companion, methodology ledger, command-b
 
 Live site: `https://platocres.github.io/obol/`
 
-Current release: **v6.4**
+Current release: **v6.5**
 
 Release history belongs in [`CHANGELOG.md`](CHANGELOG.md). **Build agents must review this README, [`BUILDING.md`](BUILDING.md), the changelog, and [`docs/ORANGE-SOURCE-DEPTH.md`](docs/ORANGE-SOURCE-DEPTH.md) before changing architecture, methodology, Evidence behavior, reporting, CI, release workflow, project metrics, or Orange source-depth/source-fidelity accounting.** `BUILDING.md` owns the incremental draft-PR release policy and exact-head merge-readiness rules.
 
@@ -40,18 +40,18 @@ The pinned 2025.03 Active Directory methodology denominator contains **127 canon
 
 Current live state:
 
-- **93 / 127 fully implemented**
-- **34 partial**
+- **95 / 127 fully implemented**
+- **32 partial**
 - **0 gaps**
 - **0 stale implemented mappings**
-- **73% fully implemented**
+- **75% fully implemented**
 - **100% represented**
 
 These numbers are methodology accounting only. Parser coverage, reporting coverage, command controls, execution metadata, UI/UX health, delivery readiness, quality-repair metrics, Orange source-depth, and atomic source-fidelity accounting have their own denominators on the North Star Dashboard and do not inflate methodology completion.
 
 A canonical implemented or partial section is delivery-ready only when at least one tracked mapped workflow has a runnable command contract, an explicit copy/paste Evidence profile, explicit execution-side metadata, and reporting traceability.
 
-v6.2 completed the only remaining canonical gap, parent-to-child trust paths. The pinned Orange source describes that direction as the same family of path as child-to-parent; Obol models it explicitly with separate trust-context, secret-material, ticket-artifact, cross-domain-access, and privilege boundaries. Strict completion remains 93/127 and represented coverage remains 100%.
+v6.5 promotes only the two AD CS canonical parents whose atomized source depth is now fully accounted for: **AD CS enumeration** and **Web enrollment / ESC8**. The broader **Misconfigured certificate templates** parent remains partial because ESC13, ESC15, and other distinct template branches are still open. Strict completion is now 95/127 while represented coverage remains 100%.
 
 ### Canonical breadth is not source exhaustion
 
@@ -59,13 +59,15 @@ v6.2 completed the only remaining canonical gap, parent-to-child trust paths. Th
 
 At the v6.2 boundary, the **34 partial canonical sections were frozen as a separate Orange source-depth audit baseline**. Those baseline keys remain persistent even when broad canonical status changes, so subordinate Orange work cannot disappear from accounting.
 
-v6.4 makes that accounting atomic. The Dashboard now separates three layers:
+v6.4 made that accounting atomic. The Dashboard separates three layers:
 
 - **Canonical breadth** — 127 normalized sections, currently 100% represented.
 - **Source inventory depth** — methodology files and frozen partial baselines decomposed into meaningful subordinate source units.
 - **Atomic source fidelity** — each inventoried unit reviewed against the full Obol operator contract and given an explicit terminal disposition.
 
-The first atomized source file is `adcs.md`. Its seven broad partial canonical parents are now decomposed into **19 atomic AD CS source units** across enumeration plus ESC1, ESC2/3, ESC4, ESC5, ESC6, ESC7, ESC8, ESC9/10, ESC11, ESC13, ESC14, ESC15, and meaningful source variants. Initial v6.4 source-fidelity state is **1 / 17 methodology files atomized**, **7 / 34 frozen partial baselines decomposed**, and **0 / 19 inventoried atomic units fidelity-complete**. All 19 already have at least one broad Obol owner, which is intentionally shown as representation rather than completion.
+The first atomized source file remains `adcs.md`. Its seven broad v6.2 partial parents are decomposed into **19 atomic AD CS source units** across enumeration plus ESC1, ESC2/3, ESC4, ESC5, ESC6, ESC7, ESC8, ESC9/10, ESC11, ESC13, ESC14, ESC15, and meaningful source variants.
+
+v6.5 converts the first five highest-priority atomic units from representation into delivery-complete outcomes: **AD CS enumeration/routing, ESC8, ESC1, ESC2, and ESC3**. Current source-fidelity state is **1 / 17 methodology files atomized**, **7 / 34 frozen partial baselines decomposed**, and **5 / 19 inventoried atomic AD CS units fidelity-complete**. The remaining **14 / 19** stay visibly pending, and the 27 frozen partial baselines outside the atomized AD CS set still require decomposition.
 
 An atomic unit is fidelity-complete only when the source branch and decision conditions are captured, upstream tools and Obol owner mapping are accounted for, tool suitability is reviewed, the Run/GUI command surface is usable, execution side is explicit, copy/paste Evidence and proof boundaries work, Next Steps transitions are wired, cleanup/restoration is handled where relevant, reporting/lineage works, and the unit ends as **modeled**, **superseded**, or **rejected** with rationale.
 
@@ -96,6 +98,10 @@ The README/Dashboard backlog synchronization introduced in v5.4 remains permanen
 - TimeRoast collection produces offline SNTP-MS material; cracking it does not silently establish authenticated access.
 - Trust enumeration, recovered trust or krbtgt material, forged/saved Kerberos tickets, and successful cross-domain service access remain separate proof boundaries.
 - Parent-to-child trust context or ticket construction does not imply child-domain administrator or SYSTEM access; explicit service access and privilege proof remain separate.
+- AD CS enumeration routes only from explicit CA/template/endpoint/ESC observations; enumeration never implies exploitation.
+- ESC8 listener or relay startup is not certificate issuance. Only explicit returned certificate material crosses the credential-artifact boundary.
+- ESC1, ESC2, and ESC3 request output becomes certificate material only when issuance or a saved certificate/PFX is explicit. Certificate possession never silently becomes administrator or SYSTEM access.
+- ESC2 certificate material is an intermediate handoff to ESC3, not proof of the on-behalf-of target identity.
 - Source-fidelity accounting is project metadata only. Source-node inventory or audit status never creates engagement facts, credentials, access, execution, privilege, or compromise claims.
 
 ## Command behavior contract
@@ -143,7 +149,7 @@ A raw or derived percentage must never hide an unfinished denominator. If a sour
 
 ### North Star objectives
 
-- Keep the pinned 2025.03 methodology denominator, source provenance, decision path, tool review, frozen v6.2 source-depth baseline, and v6.4 atomic source-fidelity ledger reproducible and visible from the single North Star Dashboard.
+- Keep the pinned 2025.03 methodology denominator, source provenance, decision path, tool review, frozen v6.2 source-depth baseline, and atomic source-fidelity ledger reproducible and visible from the single North Star Dashboard.
 - Make every represented workflow usable end to end: sensible command controls, explicit Kali/Windows execution context, conservative copy/paste Evidence, Next Steps integration, cleanup/restoration where needed, and reporting traceability.
 - Preserve zero canonical gaps while atomizing the remaining methodology source and systematically converting useful atomic Orange depth into modeled, superseded, or explicitly rejected outcomes.
 - Prefer tools and command surfaces that are current, understandable, practical for OSCP-style labs, and better for the operator than blindly mirroring an upstream tool choice.
@@ -151,9 +157,9 @@ A raw or derived percentage must never hide an unfinished denominator. If a sour
 
 ### Recent changes
 
+- **v6.5** — delivered the first five atomic AD CS fidelity units end to end: enumeration/routing, ESC8, ESC1, ESC2, and ESC3; promoted only the fully exhausted enumeration and Web Enrollment canonical parents; added dedicated cards, GUI controls, Kali/Windows execution metadata, conservative Evidence parsing, reporting contracts, Dashboard progress, and a 41-item synchronized Build Next queue.
 - **v6.4** — added atomic Orange source-fidelity accounting below the 127-section layer; decomposed the seven broad AD CS partials into 19 atomic source units, added a Dashboard requirement matrix and drill-down, separated broad-owner coverage from fidelity completion, and refined Build Next into atomic fidelity work plus remaining source-inventory work.
 - **v6.2** — completed parent-to-child trust paths, reaching 100% canonical representation with 93/127 fully implemented and zero gaps; froze the 34 partial sections as a separate Orange source-depth baseline and promoted source-depth audits into Dashboard/Build Next after higher-priority debt reaches zero.
-- **v6.1** — completed PXE/NAA recovery, TimeRoasting, the SCCM PXE/NAA mapping, child-to-parent trust paths, and external/forest trust paths, raising strict completion from 69% to 72% and represented coverage from 95% to 99%; one canonical gap remained.
 
 ### Build next
 
@@ -162,23 +168,23 @@ The generated block below is the GitHub-readable agenda snapshot. **North Star D
 <!-- OBOL-BUILD-NEXT:START -->
 This block is generated from the same live repository state used by **North Star Dashboard → Build Next**. Do not edit the generated queue manually. The dashboard remains the authoritative full drill-down; this README snapshot is CI-enforced.
 
-**Current live queue:** 46 items — 0 implemented-quality repairs, 0 mapped-delivery repairs, 0 canonical gaps.
-**Canonical methodology:** 93/127 fully implemented (73%), 34 partial, 0 gaps, 100% represented.
-**Orange source fidelity:** 1/17 source files atomized, 7/34 partial baselines decomposed, 0/19 inventoried atomic units fidelity-complete.
+**Current live queue:** 41 items — 0 implemented-quality repairs, 0 mapped-delivery repairs, 0 canonical gaps.
+**Canonical methodology:** 95/127 fully implemented (75%), 32 partial, 0 gaps, 100% represented.
+**Orange source fidelity:** 1/17 source files atomized, 7/34 partial baselines decomposed, 5/19 inventoried atomic units fidelity-complete.
 
 **Highest-priority live items:**
-1. **AD CS enumeration and routing** — adcs.md · source fidelity.
-2. **ESC8 web-enrollment relay** — adcs.md · source fidelity.
-3. **ESC1 enrollee-supplied identity template** — adcs.md · source fidelity.
-4. **ESC2 any-purpose template routing into ESC3** — adcs.md · source fidelity.
-5. **ESC3 enrollment-agent / on-behalf-of request** — adcs.md · source fidelity.
-6. **ESC13 issuance-policy / group-link template path** — adcs.md · source fidelity.
-7. **ESC15 application-policy injection for Schannel** — adcs.md · source fidelity.
-8. **ESC15 application-policy injection for request-agent use** — adcs.md · source fidelity.
-9. **ESC4 writable certificate-template ACL** — adcs.md · source fidelity.
-10. **ESC7 ManageCA officer transition** — adcs.md · source fidelity.
-11. **ESC7 ManageCertificates enable / issue / retrieve path** — adcs.md · source fidelity.
-12. **ESC5 vulnerable PKI-object ACL / CA key path** — adcs.md · source fidelity.
+1. **ESC13 issuance-policy / group-link template path** — adcs.md · source fidelity.
+2. **ESC15 application-policy injection for Schannel** — adcs.md · source fidelity.
+3. **ESC15 application-policy injection for request-agent use** — adcs.md · source fidelity.
+4. **ESC4 writable certificate-template ACL** — adcs.md · source fidelity.
+5. **ESC7 ManageCA officer transition** — adcs.md · source fidelity.
+6. **ESC7 ManageCertificates enable / issue / retrieve path** — adcs.md · source fidelity.
+7. **ESC5 vulnerable PKI-object ACL / CA key path** — adcs.md · source fidelity.
+8. **ESC6 CA SAN flag enabling identity selection** — adcs.md · source fidelity.
+9. **ESC11 RPC enrollment relay** — adcs.md · source fidelity.
+10. **Certificate-mapping shadow-credential bridge** — adcs.md · source fidelity.
+11. **ESC9 weak certificate mapping case** — adcs.md · source fidelity.
+12. **ESC10 weak mapping case 1** — adcs.md · source fidelity.
 
 Generated by `node tools/sync-readme-build-next.js --write`. Verify with `node tools/sync-readme-build-next.js --check`.
 <!-- OBOL-BUILD-NEXT:END -->
@@ -243,7 +249,7 @@ node tools/validate-historical-tests.js
 The current release suite is:
 
 ```bash
-node tests/run-v6.4-tests.js
+node tests/run-v6.5-tests.js
 ```
 
 The repository-only release contract check is:
