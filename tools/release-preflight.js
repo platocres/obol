@@ -31,16 +31,23 @@ for(const file of ['tools/sync-readme-build-next.js','tools/release-preflight.js
 if(!syntaxFiles.length)throw new Error(`No v${version} JavaScript release files found for syntax validation`);
 for(const file of [...new Set(syntaxFiles)].sort())run(`syntax ${file}`,['--check',file]);
 
+const syncText=fs.readFileSync(path.join(root,'tools','sync-readme-build-next.js'),'utf8');
+for(const required of [`methodology-v${version}.js`,`core-v${version}.js`]){
+  if(!syncText.includes(required))throw new Error(`README Build Next generator is not wired through current release file: ${required}`);
+}
+
 const brittle=[];
 for(const name of fs.readdirSync(path.join(root,'tests')).filter(x=>/^run-v\d+\.\d+.*-tests\.js$/.test(x))){
   const text=fs.readFileSync(path.join(root,'tests',name),'utf8');
-  if(!text.includes('sync-readme-build-next.js'))continue;
-  if(/out\.includes\(['"`]Canonical methodology:\*\* \d+\/127/.test(text))brittle.push(`${name}: exact generated canonical count`);
-  if(/out\.includes\(['"`]\d+ implemented-quality repairs/.test(text))brittle.push(`${name}: exact generated implemented-quality count`);
-  if(/out\.includes\(['"`]\*\*Current live queue:\*\* \d+/.test(text))brittle.push(`${name}: exact generated queue total`);
+  if(text.includes('sync-readme-build-next.js')){
+    if(/out\.includes\(['"`]Canonical methodology:\*\* \d+\/127/.test(text))brittle.push(`${name}: exact generated canonical count`);
+    if(/out\.includes\(['"`]\d+ implemented-quality repairs/.test(text))brittle.push(`${name}: exact generated implemented-quality count`);
+    if(/out\.includes\(['"`]\*\*Current live queue:\*\* \d+/.test(text))brittle.push(`${name}: exact generated queue total`);
+  }
+  if(name!==`run-v${version}-tests.js`&&/readme\.includes\(['"`](?:Current release: )?\*\*v\d+\.\d+\*\*/.test(text))brittle.push(`${name}: hard-coded README release token`);
 }
 if(brittle.length){
-  console.error('\nHistorical/live README generator assertions must be future-safe. Test the release model directly for historical numbers, and test generated README output by structure rather than exact current counts.');
+  console.error('\nHistorical/live README assertions must be future-safe. Test historical numbers against the historical model and test current README/generator output by structure.');
   for(const item of brittle)console.error(`- ${item}`);
   process.exit(1);
 }
