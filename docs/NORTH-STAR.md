@@ -48,20 +48,22 @@ An atomic unit is fidelity-complete only when the relevant requirements are acco
 
 Terminal dispositions are `modeled`, `superseded`, or `rejected`, with rationale. Merely assigning one of those labels without satisfying the required review dimensions is not enough.
 
-## Current v6.8 baseline
+## Current v6.9 baseline
 
-v6.8 continues the already-inventoried AD CS source-fidelity queue and reconciles broad canonical parents only after every inventoried subordinate unit beneath them is fidelity-complete:
+v6.9 continues the already-inventoried AD CS source-fidelity queue and reconciles broad canonical parents only after every inventoried subordinate unit beneath them is fidelity-complete:
 
-- canonical: 97 / 127 implemented, 30 partial, 0 gaps, 0 stale;
-- strict completion: 76%;
+- canonical: 99 / 127 implemented, 28 partial, 0 gaps, 0 stale;
+- strict completion: 78%;
 - represented coverage: 100%;
 - methodology source files atomized: 1 / 17;
 - frozen partial baselines decomposed: 7 / 34;
-- inventoried atomic units fidelity-complete: 11 / 19;
-- remaining inventoried atomic audits: 8;
+- inventoried atomic units fidelity-complete: 14 / 19;
+- remaining inventoried atomic audits: 5;
 - remaining source-inventory/decomposition items: 27.
 
-The two canonical advances in v6.8 are accounting reconciliation, not denominator inflation. `adcs.template-misconfig` advances only because all six inventoried template branches are complete. `adcs.acl-misconfig` advances only because ESC4 and both inventoried ESC7 branches are complete. The frozen v6.2 baseline remains 34, so the fact that those broad parents are now implemented does not erase their source-depth history.
+The two canonical advances in v6.9 are accounting reconciliation, not denominator inflation. `adcs.pki-object-acl` advances because ESC5 is complete. `adcs.ca-misconfig` advances because both inventoried CA-misconfiguration units, ESC6 and ESC11, are complete. The frozen v6.2 baseline remains 34, so broad-parent promotion does not erase source-depth history.
+
+The five remaining inventoried AD CS audits are certificate-mapping units. They remain higher priority than the 27 source-inventory/decomposition items because their missing delivery requirements are already known precisely.
 
 These denominators must remain visible. A percentage may summarize a denominator but must never make unfinished source disappear.
 
@@ -75,11 +77,11 @@ The repository work queue is ordered by product quality, not by whichever metric
 4. atomic source-fidelity audits for already-inventoried units;
 5. source-depth inventory/decomposition for remaining broad partial baselines.
 
-This ordering is derived from the repository model and exposed through the stable `C.currentProjectModel(...)` pointer. The current versioned implementation is `C.projectModel68(...)`.
+This ordering is derived from the repository model and exposed through the stable `C.currentProjectModel(...)` pointer. The current versioned implementation is `C.projectModel69(...)`.
 
 ## Current-project projection rule
 
-Beginning with v6.6, project status has one current projection boundary. v6.8 adds the stable non-versioned pointer `C.currentProjectModel(...)` so current consumers do not need to hard-code whichever versioned adapter happens to be newest.
+Beginning with v6.6, project status has one current projection boundary. v6.8 added the stable non-versioned pointer `C.currentProjectModel(...)` so current consumers do not need to hard-code whichever versioned adapter happens to be newest. v6.9 keeps that pointer current while retaining versioned adapters as historical regression boundaries.
 
 The Dashboard and README may present or summarize its output, but they should not keep independent current counts or competing Build Next calculations. The underlying domain models remain the owners of canonical, delivery, and source-fidelity semantics; the project model provides a stable current view over them.
 
