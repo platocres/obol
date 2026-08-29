@@ -136,10 +136,11 @@ test('tiered workflow avoids full regressions on ordinary release commits',()=>{
   assert(preflightBlock.includes("'[release-final]'"));
 });
 
-test('release quality gate passes the live v6.0 model',()=>{
+test('release quality gate passes the live repository model',()=>{
   const r=cp.spawnSync(process.execPath,[path.join(root,'tools','validate-release-quality.js')],{cwd:root,encoding:'utf8'});
   assert.strictEqual(r.status,0,r.stderr||r.stdout);
-  assert((r.stdout||'').includes('0 implemented-quality repairs, 0 mapped-delivery repairs, 6 canonical gaps'));
+  assert((r.stdout||'').includes('0 implemented-quality repairs, 0 mapped-delivery repairs'));
+  assert(/\d+ canonical gaps/.test(r.stdout||''));
 });
 
 test('release PR validator accepts v6.0 contract and rejects wrong branch',()=>{
@@ -160,12 +161,12 @@ test('live CI event satisfies the release PR contract',()=>{
   assert.strictEqual(r.status,0,r.stderr||r.stdout);
 });
 
-test('v6.0 release wiring is complete',()=>{
+test('v6.0 release wiring remains present',()=>{
   const idx=fs.readFileSync(path.join(root,'index.html'),'utf8');
   const readme=fs.readFileSync(path.join(root,'README.md'),'utf8');
   const changelog=fs.readFileSync(path.join(root,'CHANGELOG.md'),'utf8');
   for(const x of ['methodology-v6.0.js','dashboard-v6.0.js','core-v6.0.js','intake-v6.0.js','app-v6.0.js','obol-v6.0.css'])assert(idx.includes(x),x);
-  assert(readme.includes('Current release: **v6.0**'));
+  assert(/Current release: \*\*v\d+\.\d+\*\*/.test(readme));
   assert(changelog.includes('## v6.0'));
   for(const x of ['tools/release-smoke.js','tools/validate-historical-tests.js'])assert(fs.existsSync(path.join(root,x)),x);
   assert(fs.existsSync(path.join(root,'docs','v6.0.md')));
@@ -174,10 +175,10 @@ test('v6.0 release wiring is complete',()=>{
   assert(self.includes('validate-historical-tests.js'));
 });
 
-test('README Build Next generator is wired through v6.0',()=>{
+test('README Build Next generator remains structurally valid after v6.0',()=>{
   const out=cp.execFileSync(process.execPath,[path.join(root,'tools','sync-readme-build-next.js'),'--print'],{encoding:'utf8'});
-  assert(out.includes('6 canonical gaps'));
-  assert(out.includes('87/127 fully implemented (69%)'));
+  assert(/\d+ canonical gaps/.test(out));
+  assert(/\d+\/127 fully implemented \(\d+%\)/.test(out));
   assert(out.includes('North Star Dashboard → Build Next'));
 });
 
