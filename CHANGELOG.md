@@ -4,6 +4,23 @@ This file is the release-history source for Obol. Future build work should revie
 
 The README is intentionally reserved for current project purpose, architecture, permanent requirements, a compact summary of only the latest three releases, and forward priorities.
 
+## v6.0 — canonical quick-win and relay completion wave
+
+- Consumed the next five items from the synchronized v5.9 Build Next queue after confirming **0 implemented-quality repairs** and **0 mapped-delivery repairs**.
+- Completed Java RMI, Log4Shell, Tomcat / JBoss manager, Veeam quick-win, and the separate MITM Kerberos relay canonical branch.
+- Added delivery-ready owners `java-rmi60`, `log4shell60`, `tomcat-jboss60`, `veeam60`, and `kerberos-relay60` with explicit execution-side metadata, conservative copy/paste Evidence profiles, decision-path placement, reporting traceability, and bounded proof semantics.
+- Java RMI keeps registry discovery, vulnerability output, and an explicitly opened remote session as separate boundaries.
+- Log4Shell treats a sent JNDI string as inconclusive; only an explicit CVE-2021-44228 result or independently observed unique callback supports the finding.
+- Tomcat / JBoss keeps console reachability, authenticated manager access, deployment, and remote execution separate.
+- Veeam keeps product/service context, CVE evidence, reusable credential material, and execution as separate proof boundaries.
+- MITM Kerberos relay keeps listener startup, successful relay, certificate/ticket material, and privilege separate.
+- Moved five canonical gaps to implemented, raising strict methodology from **82 implemented / 34 partial / 11 gaps / 0 stale** to **87 implemented / 34 partial / 6 gaps / 0 stale**.
+- Raised fully implemented coverage from **65% to 69%** and represented coverage from **91% to 95%**, preserving the pinned 127-section denominator and Orange 2025.03 upstream commit.
+- Extended the North Star Dashboard through v6.0 with the new canonical wave, live Build Next state, and retained release-quality visibility.
+- Extended README Build Next generation through v6.0 and retained CI-enforced README/Dashboard queue synchronization.
+- Added v6.0 state coercion, sanitized-export compatibility, terminal Evidence interpretation, live UI/version wiring, release notes, and regression coverage.
+- Kept the v5.9 historical regression suite future-safe as v6.0 becomes the current release.
+
 ## v5.9 - generic release-quality gate and canonical gap wave
 
 - Made `BUILDING.md` a mandatory release-workflow companion and aligned the README build-agent checklist with one visible draft `release/obol-vX.Y` PR, incremental coherent commits, acceptable intermediate red checks while Draft, and exact-head green merge readiness.

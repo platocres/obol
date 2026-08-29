@@ -130,12 +130,12 @@ test('live CI event satisfies the release PR contract',()=>{
   assert.strictEqual(r.status,0,r.stderr||r.stdout);
 });
 
-test('v5.9 release wiring is complete',()=>{
+test('v5.9 release wiring remains available after later releases',()=>{
   const idx=fs.readFileSync(path.join(root,'index.html'),'utf8');
   const readme=fs.readFileSync(path.join(root,'README.md'),'utf8');
   const changelog=fs.readFileSync(path.join(root,'CHANGELOG.md'),'utf8');
   for(const x of ['methodology-v5.9.js','dashboard-v5.9.js','core-v5.9.js','intake-v5.9.js','app-v5.9.js','obol-v5.9.css'])assert(idx.includes(x),x);
-  assert(readme.includes('Current release: **v5.9**'));
+  assert(/Current release: \*\*v\d+\.\d+\*\*/.test(readme));
   assert(readme.includes('BUILDING.md'));
   assert(changelog.includes('## v5.9'));
   assert(fs.existsSync(path.join(root,'docs','v5.9.md')));

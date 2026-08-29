@@ -16,8 +16,21 @@ permissions:
   contents: read
 
 jobs:
-  preflight:
+  smoke:
     if: github.event_name == 'push' && startsWith(github.ref, 'refs/heads/release/')
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+      - name: Set up Node
+        uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+      - name: Run lightweight release smoke validation
+        run: node tools/release-smoke.js
+
+  preflight:
+    if: github.event_name == 'push' && startsWith(github.ref, 'refs/heads/release/') && (contains(github.event.head_commit.message, '[preflight]') || contains(github.event.head_commit.message, '[release-final]'))
     runs-on: ubuntu-latest
     steps:
       - name: Checkout
@@ -41,6 +54,10 @@ jobs:
           node-version: '20'
       - name: Validate all JavaScript syntax
         run: find assets data tools tests -type f -name '*.js' -print0 | sort -z | xargs -0 -n1 node --check
+      - name: Validate historical test future safety
+        run: node tools/validate-historical-tests.js
+      - name: Validate release contract
+        run: node tools/validate-release-pr.js
       - name: Run complete historical regression chain
         run: |
           set -euo pipefail
@@ -53,8 +70,10 @@ jobs:
       - name: Check README Build Next synchronization
         run: node tools/sync-readme-build-next.js --check
 
-# Draft release PRs normally run only release-branch preflight. A final commit containing
-# [release-final] explicitly runs the complete historical chain before the PR leaves Draft.
+# Tiered release validation keeps incremental development visible without turning every
+# work-in-progress commit into a full regression event. Ordinary release pushes run smoke;
+# [preflight] runs the current-release gate; [release-final] runs preflight plus the complete
+# historical chain. Ready-for-review PRs and main retain the complete protected test job.
 # Historical CI contract markers retained for release-specific tests.
 # The live workflow above is intentionally generic so future releases do not require CI-step duplication.
 # Run v2 regression suite | node tests/run-tests.js
