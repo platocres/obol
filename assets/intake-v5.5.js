@@ -20,7 +20,8 @@ function proof55(cardId,command,output){const t=String(output||''),c=norm(comman
   const denied=/no entries found|0 entries|no delegation/i.test(t),table=/DelegationType|DelegationRightsTo|TrustedForDelegation|TrustedToAuthForDelegation|msDS-AllowedToDelegateTo/i.test(t),row=/Unconstrained|Constrained|ResourceBased|TRUE|\bcifs\//i.test(t);
   if(!denied&&table&&row){success=true;why='Output explicitly identified at least one delegation relationship.';add('ad.delegation_discovered');}
  }else if(cardId==='domain-backup-key55'){
-  if(/Preferred BackupKey|Legacy key|Domain backup key/i.test(t)&&/(?:exported|saved|\.pvk\b|\.key\b|backupkey)/i.test(t)){success=true;why='Output explicitly confirmed export of domain DPAPI backup-key material.';add('dpapi.domain_backup_key');}
+  const keySeen=/Preferred BackupKey|Legacy key|Domain backup key/i.test(t),artifact=/(?:exported|saved(?:\s+to)?|[A-Za-z0-9._-]+\.(?:pvk|key|pfx)\b)/i.test(t);
+  if(keySeen&&artifact){success=true;why='Output explicitly confirmed export of domain DPAPI backup-key material.';add('dpapi.domain_backup_key');}
  }else if(cardId==='lsass-collection55'){
   const parsed=/\bmsv\b|==\s*MSV\s*==/i.test(t),user=/username\s*[:=]\s*\S+/i.test(t),nt=/\bnt\s*[:=]\s*[0-9a-f]{32}\b/i.test(t);
   if(parsed&&user&&nt){success=true;why='Offline LSASS parsing explicitly exposed a username and NT hash.';add('loot.lsass');add('credential.candidate');add('hash.ntlm');}
