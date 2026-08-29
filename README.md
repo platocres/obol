@@ -6,7 +6,7 @@ Live site: `https://platocres.github.io/obol/`
 
 Current release: **v5.8**
 
-Release history belongs in [`CHANGELOG.md`](CHANGELOG.md). Build agents should review both this README and the changelog before changing architecture, methodology, Evidence behavior, reporting, or project metrics.
+Release history belongs in [`CHANGELOG.md`](CHANGELOG.md). Build agents should review this README, [`BUILDING.md`](BUILDING.md), and the changelog before changing architecture, methodology, Evidence behavior, reporting, or project metrics.
 
 ## Operating model
 
