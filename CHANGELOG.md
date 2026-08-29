@@ -4,6 +4,18 @@ This file is the release-history source for Obol. Future build work should revie
 
 The README is intentionally reserved for current project purpose, architecture, permanent requirements, a compact summary of only the latest three releases, and forward priorities.
 
+## v5.4 — synchronized README agenda and persistence completion wave
+
+- Added `tools/sync-readme-build-next.js` so the README Build next block is generated from the same live `C.buildNext52(lanes)` model used by the North Star Dashboard rather than being maintained as a competing manual backlog.
+- Added `--write`, `--check`, and `--print` modes plus CI enforcement; release builds now fail when the GitHub-readable README agenda drifts from the live Dashboard queue.
+- Added a v5.4 Dashboard panel showing canonical progress, the five-section methodology delta, remaining Build Next counts, and README synchronization ownership.
+- Completed dedicated lifecycle owners for Skeleton Key, Custom SSP/memssp, Diamond Ticket, Sapphire Ticket, and DCShadow.
+- Kept persistence proof conservative: module startup text alone is not persistence proof; forged tickets prove ticket material without implying privilege; DCShadow requires explicit bounded directory readback and preserves restoration semantics.
+- Checked the current Fortra Impacket `ticketer.py` contract before updating Diamond/Sapphire workflows; `-request` remains the request-template path and `-impersonate` is explicitly documented as the Sapphire Ticket S4U2Self+U2U PAC-acquisition path.
+- Moved five canonical persistence sections from partial to implemented, raising the strict pinned 127-section baseline from 52 / 49 / 26 / 0 to **57 implemented / 44 partial / 26 gaps / 0 stale**, with **45% fully implemented** and **80% represented**.
+- Corrected later-release Dashboard milestone composition so the historical v5.3 milestone remains 52 implemented rather than inheriting the current overlay's 57 count.
+- Added v5.4 state coercion, sanitized-export compatibility, UI wiring, release notes, terminal Evidence regression fixtures, and complete historical CI coverage.
+
 ## v5.3 — implemented-quality delivery repair wave
 
 - Followed the v5.2 Build next priority order by repairing already-implemented methodology before increasing the canonical implementation count.
