@@ -6,12 +6,20 @@ if(!O||!F||!M)throw new Error('Obol v7.3 methodology/fidelity metadata are requi
 function card(id){for(const l of lanes)for(const c of l.cards||[])if(c.id===id)return c;return null;}
 function section(key){for(const f of O.files||[])for(const s of f.sections||[])if(s.key===key)return s;return null;}
 function complete(ids){return ids.every(id=>{const u=(F.units||[]).find(x=>x.id===id);return u&&['modeled','superseded','rejected'].includes(u.auditStatus)&&(F.dimensions||[]).every(d=>u.review&&u.review[d.id]===true);});}
-// llmnr-responder remains a useful broad source owner, but v7.3 does not promote the historical helper into a newly tracked delivery owner.
-// The dedicated mitm-listen-73 card owns the complete Run/Evidence/execution/reporting contract for the frozen mitm.listen reconciliation.
+// methodology-v7.3 intentionally reuses one stage descriptor while attaching provenance. Normalize the new cards here so
+// each owner keeps only its own canonical keys and the historical llmnr-responder helper is not promoted into new delivery debt.
+const ownedKeys={
+  'mitm-listen-73':['mitm.listen'],
+  'ntlm-ldaps-relay-73':['mitm.ntlm-relay'],
+  'ntlm-http-relay-73':['mitm.ntlm-relay'],
+  'ntlm-mssql-relay-73':['mitm.ntlm-relay'],
+  'ntlm-netlogon-relay-73':['mitm.ntlm-relay']
+};
+for(const [id,keys] of Object.entries(ownedKeys)){const c=card(id);if(c&&c.orange44)c.orange44={...c.orange44,canonicalKeys:keys.slice()};}
 const legacyListen=card('llmnr-responder');
-if(legacyListen&&legacyListen.orange44&&Array.isArray(legacyListen.orange44.canonicalKeys)&&legacyListen.orange44.canonicalKeys.length===1&&legacyListen.orange44.canonicalKeys[0]==='mitm.listen'){
-  delete legacyListen.orange44;
+if(legacyListen){
   legacyListen.orange43=(legacyListen.orange43||[]).filter(x=>!(x&&x.key==='mitm.listen'&&x.advancedIn==='7.3'));
+  if(legacyListen.orange44&&legacyListen.orange44.label==='Validate MITM / relay paths')delete legacyListen.orange44;
 }
 const ids=['mitm.ntlm-self-relay','mitm.ntlm-ldaps','mitm.ntlm-smb','mitm.ntlm-http','mitm.ntlm-mssql','mitm.ntlm-netlogon'];
 if(!complete(ids))throw new Error('v7.3 cannot reconcile mitm.ntlm-relay before all NTLM relay atomic units are terminal and fidelity-complete');
