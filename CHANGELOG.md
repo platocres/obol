@@ -4,6 +4,20 @@ This file is the release-history source for Obol. Future build work should revie
 
 The README is intentionally reserved for current project purpose, architecture, permanent requirements, a compact summary of only the latest three releases, and forward priorities.
 
+## v6.5 — first AD CS atomic source-fidelity delivery wave
+
+- Consumed the first five atomic source-fidelity items from the synchronized v6.4 Build Next queue: AD CS enumeration/routing, ESC8 Web Enrollment relay, ESC1 enrollee-supplied identity, ESC2 Any Purpose/SubCA routing, and ESC3 enrollment-agent/on-behalf-of enrollment.
+- Added dedicated v6.5 AD CS owners and refined the existing authenticated enumeration owner with explicit semantic command controls, Kali/Windows execution-side metadata, source provenance, Evidence profiles, reporting contracts, and bounded failure semantics.
+- Added `data/source-delivery-v6.5.js` to finish the operator-side contract for the wave, including Certify/certutil/ldeep enumeration alternatives, an explicit ESC3 enrollment-agent certificate stage, and source-depth completion markers for the exhausted enumeration and Web Enrollment parents.
+- Preserved conservative proof boundaries: enumeration routes only from explicit CA/template/endpoint/ESC observations; relay startup is not issuance; certificate/PFX output is credential material only; ESC2 agent material is not ESC3 target identity; certificate authentication does not silently become administrator or SYSTEM access.
+- Moved only the two fully exhausted broad canonical AD CS parents, `adcs.enumeration` and `adcs.web-enrollment`, from partial to implemented. The broader template-misconfiguration parent remains partial because additional atomized branches remain open.
+- Raised canonical methodology from **93 implemented / 34 partial / 0 gaps / 0 stale** to **95 implemented / 32 partial / 0 gaps / 0 stale**, **75% fully implemented**, and **100% represented**.
+- Advanced atomic source fidelity from **0/19** to **5/19** complete while preserving **1/17 methodology files atomized**, **7/34 frozen partial baselines decomposed**, and the unfinished denominators on the North Star Dashboard.
+- Reduced synchronized Build Next from 46 to **41 items**: **14 remaining atomic AD CS fidelity audits** plus **27 source-inventory/decomposition items**, with zero implemented-quality repairs, zero mapped-delivery repairs, and zero canonical gaps.
+- Extended the North Star Dashboard with a compact v6.5 delivery-wave summary while retaining the v6.4 atomic ledger and requirement matrix as the detailed source-fidelity owner.
+- Wired v6.5 through browser runtime, Intake, state migration/sanitized export, README queue generation, release documentation, CSS/UI, and current-release regression coverage.
+- Kept the tiered smoke / preflight / `[release-final]` CI contract, release-quality invariant, exact-head merge-readiness rule, and historical-test future-safety validation.
+
 ## v6.4 — atomic Orange source-fidelity accounting
 
 - Preserved the canonical methodology at **93 implemented / 34 partial / 0 gaps / 0 stale**, **73% fully implemented**, and **100% represented** while adding a deeper denominator rather than inflating canonical completion.
