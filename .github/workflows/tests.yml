@@ -146,5 +146,9 @@ jobs:
         run: node --check data/methodology-v5.4.js && node --check data/dashboard-v5.4.js && node --check assets/core-v5.4.js && node --check assets/intake-v5.4.js && node --check assets/app-v5.4.js && node --check tools/sync-readme-build-next.js
       - name: Run v5.4 regression suite
         run: node tests/run-v5.4-tests.js
+      - name: Validate v5.5 JavaScript syntax
+        run: node --check data/methodology-v5.5.js && node --check data/dashboard-v5.5.js && node --check assets/core-v5.5.js && node --check assets/intake-v5.5.js && node --check assets/app-v5.5.js && node --check tools/sync-readme-build-next.js
+      - name: Run v5.5 regression suite
+        run: node tests/run-v5.5-tests.js
       - name: Check README Build Next synchronization
         run: node tools/sync-readme-build-next.js --check
