@@ -9,15 +9,19 @@ function stage72(command){const c=norm(command);
  if(/pywhisker/i.test(command)&&/--action\s+["']?list/i.test(command))return'shadow-list';
  if(/Remove-ADGroupMember/i.test(command))return'group-remove';
  if(/Add-ADGroupMember/i.test(command)||(/bloodyAD/i.test(command)&&/add\s+groupMember/i.test(command)))return'group-add';
- if(/impacket-owneredit|owneredit\.py/i.test(command))return'owner-write';
- if(/impacket-dacledit|dacledit\.py/i.test(command)){if(/-action\s+restore/i.test(c))return'dacl-restore';if(/-action\s+backup/i.test(c))return'dacl-backup';if(/-target-dn/i.test(c)&&/-inheritance/i.test(c))return'ou-dacl-write';if(/-action\s+write/i.test(c))return'dacl-write';}
- if(/\bnet\s+user\b/i.test(command)&&/\/domain/i.test(command)||/rpcclient/i.test(command)&&/setuserinfo2/i.test(command))return'user-password';
+ if(/impacket-owneredit|owneredit\.py/i.test(command))return/OBOL_ACL_OWNER_RESTORED/i.test(command)?'owner-restore':'owner-write';
+ if(/impacket-dacledit|dacledit\.py/i.test(command)){
+  if(/-action\s+restore/i.test(c)){if(/OBOL_OU_DACL_RESTORED/i.test(command))return'ou-dacl-restore';if(/OBOL_GROUP_DACL_RESTORED/i.test(command))return'group-dacl-restore';return'dacl-restore';}
+  if(/-action\s+backup/i.test(c))return'dacl-backup';
+  if(/-target-dn/i.test(c)&&/-inheritance/i.test(c))return'ou-dacl-write';
+  if(/-action\s+write/i.test(c))return'dacl-write';
+ }
+ if((/\bnet\s+user\b/i.test(command)&&/\/domain/i.test(command))||(/rpcclient/i.test(command)&&/setuserinfo2/i.test(command)))return'user-password';
  if(/targetedKerberoast/i.test(command))return'targeted-kerberoast';
  if(/Set-ADUser/i.test(command)&&/-ScriptPath/i.test(command))return/OBOL_LOGONSCRIPT_RESTORED/i.test(command)?'logonscript-restore':'logonscript-write';
  if(/Remove-GPLink/i.test(command))return'gplink-restore';
- if(/New-GPLink/i.test(command))return'gplink-write';
- if(/OUned\.py/i.test(command))return'gplink-write';
- if(/\bnxc\s+ldap\b/i.test(command)&&/--gmsa\b/i.test(command)||/gMSADumper\.py/i.test(command))return'gmsa-read';
+ if(/New-GPLink/i.test(command)||/OUned\.py/i.test(command))return'gplink-write';
+ if((/\bnxc\s+ldap\b/i.test(command)&&/--gmsa\b/i.test(command))||/gMSADumper\.py/i.test(command))return'gmsa-read';
  if(/Get-DomainObjectAcl/i.test(command)&&/Group-Policy-Container/i.test(command))return'gpo-discovery';
  if(/Set-GPRegistryValue/i.test(command))return'gpo-write';
  if(/Remove-GPRegistryValue/i.test(command))return'gpo-restore';
@@ -25,7 +29,7 @@ function stage72(command){const c=norm(command);
  if(/sc(?:\.exe)?\s+\\\\/i.test(command)&&/\b(?:stop|start)\s+dns\b/i.test(command))return'dns-restart';
  return'';
 }
-function inferredOwner(command){const s=stage72(command);if(s.startsWith('shadow-'))return'acl-shadow-credential-72';if(s.startsWith('group-'))return'acl-group-membership-72';if(s.startsWith('owner-')||s.startsWith('dacl-'))return'acl-group-owner-dacl-72';if(s==='user-password')return'acl-user-password-72';if(s==='targeted-kerberoast')return'acl-targeted-kerberoast-72';if(s.startsWith('logonscript-'))return'acl-user-logonscript-72';if(s==='ou-dacl-write')return'acl-ou-inheritance-72';if(s.startsWith('gplink-'))return'acl-ou-gplink-72';if(s==='gmsa-read')return'acl-gmsa-read-72';if(s.startsWith('gpo-'))return'acl-gpo-control-72';if(s.startsWith('dns-'))return'acl-dnsadmin-72';return'';}
+function inferredOwner(command){const s=stage72(command);if(s.startsWith('shadow-'))return'acl-shadow-credential-72';if(s.startsWith('group-')&&!s.includes('dacl'))return'acl-group-membership-72';if(s.startsWith('owner-')||s==='dacl-write'||s==='dacl-backup'||s==='dacl-restore'||s==='group-dacl-restore')return'acl-group-owner-dacl-72';if(s==='user-password')return'acl-user-password-72';if(s==='targeted-kerberoast')return'acl-targeted-kerberoast-72';if(s.startsWith('logonscript-'))return'acl-user-logonscript-72';if(s==='ou-dacl-write'||s==='ou-dacl-restore')return'acl-ou-inheritance-72';if(s.startsWith('gplink-'))return'acl-ou-gplink-72';if(s==='gmsa-read')return'acl-gmsa-read-72';if(s.startsWith('gpo-'))return'acl-gpo-control-72';if(s.startsWith('dns-'))return'acl-dnsadmin-72';return'';}
 function proof72(cardId,command,output){const facts=[];let success=false,why='';const add=x=>{if(!facts.includes(x))facts.push(x);};const s=stage72(command),t=String(output||'');
  if(cardId==='acl-shadow-credential-72'){
   if(s==='shadow-list'&&/Key Credential|DeviceID|KeyID/i.test(t)){success=true;why='Explicit Key Credential inventory was returned. This is discovery context only and does not prove write control, authentication, access, or privilege.';}
@@ -42,8 +46,9 @@ function proof72(cardId,command,output){const facts=[];let success=false,why='';
  }
  else if(cardId==='acl-group-owner-dacl-72'){
   if(s==='owner-write'&&/OwnerSid modified successfully|owner.*modified successfully/i.test(t)){success=true;why='The target object owner was explicitly changed. Ownership alone does not prove effective downstream rights, membership, access, or privilege.';add('ad.acl_owner_changed');}
+  else if(s==='owner-restore'&&(/OBOL_ACL_OWNER_RESTORED/i.test(t)||/OwnerSid modified successfully/i.test(t))){success=true;why='The recorded original object owner was explicitly restored. This is cleanup proof only.';add('ad.acl_owner_restored');}
   else if(s==='dacl-write'&&/DACL modified successfully|ACE.*added|rights.*modified successfully/i.test(t)){success=true;why='The target DACL was explicitly modified. The ACE write is configuration proof only.';add('ad.acl_modified');}
-  else if(s==='dacl-restore'&&/DACL restored|restored successfully/i.test(t)){success=true;why='The original DACL was explicitly restored. This is cleanup proof only.';add('ad.acl_restored');}
+  else if((s==='group-dacl-restore'||s==='dacl-restore')&&(/OBOL_GROUP_DACL_RESTORED/i.test(t)||/DACL restored|restored successfully/i.test(t))){success=true;why='The original group DACL was explicitly restored. This is cleanup proof only.';add('ad.acl_restored');}
   else if(s==='dacl-backup'&&/DACL backed up|saved.*dacl/i.test(t)){success=true;why='The pre-test DACL was explicitly backed up. Backup creation is preparation only and does not prove a control mutation.';}
  }
  else if(cardId==='acl-user-password-72'){
@@ -59,7 +64,7 @@ function proof72(cardId,command,output){const facts=[];let success=false,why='';
  }
  else if(cardId==='acl-ou-inheritance-72'){
   if(s==='ou-dacl-write'&&/DACL modified successfully|ACE.*added/i.test(t)){success=true;why='The OU DACL was explicitly modified with the reviewed inheritable ACE. Inherited child control and later object changes remain separate.';add('ad.ou_acl_modified');}
-  else if(s==='dacl-restore'&&/DACL restored|restored successfully/i.test(t)){success=true;why='The original OU DACL was explicitly restored. This is cleanup proof only.';add('ad.acl_restored');}
+  else if(s==='ou-dacl-restore'&&(/OBOL_OU_DACL_RESTORED/i.test(t)||/DACL restored|restored successfully/i.test(t))){success=true;why='The original OU DACL was explicitly restored. This is cleanup proof only.';add('ad.acl_restored');}
   else if(s==='dacl-backup'&&/DACL backed up|saved.*dacl/i.test(t)){success=true;why='The pre-test OU DACL was explicitly backed up. This is preparation only.';}
  }
  else if(cardId==='acl-ou-gplink-72'){
