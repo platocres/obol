@@ -4,6 +4,22 @@ This file is the release-history source for Obol. Future build work should revie
 
 The README is intentionally reserved for current project purpose, architecture, permanent requirements, a compact summary of only the latest three releases, and forward priorities.
 
+## v6.2 — canonical completion and Orange source-depth phase
+
+- Consumed the final canonical gap only after confirming zero implemented-quality and zero mapped-delivery debt.
+- Completed `trusts.parent-child` with a dedicated `trust-parent-child62` workflow, bringing the pinned 127-section Orange 2025.03 denominator to **93 implemented / 34 partial / 0 gaps / 0 stale**, **73% fully implemented**, and **100% represented**.
+- Modeled the upstream parent-to-child direction explicitly instead of leaving the source's "same as Child to parent" note implicit.
+- Kept trust relationship context, domain SID context, recovered trust secret material, saved Kerberos ticket material, successful child-domain service access, and privilege as separate proof boundaries.
+- Preserved explicit Kali/Windows execution metadata, copy/paste Evidence interpretation, decision-path placement, reporting traceability, and browser-local state compatibility for the new trust owner.
+- Documented the critical distinction between **canonical breadth** and **Orange source exhaustion**. Zero canonical gaps means every normalized section is represented; it does not mean every useful subordinate branch, tool choice, prerequisite, decision edge, failure state, artifact transition, cleanup obligation, GUI control, Evidence signature, Next Steps transition, or reporting implication has been mined.
+- Froze the **34 partial canonical sections** at the v6.2 boundary as a separate Orange source-depth audit denominator.
+- Added `docs/ORANGE-SOURCE-DEPTH.md` with the permanent source-depth plan and explicit audit outcomes: `needs-audit`, `modeled`, `superseded`, and `rejected`.
+- Extended North Star Dashboard with separate canonical-representation and Orange source-depth metrics so 100% representation cannot be mistaken for 100% useful-source extraction.
+- Extended Build Next through `C.buildNext62(lanes)`: implemented-quality repairs remain first, mapped-delivery repairs second, canonical gaps third, and source-depth audits become the active fourth phase once the first three are zero.
+- Updated README synchronization so the GitHub-readable Build Next snapshot reports the source-depth phase while the Dashboard remains the authoritative prioritized drill-down.
+- Updated `BUILDING.md` so future agents must review the source-depth plan and preserve explicit modeled / superseded / rejected outcomes rather than silently dropping baseline items when partial sections evolve.
+- Kept the tiered smoke / preflight / `[release-final]` CI contract, release-quality invariant, exact-head merge-readiness rule, and historical-test future-safety validation.
+
 ## v6.1 — PXE, TimeRoast, and trust-path completion wave
 
 - Consumed the next five items from the synchronized v6.0 Build Next queue after confirming **0 implemented-quality repairs** and **0 mapped-delivery repairs**.
