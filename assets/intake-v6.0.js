@@ -25,7 +25,7 @@ function proof60(cardId,command,output){const t=String(output||''),c=norm(comman
   if(/ok\s*-\s*listed applications/i.test(t)&&/manager\/text\/list/.test(c)){success=true;why='Authenticated manager output successfully listed applications.';add('service.app_manager');add('access.web_admin');}
   if(/(?:meterpreter|command shell|session)\s+\d+\s+opened/i.test(t)&&/tomcat_mgr_deploy/.test(c)){success=true;why='The authorized manager deployment explicitly opened a remote session.';add('execution.remote');}
  }else if(cardId==='veeam60'){
-  if(/\bveeam\b/i.test(t)&&(/service|backup|replication|enterprise manager|version|sqlservername|sqldatabasename/i.test(t))){success=true;why='Output explicitly identified Veeam service or product context.';add('service.veeam');}
+  if(/veeam/i.test(t)&&(/service|backup|replication|enterprise manager|version|sqlservername|sqldatabasename/i.test(t))){success=true;why='Output explicitly identified Veeam service or product context.';add('service.veeam');}
   if(/cve-2023-27532|cve-2024-29849/i.test(t)&&/(vulnerable|success|bypass|affected)/i.test(t)&&!/not vulnerable/i.test(t)){success=true;why='A Veeam CVE validation explicitly reported a positive result.';add('vuln.veeam');}
   if(/veeamhax|cve-2023-27532/.test(c)&&/(user(?:name)?\s*[:=].+).*(pass(?:word)?\s*[:=].+)/is.test(t)){success=true;why='The Veeam credential-recovery path explicitly returned reusable username and password material.';add('credential.reusable');}
   if(/cve-2024-29849/.test(c)&&/(callback|command|shell).*(received|executed|opened|success)/i.test(t)){success=true;why='The Veeam validation explicitly confirmed the callback or execution boundary.';add('execution.remote');}
