@@ -2,13 +2,13 @@
 const assert=require('assert'),fs=require('fs'),path=require('path'),cp=require('child_process');
 const root=path.join(__dirname,'..');
 const {loadCurrent}=require(path.join(root,'tools','current-runtime.js'));
-const {C,lanes}=loadCurrent(root);
+const {C,lanes}=loadCurrent(root);const P66=global.OBOL_PROJECT_V66;
 let passed=0;
 function test(n,f){try{f();console.log('ok - '+n);passed++;}catch(e){console.error('FAIL - '+n);throw e;}}
 
 test('v6.6 dashboard state survives later current releases',()=>{const s=C.newState();assert.strictEqual(s.obolVersion,C.VERSION);assert(s.ui&&s.ui.dashboard66);assert.strictEqual(s.ui.dashboard66.detailsOpen,false);});
 
-test('v6.6 consolidated project-model contract remains structurally valid',()=>{const projectModel=C.projectModel67||C.projectModel66,p=projectModel(C.newState(),lanes);assert.deepStrictEqual([p.canonical.implemented,p.canonical.partial,p.canonical.gap,p.canonical.stale,p.canonical.completePct,p.canonical.representedPct],[95,32,0,0,75,100]);assert.deepStrictEqual([p.source.filesAtomized,p.source.filesTotal,p.source.baselinesAtomized,p.source.baselinesTotal,p.source.atomicTotal],[1,17,7,34,19]);assert(p.source.atomicComplete>=5);assert.deepStrictEqual([p.quality.implementedQuality,p.quality.mappedDelivery,p.quality.canonicalGaps],[0,0,0]);assert((p.recent||[]).some(x=>x.release==='v6.6'));});
+test('v6.6 consolidated project-model contract remains structurally valid',()=>{assert(P66);assert.deepStrictEqual([P66.releaseMilestone.implemented,P66.releaseMilestone.partial,P66.releaseMilestone.gap,P66.releaseMilestone.stale,P66.releaseMilestone.coveragePct,P66.releaseMilestone.representedPct],[95,32,0,0,75,100]);assert.strictEqual(P66.release,'v6.6');assert.strictEqual(P66.canonicalChange,false);const projectModel=C.currentProjectModel||C.projectModel67||C.projectModel66,p=projectModel(C.newState(),lanes);assert.deepStrictEqual([p.source.filesAtomized,p.source.filesTotal,p.source.baselinesAtomized,p.source.baselinesTotal,p.source.atomicTotal],[1,17,7,34,19]);assert(p.source.atomicComplete>=5);assert.deepStrictEqual([p.quality.implementedQuality,p.quality.mappedDelivery,p.quality.canonicalGaps],[0,0,0]);assert((p.recent||[]).some(x=>x.release==='v6.6'));});
 
 test('Dashboard remains overview-first and project-model driven',()=>{const app=fs.readFileSync(path.join(root,'assets','app-v6.6.js'),'utf8');assert(app.includes('C.projectModel66'));assert(app.includes('Project progress'));assert(app.includes('Engineering detail'));assert(app.includes('Source-fidelity detail'));assert(app.includes('Full Build Next queue'));assert(app.includes('northstar-home66'));});
 
