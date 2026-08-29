@@ -1,6 +1,6 @@
 # Obol Build and Release Workflow
 
-This file is a mandatory companion to `README.md`, `CHANGELOG.md`, and `docs/ORANGE-SOURCE-DEPTH.md` for future Obol build work. Build agents should read all four before changing release architecture, methodology, Evidence behavior, reporting, CI, project metrics, or Orange source-depth/source-fidelity accounting.
+This file is a mandatory companion to `README.md`, `CHANGELOG.md`, `docs/ARCHITECTURE.md`, `docs/NORTH-STAR.md`, `docs/PROOF-CONTRACT.md`, and `docs/ORANGE-SOURCE-DEPTH.md` for future Obol build work. Build agents should read the relevant owners before changing release architecture, methodology, Evidence behavior, reporting, CI, project metrics, or Orange source-depth/source-fidelity accounting.
 
 ## Incremental release policy
 
@@ -36,6 +36,33 @@ This keeps incremental work visible without leaving a trail of full-suite failur
 
 Release-PR metadata enforcement applies only to release-intent pull requests. Normal documentation, maintenance, and CI-fix PRs still run the regression suite and required status checks, but they are not required to use a release branch name or release-description template.
 
+## Consolidated current-state rule
+
+v6.6 establishes a boundary between the underlying domain models and the current project-status presentation.
+
+- `C.projectModel66(...)` is the current projection boundary for canonical progress, source-fidelity progress, quality debt, Build Next, recent progress, and the next priority.
+- Dashboard, README synchronization, release-quality checks, and other current-status consumers must use the consolidated current model rather than parse the README or independently recalculate current counts.
+- Release metadata belongs in one current project metadata owner. Release-specific methodology/dashboard files required by the release contract must not become competing sources of project-wide truth.
+- New UI overlays should express genuine behavior changes. Do not append a new project-health/status panel merely because a release has a new version number.
+- The default North Star Dashboard remains an overview. Detailed matrices, ledgers, queue rows, and engineering diagnostics should live behind deliberate drill-downs.
+- The README remains an entry point/current snapshot. Durable architecture, proof, source-accounting, and release-history detail belong in their dedicated documents.
+
+The shared Node loader in `tools/current-runtime.js` exists so repository tools do not each maintain another long copy of the current data/core load order. Extend that owner when the current runtime changes rather than copying the array into each new tool.
+
+## Historical runtime compaction
+
+The large historical browser load chain is acknowledged technical debt. It must be reduced incrementally, not by deleting old version files for aesthetic reasons.
+
+For each ownership area selected for compaction:
+
+1. identify the historical layers that jointly own the behavior;
+2. implement a consolidated replacement with the same observable contracts;
+3. prove current and historical regression equivalence;
+4. preserve state migration for existing browser-local workspaces;
+5. remove only the layers genuinely superseded by the consolidated owner.
+
+A smaller file count is not a win if it changes Evidence semantics, command behavior, recommendation logic, report lineage, or workspace compatibility.
+
 ## Quality-debt and methodology ordering
 
 `C.buildNext52(lanes)` remains the base source of truth for release work ordering through canonical coverage. v6.2 introduced the frozen partial-section source-depth baseline, and v6.4 extends that model with atomic source-fidelity rows through `C.buildNext64(lanes)`:
@@ -50,7 +77,7 @@ A methodology-expansion release must not skip priority 1 or priority 2 debt. Can
 
 The 127-section canonical denominator measures structural representation. The frozen v6.2 source-depth baseline protects the 34 partial sections from disappearing. The v6.4 atomic source-fidelity ledger measures the meaningful subordinate branches and the North Star dimensions required to translate each branch into Obol's Run → Evidence → Next Steps → Report loop.
 
-Future builds must not equate 100% represented, a broad card mapping, or a terminal audit label by itself with Orange being exhausted. See `docs/ORANGE-SOURCE-DEPTH.md` for the full accounting contract and completion target.
+Future builds must not equate 100% represented, a broad card mapping, or a terminal audit label by itself with Orange being exhausted. See `docs/ORANGE-SOURCE-DEPTH.md` and `docs/NORTH-STAR.md` for the full accounting contract and completion target.
 
 ## Merge-readiness rule
 
