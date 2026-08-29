@@ -6,7 +6,7 @@ const {loadCurrent}=require('./current-runtime');
 
 const root=path.join(__dirname,'..');
 const {C,lanes}=loadCurrent(root);
-const projectModel=C.projectModel67||C.projectModel66;
+const projectModel=C.currentProjectModel||C.projectModel68||C.projectModel67||C.projectModel66;
 if(!C||!projectModel)throw new Error('Current project model unavailable');
 
 const START='<!-- OBOL-BUILD-NEXT:START -->';
