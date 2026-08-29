@@ -4,6 +4,20 @@ This file is the release-history source for Obol. Future build work should revie
 
 The README is intentionally reserved for current project purpose, architecture, permanent requirements, a compact summary of only the latest three releases, and forward priorities.
 
+## v7.2 — ACL / ACE source-depth completion
+
+- Atomized the pinned `acl.md` methodology family into sixteen meaningful source-fidelity units spanning DCSync, Shadow Credentials, group control, computer RBCD/Key Credential control, user password/SPN/Key Credential/logon-script control, OU inheritance/GPO links, gMSA, LAPS, GPO control, and DNSAdmins.
+- Reused mature existing DCSync, LAPS, and v7.1 RBCD owners where they already satisfied the full operator contract instead of duplicating workflows merely for release symmetry.
+- Added dedicated v7.2 owners for Shadow Credentials, group membership and owner/DACL control, user password reset, targeted Kerberoast, logon-script control, OU DACL and GPO-link control, gMSA retrieval, GPO reversible-write proof, and DNSAdmins ServerLevelPluginDll lifecycle.
+- Added `data/source-delivery-v7.2.js` to expose the atomized ACL family in the Methodology map and to add explicit cleanup markers for owner, group-DACL, and OU-DACL restoration.
+- Preserved the separation between rights discovery, directory or policy mutation, credential/certificate/hash/ticket material, authenticated service use, execution, administrator access, privilege, and cleanup. A write or retrieved credential artifact never silently becomes access or privilege.
+- Reconciled the seven frozen ACL parents that were still partial at the v6.2 boundary: `acl.shadow-credentials`, `acl.group-control`, `acl.computer-control`, `acl.user-control`, `acl.ou-control`, `acl.gmsa`, and `acl.gpo`. Already-implemented DCSync, LAPS, and DNS Admin parents remain historical canonical completions while gaining deeper atomic source accounting.
+- Raised canonical methodology from **102 implemented / 25 partial / 0 gaps / 0 stale** to **109 implemented / 18 partial / 0 gaps / 0 stale**, **86% fully implemented**, and **100% represented**.
+- Expanded source inventory from **2/17** to **3/17** methodology files atomized, from **9/34** to **16/34** frozen partial baselines decomposed, and from **25/25** to **41/41** currently inventoried atomic units fidelity-complete.
+- Reduced the live Build Next queue from **25** to **18** broad source-inventory/decomposition items, with `mitm.md` credential/hash listening and NTLM relay now highest priority and zero implemented-quality, mapped-delivery, canonical-gap, or inventoried-fidelity debt.
+- Advanced the stable current projection through `C.projectModel72(...)`, `C.currentProjectModel(...)`, and `C.currentNorthStarDashboard(...)`, while retaining the overview-first Dashboard owner and delta-based release architecture without a no-op `dashboard-v7.2.js`.
+- Added v7.2 browser/runtime wiring, ACL-specific terminal Evidence interpretation, current-project documentation, README/North Star synchronization, source-wave UI summary, sanitized-export version migration, and a dedicated v7.2 regression suite under the exact-head release workflow.
+
 ## v7.1 — Kerberos delegation source-depth completion
 
 - Atomized the pinned `delegation.md` methodology family into six meaningful source-fidelity units: discovery/routing, unconstrained delegation, constrained delegation with protocol transition, constrained delegation without protocol transition, resource-based constrained delegation, and S4U2Self.
@@ -177,7 +191,7 @@ The README is intentionally reserved for current project purpose, architecture, 
 - Moved five canonical gaps to implemented, raising strict methodology from **77 implemented / 34 partial / 16 gaps / 0 stale** to **82 implemented / 34 partial / 11 gaps / 0 stale**.
 - Raised fully implemented coverage from **61% to 65%** and represented coverage from **87% to 91%**, preserving the pinned 127-section denominator and Orange 2025.03 upstream commit.
 - Extended the North Star Dashboard through v5.9 with canonical-progress and release-quality visibility.
-- Extended README Build Next generation through v5.9 and retained CI-enforced README/Dashboard synchronization.
+- Extended README Build Next generation through v5.9 and retained CI-enforced README/Dashboard queue synchronization.
 - Kept the v5.8 historical regression suite future-safe when a later release becomes current.
 
 ## v5.8 — canonical gap wave and release-contract enforcement
