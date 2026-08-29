@@ -85,7 +85,7 @@ test('Exchange and GLPI detection stay below privilege',()=>{
   let p=I.proof59('exchange-quickwin59','nuclei -u https://exch -tags proxyshell','[CVE-2021-34473] [critical]');
   assert(p.success&&p.facts.includes('vuln.proxyshell')&&!p.facts.includes('access.admin'));
   p=I.proof59('glpi-quickwin59','curl -sk https://host/vendor/htmlawed/htmlawed/htmLawedTest.php','htmLawedTest');
-  assert(p.success&&p.facts.includes('vuln.glpi')&&!p.facts.includes('execution.remote'));
+  assert(p.success&&p.facts.includes('glpi.endpoint_exposed')&&!p.facts.includes('vuln.glpi')&&!p.facts.includes('execution.remote'));
 });
 
 test('Java deserialization requires the explicit callback marker',()=>{
