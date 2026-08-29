@@ -4,12 +4,25 @@ This file is the release-history source for Obol. Future build work should revie
 
 The README is intentionally reserved for current project purpose, architecture, permanent requirements, a compact summary of only the latest three releases, and forward priorities.
 
+## v7.1 — Kerberos delegation source-depth completion
+
+- Atomized the pinned `delegation.md` methodology family into six meaningful source-fidelity units: discovery/routing, unconstrained delegation, constrained delegation with protocol transition, constrained delegation without protocol transition, resource-based constrained delegation, and S4U2Self.
+- Added dedicated v7.1 owners for each delegation unit with pinned Orange provenance, explicit Kali/Windows execution context, semantic command controls, conservative Evidence profiles, reporting contracts, and cleanup/restoration for temporary RBCD and machine-account changes.
+- Preserved the separation between directory mutation, ticket material, ticket use, authenticated service access, execution, administrator access, privilege, and cleanup. A saved TGT/TGS or successful delegation write never silently becomes access or privilege.
+- Modeled the pinned Kerberos-only constrained-delegation variant as an explicit staged RBCD-assisted chain, including temporary computer creation, temporary RBCD configuration, intermediate/final ticket material, and independent cleanup proof.
+- Reconciled only the two frozen delegation parents that were still partial at the v6.2 boundary: `delegation.unconstrained` and `delegation.constrained`. Already-implemented discovery, RBCD, and S4U2Self parents remain historical canonical completions while gaining deeper atomic source accounting.
+- Raised canonical methodology from **100 implemented / 27 partial / 0 gaps / 0 stale** to **102 implemented / 25 partial / 0 gaps / 0 stale**, **80% fully implemented**, and **100% represented**.
+- Expanded source inventory from **1/17** to **2/17** methodology files atomized, from **7/34** to **9/34** frozen partial baselines decomposed, and from **19/19** to **25/25** currently inventoried atomic units fidelity-complete.
+- Reduced the live Build Next queue from **27** to **25** broad source-inventory/decomposition items, with ACL / ACE control paths now highest priority and zero implemented-quality, mapped-delivery, canonical-gap, or inventoried-fidelity debt.
+- Advanced the stable current projection through `C.projectModel71(...)`, `C.currentProjectModel(...)`, and `C.currentNorthStarDashboard(...)`, while retaining the overview-first Dashboard owner and delta-based release architecture without a no-op `dashboard-v7.1.js`.
+- Added v7.1 browser/runtime wiring, delegation-specific terminal Evidence interpretation, current-project documentation, README/North Star synchronization, source-wave UI summary, sanitized-export version migration, and a dedicated v7.1 regression suite under the exact-head release workflow.
+
 ## v7.0 — AD CS certificate-mapping fidelity completion
 
 - Completed the five remaining inventoried AD CS certificate-mapping source-fidelity units: Shadow Credentials bridge, ESC9, both ESC10 mapping cases, and ESC14.
 - Added dedicated v7.0 methodology owners with pinned Orange provenance, current Certipy-oriented operator surfaces, explicit execution context, conservative Evidence profiles, reporting contracts, and cleanup/restoration guidance for temporary account changes.
 - Kept temporary Key Credential writes, returned NT-hash material, account-attribute mutation, certificate material, authentication, service access, privilege, and cleanup as separate proof states.
-- Modeled the Shadow Credentials bridge through Certipy `shadow auto` with explicit NT-hash and restoration proof boundaries.
+- Modeled the Shadow Credentials bridge through Certipy `shadow auto` with explicit NT-hash proof and restoration proof boundaries.
 - Modeled ESC9 and both ESC10 cases as temporary identity-preparation plus certificate-request workflows while refusing to infer authentication or privilege from successful mutation or certificate issuance.
 - Explicitly **superseded** the pinned Orange ESC14 exploit branch rather than inventing mechanics that are not present in the source. v7.0 uses current Certipy finding collection and explicit `altSecurityIdentities` review as an assessment/reporting handoff.
 - Reconciled `adcs.certificate-mapping` from partial to implemented only after all five inventoried subordinate units became terminal and fidelity-complete.
