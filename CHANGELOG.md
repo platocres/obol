@@ -4,6 +4,22 @@ This file is the release-history source for Obol. Future build work should revie
 
 The README is intentionally reserved for current project purpose, architecture, permanent requirements, a compact summary of only the latest three releases, and forward priorities.
 
+## v6.4 — atomic Orange source-fidelity accounting
+
+- Preserved the canonical methodology at **93 implemented / 34 partial / 0 gaps / 0 stale**, **73% fully implemented**, and **100% represented** while adding a deeper denominator rather than inflating canonical completion.
+- Added `data/orange-fidelity-v6.4.js`, a machine-readable atomic source-fidelity ledger tied to the pinned Orange 2025.03 commit and source-file hashes.
+- Atomized `adcs.md` first, decomposing its seven broad partial canonical parents into **19 meaningful source units** spanning AD CS enumeration plus ESC1, ESC2/3, ESC4, ESC5, ESC6, ESC7, ESC8, ESC9/10, ESC11, ESC13, ESC14, ESC15, and meaningful source variants.
+- Added explicit source paths, branch conditions, upstream tool inventories, cross-methodology transitions, existing broad Obol owner mappings, cleanup obligations, audit state, and per-requirement review dimensions to the atomic ledger.
+- Added separate North Star Dashboard metrics for methodology files atomized, frozen v6.2 partial baselines decomposed, broad-owner coverage, atomic fidelity completion, and the North Star requirement matrix.
+- Added a searchable/filterable AD CS source-fidelity drill-down so broad ownership can no longer visually masquerade as complete handling of each subordinate branch.
+- Established the initial fidelity baseline at **1/17 methodology files atomized**, **7/34 frozen partial baselines decomposed**, and **0/19 atomic units fidelity-complete**; all 19 currently have broad owners but remain `needs-audit` until the delivery dimensions and terminal disposition are complete.
+- Extended Build Next through `C.buildNext64(lanes)`: implemented-quality repairs remain first, mapped-delivery repairs second, canonical gaps third, atomic source-fidelity audits fourth, and source-depth decomposition of remaining broad partials fifth.
+- Updated `docs/ORANGE-SOURCE-DEPTH.md` and `BUILDING.md` so future releases must preserve atomic units once created and cannot claim Orange exhaustion from canonical representation, broad card mappings, or terminal labels alone.
+- Updated README synchronization to publish the atomic fidelity and source-inventory queue from the same live repository model as North Star Dashboard.
+- Kept source-fidelity accounting as project metadata only; it does not create access, credentials, privilege, execution, exploitation, or compromise facts.
+- Added v6.4 regression coverage for canonical/fidelity denominator separation, AD CS atomization, requirement-matrix accounting, Build Next ordering, release wiring, README synchronization, and sanitized-export compatibility.
+- Kept the tiered smoke / preflight / `[release-final]` CI contract, release-quality invariant, exact-head merge-readiness rule, and historical-test future-safety validation.
+
 ## v6.2 — canonical completion and Orange source-depth phase
 
 - Consumed the final canonical gap only after confirming zero implemented-quality and zero mapped-delivery debt.
