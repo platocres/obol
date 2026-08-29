@@ -46,9 +46,9 @@ This keeps future releases from rebuilding the same scaffolding around unchanged
 
 ## Consolidated current-state rule
 
-v6.6 established the boundary between domain models and current project-status presentation. v6.8 added a stable non-versioned pointer for current consumers, and v6.9 continues through that boundary.
+v6.6 established the boundary between domain models and current project-status presentation. v6.8 added a stable non-versioned pointer for current consumers, and v7.0 continues through that boundary.
 
-- `C.currentProjectModel(...)` is the preferred current projection boundary for canonical progress, source-fidelity progress, quality debt, Build Next, recent progress, and the next priority. In v6.9 it points to `C.projectModel69(...)`.
+- `C.currentProjectModel(...)` is the preferred current projection boundary for canonical progress, source-fidelity progress, quality debt, Build Next, recent progress, and the next priority. In v7.0 it points to `C.projectModel70(...)`.
 - Versioned project adapters remain available as historical regression boundaries. Current tooling and documentation should not require edits merely to discover the newest adapter name when the stable pointer is available.
 - Dashboard, README synchronization, release-quality checks, and other current-status consumers use the consolidated current model instead of parsing README text or independently recalculating current counts.
 - Current release/project metadata has one owner. Do not create competing project-wide count tables in UI or release-specific metadata.
@@ -82,7 +82,7 @@ The current Build Next model preserves this priority order:
 4. atomic source-fidelity audits for already inventoried units;
 5. source-depth inventory/decomposition for remaining broad partial baselines.
 
-A methodology-expansion release must not skip priority 1 or 2 debt. Canonical gaps outrank source-fidelity work while gaps remain. Once gaps are zero, already-inventoried atomic units outrank still-unatomized broad sections because their missing requirements are known precisely.
+A methodology-expansion release must not skip priority 1 or 2 debt. Canonical gaps outrank source-fidelity work while gaps remain. Once gaps are zero, already-inventoried atomic units outrank still-unatomized broad sections because their missing requirements are known precisely. In v7.0, all 19 currently inventoried AD CS atomic units are complete, so the live queue has returned to source-depth inventory/decomposition. New source families must be atomized explicitly rather than silently extending the completed AD CS denominator.
 
 The 127-section canonical denominator measures structural representation. The frozen v6.2 source-depth baseline protects unresolved broad partial work from disappearing. The atomic source-fidelity ledger measures meaningful subordinate branches and the requirements needed to translate them into Obol's Run -> Evidence -> Next Steps -> Report loop.
 
