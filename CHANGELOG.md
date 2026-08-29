@@ -4,6 +4,18 @@ This file is the release-history source for Obol. Future build work should revie
 
 The README is intentionally reserved for current project purpose, architecture, permanent requirements, a compact summary of only the latest three releases, and forward priorities.
 
+## v5.5 — implemented-quality cleanup and canonical completion wave
+
+- Consumed the CI-synchronized v5.4 Build Next queue rather than maintaining a separate release backlog.
+- Added explicit v5.5 Evidence profiles and audited execution-side metadata to the seven shared workflow owners serving all ten remaining implemented-quality queue items: Nmap, anonymous LDAP, username enumeration, AS-REP roasting, Kerberoasting, password spraying, and BloodHound collection.
+- Cleared the implemented-canonical quality-debt class in the live Build Next model before expanding methodology completion.
+- Added dedicated end-to-end owners for authenticated AD CS enumeration, Kerberos delegation discovery, domain DPAPI backup-key collection, LSASS credential extraction, and token/session impersonation.
+- Preserved conservative proof boundaries: enumeration does not create control or privilege; backup-key export does not imply decrypted user secrets; LSASS collection is separate from parsed credential recovery; token listing/elevation does not imply SYSTEM without explicit post-transition identity proof.
+- Moved five canonical sections from partial to implemented, raising the strict pinned 127-section baseline from 57 / 44 / 26 / 0 to **62 implemented / 39 partial / 26 gaps / 0 stale**, with **49% fully implemented** and **80% represented**.
+- Extended the README Build Next generator through the v5.5 methodology/core layers so the GitHub-readable agenda remains derived from the exact same live queue as the North Star Dashboard.
+- Made the inherited v5.4 README/current-queue regressions future-safe while retaining historical v5.4 baseline checks.
+- Added v5.5 Dashboard accounting, state coercion, sanitized-export compatibility, UI wiring, release notes, Evidence regression fixtures, and full historical CI coverage.
+
 ## v5.4 — synchronized README agenda and persistence completion wave
 
 - Added `tools/sync-readme-build-next.js` so the README Build next block is generated from the same live `C.buildNext52(lanes)` model used by the North Star Dashboard rather than being maintained as a competing manual backlog.

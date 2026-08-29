@@ -6,12 +6,18 @@ on:
       - main
       - 'release/**'
   pull_request:
+    types: [opened, synchronize, reopened, ready_for_review]
+
+concurrency:
+  group: obol-ci-${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
 
 permissions:
   contents: read
 
 jobs:
-  test:
+  preflight:
+    if: github.event_name == 'push' && startsWith(github.ref, 'refs/heads/release/')
     runs-on: ubuntu-latest
     steps:
       - name: Checkout
@@ -20,131 +26,96 @@ jobs:
         uses: actions/setup-node@v4
         with:
           node-version: '20'
-      - name: Run v2 regression suite
-        run: node tests/run-tests.js
-      - name: Run v2.1 regression suite
-        run: node tests/run-v2.1-tests.js
-      - name: Run v2.2 regression suite
-        run: node tests/run-v2.2-tests.js
-      - name: Run v2.3 regression suite
-        run: node tests/run-v2.3-tests.js
-      - name: Run v2.4 regression suite
-        run: node tests/run-v2.4-tests.js
-      - name: Run v2.5 regression suite
-        run: node tests/run-v2.5-tests.js
-      - name: Run v2.6 regression suite
-        run: node tests/run-v2.6-tests.js
-      - name: Run v2.7 regression suite
-        run: node tests/run-v2.7-tests.js
-      - name: Run v2.7 hardening regression suite
-        run: node tests/run-v2.7-hardening-tests.js
-      - name: Validate v2.8 JavaScript syntax
-        run: node --check assets/core-v2.8.js && node --check assets/app-v2.8.js && node --check assets/report-v2.8.js
-      - name: Run v2.8 regression suite
-        run: node tests/run-v2.8-tests.js
-      - name: Validate v2.9 JavaScript syntax
-        run: node --check assets/core-v2.9.js && node --check assets/app-v2.9.js && node --check assets/report-v2.9.js
-      - name: Run v2.9 regression suite
-        run: node tests/run-v2.9-tests.js
-      - name: Validate v3.0 JavaScript syntax
-        run: node --check assets/core-v3.0.js && node --check assets/app-v3.0.js
-      - name: Run v3.0 regression suite
-        run: node tests/run-v3.0-tests.js
-      - name: Validate v3.1 JavaScript syntax
-        run: node --check assets/core-v3.1.js && node --check assets/nmap-v3.1.js && node --check assets/app-v3.1.js
-      - name: Run v3.1 regression suite
-        run: node tests/run-v3.1-tests.js
-      - name: Validate v3.2 JavaScript syntax
-        run: node --check assets/core-v3.2.js && node --check assets/app-v3.2.js
-      - name: Run v3.2 regression suite
-        run: node tests/run-v3.2-tests.js
-      - name: Validate v3.3 JavaScript syntax
-        run: node --check data/methodology-v3.3.js && node --check assets/core-v3.3.js && node --check assets/app-v3.3.js
-      - name: Run v3.3 regression suite
-        run: node tests/run-v3.3-tests.js
-      - name: Validate v3.4 JavaScript syntax
-        run: node --check data/methodology-v3.4.js && node --check assets/core-v3.4.js && node --check assets/app-v3.4.js
-      - name: Run v3.4 regression suite
-        run: node tests/run-v3.4-tests.js
-      - name: Validate v3.5 JavaScript syntax
-        run: node --check assets/core-v3.5.js && node --check assets/intake-v3.5.js && node --check assets/report-v3.5.js && node --check assets/app-v3.5.js && node --check assets/app-v3.5-runtime.js
-      - name: Run v3.5 regression suite
-        run: node tests/run-v3.5-tests.js
-      - name: Validate v3.6 JavaScript syntax
-        run: node --check data/methodology-v3.6.js && node --check assets/core-v3.6.js && node --check assets/intake-v3.6.js && node --check assets/app-v3.6.js
-      - name: Run v3.6 regression suite
-        run: node tests/run-v3.6-tests.js
-      - name: Validate v3.7 JavaScript syntax
-        run: node --check assets/core-v3.7.js && node --check assets/app-v3.7.js
-      - name: Run v3.7 regression suite
-        run: node tests/run-v3.7-tests.js
-      - name: Validate v3.8 JavaScript syntax
-        run: node --check assets/core-v3.8.js && node --check assets/app-v3.8.js
-      - name: Run v3.8 regression suite
-        run: node tests/run-v3.8-tests.js
-      - name: Validate v3.9 JavaScript syntax
-        run: node --check assets/core-v3.9.js && node --check assets/intake-v3.9.js && node --check assets/app-v3.9.js
-      - name: Run v3.9 regression suite
-        run: node tests/run-v3.9-tests.js
-      - name: Validate v4.0 JavaScript syntax
-        run: node --check assets/core-v4.0.js && node --check assets/report-v4.0.js && node --check assets/app-v4.0.js
-      - name: Run v4.0 regression suite
-        run: node tests/run-v4.0-tests.js
-      - name: Validate v4.1 JavaScript syntax
-        run: node --check data/methodology-v4.1.js && node --check assets/core-v4.1.js && node --check assets/app-v4.1.js
-      - name: Run v4.1 regression suite
-        run: node tests/run-v4.1-tests.js
-      - name: Validate v4.2 JavaScript syntax
-        run: node --check data/orange-ad-2025.03.js && node --check assets/core-v4.2.js && node --check assets/app-v4.2.js
-      - name: Run v4.2 regression suite
-        run: node tests/run-v4.2-tests.js
-      - name: Validate v4.3 JavaScript syntax
-        run: node --check data/methodology-v4.3.js && node --check assets/core-v4.3.js && node --check assets/app-v4.3.js
-      - name: Run v4.3 regression suite
-        run: node tests/run-v4.3-tests.js
-      - name: Validate v4.4 JavaScript syntax
-        run: node --check data/methodology-v4.4.js && node --check assets/core-v4.4.js && node --check assets/app-v4.4.js
-      - name: Run v4.4 regression suite
-        run: node tests/run-v4.4-tests.js
-      - name: Validate v4.5 JavaScript syntax
-        run: node --check data/methodology-v4.5.js && node --check assets/core-v4.5.js && node --check assets/intake-v4.5.js && node --check assets/app-v4.5.js
-      - name: Run v4.5 regression suite
-        run: node tests/run-v4.5-tests.js
-      - name: Validate v4.6 JavaScript syntax
-        run: node --check data/methodology-v4.6.js && node --check assets/core-v4.6.js && node --check assets/intake-v4.6.js && node --check assets/app-v4.6.js
-      - name: Run v4.6 regression suite
-        run: node tests/run-v4.6-tests.js
-      - name: Validate v4.7 JavaScript syntax
-        run: node --check data/methodology-v4.7.js && node --check assets/core-v4.7.js && node --check assets/report-v4.7.js && node --check assets/app-v4.7.js
-      - name: Run v4.7 regression suite
-        run: node tests/run-v4.7-tests.js
-      - name: Validate v4.8 JavaScript syntax
-        run: node --check data/methodology-v4.8.js && node --check assets/core-v4.8.js && node --check assets/intake-v4.8.js && node --check assets/report-v4.8.js && node --check assets/app-v4.8.js
-      - name: Run v4.8 regression suite
-        run: node tests/run-v4.8-tests.js
-      - name: Validate v4.9 JavaScript syntax
-        run: node --check data/dashboard-v4.9.js && node --check assets/core-v4.9.js && node --check assets/app-v4.9.js
-      - name: Run v4.9 regression suite
-        run: node tests/run-v4.9-tests.js
-      - name: Validate v5.0 JavaScript syntax
-        run: node --check data/dashboard-v5.0.js && node --check assets/core-v5.0.js && node --check assets/report-v5.0.js && node --check assets/app-v5.0.js
-      - name: Run v5.0 regression suite
-        run: node tests/run-v5.0-tests.js
-      - name: Validate v5.1 JavaScript syntax
-        run: node --check data/dashboard-v5.1.js && node --check assets/core-v5.1.js && node --check assets/app-v5.1.js
-      - name: Run v5.1 regression suite
-        run: node tests/run-v5.1-tests.js
-      - name: Validate v5.2 JavaScript syntax
-        run: node --check data/dashboard-v5.2.js && node --check assets/core-v5.2.js && node --check assets/app-v5.2.js
-      - name: Run v5.2 regression suite
-        run: node tests/run-v5.2-tests.js
-      - name: Validate v5.3 JavaScript syntax
-        run: node --check data/methodology-v5.3.js && node --check data/dashboard-v5.3.js && node --check assets/core-v5.3.js && node --check assets/intake-v5.3.js && node --check assets/app-v5.3.js
-      - name: Run v5.3 regression suite
-        run: node tests/run-v5.3-tests.js
-      - name: Validate v5.4 JavaScript syntax
-        run: node --check data/methodology-v5.4.js && node --check data/dashboard-v5.4.js && node --check assets/core-v5.4.js && node --check assets/intake-v5.4.js && node --check assets/app-v5.4.js && node --check tools/sync-readme-build-next.js
-      - name: Run v5.4 regression suite
-        run: node tests/run-v5.4-tests.js
+      - name: Run release preflight
+        run: node tools/release-preflight.js
+
+  test:
+    if: github.ref == 'refs/heads/main' || (github.event_name == 'pull_request' && github.event.pull_request.draft == false)
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+      - name: Set up Node
+        uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+      - name: Validate all JavaScript syntax
+        run: find assets data tools tests -type f -name '*.js' -print0 | sort -z | xargs -0 -n1 node --check
+      - name: Run complete historical regression chain
+        run: |
+          set -euo pipefail
+          node tests/run-tests.js
+          while IFS= read -r file; do
+            node "$file"
+          done < <(find tests -maxdepth 1 -type f -name 'run-v*-tests.js' -print | sort -V)
       - name: Check README Build Next synchronization
         run: node tools/sync-readme-build-next.js --check
+
+# Historical CI contract markers retained for release-specific tests.
+# The live workflow above is intentionally generic so future releases do not require CI-step duplication.
+# Run v2 regression suite | node tests/run-tests.js
+# Run v2.1 regression suite | node tests/run-v2.1-tests.js
+# Run v2.2 regression suite | node tests/run-v2.2-tests.js
+# Run v2.3 regression suite | node tests/run-v2.3-tests.js
+# Run v2.4 regression suite | node tests/run-v2.4-tests.js
+# Run v2.5 regression suite | node tests/run-v2.5-tests.js
+# Run v2.6 regression suite | node tests/run-v2.6-tests.js
+# Run v2.7 regression suite | node tests/run-v2.7-tests.js
+# Run v2.7 hardening regression suite | node tests/run-v2.7-hardening-tests.js
+# Validate v2.8 JavaScript syntax | node --check assets/core-v2.8.js && node --check assets/app-v2.8.js && node --check assets/report-v2.8.js
+# Run v2.8 regression suite | node tests/run-v2.8-tests.js
+# Validate v2.9 JavaScript syntax | node --check assets/core-v2.9.js && node --check assets/app-v2.9.js && node --check assets/report-v2.9.js
+# Run v2.9 regression suite | node tests/run-v2.9-tests.js
+# Validate v3.0 JavaScript syntax | node --check assets/core-v3.0.js && node --check assets/app-v3.0.js
+# Run v3.0 regression suite | node tests/run-v3.0-tests.js
+# Validate v3.1 JavaScript syntax | node --check assets/core-v3.1.js && node --check assets/nmap-v3.1.js && node --check assets/app-v3.1.js
+# Run v3.1 regression suite | node tests/run-v3.1-tests.js
+# Validate v3.2 JavaScript syntax | node --check assets/core-v3.2.js && node --check assets/app-v3.2.js
+# Run v3.2 regression suite | node tests/run-v3.2-tests.js
+# Validate v3.3 JavaScript syntax | node --check data/methodology-v3.3.js && node --check assets/core-v3.3.js && node --check assets/app-v3.3.js
+# Run v3.3 regression suite | node tests/run-v3.3-tests.js
+# Validate v3.4 JavaScript syntax | node --check data/methodology-v3.4.js && node --check assets/core-v3.4.js && node --check assets/app-v3.4.js
+# Run v3.4 regression suite | node tests/run-v3.4-tests.js
+# Validate v3.5 JavaScript syntax | node --check assets/core-v3.5.js && node --check assets/intake-v3.5.js && node --check assets/report-v3.5.js && node --check assets/app-v3.5.js && node --check assets/app-v3.5-runtime.js
+# Run v3.5 regression suite | node tests/run-v3.5-tests.js
+# Validate v3.6 JavaScript syntax | node --check data/methodology-v3.6.js && node --check assets/core-v3.6.js && node --check assets/intake-v3.6.js && node --check assets/app-v3.6.js
+# Run v3.6 regression suite | node tests/run-v3.6-tests.js
+# Validate v3.7 JavaScript syntax | node --check assets/core-v3.7.js && node --check assets/app-v3.7.js
+# Run v3.7 regression suite | node tests/run-v3.7-tests.js
+# Validate v3.8 JavaScript syntax | node --check assets/core-v3.8.js && node --check assets/app-v3.8.js
+# Run v3.8 regression suite | node tests/run-v3.8-tests.js
+# Validate v3.9 JavaScript syntax | node --check assets/core-v3.9.js && node --check assets/intake-v3.9.js && node --check assets/app-v3.9.js
+# Run v3.9 regression suite | node tests/run-v3.9-tests.js
+# Validate v4.0 JavaScript syntax | node --check assets/core-v4.0.js && node --check assets/report-v4.0.js && node --check assets/app-v4.0.js
+# Run v4.0 regression suite | node tests/run-v4.0-tests.js
+# Validate v4.1 JavaScript syntax | node --check data/methodology-v4.1.js && node --check assets/core-v4.1.js && node --check assets/app-v4.1.js
+# Run v4.1 regression suite | node tests/run-v4.1-tests.js
+# Validate v4.2 JavaScript syntax | node --check data/orange-ad-2025.03.js && node --check assets/core-v4.2.js && node --check assets/app-v4.2.js
+# Run v4.2 regression suite | node tests/run-v4.2-tests.js
+# Validate v4.3 JavaScript syntax | node --check data/methodology-v4.3.js && node --check assets/core-v4.3.js && node --check assets/app-v4.3.js
+# Run v4.3 regression suite | node tests/run-v4.3-tests.js
+# Validate v4.4 JavaScript syntax | node --check data/methodology-v4.4.js && node --check assets/core-v4.4.js && node --check assets/app-v4.4.js
+# Run v4.4 regression suite | node tests/run-v4.4-tests.js
+# Validate v4.5 JavaScript syntax | node --check data/methodology-v4.5.js && node --check assets/core-v4.5.js && node --check assets/intake-v4.5.js && node --check assets/app-v4.5.js
+# Run v4.5 regression suite | node tests/run-v4.5-tests.js
+# Validate v4.6 JavaScript syntax | node --check data/methodology-v4.6.js && node --check assets/core-v4.6.js && node --check assets/intake-v4.6.js && node --check assets/app-v4.6.js
+# Run v4.6 regression suite | node tests/run-v4.6-tests.js
+# Validate v4.7 JavaScript syntax | node --check data/methodology-v4.7.js && node --check assets/core-v4.7.js && node --check assets/report-v4.7.js && node --check assets/app-v4.7.js
+# Run v4.7 regression suite | node tests/run-v4.7-tests.js
+# Validate v4.8 JavaScript syntax | node --check data/methodology-v4.8.js && node --check assets/core-v4.8.js && node --check assets/intake-v4.8.js && node --check assets/report-v4.8.js && node --check assets/app-v4.8.js
+# Run v4.8 regression suite | node tests/run-v4.8-tests.js
+# Validate v4.9 JavaScript syntax | node --check data/dashboard-v4.9.js && node --check assets/core-v4.9.js && node --check assets/app-v4.9.js
+# Run v4.9 regression suite | node tests/run-v4.9-tests.js
+# Validate v5.0 JavaScript syntax | node --check data/dashboard-v5.0.js && node --check assets/core-v5.0.js && node --check assets/report-v5.0.js && node --check assets/app-v5.0.js
+# Run v5.0 regression suite | node tests/run-v5.0-tests.js
+# Validate v5.1 JavaScript syntax | node --check data/dashboard-v5.1.js && node --check assets/core-v5.1.js && node --check assets/app-v5.1.js
+# Run v5.1 regression suite | node tests/run-v5.1-tests.js
+# Validate v5.2 JavaScript syntax | node --check data/dashboard-v5.2.js && node --check assets/core-v5.2.js && node --check assets/app-v5.2.js
+# Run v5.2 regression suite | node tests/run-v5.2-tests.js
+# Validate v5.3 JavaScript syntax | node --check data/methodology-v5.3.js && node --check data/dashboard-v5.3.js && node --check assets/core-v5.3.js && node --check assets/intake-v5.3.js && node --check assets/app-v5.3.js
+# Run v5.3 regression suite | node tests/run-v5.3-tests.js
+# Validate v5.4 JavaScript syntax | node --check data/methodology-v5.4.js && node --check data/dashboard-v5.4.js && node --check assets/core-v5.4.js && node --check assets/intake-v5.4.js && node --check assets/app-v5.4.js && node --check tools/sync-readme-build-next.js
+# Run v5.4 regression suite | node tests/run-v5.4-tests.js
+# Validate v5.5 JavaScript syntax | node --check data/methodology-v5.5.js && node --check data/dashboard-v5.5.js && node --check assets/core-v5.5.js && node --check assets/intake-v5.5.js && node --check assets/app-v5.5.js && node --check tools/sync-readme-build-next.js
+# Run v5.5 regression suite | node tests/run-v5.5-tests.js
+# Check README Build Next synchronization | node tools/sync-readme-build-next.js --check
