@@ -18,6 +18,8 @@ if(state.implementedQuality!==0||state.mappedDelivery!==0){
   console.error(`- implemented-quality repairs: ${state.implementedQuality}`);
   console.error(`- mapped-delivery repairs: ${state.mappedDelivery}`);
   console.error(`- canonical gaps: ${state.canonicalGaps}`);
+  const debt=(p.buildNext.rows||[]).filter(x=>x.kind==='implemented-quality'||x.kind==='mapped-delivery');
+  for(const row of debt)console.error(`- ${row.kind}: ${row.label}${row.file?' ['+row.file+']':''}${row.missing&&row.missing.length?' — missing '+row.missing.join(', '):''}`);
   process.exit(1);
 }
 
