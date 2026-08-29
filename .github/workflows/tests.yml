@@ -30,7 +30,7 @@ jobs:
         run: node tools/release-preflight.js
 
   test:
-    if: github.ref == 'refs/heads/main' || (github.event_name == 'pull_request' && github.event.pull_request.draft == false)
+    if: github.ref == 'refs/heads/main' || (github.event_name == 'pull_request' && github.event.pull_request.draft == false) || (github.event_name == 'push' && startsWith(github.ref, 'refs/heads/release/') && contains(github.event.head_commit.message, '[release-final]'))
     runs-on: ubuntu-latest
     steps:
       - name: Checkout
@@ -53,6 +53,8 @@ jobs:
       - name: Check README Build Next synchronization
         run: node tools/sync-readme-build-next.js --check
 
+# Draft release PRs normally run only release-branch preflight. A final commit containing
+# [release-final] explicitly runs the complete historical chain before the PR leaves Draft.
 # Historical CI contract markers retained for release-specific tests.
 # The live workflow above is intentionally generic so future releases do not require CI-step duplication.
 # Run v2 regression suite | node tests/run-tests.js
