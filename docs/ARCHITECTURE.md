@@ -15,12 +15,12 @@ The application is organized around four durable concerns:
 
 ## Consolidation boundary
 
-Obol grew through additive release overlays. That was useful while the product model was changing quickly, but it also left historical presentation and accounting layers in the runtime. v6.6 established a consolidation boundary instead of attempting a high-risk rewrite, v6.8 added a stable current-model pointer, and v7.0 continues using that pointer while keeping versioned adapters as historical regression boundaries.
+Obol grew through additive release overlays. That was useful while the product model was changing quickly, but it also left historical presentation and accounting layers in the runtime. v6.6 established a consolidation boundary instead of attempting a high-risk rewrite, v6.8 added a stable current-model pointer, and v7.1 continues using that pointer while keeping versioned adapters as historical regression boundaries.
 
 From v6.6 forward:
 
 1. **Current project progress has one authoritative adapter.** The versioned project model derives the current release, canonical breadth, source-depth/source-fidelity state, quality debt, Build Next queue, recent progress, and next priority from the existing domain models.
-2. **Current consumers use a stable pointer.** Beginning with v6.8, `C.currentProjectModel(...)` points to the current versioned adapter. In v7.0 it points to `C.projectModel70(...)`. Tooling and documentation should prefer the stable pointer instead of hard-coding a release-specific function name.
+2. **Current consumers use a stable pointer.** Beginning with v6.8, `C.currentProjectModel(...)` points to the current versioned adapter. In v7.1 it points to `C.projectModel71(...)`. Tooling and documentation should prefer the stable pointer instead of hard-coding a release-specific function name.
 3. **Dashboard and README are projections of that adapter.** They must not maintain independent copies of current progress counts or a competing work queue.
 4. **The default Dashboard is an overview, not an engineering console.** Detailed matrices, ledgers, and delivery diagnostics belong behind explicit drill-downs.
 5. **Version-specific UI layers should represent behavior deltas, not become new owners of project-wide truth.** A future release should extend the consolidated model or replace an owner deliberately rather than append another parallel status panel.
@@ -39,7 +39,7 @@ From v6.6 forward:
 
 The current versioned adapter remains available for regression history. Consumers may format current-model values, but should not recalculate them with independent hard-coded denominators.
 
-v7.0 demonstrates the intended boundary: the completed 19-unit AD CS atomic ledger remains source-accounting state, while the current project projection moves Build Next into the 27 remaining broad source-inventory rows without creating a second progress model.
+v7.1 demonstrates the intended boundary: the completed AD CS and Kerberos delegation atomic ledgers remain source-accounting state, while the current project projection reports 25/25 inventoried units complete and moves Build Next into the 25 remaining broad source-inventory rows without creating a second progress model.
 
 ### Engagement state
 
