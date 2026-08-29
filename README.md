@@ -6,7 +6,7 @@ Live site: `https://platocres.github.io/obol/`
 
 Current release: **v6.6**
 
-Release history lives in [`CHANGELOG.md`](CHANGELOG.md). Architecture, source-accounting, Evidence, and release contracts live in the dedicated engineering documents linked below instead of being duplicated here.
+Release history lives in [`CHANGELOG.md`](CHANGELOG.md). Architecture, source-accounting, Evidence, and release contracts live in dedicated engineering documents instead of being duplicated here. **The readme is not a changelog.**
 
 ## Use Obol
 
@@ -32,7 +32,7 @@ Primary navigation stays intentionally small:
 
 The **More** menu contains North Star Dashboard, Engagement Map, Methodology, Tool Library, Planned Work, Workspace Search, Evidence Lineage, Guide, and Workspace Data.
 
-The **North Star Dashboard** is the single in-app owner for project-wide hard numbers. v6.6 makes its default view intentionally scan-friendly. Detailed engineering metrics, source-fidelity accounting, and the complete Build Next queue remain available as drill-downs.
+The **North Star Dashboard** is the single in-app location for project-wide hard numbers. v6.6 makes its default view intentionally scan-friendly. Detailed engineering metrics, source-fidelity accounting, and the complete Build Next queue remain available as drill-downs.
 
 ## Project status
 
@@ -53,55 +53,40 @@ Current v6.6 baseline:
 - **0** implemented-quality repairs
 - **0** mapped-delivery repairs
 
-v6.6 intentionally does not increase these numbers. It consolidates how project truth is derived and presented so future methodology work can move faster without multiplying bookkeeping.
+The **127 canonical** section denominator measures structural breadth. It is deliberately separate from source-depth and atomic source-fidelity progress. v6.6 does not increase these numbers; it consolidates how project truth is derived and presented so future methodology work can move faster without multiplying bookkeeping.
 
 The detailed definitions, pinned provenance, denominators, completion language, and audit requirements live in [`docs/NORTH-STAR.md`](docs/NORTH-STAR.md). The current presentation boundary is `C.projectModel66(...)`, which derives Dashboard and README status from the existing domain models instead of maintaining competing copies of the same counts.
 
 ## Permanent North Star requirements
 
-This section is permanent. The pinned source links below must not be removed or silently replaced.
+This section is permanent. The pinned source links and product contracts below must not be removed or silently replaced.
 
-- Obol models its Active Directory methodology from the Orange Cyberdefense 2025.03 mind map: https://orange-cyberdefense.github.io/ocd-mindmaps/img/mindmap_ad_dark_classic_2025.03.excalidraw.svg
+- Obol models its Active Directory methodology from the **Orange Cyber Defense mind map**, pinned to the 2025.03 snapshot: https://orange-cyberdefense.github.io/ocd-mindmaps/img/mindmap_ad_dark_classic_2025.03.excalidraw.svg
 - Source repository: https://github.com/Orange-Cyberdefense/ocd-mindmaps/tree/main
 - Keep comparing Obol against the pinned source and preserve reproducible source provenance.
 - Do not confuse normalized canonical representation with exhausting useful source depth. Canonical breadth, source inventory, broad-owner coverage, and atomic source fidelity remain separate measures.
 - Every useful source element must ultimately be modeled end to end, explicitly superseded with rationale, or explicitly rejected with rationale.
 - Preserve unfinished denominators. Unatomized source files and undecomposed frozen baselines remain visibly pending rather than disappearing from percentages.
+- Maintain the machine-readable **atomic source-fidelity ledger** and enough upstream structure to preserve prerequisites, branches, variants, transitions, tools, outcomes, cleanup, and reporting implications.
 - Review upstream tool choices instead of copying them blindly. Prefer current, practical, user-friendly tools when they improve the operator workflow.
-- Account for whether the operator is working from Kali or Windows at each relevant step.
-- Source integration must improve Next Steps, command controls, copy/paste Evidence interpretation, cleanup/restoration where relevant, lineage, and reporting.
-- Command controls should expose meaningful options without turning every command into an unnecessary wall of switches.
+- Account explicitly for **operating from Kali or from a Windows host** at each relevant step.
+- Source integration must include **improving "Next Steps"**, command generation, copy/paste Evidence interpretation, cleanup/restoration where relevant, lineage, and reporting.
+- Meaningful optional command behavior belongs in **proper GUI based toggles** or equivalent semantic controls instead of opaque default one-liners.
+- New methodology must **fit well into the reporting that Obol performs**, with traceability from decision path and preserved Evidence to report-ready proof.
 - Project-wide progress belongs in one North Star Dashboard. Home may summarize it and link to it, but must not create a second competing accounting surface.
-- UI and UX should be reviewed continuously for navigation clarity, version hygiene, understandable terminology, and useful progressive disclosure.
+- **The UI and UX should always be reviewed** for navigation clarity, version hygiene, understandable terminology, and useful progressive disclosure when capability changes.
 - Broad card ownership, 100% represented coverage, or a terminal audit label alone never proves the source has been fully mined.
+- Facts, artifacts, credentials, access, privilege, execution, and compromise remain separate proof boundaries. Project/source accounting metadata never creates engagement facts.
 
 The complete accounting contract is in [`docs/NORTH-STAR.md`](docs/NORTH-STAR.md). The source-depth work plan is in [`docs/ORANGE-SOURCE-DEPTH.md`](docs/ORANGE-SOURCE-DEPTH.md).
 
-## Build next
+## Command behavior
 
-The block below is generated from the same current project model used by the North Star Dashboard. The Dashboard remains the full interactive view; CI prevents the README snapshot from drifting.
+The permanent command rule is:
 
-<!-- OBOL-BUILD-NEXT:START -->
-This block is generated from the same live repository state used by **North Star Dashboard → Build Next**. Do not edit it manually.
+> The base command performs the minimum useful action for the maneuver. Optional enumeration, scope, performance, filtering, authentication, and output behavior belongs in explicit semantic controls unless that action is the maneuver itself.
 
-**Current live queue:** 41 items — 0 implemented-quality repairs, 0 mapped-delivery repairs, 0 canonical gaps.
-**Canonical methodology:** 95/127 fully implemented (75%), 32 partial, 0 gaps, 100% represented.
-**Orange source fidelity:** 1/17 source files atomized, 7/34 partial baselines decomposed, 5/19 inventoried atomic units fidelity-complete.
-**Current phase:** Architecture consolidation.
-
-**Highest-priority live items:**
-1. **ESC13 issuance-policy / group-link template path** — adcs.md · source fidelity.
-2. **ESC15 application-policy injection for Schannel** — adcs.md · source fidelity.
-3. **ESC15 application-policy injection for request-agent use** — adcs.md · source fidelity.
-
-Generated by `node tools/sync-readme-build-next.js --write`. Verify with `node tools/sync-readme-build-next.js --check`.
-<!-- OBOL-BUILD-NEXT:END -->
-
-## Recent changes
-
-- **v6.6** - consolidated current project status behind one derived model, rebuilt the Dashboard around an overview-first design with drill-downs, shortened the README, split durable engineering contracts into dedicated docs, centralized the Node-side current runtime loader, and changed release scaffolding so releases add only the behavior-specific surfaces they actually need.
-- **v6.5** - delivered the first five atomic source-fidelity units end to end and advanced only the broad canonical parents whose inventoried depth was actually exhausted.
-- **v6.4** - introduced atomic source-fidelity accounting below the 127-section canonical layer and separated broad ownership from end-to-end fidelity completion.
+Obol generates commands for humans to review and run elsewhere. It does not silently execute them, infer that tool startup means success, or treat credential material as privilege.
 
 ## Engineering docs
 
@@ -124,39 +109,55 @@ Obol grew through additive release overlays while the product model was still ch
 
 This is intentionally not a rewrite. The goal is a smaller set of explicit owners without trading visible technical debt for hidden regressions.
 
+## To-do
+
+### North Star objectives
+
+- Consume the live Build Next queue in quality-first order.
+- Finish already-inventoried atomic source-fidelity audits before lower-priority broad inventory work while quality debt and canonical gaps remain zero.
+- Continue decomposing the frozen partial baseline until useful source depth is explicitly accounted for.
+- Compact historical runtime ownership one stable area at a time behind regression-equivalent replacements.
+- Keep Dashboard, README, release tooling, and future status consumers on the consolidated current project model.
+
+### Recent changes
+
+- **v6.6** - consolidated current project status behind one derived model, rebuilt the Dashboard around an overview-first design with drill-downs, shortened the README, split durable engineering contracts into dedicated docs, centralized the Node-side current runtime loader, and changed release scaffolding so releases add only the behavior-specific surfaces they actually need.
+- **v6.5** - delivered the first five atomic source-fidelity units end to end and advanced only the broad canonical parents whose inventoried depth was actually exhausted.
+- **v6.4** - introduced atomic source-fidelity accounting below the 127-section canonical layer and separated broad ownership from end-to-end fidelity completion.
+
+For older releases, see [`CHANGELOG.md`](CHANGELOG.md).
+
+### Build next
+
+The block below is generated from the same current project model used by the North Star Dashboard. The Dashboard remains the full interactive view; CI prevents the README snapshot from drifting.
+
+<!-- OBOL-BUILD-NEXT:START -->
+This block is generated from the same live repository state used by **North Star Dashboard → Build Next**. Do not edit it manually.
+
+**Current live queue:** 41 items — 0 implemented-quality repairs, 0 mapped-delivery repairs, 0 canonical gaps.
+**Canonical methodology:** 95/127 fully implemented (75%), 32 partial, 0 gaps, 100% represented.
+**Orange source fidelity:** 1/17 source files atomized, 7/34 partial baselines decomposed, 5/19 inventoried atomic units fidelity-complete.
+**Current phase:** Architecture consolidation.
+
+**Highest-priority live items:**
+1. **ESC13 issuance-policy / group-link template path** — adcs.md · source fidelity.
+2. **ESC15 application-policy injection for Schannel** — adcs.md · source fidelity.
+3. **ESC15 application-policy injection for request-agent use** — adcs.md · source fidelity.
+
+Generated by `node tools/sync-readme-build-next.js --write`. Verify with `node tools/sync-readme-build-next.js --check`.
+<!-- OBOL-BUILD-NEXT:END -->
+
 ## Run locally
 
 Open `index.html` in a browser. No server or package install is required.
 
 ## Validation
 
-Lightweight release-branch smoke validation:
-
 ```bash
 node tools/release-smoke.js
-```
-
-Current-release regression suite:
-
-```bash
 node tests/run-v6.6-tests.js
-```
-
-Coherent release preflight:
-
-```bash
 node tools/release-preflight.js
-```
-
-README/Dashboard synchronization:
-
-```bash
 node tools/sync-readme-build-next.js --check
-```
-
-Release quality gate:
-
-```bash
 node tools/validate-release-quality.js
 ```
 
