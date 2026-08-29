@@ -25,16 +25,18 @@ for(const dir of ['data','assets']){
     if(name.endsWith(`-v${version}.js`))syntaxFiles.push(path.join(dir,name));
   }
 }
-for(const file of ['tools/release-smoke.js','tools/validate-historical-tests.js','tools/sync-readme-build-next.js','tools/release-preflight.js','tools/validate-release-pr.js','tools/validate-release-quality.js',`tests/run-v${version}-tests.js`]){
+for(const file of ['tools/current-runtime.js','tools/release-smoke.js','tools/validate-historical-tests.js','tools/sync-readme-build-next.js','tools/release-preflight.js','tools/validate-release-pr.js','tools/validate-release-quality.js',`tests/run-v${version}-tests.js`]){
   if(fs.existsSync(path.join(root,file)))syntaxFiles.push(file);
 }
 if(!syntaxFiles.length)throw new Error(`No v${version} JavaScript release files found for syntax validation`);
 for(const file of [...new Set(syntaxFiles)].sort())run(`syntax ${file}`,['--check',file]);
 
-const syncText=fs.readFileSync(path.join(root,'tools','sync-readme-build-next.js'),'utf8');
-for(const required of [`methodology-v${version}.js`,`dashboard-v${version}.js`,`core-v${version}.js`]){
-  if(!syncText.includes(required))throw new Error(`README Build Next generator is not wired through current release file: ${required}`);
+const runtimeText=fs.readFileSync(path.join(root,'tools','current-runtime.js'),'utf8');
+for(const required of [`project-model-v${version}.js`,`core-v${version}.js`]){
+  if(!runtimeText.includes(required))throw new Error(`Current runtime loader is not wired through release file: ${required}`);
 }
+const syncText=fs.readFileSync(path.join(root,'tools','sync-readme-build-next.js'),'utf8');
+if(!syncText.includes("require('./current-runtime')"))throw new Error('README Build Next generator must consume the shared current runtime loader');
 
 run('release smoke validation',['tools/release-smoke.js']);
 run('historical test future safety',['tools/validate-historical-tests.js']);

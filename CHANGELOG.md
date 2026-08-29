@@ -4,6 +4,19 @@ This file is the release-history source for Obol. Future build work should revie
 
 The README is intentionally reserved for current project purpose, architecture, permanent requirements, a compact summary of only the latest three releases, and forward priorities.
 
+## v6.6 — architecture consolidation and project-status simplification
+
+- Established `C.projectModel66(...)` as the single current projection for canonical progress, source-depth/source-fidelity progress, quality debt, Build Next, recent release trend, and the next priority.
+- Added `data/project-model-v6.6.js` as the authoritative current release/project metadata owner and `tools/current-runtime.js` as the shared Node-side loader so repository tools no longer duplicate the current runtime load order.
+- Rebuilt the default North Star Dashboard around an immediate project overview: methodology completion, source-audit progress, quality debt, queue size, recent progress, and the next priority are visible without navigating a stack of diagnostic panels.
+- Preserved detailed project metrics, the atomic source-fidelity ledger, and the full Build Next queue behind explicit collapsed drill-downs rather than deleting engineering visibility.
+- Reorganized documentation so `README.md` is again a compact project entry point while `docs/ARCHITECTURE.md`, `docs/NORTH-STAR.md`, `docs/PROOF-CONTRACT.md`, `docs/ORANGE-SOURCE-DEPTH.md`, `BUILDING.md`, and this changelog each own a durable concern.
+- Updated README synchronization and release-quality validation to consume the consolidated current project model rather than parsing README text or maintaining independent current-count calculations.
+- Established a permanent consolidation rule: future release overlays should represent real behavior deltas, not become new owners of project-wide status; historical runtime layers are to be compacted incrementally behind regression-equivalent replacements rather than through a rewrite.
+- Deliberately preserved methodology and source-fidelity state at **95 implemented / 32 partial / 0 gaps / 0 stale**, **75% fully implemented**, **100% represented**, **1/17 source files atomized**, **7/34 frozen partial baselines decomposed**, and **5/19 inventoried atomic units fidelity-complete**.
+- Preserved the **41-item** Build Next queue, including **14 atomic source-fidelity audits** and **27 source-inventory/decomposition items**, with zero implemented-quality repairs, zero mapped-delivery repairs, and zero canonical gaps.
+- Kept browser-local workspace migration, human-run command behavior, conservative Evidence/proof boundaries, Next Steps semantics, report lineage, sanitized export, and the exact-head tiered CI contract unchanged.
+
 ## v6.5 — first AD CS atomic source-fidelity delivery wave
 
 - Consumed the first five atomic source-fidelity items from the synchronized v6.4 Build Next queue: AD CS enumeration/routing, ESC8 Web Enrollment relay, ESC1 enrollee-supplied identity, ESC2 Any Purpose/SubCA routing, and ESC3 enrollment-agent/on-behalf-of enrollment.

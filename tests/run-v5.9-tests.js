@@ -111,14 +111,18 @@ test('generic release quality gate passes current live model',()=>{
   assert((r.stdout||'').includes('0 implemented-quality repairs, 0 mapped-delivery repairs'));
 });
 
-test('release PR validator accepts v5.9 contract and rejects wrong branch',()=>{
+test('release PR validator accepts current contract and rejects wrong branch',()=>{
   const tool=path.join(root,'tools','validate-release-pr.js');
-  const eventPath=path.join(os.tmpdir(),'obol-v59-pr-event.json');
-  const goodBody='## Summary\n'+('Release summary. '.repeat(50))+'\n## Canonical methodology accounting\n82/127.\n## Conservative Evidence boundaries\nProof stays bounded.\n## Release wiring\nWired.\n## Regression coverage\nCovered.\n## Compatibility\nCompatible.';
-  fs.writeFileSync(eventPath,JSON.stringify({pull_request:{head:{ref:'release/obol-v5.9'},title:'Obol v5.9 — quality gate and canonical progress',body:goodBody}}));
+  const eventPath=path.join(os.tmpdir(),'obol-release-pr-event-v59.json');
+  const readme=fs.readFileSync(path.join(root,'README.md'),'utf8');
+  const current=readme.match(/Current release: \*\*v(\d+\.\d+)\*\*/);
+  assert(current,'current release marker');
+  const version=current[1];
+  const goodBody='## Summary\n'+('Release summary. '.repeat(50))+'\n## Canonical methodology accounting\nCurrent accounting retained.\n## Conservative Evidence boundaries\nProof stays bounded.\n## Release wiring\nWired.\n## Regression coverage\nCovered.\n## Compatibility\nCompatible.';
+  fs.writeFileSync(eventPath,JSON.stringify({pull_request:{head:{ref:`release/obol-v${version}`},title:`Obol v${version} — release contract fixture`,body:goodBody}}));
   let r=cp.spawnSync(process.execPath,[tool],{cwd:root,env:{...process.env,GITHUB_EVENT_NAME:'pull_request',GITHUB_EVENT_PATH:eventPath},encoding:'utf8'});
   assert.strictEqual(r.status,0,r.stderr||r.stdout);
-  fs.writeFileSync(eventPath,JSON.stringify({pull_request:{head:{ref:'build/obol-v5.9'},title:'Obol v5.9 — bad release branch',body:goodBody}}));
+  fs.writeFileSync(eventPath,JSON.stringify({pull_request:{head:{ref:`build/obol-v${version}`},title:`Obol v${version} — wrong branch`,body:goodBody}}));
   r=cp.spawnSync(process.execPath,[tool],{cwd:root,env:{...process.env,GITHUB_EVENT_NAME:'pull_request',GITHUB_EVENT_PATH:eventPath},encoding:'utf8'});
   assert.notStrictEqual(r.status,0);
   fs.unlinkSync(eventPath);
