@@ -48,24 +48,24 @@ An atomic unit is fidelity-complete only when the relevant requirements are acco
 
 Terminal dispositions are `modeled`, `superseded`, or `rejected`, with rationale. Merely assigning one of those labels without satisfying the required review dimensions is not enough.
 
-## Current v7.2 baseline
+## Current v7.3 baseline
 
-v7.2 completes the pinned ACL / ACE source family and continues the quality-first queue into man-in-the-middle / relay source inventory:
+v7.3 completes the pinned MITM / relay source family and continues the quality-first queue into authenticated source inventory:
 
-- canonical: 107 / 127 implemented, 20 partial, 0 gaps, 0 stale;
-- strict completion: 84%;
+- canonical: 109 / 127 implemented, 18 partial, 0 gaps, 0 stale;
+- strict completion: 86%;
 - represented coverage: 100%;
-- methodology source files atomized: 3 / 17;
-- frozen partial baselines decomposed: 14 / 34;
-- currently inventoried atomic units fidelity-complete: 41 / 41;
+- methodology source files atomized: 4 / 17;
+- frozen partial baselines decomposed: 16 / 34;
+- currently inventoried atomic units fidelity-complete: 51 / 51;
 - remaining inventoried atomic audits: 0;
-- remaining source-inventory/decomposition items: 20.
+- remaining source-inventory/decomposition items: 18.
 
-The canonical advance in v7.2 is accounting reconciliation, not denominator inflation. The five ACL parents that were still frozen partials at the v6.2 boundary advance only after their meaningful subordinate source branches are terminal and fidelity-complete: `acl.group-control`, `acl.computer-control`, `acl.user-control`, `acl.ou-control`, and `acl.gpo`. `acl.shadow-credentials` and `acl.gmsa` were already canonical completions from v5.6; DCSync, LAPS, and DNS Admin were also already implemented. Those earlier completions retain their historical milestone while their source detail is now captured in the ACL atomic ledger.
+The canonical advance in v7.3 is accounting reconciliation, not denominator inflation. The two MITM parents that were still frozen partials at the v6.2 boundary advance only after their meaningful subordinate source branches are terminal and fidelity-complete: `mitm.listen` and `mitm.ntlm-relay`. `mitm.kerberos-relay` was already a canonical completion from v6.0 and retains that historical milestone while its HTTP, SMB, and LDAP(S) relay variants now have explicit atomic accounting.
 
-The sixteen v7.2 ACL units cover DCSync, Shadow Credentials, group membership, group owner/DACL control, computer RBCD and Key Credential control, user password reset, targeted Kerberoast, user Key Credential control, user logon-script control, OU inheritable DACL and GPO-link control, gMSA password retrieval, LAPS retrieval, GPO control, and DNSAdmins ServerLevelPluginDll control. Rights discovery, directory or policy mutation, credential material, ticket material, authenticated access, execution, administrator access, privilege, and cleanup remain separate proof states throughout.
+The ten v7.3 MITM units cover credential/hash listening, legacy MS08-068 self-relay, NTLM relay to LDAP(S), SMB, HTTP, MSSQL, and NETLOGON/DCSync, plus Kerberos relay to HTTP/AD CS, SMB, and LDAP(S). Nine are modeled. The obsolete MS08-068 self-relay branch is explicitly `superseded` as a preferred modern workflow while remaining visible in the source ledger. Listener startup, inbound authentication, relay success, directory/service mutation, credential/hash/certificate/ticket material, authenticated access, execution, administrator access, privilege, and cleanup remain separate proof states throughout.
 
-The frozen v6.2 baseline remains 34. Therefore 41/41 currently inventoried units does **not** mean Orange source fidelity is globally complete. It means the three atomized methodology files, `adcs.md`, `delegation.md`, and `acl.md`, have exhausted their current atomic ledgers. The 20 remaining broad source-inventory/decomposition rows are now the active phase and will create new atomic denominators as useful source structure is mined.
+The frozen v6.2 baseline remains 34. Therefore 51/51 currently inventoried units does **not** mean Orange source fidelity is globally complete. It means the four atomized methodology files, `adcs.md`, `delegation.md`, `acl.md`, and `mitm.md`, have exhausted their current atomic ledgers. The 18 remaining broad source-inventory/decomposition rows are now the active phase and will create new atomic denominators as useful source structure is mined.
 
 These denominators must remain visible. A percentage may summarize a denominator but must never make unfinished source disappear.
 
@@ -79,13 +79,13 @@ The repository work queue is ordered by product quality, not by whichever metric
 4. atomic source-fidelity audits for already-inventoried units;
 5. source-depth inventory/decomposition for remaining broad partial baselines.
 
-v7.2 has zero rows in priorities 1 through 4, so priority 5 remains active. With ACL / ACE source depth complete, the next live source family is man-in-the-middle / relay beginning with `mitm.listen`, followed by the remaining authenticated source-depth baselines.
+v7.3 has zero rows in priorities 1 through 4, so priority 5 remains active. With MITM / relay source depth complete, the next live source family is `authenticated.md`, beginning with authenticated coercion and the remaining authenticated source-depth baselines.
 
-This ordering is derived from the repository model and exposed through the stable `C.currentProjectModel(...)` pointer. The current versioned implementation is `C.projectModel72(...)`.
+This ordering is derived from the repository model and exposed through the stable `C.currentProjectModel(...)` pointer. The current versioned implementation is `C.projectModel73(...)`.
 
 ## Current-project projection rule
 
-Beginning with v6.6, project status has one current projection boundary. v6.8 added the stable non-versioned pointer `C.currentProjectModel(...)` so current consumers do not need to hard-code whichever versioned adapter happens to be newest. v7.2 keeps that pointer current while retaining versioned adapters as historical regression boundaries.
+Beginning with v6.6, project status has one current projection boundary. v6.8 added the stable non-versioned pointer `C.currentProjectModel(...)` so current consumers do not need to hard-code whichever versioned adapter happens to be newest. v7.3 keeps that pointer current while retaining versioned adapters as historical regression boundaries.
 
 The Dashboard and README may present or summarize its output, but they should not keep independent current counts or competing Build Next calculations. The underlying domain models remain the owners of canonical, delivery, and source-fidelity semantics; the project model provides a stable current view over them.
 
@@ -99,7 +99,7 @@ Use these distinctions consistently:
 - **100% fully implemented** would mean all 127 normalized canonical sections are implemented.
 - **Source fully inventoried** would mean every methodology-bearing source file and every frozen source-depth baseline is explicitly decomposed/accounted for.
 - **Source fidelity complete** would mean every useful inventoried unit across the fully inventoried source has a complete terminal audit.
-- **41/41 currently inventoried atomic units complete** means the present AD CS, Kerberos delegation, and ACL / ACE atomic ledgers are complete, not that the remaining 14 source files or 20 broad frozen-baseline rows have been exhausted.
+- **51/51 currently inventoried atomic units complete** means the present AD CS, Kerberos delegation, ACL / ACE, and MITM / relay atomic ledgers are complete, not that the remaining 13 source files or 18 broad frozen-baseline rows have been exhausted.
 - **Orange exhausted of useful ideas** may only be claimed when the source inventory and fidelity work are complete, including explicit superseded/rejected rationales where appropriate.
 
 Canonical breadth is not source exhaustion.

@@ -4,7 +4,7 @@ Obol is a static, offline-capable browser workspace for OSCP-style labs, Active 
 
 Live site: `https://platocres.github.io/obol/`
 
-Current release: **v7.2**
+Current release: **v7.3**
 
 Release history lives in [`CHANGELOG.md`](CHANGELOG.md). Architecture, source-accounting, Evidence, and release contracts live in dedicated engineering documents instead of being duplicated here. **The readme is not a changelog.**
 
@@ -32,30 +32,30 @@ Primary navigation stays intentionally small:
 
 The **More** menu contains North Star Dashboard, Engagement Map, Methodology, Tool Library, Planned Work, Workspace Search, Evidence Lineage, Guide, and Workspace Data.
 
-The **North Star Dashboard** is the single in-app location for project-wide hard numbers. Its overview-first v6.6 layout remains the current presentation shell, while v7.2 atomizes the pinned ACL / ACE source family, completes sixteen ACL fidelity units, advances the five ACL parents that were still frozen partials at the v6.2 boundary, and continues the live Build Next queue into man-in-the-middle / relay source inventory. Detailed engineering metrics, source-fidelity accounting, and the complete Build Next queue remain available as drill-downs.
+The **North Star Dashboard** is the single in-app location for project-wide hard numbers. Its overview-first v6.6 layout remains the current presentation shell, while v7.3 atomizes the pinned MITM / relay source family, completes ten MITM fidelity units, reconciles the two MITM parents that remained frozen partials at the v6.2 boundary, and continues the live Build Next queue into authenticated source inventory. Detailed engineering metrics, source-fidelity accounting, and the complete Build Next queue remain available as drill-downs.
 
 ## Project status
 
 Obol keeps methodology breadth and source-depth/source-fidelity accounting separate. A broad methodology section can be represented while subordinate source material still needs decomposition or end-to-end review.
 
-Current v7.2 baseline:
+Current v7.3 baseline:
 
-- **107 / 127** canonical sections fully implemented
-- **20** partial
+- **109 / 127** canonical sections fully implemented
+- **18** partial
 - **0** gaps
 - **0** stale mappings
-- **84%** fully implemented
+- **86%** fully implemented
 - **100%** represented
-- **3 / 17** methodology source files atomized
-- **14 / 34** frozen partial baselines decomposed
-- **41 / 41** currently inventoried atomic units fidelity-complete
-- **20** items in the live Build Next queue
+- **4 / 17** methodology source files atomized
+- **16 / 34** frozen partial baselines decomposed
+- **51 / 51** currently inventoried atomic units fidelity-complete
+- **18** items in the live Build Next queue
 - **0** implemented-quality repairs
 - **0** mapped-delivery repairs
 
-The **127 canonical** section denominator measures structural breadth. It is deliberately separate from source-depth and atomic source-fidelity progress. v7.2 advances `acl.group-control`, `acl.computer-control`, `acl.user-control`, `acl.ou-control`, and `acl.gpo` only after the pinned `acl.md` family is decomposed and all sixteen meaningful source units are terminal and fidelity-complete. `acl.shadow-credentials` and `acl.gmsa` were already canonical completions from v5.6, while DCSync, LAPS, and DNS Admin were also already implemented; v7.2 gives those branches deeper atomic source accounting without rewriting their historical canonical milestones. Completing 41/41 currently inventoried units does **not** mean the pinned Orange source is exhausted: the frozen 34-section v6.2 source-depth denominator is preserved, with 20 broad source-inventory/decomposition items still live.
+The **127 canonical** section denominator measures structural breadth. It is deliberately separate from source-depth and atomic source-fidelity progress. v7.3 advances `mitm.listen` and `mitm.ntlm-relay` only after the pinned `mitm.md` family is decomposed and its meaningful subordinate source units are terminal and fidelity-complete. `mitm.kerberos-relay` was already a canonical completion from v6.0 and retains that historical milestone while gaining deeper atomic source accounting. The pinned MS08-068 self-relay branch is preserved as an explicit superseded source unit rather than being silently dropped or promoted as a preferred modern workflow. Completing 51/51 currently inventoried units does **not** mean the pinned Orange source is exhausted: the frozen 34-section v6.2 source-depth denominator is preserved, with 18 broad source-inventory/decomposition items still live.
 
-The detailed definitions, pinned provenance, denominators, completion language, and audit requirements live in [`docs/NORTH-STAR.md`](docs/NORTH-STAR.md). The current presentation boundary is the stable `C.currentProjectModel(...)` pointer, backed by `C.projectModel72(...)` in v7.2.
+The detailed definitions, pinned provenance, denominators, completion language, and audit requirements live in [`docs/NORTH-STAR.md`](docs/NORTH-STAR.md). The current presentation boundary is the stable `C.currentProjectModel(...)` pointer, backed by `C.projectModel73(...)` in v7.3.
 
 ## Permanent North Star requirements
 
@@ -99,7 +99,7 @@ Obol generates commands for humans to review and run elsewhere. It does not sile
 
 ## Architecture direction
 
-Obol grew through additive release overlays while the product model was still changing. Those historical layers remain where they still encode behavior protected by regression tests. v6.6 established the consolidation boundary, v6.8 added stable current-project pointers, and v7.2 continues using those pointers while extending source accounting through AD CS, Kerberos delegation, and ACL / ACE control paths:
+Obol grew through additive release overlays while the product model was still changing. Those historical layers remain where they still encode behavior protected by regression tests. v6.6 established the consolidation boundary, v6.8 added stable current-project pointers, and v7.3 continues using those pointers while extending source accounting through AD CS, Kerberos delegation, ACL / ACE control paths, and MITM / relay paths:
 
 - project status has one current projection model exposed through `C.currentProjectModel(...)`;
 - Dashboard and README consume that model instead of recalculating progress independently;
@@ -123,9 +123,9 @@ This is intentionally not a rewrite. The goal is a smaller set of explicit owner
 
 ### Recent changes
 
-- **v7.2** - atomized the pinned `acl.md` family into sixteen meaningful units, reused mature DCSync, LAPS, and RBCD owners where they already satisfied the operator contract, added dedicated owners for Shadow Credentials, group/user/OU/GPO control, gMSA retrieval, and DNSAdmins, advanced the five ACL parents that were still frozen partials at v6.2, and moved Build Next into MITM / relay source inventory.
-- **v7.1** - atomized the pinned `delegation.md` family into six meaningful units, completed discovery, unconstrained delegation, both constrained-delegation variants, RBCD, and S4U2Self fidelity, advanced the two remaining partial delegation parents, and moved Build Next into ACL / ACE source inventory.
-- **v7.0** - completed all five remaining AD CS certificate-mapping source-fidelity units, explicitly superseded the source-empty ESC14 exploit branch with current assessment/reporting rather than invented mechanics, reconciled `adcs.certificate-mapping`, reached 19/19 then-inventoried atomic units complete, and moved Build Next into source inventory/decomposition.
+- **v7.3** - atomized the pinned `mitm.md` family into ten meaningful units, modeled listener, NTLM LDAP(S)/SMB/HTTP/MSSQL/NETLOGON and Kerberos HTTP/SMB/LDAP(S) relay paths, explicitly superseded obsolete MS08-068 self-relay as a preferred modern workflow, reconciled `mitm.listen` and `mitm.ntlm-relay`, and moved Build Next into authenticated source inventory.
+- **v7.2** - atomized the pinned `acl.md` family into sixteen meaningful units, reused mature DCSync, LAPS, and RBCD owners where they already satisfied the operator contract, added dedicated owners for Shadow Credentials, group/user/OU/GPO control, gMSA retrieval, and DNSAdmins, and advanced the five ACL parents that were still frozen partials at v6.2.
+- **v7.1** - atomized the pinned `delegation.md` family into six meaningful units, completed discovery, unconstrained delegation, both constrained-delegation variants, RBCD, and S4U2Self fidelity, and advanced the two remaining partial delegation parents.
 
 For older releases, see [`CHANGELOG.md`](CHANGELOG.md).
 
@@ -136,15 +136,15 @@ The block below is generated from the same current project model used by the Nor
 <!-- OBOL-BUILD-NEXT:START -->
 This block is generated from the same live repository state used by **North Star Dashboard → Build Next**. Do not edit it manually.
 
-**Current live queue:** 20 items — 0 implemented-quality repairs, 0 mapped-delivery repairs, 0 canonical gaps.
-**Canonical methodology:** 107/127 fully implemented (84%), 20 partial, 0 gaps, 100% represented.
-**Orange source fidelity:** 3/17 source files atomized, 14/34 partial baselines decomposed, 41/41 inventoried atomic units fidelity-complete.
+**Current live queue:** 18 items — 0 implemented-quality repairs, 0 mapped-delivery repairs, 0 canonical gaps.
+**Canonical methodology:** 109/127 fully implemented (86%), 18 partial, 0 gaps, 100% represented.
+**Orange source fidelity:** 4/17 source files atomized, 16/34 partial baselines decomposed, 51/51 inventoried atomic units fidelity-complete.
 **Current phase:** Orange source inventory and decomposition.
 
 **Highest-priority live items:**
-1. **Credential/hash listening** — mitm.md · source depth inventory.
-2. **Authenticated coercion** — authenticated.md · source depth inventory.
-3. **Authenticated known-vulnerability path** — authenticated.md · source depth inventory.
+1. **Authenticated coercion** — authenticated.md · source depth inventory.
+2. **Authenticated known-vulnerability path** — authenticated.md · source depth inventory.
+3. **SCCM reconnaissance** — sccm.md · source depth inventory.
 
 Generated by `node tools/sync-readme-build-next.js --write`. Verify with `node tools/sync-readme-build-next.js --check`.
 <!-- OBOL-BUILD-NEXT:END -->
@@ -157,7 +157,7 @@ Open `index.html` in a browser. No server or package install is required.
 
 ```bash
 node tools/release-smoke.js
-node tests/run-v7.2-tests.js
+node tests/run-v7.3-tests.js
 node tools/release-preflight.js
 node tools/sync-readme-build-next.js --check
 node tools/validate-release-quality.js
