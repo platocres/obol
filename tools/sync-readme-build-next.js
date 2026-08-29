@@ -6,14 +6,15 @@ const {loadCurrent}=require('./current-runtime');
 
 const root=path.join(__dirname,'..');
 const {C,lanes}=loadCurrent(root);
-if(!C||!C.projectModel66)throw new Error('Current project model unavailable');
+const projectModel=C.projectModel67||C.projectModel66;
+if(!C||!projectModel)throw new Error('Current project model unavailable');
 
 const START='<!-- OBOL-BUILD-NEXT:START -->';
 const END='<!-- OBOL-BUILD-NEXT:END -->';
 function clean(s){return String(s||'').replace(/\s+/g,' ').trim();}
 function rowLine(r,i){return `${i+1}. **${clean(r.label)}** — ${clean(r.file||'project-wide')} · ${clean(r.kind).replace(/-/g,' ')}.`;}
 function render(){
-  const p=C.projectModel66(C.newState(),lanes),q=p.buildNext,c=p.canonical,s=p.source,top=(q.rows||[]).slice(0,3);
+  const p=projectModel(C.newState(),lanes),q=p.buildNext,c=p.canonical,s=p.source,top=(q.rows||[]).slice(0,3);
   return [
     START,
     'This block is generated from the same live repository state used by **North Star Dashboard → Build Next**. Do not edit it manually.',
