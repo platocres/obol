@@ -1,8 +1,23 @@
 # Obol Changelog
 
-This file is the release-history source for Obol. Future build work should review this changelog together with the current README before changing architecture, methodology, Evidence behavior, reporting, or project metrics.
+This file is the release-history source for Obol. Future build work should review this changelog together with the current README before changing architecture or methodology.
 
 The README is intentionally reserved for current project purpose, architecture, permanent requirements, a compact summary of only the latest three releases, and forward priorities.
+
+## v5.8 — canonical gap wave and release-contract enforcement
+
+- Consumed the next five items from the synchronized v5.7 Build Next queue: PrintNightmare, PrivExchange, ProxyNotShell, AppLocker bypass, and Kerberos relay.
+- Added delivery-ready owners with explicit command contracts, Kali/Windows/target execution metadata, conservative Evidence profiles, decision-path placement, reporting traceability, and bounded negative-result semantics.
+- PrintNightmare is detection-first and does not convert vulnerability or reviewed driver-load evidence into SYSTEM.
+- PrivExchange stops at confirmed HTTP coercion and leaves relay success and privilege to their own proof boundaries.
+- ProxyNotShell uses a minimal `whoami` validation and only records SYSTEM when explicit remote identity output proves it.
+- AppLocker separates effective-policy discovery from a benign explicit bypass marker and never treats bypass as privilege.
+- Kerberos relay separates relay/control, service-ticket material, and post-transition SYSTEM identity proof.
+- Moved five canonical gaps to implemented, raising strict methodology from **72 implemented / 34 partial / 21 gaps / 0 stale** to **77 implemented / 34 partial / 16 gaps / 0 stale**.
+- Raised fully implemented coverage from **57% to 61%** and represented coverage from **83% to 87%**, preserving the pinned 127-section denominator.
+- Added `tools/validate-release-pr.js`. Release PRs must use `release/obol-vX.Y`, include a substantive description with required release sections, and pass the required `test` check.
+- The v5.8 regression suite exercises the release PR validator, so an empty description or a duplicate-style `build/obol-vX.Y` head makes the required PR test fail.
+- Extended the North Star Dashboard and README Build Next generator through v5.8 and retained CI-enforced README/Dashboard synchronization.
 
 ## v5.7 — highest-priority canonical gap completion wave
 
