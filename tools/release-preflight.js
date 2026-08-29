@@ -25,14 +25,14 @@ for(const dir of ['data','assets']){
     if(name.endsWith(`-v${version}.js`))syntaxFiles.push(path.join(dir,name));
   }
 }
-for(const file of ['tools/sync-readme-build-next.js','tools/release-preflight.js',`tests/run-v${version}-tests.js`]){
+for(const file of ['tools/sync-readme-build-next.js','tools/release-preflight.js','tools/validate-release-pr.js',`tests/run-v${version}-tests.js`]){
   if(fs.existsSync(path.join(root,file)))syntaxFiles.push(file);
 }
 if(!syntaxFiles.length)throw new Error(`No v${version} JavaScript release files found for syntax validation`);
 for(const file of [...new Set(syntaxFiles)].sort())run(`syntax ${file}`,['--check',file]);
 
 const syncText=fs.readFileSync(path.join(root,'tools','sync-readme-build-next.js'),'utf8');
-for(const required of [`methodology-v${version}.js`,`core-v${version}.js`]){
+for(const required of [`methodology-v${version}.js`,`dashboard-v${version}.js`,`core-v${version}.js`]){
   if(!syncText.includes(required))throw new Error(`README Build Next generator is not wired through current release file: ${required}`);
 }
 
@@ -52,6 +52,7 @@ if(brittle.length){
   process.exit(1);
 }
 
+run('repository release contract',['tools/validate-release-pr.js','--repo-only']);
 run(`v${version} regression suite`,[path.relative(root,currentTest)]);
 run('README Build Next synchronization',['tools/sync-readme-build-next.js','--check']);
 console.log(`\nRelease preflight passed for v${version}.`);
