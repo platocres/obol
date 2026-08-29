@@ -19,6 +19,8 @@ The intended release flow is:
 - require the complete historical regression chain, README Build Next synchronization, and required `test` status check to pass on the exact current PR head
 - if another commit is pushed after a green run, treat the previous result as superseded and require the new head to pass again before merge
 
+Release-PR metadata enforcement applies only to release-intent pull requests. Normal documentation, maintenance, and CI-fix PRs still run the regression suite and required status checks, but they are not required to use a release branch name or release-description template.
+
 ## Quality-debt ordering
 
 `C.buildNext52(lanes)` remains the source of truth for release work ordering:
