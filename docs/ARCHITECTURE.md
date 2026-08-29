@@ -39,7 +39,7 @@ From v6.6 forward:
 
 The current versioned adapter remains available for regression history. Consumers may format current-model values, but should not recalculate them with independent hard-coded denominators.
 
-v7.2 demonstrates the intended boundary: the completed AD CS, Kerberos delegation, and ACL / ACE atomic ledgers remain source-accounting state, while the current project projection reports 41/41 inventoried units complete and moves Build Next into the 18 remaining broad source-inventory rows without creating a second progress model.
+v7.2 demonstrates the intended boundary: the completed AD CS, Kerberos delegation, and ACL / ACE atomic ledgers remain source-accounting state, while the current project projection reports 41/41 inventoried units complete and moves Build Next into the 20 remaining broad source-inventory rows without creating a second progress model.
 
 ### Engagement state
 
