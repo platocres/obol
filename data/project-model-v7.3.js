@@ -8,7 +8,7 @@ root.OBOL_PROJECT_V73={
   phase:{
     id:'source-inventory-decomposition',
     title:'Orange source inventory and decomposition',
-    statement:'The pinned mitm.md source family is now atomized and fidelity-complete. The quality-first queue continues through the remaining frozen v6.2 source-depth baselines, beginning with authenticated coercion and authenticated known-vulnerability routing.',
+    statement:'The pinned mitm.md source family is now atomized and fidelity-complete. The quality-first queue continues through the remaining frozen v6.2 source-depth baselines, beginning with authenticated source paths.',
     next:'Decompose the highest-priority remaining authenticated.md source-depth baselines while preserving zero quality debt, zero canonical gaps, and conservative engagement proof boundaries.'
   },
   releaseMilestone:{
@@ -22,11 +22,12 @@ root.OBOL_PROJECT_V73={
     filesAtomizedBefore:3,
     filesAtomizedAfter:4,
     baselinesAtomizedBefore:14,
-    baselinesAtomizedAfter:16,
+    baselinesAtomizedAfter:15,
     delivered:['mitm.listen','mitm.ntlm-self-relay','mitm.ntlm-ldaps','mitm.ntlm-smb','mitm.ntlm-http','mitm.ntlm-mssql','mitm.ntlm-netlogon','mitm.kerberos-http','mitm.kerberos-smb','mitm.kerberos-ldaps'],
     modeled:['mitm.listen','mitm.ntlm-ldaps','mitm.ntlm-smb','mitm.ntlm-http','mitm.ntlm-mssql','mitm.ntlm-netlogon','mitm.kerberos-http','mitm.kerberos-smb','mitm.kerberos-ldaps'],
     superseded:['mitm.ntlm-self-relay'],
-    canonicalAdvanced:['mitm.listen']
+    canonicalAdvanced:['mitm.listen'],
+    historicalCanonicalDeepened:['mitm.ntlm-relay','mitm.kerberos-relay']
   }
 };
 })(typeof window!=='undefined'?window:globalThis);
