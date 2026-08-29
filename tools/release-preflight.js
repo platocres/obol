@@ -25,7 +25,7 @@ for(const dir of ['data','assets']){
     if(name.endsWith(`-v${version}.js`))syntaxFiles.push(path.join(dir,name));
   }
 }
-for(const file of ['tools/sync-readme-build-next.js','tools/release-preflight.js','tools/validate-release-pr.js',`tests/run-v${version}-tests.js`]){
+for(const file of ['tools/sync-readme-build-next.js','tools/release-preflight.js','tools/validate-release-pr.js','tools/validate-release-quality.js',`tests/run-v${version}-tests.js`]){
   if(fs.existsSync(path.join(root,file)))syntaxFiles.push(file);
 }
 if(!syntaxFiles.length)throw new Error(`No v${version} JavaScript release files found for syntax validation`);
@@ -53,6 +53,7 @@ if(brittle.length){
 }
 
 run('repository release contract',['tools/validate-release-pr.js','--repo-only']);
+run('release quality debt gate',['tools/validate-release-quality.js']);
 run(`v${version} regression suite`,[path.relative(root,currentTest)]);
 run('README Build Next synchronization',['tools/sync-readme-build-next.js','--check']);
 console.log(`\nRelease preflight passed for v${version}.`);
