@@ -11,24 +11,35 @@ const currentVersion=currentMatch[1];
 const failures=[];
 
 function add(name,reason){failures.push(`${name}: ${reason}`);}
+function includeLiterals(text,objectName){
+  const out=[];
+  const patterns=[
+    new RegExp(objectName+'\\s*\\.\\s*includes\\s*\\(\\s*\'((?:\\\\.|[^\'\\\\])*)\'\\s*\\)','g'),
+    new RegExp(objectName+'\\s*\\.\\s*includes\\s*\\(\\s*"((?:\\\\.|[^"\\\\])*)"\\s*\\)','g'),
+    new RegExp(objectName+'\\s*\\.\\s*includes\\s*\\(\\s*`((?:\\\\.|[^`\\\\])*)`\\s*\\)','g')
+  ];
+  for(const re of patterns){let m;while((m=re.exec(text)))out.push(m[1]);}
+  return out;
+}
 
 for(const name of fs.readdirSync(path.join(root,'tests')).filter(x=>/^run-v\d+\.\d+.*-tests\.js$/.test(x))){
   const version=(name.match(/^run-v(\d+\.\d+)/)||[])[1]||'';
   if(version===currentVersion)continue;
   const text=fs.readFileSync(path.join(root,'tests',name),'utf8');
 
-  if(/Current release:\s*\*\*v\d+\.\d+\*\*/.test(text))add(name,'hard-codes a README current-release token');
-  if(/readme\s*\.\s*(?:includes|match|indexOf)\s*\([^\n]*v\d+\.\d+/.test(text))add(name,'asserts a live README version literal instead of a historical invariant');
+  if(/Current release:\s*\*\*v[0-9]+\.[0-9]+\*\*/.test(text))add(name,'hard-codes a README current-release token');
+  for(const literal of includeLiterals(text,'readme')){
+    if(/Current release:.*\*\*v[0-9]+\.[0-9]+\*\*/.test(literal))add(name,'asserts a live README version literal instead of a historical invariant');
+  }
 
   if(text.includes('sync-readme-build-next.js')){
-    const liveExact=[
-      [/out\s*\.\s*includes\s*\([^\n]*Current live queue:\*\*\s*\d+/,'hard-codes the live Build Next queue total'],
-      [/out\s*\.\s*includes\s*\([^\n]*Canonical methodology:\*\*\s*\d+\/127/,'hard-codes the live canonical implemented count'],
-      [/out\s*\.\s*includes\s*\([^\n]*\d+\s+canonical gaps/,'hard-codes the live canonical gap count'],
-      [/out\s*\.\s*includes\s*\([^\n]*\d+\s+implemented-quality repairs/,'hard-codes the live implemented-quality count'],
-      [/out\s*\.\s*includes\s*\([^\n]*\d+\s+mapped-delivery repairs/,'hard-codes the live mapped-delivery count']
-    ];
-    for(const [re,reason] of liveExact)if(re.test(text))add(name,reason);
+    for(const literal of includeLiterals(text,'out')){
+      if(/Current live queue:\*\*\s*[0-9]+/.test(literal))add(name,'hard-codes the live Build Next queue total');
+      if(/Canonical methodology:\*\*\s*[0-9]+\/127/.test(literal))add(name,'hard-codes the live canonical implemented count');
+      if(/[0-9]+\s+canonical gaps/.test(literal))add(name,'hard-codes the live canonical gap count');
+      if(/[0-9]+\s+implemented-quality repairs/.test(literal))add(name,'hard-codes the live implemented-quality count');
+      if(/[0-9]+\s+mapped-delivery repairs/.test(literal))add(name,'hard-codes the live mapped-delivery count');
+    }
   }
 }
 
