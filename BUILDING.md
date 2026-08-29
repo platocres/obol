@@ -1,57 +1,65 @@
 # Obol Build and Release Workflow
 
-This file is a mandatory companion to `README.md`, `CHANGELOG.md`, `docs/ARCHITECTURE.md`, `docs/NORTH-STAR.md`, `docs/PROOF-CONTRACT.md`, and `docs/ORANGE-SOURCE-DEPTH.md` for future Obol build work. Build agents should read the relevant owners before changing release architecture, methodology, Evidence behavior, reporting, CI, project metrics, or Orange source-depth/source-fidelity accounting.
+This file is a mandatory companion to `README.md`, `CHANGELOG.md`, `docs/ARCHITECTURE.md`, `docs/NORTH-STAR.md`, `docs/PROOF-CONTRACT.md`, and `docs/ORANGE-SOURCE-DEPTH.md` for future Obol build work. Read the relevant owner before changing release architecture, methodology, Evidence behavior, reporting, CI, project metrics, or source-depth/source-fidelity accounting.
 
 ## Incremental release policy
 
-**Incremental commits on a single draft release PR are encouraged. Ordinary release-branch commits run only lightweight smoke validation. The current-release regression gate runs only when a commit explicitly contains `[preflight]` or `[release-final]`, and the complete historical regression chain runs only for `[release-final]`, ready-for-review pull requests, and `main`. The release may not leave Draft or be merged until repository quality debt, release preflight, README synchronization, release-contract validation, and the complete historical regression suite pass on the exact final head.**
+**Use one draft release PR. Ordinary release-branch commits run lightweight smoke validation. `[preflight]` runs the current-release gate. `[release-final]` runs smoke, preflight, and the complete historical chain. A release may not leave Draft or be merged until the exact final head is green.**
 
 The intended release flow is:
 
-- create exactly one `release/obol-vX.Y` branch from current `main`
-- open exactly one draft PR for that release immediately
-- push incremental, coherent commits to that same PR as methodology, Evidence, core/Dashboard, UI, tests, docs, README, and changelog work is completed
-- ordinary release commits run `node tools/release-smoke.js`, which checks JavaScript syntax and local `index.html` asset references without requiring the release to be complete
-- use a commit containing `[preflight]` when the current release snapshot is coherent enough to run `node tools/release-preflight.js`; do not use `[preflight]` as an every-commit test trigger
-- do not create a second build/release PR to work around a failed smoke, preflight, or historical run
-- before leaving Draft, regenerate the README Build Next block and run the repository release contract, release preflight, current release regression suite, and historical-test future-safety validator
-- require `implemented-quality = 0` and `mapped-delivery = 0` before methodology expansion can be considered merge-ready
-- when canonical gaps are zero, use the source-fidelity model rather than declaring Orange complete; broad owner mappings never substitute for atomic source review
-- preserve the frozen v6.2 partial-section baseline even as sections evolve, and preserve v6.4 atomic source units once a source file has been decomposed
-- audited source units must end as explicitly `modeled`, `superseded`, or `rejected` with rationale and the required North Star dimensions accounted for
-- once the draft snapshot is coherent, make the exact final release-branch commit with `[release-final]` in its commit message; this runs smoke validation, release preflight, and the complete historical `test` job while the PR is still Draft
-- require that exact final head to pass smoke, preflight, historical-test future safety, the complete historical regression chain, release-quality gate, release-contract validation, and README synchronization before marking the PR Ready for review
-- mark the PR Ready for review only after the exact final head is green; the `ready_for_review` event may run the complete `test` job again and that result becomes the protected merge check
-- if another commit is pushed after a green final run, treat the previous result as superseded and require the new head to pass again before merge
+- create exactly one `release/obol-vX.Y` branch from current `main`;
+- open exactly one draft PR for that release immediately;
+- push incremental, coherent commits to that same PR;
+- ordinary release commits run `node tools/release-smoke.js`;
+- use `[preflight]` when a coherent current-release snapshot is ready;
+- do not create a second build/release PR to work around a failed check;
+- regenerate the README Build Next block and validate repository wiring before finalization;
+- require `implemented-quality = 0` and `mapped-delivery = 0` before methodology expansion is merge-ready;
+- when canonical gaps are zero, continue through source-fidelity accounting rather than declaring the source complete;
+- preserve the frozen v6.2 partial baseline and existing atomic units;
+- audited source units must end as explicitly `modeled`, `superseded`, or `rejected` with rationale and required review dimensions accounted for;
+- make the exact final release commit with `[release-final]` only after code, tests, docs, README, changelog, and PR description form one coherent snapshot;
+- require smoke, preflight, historical-test future safety, the complete historical regression chain, release-quality gate, release-contract validation, and README synchronization on that exact head;
+- mark the PR Ready for review only after that exact final head is green;
+- treat any later commit as a new head that must be validated again.
 
-The three validation tiers are intentionally different:
+The three validation tiers are:
 
-1. **Smoke** — every release-branch push; syntax plus local asset-reference sanity only.
-2. **Preflight** — commits containing `[preflight]` or `[release-final]`; current-release wiring, historical-test future safety, repository release contract, quality debt, current release regressions, and README synchronization.
-3. **Final historical validation** — `[release-final]`, ready-for-review PRs, and `main`; complete historical regression chain plus the permanent quality and synchronization gates.
+1. **Smoke** - every release-branch push; JavaScript syntax plus local index asset-reference sanity.
+2. **Preflight** - `[preflight]` and `[release-final]`; current-release wiring, historical-test future safety, release contract, quality debt, current release regressions, and README synchronization.
+3. **Final historical validation** - `[release-final]`, ready-for-review pull requests, and `main`; complete historical regressions plus the permanent quality and synchronization gates.
 
-This keeps incremental work visible without leaving a trail of full-suite failures for temporary development states. A smoke failure still means the commit itself is malformed and should be repaired, but ordinary incomplete release work is no longer expected to satisfy current-release or historical regression contracts.
+`tools/validate-historical-tests.js` prevents historical suites from hard-coding mutable current-release README or queue values. Historical suites should test historical model invariants and structural live-output contracts.
 
-`tools/validate-historical-tests.js` protects future releases from brittle historical assertions. Historical suites must test their historical model invariants and structural live-output contracts rather than hard-coding the current README version, current Build Next totals, or other mutable live-release values.
+Release-PR metadata enforcement applies only to release-intent pull requests. Normal documentation, maintenance, and CI-fix PRs are not required to impersonate a release.
 
-Release-PR metadata enforcement applies only to release-intent pull requests. Normal documentation, maintenance, and CI-fix PRs still run the regression suite and required status checks, but they are not required to use a release branch name or release-description template.
+## Delta-based release surfaces
+
+Beginning with v6.6, release scaffolding is **delta-based**. A new version number is not a reason to create empty compatibility files.
+
+Every release must provide the current release/project metadata, current state/version adapter, current regression suite, release documentation, changelog entry, README update, and whatever UI/runtime wiring the release actually changes. Type-specific overlays such as methodology, Dashboard metadata, Intake/Evidence, reporting, or tool data are added only when that release genuinely changes that ownership area.
+
+Do not create no-op `methodology-vX.Y.js`, `dashboard-vX.Y.js`, `intake-vX.Y.js`, or similar shims solely for naming symmetry. `tools/validate-release-pr.js` enforces the minimal release contract; release-specific tests should explicitly verify any additional behavior-specific surfaces that the release requires.
+
+This keeps future releases from rebuilding the same scaffolding around unchanged behavior.
 
 ## Consolidated current-state rule
 
-v6.6 establishes a boundary between the underlying domain models and the current project-status presentation.
+v6.6 establishes a boundary between domain models and current project-status presentation.
 
 - `C.projectModel66(...)` is the current projection boundary for canonical progress, source-fidelity progress, quality debt, Build Next, recent progress, and the next priority.
-- Dashboard, README synchronization, release-quality checks, and other current-status consumers must use the consolidated current model rather than parse the README or independently recalculate current counts.
-- Release metadata belongs in one current project metadata owner. Release-specific methodology/dashboard files required by the release contract must not become competing sources of project-wide truth.
-- New UI overlays should express genuine behavior changes. Do not append a new project-health/status panel merely because a release has a new version number.
-- The default North Star Dashboard remains an overview. Detailed matrices, ledgers, queue rows, and engineering diagnostics should live behind deliberate drill-downs.
-- The README remains an entry point/current snapshot. Durable architecture, proof, source-accounting, and release-history detail belong in their dedicated documents.
+- Dashboard, README synchronization, release-quality checks, and other current-status consumers use the consolidated current model instead of parsing README text or independently recalculating current counts.
+- Current release/project metadata has one owner. Do not create competing project-wide count tables in UI or release-specific metadata.
+- New UI overlays should express genuine behavior changes. Do not append another project-health panel merely because the version changed.
+- The default North Star Dashboard is an overview. Matrices, ledgers, complete queues, and diagnostics belong behind deliberate drill-downs.
+- The README is an entry point and current snapshot. Durable architecture, proof, source-accounting, and history belong in their dedicated documents.
 
-The shared Node loader in `tools/current-runtime.js` exists so repository tools do not each maintain another long copy of the current data/core load order. Extend that owner when the current runtime changes rather than copying the array into each new tool.
+`tools/current-runtime.js` owns the Node-side current data/core load order. Extend that loader when the current runtime changes instead of copying long load arrays into every tool or test.
 
 ## Historical runtime compaction
 
-The large historical browser load chain is acknowledged technical debt. It must be reduced incrementally, not by deleting old version files for aesthetic reasons.
+The historical browser load chain is acknowledged technical debt. Reduce it incrementally, not by deleting old version files for aesthetic reasons.
 
 For each ownership area selected for compaction:
 
@@ -65,20 +73,20 @@ A smaller file count is not a win if it changes Evidence semantics, command beha
 
 ## Quality-debt and methodology ordering
 
-`C.buildNext52(lanes)` remains the base source of truth for release work ordering through canonical coverage. v6.2 introduced the frozen partial-section source-depth baseline, and v6.4 extends that model with atomic source-fidelity rows through `C.buildNext64(lanes)`:
+The current Build Next model preserves this priority order:
 
-1. implemented-quality repairs
-2. mapped-delivery repairs
-3. canonical gaps
-4. atomic source-fidelity audits for already atomized source units
-5. source-depth inventory work that decomposes the remaining broad partial sections into atomic source units
+1. implemented-quality repairs;
+2. mapped-delivery repairs;
+3. canonical gaps;
+4. atomic source-fidelity audits for already inventoried units;
+5. source-depth inventory/decomposition for remaining broad partial baselines.
 
-A methodology-expansion release must not skip priority 1 or priority 2 debt. Canonical gaps outrank source-fidelity work while any gaps remain. Once gaps reach zero, already-inventoried atomic units outrank still-unatomized broad sections because the missing North Star requirements are known precisely.
+A methodology-expansion release must not skip priority 1 or 2 debt. Canonical gaps outrank source-fidelity work while gaps remain. Once gaps are zero, already-inventoried atomic units outrank still-unatomized broad sections because their missing requirements are known precisely.
 
-The 127-section canonical denominator measures structural representation. The frozen v6.2 source-depth baseline protects the 34 partial sections from disappearing. The v6.4 atomic source-fidelity ledger measures the meaningful subordinate branches and the North Star dimensions required to translate each branch into Obol's Run → Evidence → Next Steps → Report loop.
+The 127-section canonical denominator measures structural representation. The frozen v6.2 source-depth baseline protects unresolved broad partial work from disappearing. The atomic source-fidelity ledger measures meaningful subordinate branches and the requirements needed to translate them into Obol's Run -> Evidence -> Next Steps -> Report loop.
 
-Future builds must not equate 100% represented, a broad card mapping, or a terminal audit label by itself with Orange being exhausted. See `docs/ORANGE-SOURCE-DEPTH.md` and `docs/NORTH-STAR.md` for the full accounting contract and completion target.
+Never equate 100% represented, a broad card mapping, or a terminal audit label by itself with source exhaustion. See `docs/ORANGE-SOURCE-DEPTH.md` and `docs/NORTH-STAR.md`.
 
 ## Merge-readiness rule
 
-A release is merge-ready only when the exact final head is green. Earlier failed or cancelled runs are development history and do not block merge once superseded, but earlier green runs do not authorize a newer untested head.
+A release is merge-ready only when the exact final head is green. Earlier failed or cancelled runs are development history and do not block a later green head, but earlier green runs do not authorize a newer untested head.
