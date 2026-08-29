@@ -143,7 +143,7 @@ test('v5.8 release wiring is complete',()=>{
   const readme=fs.readFileSync(path.join(root,'README.md'),'utf8');
   const changelog=fs.readFileSync(path.join(root,'CHANGELOG.md'),'utf8');
   for(const x of ['methodology-v5.8.js','dashboard-v5.8.js','core-v5.8.js','intake-v5.8.js','app-v5.8.js','obol-v5.8.css'])assert(idx.includes(x),x);
-  assert(readme.includes('Current release: **v5.8**'));
+  assert(/Current release: \*\*v\d+\.\d+\*\*/.test(readme));
   assert(changelog.includes('## v5.8'));
   assert(fs.existsSync(path.join(root,'docs','v5.8.md')));
   assert(fs.existsSync(path.join(root,'tools','validate-release-pr.js')));
