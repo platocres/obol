@@ -12,7 +12,7 @@ root.OBOL_PROJECT_V72={
     next:'Decompose the highest-priority remaining relay / MITM source-depth baselines while preserving zero quality debt, zero canonical gaps, and conservative engagement proof boundaries.'
   },
   releaseMilestone:{
-    release:'v7.2',implemented:109,partial:18,gap:0,stale:0,coveragePct:86,representedPct:100,
+    release:'v7.2',implemented:107,partial:20,gap:0,stale:0,coveragePct:84,representedPct:100,
     label:'ACL / ACE source-depth completion'
   },
   sourceWave:{
@@ -22,11 +22,11 @@ root.OBOL_PROJECT_V72={
     filesAtomizedBefore:2,
     filesAtomizedAfter:3,
     baselinesAtomizedBefore:9,
-    baselinesAtomizedAfter:16,
+    baselinesAtomizedAfter:14,
     delivered:['acl.dcsync','acl.shadow-credentials','acl.group-membership','acl.group-owner-dacl','acl.computer-rbcd','acl.computer-shadow','acl.user-password','acl.user-targeted-kerberoast','acl.user-shadow','acl.user-logon-script','acl.ou-inheritance','acl.ou-gplink','acl.gmsa','acl.laps','acl.gpo','acl.dns-admin'],
     modeled:['acl.dcsync','acl.shadow-credentials','acl.group-membership','acl.group-owner-dacl','acl.computer-rbcd','acl.computer-shadow','acl.user-password','acl.user-targeted-kerberoast','acl.user-shadow','acl.user-logon-script','acl.ou-inheritance','acl.ou-gplink','acl.gmsa','acl.laps','acl.gpo','acl.dns-admin'],
     superseded:[],
-    canonicalAdvanced:['acl.shadow-credentials','acl.group-control','acl.computer-control','acl.user-control','acl.ou-control','acl.gmsa','acl.gpo']
+    canonicalAdvanced:['acl.group-control','acl.computer-control','acl.user-control','acl.ou-control','acl.gpo']
   }
 };
 })(typeof window!=='undefined'?window:globalThis);
