@@ -4,6 +4,20 @@ This file is the release-history source for Obol. Future build work should revie
 
 The README is intentionally reserved for current project purpose, architecture, permanent requirements, a compact summary of only the latest three releases, and forward priorities.
 
+## v7.3 — MITM / relay source-depth completion
+
+- Atomized the pinned `mitm.md` methodology family into ten meaningful source-fidelity units spanning credential/hash listening, legacy MS08-068 self-relay, NTLM relay to LDAP(S), SMB, HTTP, MSSQL, and NETLOGON/DCSync, plus Kerberos relay to HTTP/AD CS, SMB, and LDAP(S).
+- Modeled nine units end to end and explicitly superseded the obsolete MS08-068 self-relay branch as a preferred modern workflow instead of silently dropping the source node or adding an obsolete exploit-first operator card.
+- Reused mature unsigned-SMB NTLM relay, Kerberos relay, ESC8, and DCSync owners where they already satisfied the operator contract; added dedicated v7.3 owners for listener Evidence, LDAP(S), HTTP, MSSQL, and the retained legacy NETLOGON relay route.
+- Added `data/source-delivery-v7.3.js` to reconcile the frozen NTLM-relay parent only after all six NTLM subordinate units are terminal and fidelity-complete.
+- Preserved strict separation between listener startup, inbound authentication, relay authentication, directory/service mutation, credential/hash/certificate/ticket material, authenticated access, execution, administrator/SYSTEM access, privilege, and cleanup.
+- Reconciled `mitm.listen` and `mitm.ntlm-relay` from the frozen v6.2 partial baseline while retaining `mitm.kerberos-relay` as the historical v6.0 canonical completion it already was.
+- Raised canonical methodology from **107 implemented / 20 partial / 0 gaps / 0 stale** to **109 implemented / 18 partial / 0 gaps / 0 stale**, **86% fully implemented**, and **100% represented**.
+- Expanded source inventory from **3/17** to **4/17** methodology files atomized, from **14/34** to **16/34** frozen partial baselines decomposed, and from **41/41** to **51/51** currently inventoried atomic units fidelity-complete.
+- Reduced the live Build Next queue from **20** to **18** broad source-inventory/decomposition items, moving the active priority into `authenticated.md` with zero implemented-quality, mapped-delivery, canonical-gap, or inventoried-fidelity debt.
+- Advanced the stable current projection through `C.projectModel73(...)`, `C.currentProjectModel(...)`, and `C.currentNorthStarDashboard(...)`, retained the overview-first Dashboard owner, and added no no-op Dashboard metadata layer.
+- Added v7.3 browser/runtime wiring, MITM-specific terminal Evidence interpretation, current-project documentation, README/North Star synchronization, source-wave UI summary, sanitized-export version migration, future-safe v7.2 regression coverage, and a dedicated v7.3 regression suite under the exact-head release workflow.
+
 ## v7.2 — ACL / ACE source-depth completion
 
 - Atomized the pinned `acl.md` methodology family into sixteen meaningful source-fidelity units spanning DCSync, Shadow Credentials, group control, computer RBCD/Key Credential control, user password/SPN/Key Credential/logon-script control, OU inheritance/GPO links, gMSA, LAPS, GPO control, and DNSAdmins.
@@ -62,220 +76,118 @@ The README is intentionally reserved for current project purpose, architecture, 
 ## v6.8 — ESC4 and ESC7 source-fidelity delivery
 
 - Consumed the next three live North Star Build Next items after v6.7: ESC4 writable certificate-template ACL, ESC7 Manage CA officer transition, and ESC7 Manage Certificates enable / request / issue / retrieve.
-- Added dedicated owners `adcs-esc4-68`, `adcs-esc7-manage-ca-68`, and `adcs-esc7-manage-cert-68` with pinned Orange provenance, current Certipy operator surfaces, Kali/Windows execution context, semantic controls, conservative Evidence profiles, Next Steps transitions, cleanup/restoration, and reporting contracts.
-- Modernized the pinned Orange ESC4 switches to current Certipy template-management semantics while preserving the source technique: save the pre-test template configuration, apply the reviewed ESC1-compatible configuration, route explicit mutation proof into the existing ESC1 owner, and restore the exact saved configuration as separately evidenced cleanup.
-- Modeled ESC7 Manage CA as a distinct certificate-officer role transition, with explicit add/remove proof and no certificate, access, or privilege inference from role assignment alone.
-- Modeled ESC7 Manage Certificates as a staged workflow that keeps template publication, a denied request with preserved request ID/private key, request issuance, certificate retrieval, and conditional cleanup as separate proof states.
-- Reconciled `adcs.template-misconfig` from partial to implemented only after all six inventoried template units became fidelity-complete, and reconciled `adcs.acl-misconfig` only after all three inventoried ACL units became fidelity-complete.
-- Raised canonical methodology from **95 implemented / 32 partial / 0 gaps / 0 stale** to **97 implemented / 30 partial / 0 gaps / 0 stale**, **76% fully implemented**, and **100% represented**, while preserving the frozen 34-section v6.2 source-depth denominator.
-- Advanced atomic source fidelity from **8/19** to **11/19** complete, leaving **8** already-inventoried AD CS audits followed by **27** source-inventory/decomposition items for a **35-item** Build Next queue. ESC5 becomes the next live item.
-- Added `C.currentProjectModel(...)` as the stable non-versioned current project-status pointer so README synchronization, release-quality checks, Dashboard consumers, and future tooling no longer need to hard-code the newest versioned adapter name.
-- Made the v6.7 title/tagline UI observer future-safe so later releases can own version hygiene without historical overlays fighting the current release.
-- Added v6.8 browser/runtime wiring, Intake interpretation, current-project documentation, README synchronization, future-safe v6.7 regression coverage, and a dedicated v6.8 regression suite while preserving the exact-head release workflow.
+- Added dedicated v6.8 owners `adcs-esc4-68`, `adcs-esc7-manage-ca-68`, and `adcs-esc7-manage-cert-68` with current Certipy operator surfaces, explicit execution context, semantic controls, conservative Evidence profiles, Next Steps transitions, cleanup/restoration, and reporting contracts.
+- Reconciled `adcs.template-misconfig` and `adcs.acl-misconfig` only after their inventoried subordinate source units became fidelity-complete.
+- Raised canonical methodology to **97 implemented / 30 partial / 0 gaps / 0 stale**, **76% fully implemented**, and **100% represented**.
+- Advanced atomic source fidelity from **8/19** to **11/19** complete and added stable current project pointers through `C.currentProjectModel(...)`.
+- Added v6.8 browser/runtime wiring, Intake interpretation, current-project documentation, README synchronization, future-safe v6.7 regression coverage, and a dedicated v6.8 regression suite.
 
 ## v6.7 — ESC13 and ESC15 source-fidelity delivery
 
-- Resumed the live North Star Build Next queue after v6.6 architecture consolidation and consumed the next three already-inventoried AD CS atomic source-fidelity items: ESC13 issuance-policy/group-link template abuse, ESC15 Client Authentication application-policy injection, and ESC15 Certificate Request Agent application-policy injection.
-- Added dedicated owners `adcs-esc13-67`, `adcs-esc15-schannel-67`, and `adcs-esc15-agent-67` with explicit source provenance, Kali/Windows execution context where the pinned source provides both, semantic command controls, conservative Evidence profiles, Next Steps transitions, and reporting contracts.
-- Preserved the pinned 127-section canonical baseline at **95 implemented / 32 partial / 0 gaps / 0 stale**, **75% fully implemented**, and **100% represented**. The broad `adcs.template-misconfig` parent remains partial because additional atomic template branches are still pending.
-- Advanced atomic source fidelity from **5/19** to **8/19** complete while preserving **1/17 methodology files atomized** and **7/34 frozen partial baselines decomposed**.
-- Reduced the synchronized Build Next queue from **41** to **38** items: **11 remaining atomic AD CS fidelity audits** followed by **27 source-inventory/decomposition items**, with zero implemented-quality repairs, zero mapped-delivery repairs, and zero canonical gaps.
-- Kept ESC13 certificate issuance below PKINIT success, authenticated service access, group membership, and privilege. Certificate/PFX material is a credential artifact only until later Evidence proves a stronger state.
-- Kept the ESC15 Client Authentication branch explicitly Schannel-scoped and below successful Schannel service access; application-policy injection is the maneuver itself rather than a hidden optional switch.
-- Kept the ESC15 Certificate Request Agent branch as an intermediate enrollment-agent artifact that routes to the existing ESC3 on-behalf-of workflow without claiming the target identity, access, or privilege.
-- Advanced the consolidated current project projection through `C.projectModel67(...)`, preserving the overview-first v6.6 Dashboard shell rather than creating another project-wide accounting surface.
-- Added v6.7 browser/runtime wiring, terminal Evidence interpretation, release documentation, README synchronization, release-quality current-model consumption, future-safe v6.6 compatibility coverage, and v6.7 regression tests.
+- Consumed the next three inventoried AD CS atomic source-fidelity items: ESC13 issuance-policy/group-link template abuse and both ESC15 application-policy injection variants.
+- Added dedicated v6.7 owners with pinned source provenance, Kali/Windows execution context where applicable, semantic controls, conservative Evidence profiles, Next Steps transitions, and reporting contracts.
+- Preserved the pinned 127-section canonical baseline at **95 implemented / 32 partial / 0 gaps / 0 stale**, **75% fully implemented**, and **100% represented** while advancing atomic fidelity from **5/19** to **8/19**.
+- Kept certificate/PFX material below authentication, access, group membership, privilege, and DCSync consequence.
+- Added v6.7 browser/runtime wiring, terminal Evidence interpretation, release documentation, README synchronization, future-safe v6.6 compatibility coverage, and v6.7 regression tests.
 
 ## v6.6 — architecture consolidation and project-status simplification
 
 - Established `C.projectModel66(...)` as the single current projection for canonical progress, source-depth/source-fidelity progress, quality debt, Build Next, recent release trend, and the next priority.
-- Added `data/project-model-v6.6.js` as the authoritative current release/project metadata owner and `tools/current-runtime.js` as the shared Node-side loader so repository tools no longer duplicate the current runtime load order.
-- Rebuilt the default North Star Dashboard around an immediate project overview: methodology completion, source-audit progress, quality debt, queue size, recent progress, and the next priority are visible without navigating a stack of diagnostic panels.
-- Preserved detailed project metrics, the atomic source-fidelity ledger, and the full Build Next queue behind explicit collapsed drill-downs rather than deleting engineering visibility.
-- Reorganized documentation so `README.md` is again a compact project entry point while `docs/ARCHITECTURE.md`, `docs/NORTH-STAR.md`, `docs/PROOF-CONTRACT.md`, `docs/ORANGE-SOURCE-DEPTH.md`, `BUILDING.md`, and this changelog each own a durable concern.
-- Updated README synchronization and release-quality validation to consume the consolidated current project model rather than parsing README text or maintaining independent current-count calculations.
-- Established a permanent consolidation rule: future release overlays should represent real behavior deltas, not become new owners of project-wide status; historical runtime layers are to be compacted incrementally behind regression-equivalent replacements rather than through a rewrite.
-- Deliberately preserved methodology and source-fidelity state at **95 implemented / 32 partial / 0 gaps / 0 stale**, **75% fully implemented**, **100% represented**, **1/17 source files atomized**, **7/34 frozen partial baselines decomposed**, and **5/19 inventoried atomic units fidelity-complete**.
-- Preserved the **41-item** Build Next queue, including **14 atomic source-fidelity audits** and **27 source-inventory/decomposition items**, with zero implemented-quality repairs, zero mapped-delivery repairs, and zero canonical gaps.
+- Added `data/project-model-v6.6.js` as the authoritative current release/project metadata owner and `tools/current-runtime.js` as the shared Node-side loader.
+- Rebuilt the default North Star Dashboard around an immediate project overview while preserving detailed metrics, the atomic ledger, and full Build Next queue behind drill-downs.
+- Reorganized documentation so `README.md`, the architecture/proof/source-depth documents, `BUILDING.md`, and this changelog each own a durable concern.
+- Preserved methodology and source-fidelity state at **95 implemented / 32 partial / 0 gaps / 0 stale**, **75% fully implemented**, **100% represented**, **1/17 source files atomized**, **7/34 frozen partial baselines decomposed**, and **5/19 inventoried atomic units fidelity-complete**.
 - Kept browser-local workspace migration, human-run command behavior, conservative Evidence/proof boundaries, Next Steps semantics, report lineage, sanitized export, and the exact-head tiered CI contract unchanged.
 
 ## v6.5 — first AD CS atomic source-fidelity delivery wave
 
-- Consumed the first five atomic source-fidelity items from the synchronized v6.4 Build Next queue: AD CS enumeration/routing, ESC8 Web Enrollment relay, ESC1 enrollee-supplied identity, ESC2 Any Purpose/SubCA routing, and ESC3 enrollment-agent/on-behalf-of enrollment.
-- Added dedicated v6.5 AD CS owners and refined the existing authenticated enumeration owner with explicit semantic command controls, Kali/Windows execution-side metadata, source provenance, Evidence profiles, reporting contracts, and bounded failure semantics.
-- Added `data/source-delivery-v6.5.js` to finish the operator-side contract for the wave, including Certify/certutil/ldeep enumeration alternatives, an explicit ESC3 enrollment-agent certificate stage, and source-depth completion markers for the exhausted enumeration and Web Enrollment parents.
-- Preserved conservative proof boundaries: enumeration routes only from explicit CA/template/endpoint/ESC observations; relay startup is not issuance; certificate/PFX output is credential material only; ESC2 agent material is not ESC3 target identity; certificate authentication does not silently become administrator or SYSTEM access.
-- Moved only the two fully exhausted broad canonical AD CS parents, `adcs.enumeration` and `adcs.web-enrollment`, from partial to implemented. The broader template-misconfiguration parent remains partial because additional atomized branches remain open.
-- Raised canonical methodology from **93 implemented / 34 partial / 0 gaps / 0 stale** to **95 implemented / 32 partial / 0 gaps / 0 stale**, **75% fully implemented**, and **100% represented**.
-- Advanced atomic source fidelity from **0/19** to **5/19** complete while preserving **1/17 methodology files atomized**, **7/34 frozen partial baselines decomposed**, and the unfinished denominators on the North Star Dashboard.
-- Reduced synchronized Build Next from 46 to **41 items**: **14 remaining atomic AD CS fidelity audits** plus **27 source-inventory/decomposition items**, with zero implemented-quality repairs, zero mapped-delivery repairs, and zero canonical gaps.
-- Extended the North Star Dashboard with a compact v6.5 delivery-wave summary while retaining the v6.4 atomic ledger and requirement matrix as the detailed source-fidelity owner.
-- Wired v6.5 through browser runtime, Intake, state migration/sanitized export, README queue generation, release documentation, CSS/UI, and current-release regression coverage.
-- Kept the tiered smoke / preflight / `[release-final]` CI contract, release-quality invariant, exact-head merge-readiness rule, and historical-test future-safety validation.
+- Consumed the first five atomic source-fidelity items: AD CS enumeration/routing, ESC8, ESC1, ESC2, and ESC3.
+- Added dedicated AD CS owners and source-delivery reconciliation with explicit execution context, semantic controls, conservative Evidence profiles, reporting contracts, and source provenance.
+- Moved only the exhausted `adcs.enumeration` and `adcs.web-enrollment` parents to implemented while keeping broader template misconfiguration partial.
+- Raised canonical methodology to **95 implemented / 32 partial / 0 gaps / 0 stale**, **75% fully implemented**, and **100% represented**.
+- Advanced atomic source fidelity from **0/19** to **5/19** and reduced Build Next to **41** items.
+- Wired v6.5 through browser runtime, Intake, state migration/sanitized export, README generation, release documentation, CSS/UI, and regression coverage.
 
 ## v6.4 — atomic Orange source-fidelity accounting
 
-- Preserved the canonical methodology at **93 implemented / 34 partial / 0 gaps / 0 stale**, **73% fully implemented**, and **100% represented** while adding a deeper denominator rather than inflating canonical completion.
+- Preserved canonical methodology at **93 implemented / 34 partial / 0 gaps / 0 stale**, **73% fully implemented**, and **100% represented** while adding a deeper denominator.
 - Added `data/orange-fidelity-v6.4.js`, a machine-readable atomic source-fidelity ledger tied to the pinned Orange 2025.03 commit and source-file hashes.
-- Atomized `adcs.md` first, decomposing its seven broad partial canonical parents into **19 meaningful source units** spanning AD CS enumeration plus ESC1, ESC2/3, ESC4, ESC5, ESC6, ESC7, ESC8, ESC9/10, ESC11, ESC13, ESC14, ESC15, and meaningful source variants.
-- Added explicit source paths, branch conditions, upstream tool inventories, cross-methodology transitions, existing broad Obol owner mappings, cleanup obligations, audit state, and per-requirement review dimensions to the atomic ledger.
-- Added separate North Star Dashboard metrics for methodology files atomized, frozen v6.2 partial baselines decomposed, broad-owner coverage, atomic fidelity completion, and the North Star requirement matrix.
-- Added a searchable/filterable AD CS source-fidelity drill-down so broad ownership can no longer visually masquerade as complete handling of each subordinate branch.
-- Established the initial fidelity baseline at **1/17 methodology files atomized**, **7/34 frozen partial baselines decomposed**, and **0/19 atomic units fidelity-complete**; all 19 currently have broad owners but remain `needs-audit` until the delivery dimensions and terminal disposition are complete.
-- Extended Build Next through `C.buildNext64(lanes)`: implemented-quality repairs remain first, mapped-delivery repairs second, canonical gaps third, atomic source-fidelity audits fourth, and source-depth decomposition of remaining broad partials fifth.
-- Updated `docs/ORANGE-SOURCE-DEPTH.md` and `BUILDING.md` so future releases must preserve atomic units once created and cannot claim Orange exhaustion from canonical representation, broad card mappings, or terminal labels alone.
-- Updated README synchronization to publish the atomic fidelity and source-inventory queue from the same live repository model as North Star Dashboard.
-- Kept source-fidelity accounting as project metadata only; it does not create access, credentials, privilege, execution, exploitation, or compromise facts.
-- Added v6.4 regression coverage for canonical/fidelity denominator separation, AD CS atomization, requirement-matrix accounting, Build Next ordering, release wiring, README synchronization, and sanitized-export compatibility.
-- Kept the tiered smoke / preflight / `[release-final]` CI contract, release-quality invariant, exact-head merge-readiness rule, and historical-test future-safety validation.
+- Atomized `adcs.md` first into **19 meaningful source units** spanning enumeration and the major ESC branches and variants.
+- Added source paths, branch conditions, tool inventories, transitions, owner mappings, cleanup obligations, audit state, and per-requirement review dimensions.
+- Established the initial fidelity baseline at **1/17 source files atomized**, **7/34 frozen partial baselines decomposed**, and **0/19 atomic units fidelity-complete**.
+- Extended Build Next with atomic source-fidelity audits ahead of remaining source-depth decomposition and kept project/source accounting separate from engagement facts.
 
 ## v6.2 — canonical completion and Orange source-depth phase
 
-- Consumed the final canonical gap only after confirming zero implemented-quality and zero mapped-delivery debt.
-- Completed `trusts.parent-child` with a dedicated `trust-parent-child62` workflow, bringing the pinned 127-section Orange 2025.03 denominator to **93 implemented / 34 partial / 0 gaps / 0 stale**, **73% fully implemented**, and **100% represented**.
-- Modeled the upstream parent-to-child direction explicitly instead of leaving the source's "same as Child to parent" note implicit.
-- Kept trust relationship context, domain SID context, recovered trust secret material, saved Kerberos ticket material, successful child-domain service access, and privilege as separate proof boundaries.
-- Preserved explicit Kali/Windows execution metadata, copy/paste Evidence interpretation, decision-path placement, reporting traceability, and browser-local state compatibility for the new trust owner.
-- Documented the critical distinction between **canonical breadth** and **Orange source exhaustion**. Zero canonical gaps means every normalized section is represented; it does not mean every useful subordinate branch, tool choice, prerequisite, decision edge, failure state, artifact transition, cleanup obligation, GUI control, Evidence signature, Next Steps transition, or reporting implication has been mined.
-- Froze the **34 partial canonical sections** at the v6.2 boundary as a separate Orange source-depth audit denominator.
-- Added `docs/ORANGE-SOURCE-DEPTH.md` with the permanent source-depth plan and explicit audit outcomes: `needs-audit`, `modeled`, `superseded`, and `rejected`.
-- Extended North Star Dashboard with separate canonical-representation and Orange source-depth metrics so 100% representation cannot be mistaken for 100% useful-source extraction.
-- Extended Build Next through `C.buildNext62(lanes)`: implemented-quality repairs remain first, mapped-delivery repairs second, canonical gaps third, and source-depth audits become the active fourth phase once the first three are zero.
-- Updated README synchronization so the GitHub-readable Build Next snapshot reports the source-depth phase while the Dashboard remains the authoritative prioritized drill-down.
-- Updated `BUILDING.md` so future agents must review the source-depth plan and preserve explicit modeled / superseded / rejected outcomes rather than silently dropping baseline items when partial sections evolve.
-- Kept the tiered smoke / preflight / `[release-final]` CI contract, release-quality invariant, exact-head merge-readiness rule, and historical-test future-safety validation.
+- Completed the final canonical gap, `trusts.parent-child`, bringing the 127-section denominator to **93 implemented / 34 partial / 0 gaps / 0 stale**, **73% fully implemented**, and **100% represented**.
+- Froze the **34 partial canonical sections** at the v6.2 boundary as a persistent source-depth audit denominator.
+- Added the durable source-depth plan and explicit `needs-audit`, `modeled`, `superseded`, and `rejected` outcomes.
+- Extended North Star Dashboard and Build Next with separate source-depth accounting so canonical representation cannot be confused with source exhaustion.
 
 ## v6.1 — PXE, TimeRoast, and trust-path completion wave
 
-- Consumed the next five items from the synchronized v6.0 Build Next queue after confirming **0 implemented-quality repairs** and **0 mapped-delivery repairs**.
 - Completed PXE / NAA credential discovery, TimeRoasting, the SCCM PXE / NAA recovery mapping, child-to-parent trust paths, and external / forest trust paths.
-- Added delivery-ready owners `pxe-naa61`, `timeroast61`, `trust-child-parent61`, and `trust-external61`; the shared PXE owner intentionally covers both no-credential PXE and SCCM PXE/NAA canonical sections instead of duplicating operator workflows.
-- Kept PXE discovery, protected-PXE hash material, cracked secrets, and explicit Network Access Account username/password output as separate proof boundaries.
-- Kept TimeRoast/SNTP-MS hash collection below plaintext credentials and authenticated access; a cracked result remains credential material until separately validated.
-- Kept trust relationship context, recovered trust/krbtgt material, saved Kerberos ticket artifacts, and explicit cross-domain service access as separate proof boundaries.
-- Moved five canonical gaps to implemented, raising strict methodology from **87 implemented / 34 partial / 6 gaps / 0 stale** to **92 implemented / 34 partial / 1 gap / 0 stale**.
-- Raised fully implemented coverage from **69% to 72%** and represented coverage from **95% to 99%**, preserving the pinned 127-section denominator and Orange 2025.03 upstream commit.
-- Left **Parent-to-child trust paths** as the only remaining canonical gap in the synchronized Build Next queue.
-- Extended the North Star Dashboard, state coercion, sanitized-export compatibility, terminal Evidence interpretation, live UI/version wiring, release notes, README queue generation, and regression coverage through v6.1.
-- Retained the tiered smoke / preflight / `[release-final]` CI contract and historical-test future-safety gate introduced in v6.0.
+- Kept hash material, cracked secrets, trust material, forged ticket artifacts, cross-domain service access, and privilege as separate proof boundaries.
+- Raised strict methodology to **92 implemented / 34 partial / 1 gap / 0 stale**, **72% fully implemented**, and **99% represented**.
 
 ## v6.0 — canonical quick-win and relay completion wave
 
-- Consumed the next five items from the synchronized v5.9 Build Next queue after confirming **0 implemented-quality repairs** and **0 mapped-delivery repairs**.
 - Completed Java RMI, Log4Shell, Tomcat / JBoss manager, Veeam quick-win, and the separate MITM Kerberos relay canonical branch.
-- Added delivery-ready owners `java-rmi60`, `log4shell60`, `tomcat-jboss60`, `veeam60`, and `kerberos-relay60` with explicit execution-side metadata, conservative copy/paste Evidence profiles, decision-path placement, reporting traceability, and bounded proof semantics.
-- Java RMI keeps registry discovery, vulnerability output, and an explicitly opened remote session as separate boundaries.
-- Log4Shell treats a sent JNDI string as inconclusive; only an explicit CVE-2021-44228 result or independently observed unique callback supports the finding.
-- Tomcat / JBoss keeps console reachability, authenticated manager access, deployment, and remote execution separate.
-- Veeam keeps product/service context, CVE evidence, reusable credential material, and execution as separate proof boundaries.
-- MITM Kerberos relay keeps listener startup, successful relay, certificate/ticket material, and privilege separate.
-- Moved five canonical gaps to implemented, raising strict methodology from **82 implemented / 34 partial / 11 gaps / 0 stale** to **87 implemented / 34 partial / 6 gaps / 0 stale**.
-- Raised fully implemented coverage from **65% to 69%** and represented coverage from **91% to 95%**, preserving the pinned 127-section denominator and Orange 2025.03 upstream commit.
-- Extended the North Star Dashboard through v6.0 with the new canonical wave, live Build Next state, and retained release-quality visibility.
-- Extended README Build Next generation through v6.0 and retained CI-enforced README/Dashboard queue synchronization.
-- Added v6.0 state coercion, sanitized-export compatibility, terminal Evidence interpretation, live UI/version wiring, release notes, and regression coverage.
-- Kept the v5.9 historical regression suite future-safe as v6.0 becomes the current release.
+- Added delivery-ready owners with explicit execution metadata, conservative Evidence profiles, decision-path placement, reporting traceability, and bounded proof semantics.
+- Raised strict methodology to **87 implemented / 34 partial / 6 gaps / 0 stale**, **69% fully implemented**, and **95% represented**.
 
 ## v5.9 - generic release-quality gate and canonical gap wave
 
-- Made `BUILDING.md` a mandatory release-workflow companion and aligned the README build-agent checklist with one visible draft `release/obol-vX.Y` PR, incremental coherent commits, acceptable intermediate red checks while Draft, and exact-head green merge readiness.
-- Added `tools/validate-release-quality.js`, which recalculates the live Build Next model and fails whenever implemented-quality or mapped-delivery debt is nonzero.
-- Wired the release-quality gate into `tools/release-preflight.js` and the protected full `test` job so canonical-gap expansion cannot ship while higher-priority delivery debt remains.
-- Started from a synchronized v5.8 queue with **0 implemented-quality repairs**, **0 mapped-delivery repairs**, and **16 canonical gaps**.
-- Completed the next five canonical gaps: UAC bypass, EternalBlue / MS17-010, Exchange ProxyShell quick-win, GLPI quick-win, and Java deserialization service validation.
-- Added dedicated delivery-ready owners `uac-bypass59`, `eternalblue59`, `exchange-quickwin59`, `glpi-quickwin59`, and `java-deser59` with explicit execution-side metadata, copy/paste Evidence profiles, decision-path placement, reporting traceability, and bounded proof semantics.
-- UAC bypass requires independent High/System integrity evidence; `fodhelper.exe` startup is not elevation proof.
-- EternalBlue keeps vulnerability detection, opened-session execution, and explicit SYSTEM identity as separate proof boundaries.
-- Exchange and GLPI detection remains below privilege; remote execution requires explicit shell/command evidence.
-- Java deserialization requires the unique `OBOL_JAVA_DESER_OK` callback before remote execution is recorded.
-- Moved five canonical gaps to implemented, raising strict methodology from **77 implemented / 34 partial / 16 gaps / 0 stale** to **82 implemented / 34 partial / 11 gaps / 0 stale**.
-- Raised fully implemented coverage from **61% to 65%** and represented coverage from **87% to 91%**, preserving the pinned 127-section denominator and Orange 2025.03 upstream commit.
-- Extended the North Star Dashboard through v5.9 with canonical-progress and release-quality visibility.
-- Extended README Build Next generation through v5.9 and retained CI-enforced README/Dashboard queue synchronization.
-- Kept the v5.8 historical regression suite future-safe when a later release becomes current.
+- Added the generic release-quality gate and required zero implemented-quality / mapped-delivery debt before canonical expansion.
+- Completed UAC bypass, EternalBlue, Exchange ProxyShell, GLPI, and Java deserialization canonical gaps with bounded Evidence semantics.
+- Raised strict methodology to **82 implemented / 34 partial / 11 gaps / 0 stale**, **65% fully implemented**, and **91% represented**.
 
 ## v5.8 — canonical gap wave and release-contract enforcement
 
-- Consumed the next five items from the synchronized v5.7 Build Next queue: PrintNightmare, PrivExchange, ProxyNotShell, AppLocker bypass, and Kerberos relay.
-- Added delivery-ready owners with explicit command contracts, Kali/Windows/target execution metadata, conservative Evidence profiles, decision-path placement, reporting traceability, and bounded negative-result semantics.
-- PrintNightmare is detection-first and does not convert vulnerability or reviewed driver-load evidence into SYSTEM.
-- PrivExchange stops at confirmed HTTP coercion and leaves relay success and privilege to their own proof boundaries.
-- ProxyNotShell uses a minimal `whoami` validation and only records SYSTEM when explicit remote identity output proves it.
-- AppLocker separates effective-policy discovery from a benign explicit bypass marker and never treats bypass as privilege.
-- Kerberos relay separates relay/control, service-ticket material, and post-transition SYSTEM identity proof.
-- Moved five canonical gaps to implemented, raising strict methodology from **72 implemented / 34 partial / 21 gaps / 0 stale** to **77 implemented / 34 partial / 16 gaps / 0 stale**.
-- Raised fully implemented coverage from **57% to 61%** and represented coverage from **83% to 87%**, preserving the pinned 127-section denominator.
-- Added `tools/validate-release-pr.js`. Release PRs must use `release/obol-vX.Y`, include a substantive description with required release sections, and pass the required `test` check.
-- The v5.8 regression suite exercises the release PR validator, so an empty description or a duplicate-style `build/obol-vX.Y` head makes the required PR test fail.
-- Extended the North Star Dashboard and README Build Next generator through v5.8 and retained CI-enforced README/Dashboard synchronization.
+- Completed PrintNightmare, PrivExchange, ProxyNotShell, AppLocker bypass, and Kerberos relay.
+- Added `tools/validate-release-pr.js` and the release-PR metadata/description contract.
+- Raised strict methodology to **77 implemented / 34 partial / 16 gaps / 0 stale**, **61% fully implemented**, and **87% represented**.
 
 ## v5.7 — highest-priority canonical gap completion wave
 
-- Consumed the synchronized v5.6 Build Next queue after implemented-quality debt and mapped-delivery debt had both reached zero.
-- Added delivery-ready owners for DNSAdmins plugin-DLL control, Entra ID / AD Connect discovery, Certifried, MS14-068, and noPac.
-- Added explicit Kali/Windows execution metadata, conservative Evidence profiles, decision-path placement, reporting traceability, and cleanup or negative-result semantics where applicable.
-- Kept proof boundaries narrow: DNS configuration is not SYSTEM, hybrid-identity discovery is not credential recovery, certificate issuance is not domain-admin access, legacy OS context is not MS14-068 proof, and noPac ticket material is not administrator access.
-- Moved five canonical gaps to implemented, raising strict methodology from **67 implemented / 34 partial / 26 gaps / 0 stale** to **72 implemented / 34 partial / 21 gaps / 0 stale**.
-- Raised fully implemented coverage from **53% to 57%** and represented coverage from **80% to 83%** while preserving the pinned 127-section denominator.
-- Extended the North Star Dashboard and README Build Next generator through v5.7 and retained CI-enforced README/Dashboard synchronization.
-- Added v5.7 state coercion, sanitized-export compatibility, UI wiring, release notes, Evidence regressions, and historical-test future-safety for the v5.6 release-wiring check.
+- Added delivery-ready owners for DNSAdmins, Entra ID / AD Connect discovery, Certifried, MS14-068, and noPac with bounded proof semantics.
+- Raised strict methodology to **72 implemented / 34 partial / 21 gaps / 0 stale**, **57% fully implemented**, and **83% represented**.
 
 ## v5.6 — mapped-delivery cleanup and canonical completion wave
 
-- Consumed the synchronized v5.5 Build Next queue rather than maintaining a separate release backlog.
-- Added explicit v5.6 Evidence profiles to every remaining mapped workflow that lacked one, with technique-specific proof boundaries for Shadow Credentials, NTLM relay, MachineAccountQuota, S4U/getST, MySQL, PostgreSQL, web triage, AD ACL enumeration, PowerShell/.NET enumeration, PowerView, Zerologon detection, ticket reuse, and gMSA reads.
-- Added a conservative no-fact fallback profile for residual mapped workflows so expected output can close delivery-contract debt without manufacturing access, privilege, credentials, or compromise facts.
-- Audited the remaining execution-side metadata gaps and made Kali/Windows command context explicit.
-- Cleared mapped-workflow delivery debt while preserving zero implemented-quality debt.
+- Cleared mapped-workflow delivery debt by adding explicit Evidence and execution contracts to remaining mapped workflows.
 - Moved Shadow Credentials, gMSA password retrieval, S4U2Self/S4U service-ticket use, NTLM relay, and weak-web-service triage from partial to implemented.
-- Raised strict methodology to **67 implemented / 34 partial / 26 gaps / 0 stale**, **53% fully implemented**, **80% represented**.
-- Strengthened `tools/release-preflight.js` so the README generator must be wired through the current release and historical tests cannot hard-code the live README release token.
+- Raised strict methodology to **67 implemented / 34 partial / 26 gaps / 0 stale**, **53% fully implemented**, and **80% represented**.
 
 ## v5.5 — implemented-quality cleanup and canonical completion wave
 
-- Consumed the CI-synchronized v5.4 Build Next queue and cleared the implemented-canonical quality-debt class before expanding methodology completion.
-- Added explicit Evidence and execution contracts to the shared owners serving the remaining implemented-quality rows: Nmap, anonymous LDAP, username enumeration, AS-REP roasting, Kerberoasting, password spraying, and BloodHound collection.
-- Added dedicated owners for authenticated AD CS enumeration, Kerberos delegation discovery, domain DPAPI backup-key collection, LSASS credential extraction, and token/session impersonation.
-- Kept collection/discovery/material/privilege boundaries conservative, including explicit SYSTEM verification after token transition.
-- Raised strict methodology to **62 implemented / 39 partial / 26 gaps / 0 stale**, **49% fully implemented**, **80% represented**.
-- Added release-process hardening: a reusable release preflight, release-branch preflight-only Actions, full historical regression on non-draft PRs/main, workflow concurrency cancellation, and future-safe historical README assertions.
+- Cleared implemented-canonical quality debt and added dedicated owners for authenticated AD CS enumeration, delegation discovery, DPAPI backup-key collection, LSASS extraction, and token/session impersonation.
+- Raised strict methodology to **62 implemented / 39 partial / 26 gaps / 0 stale**, **49% fully implemented**, and **80% represented**.
 
 ## v5.4 — synchronized README agenda and persistence completion wave
 
-- Added `tools/sync-readme-build-next.js` so the README Build next block is generated from the same live `C.buildNext52(lanes)` model used by the North Star Dashboard.
-- Added `--write`, `--check`, and `--print` modes plus CI enforcement.
+- Added `tools/sync-readme-build-next.js` so README Build Next is generated from the same live model used by the North Star Dashboard.
 - Completed dedicated lifecycle owners for Skeleton Key, Custom SSP/memssp, Diamond Ticket, Sapphire Ticket, and DCShadow.
-- Kept persistence proof conservative: module startup text is not persistence proof, forged ticket material is not privilege, and DCShadow requires explicit directory readback and restoration semantics.
-- Raised strict methodology to **57 implemented / 44 partial / 26 gaps / 0 stale**, **45% fully implemented**, **80% represented**.
-- Corrected Dashboard milestone composition so historical releases retain their historical counts.
+- Raised strict methodology to **57 implemented / 44 partial / 26 gaps / 0 stale**, **45% fully implemented**, and **80% represented**.
 
 ## v5.3 — implemented-quality delivery repair wave
 
-- Followed the v5.2 Build Next priority order by repairing existing implemented methodology before increasing canonical completion.
-- Added explicit Evidence profiles for Anonymous SMB Enumeration, DNS zone transfer, Kerberos ticket hygiene, LAPS reads, Windows local enumeration, SeImpersonatePrivilege verification, DPAPI credential recovery, and stored-credential hunting.
-- Added audited execution-side metadata to the remaining commands on those workflows.
-- Kept LAPS/DPAPI/stored-credential discovery below access, ticket state below privilege, and SeImpersonatePrivilege below SYSTEM without explicit identity output.
-- Preserved the strict baseline at **52 implemented / 49 partial / 26 gaps / 0 stale**, **41% fully implemented**, **80% represented**.
+- Added explicit Evidence profiles and execution metadata to existing implemented workflows including SMB, DNS, ticket hygiene, LAPS, Windows enumeration, SeImpersonate, DPAPI, and stored-credential hunting.
+- Preserved the strict baseline at **52 implemented / 49 partial / 26 gaps / 0 stale**, **41% fully implemented**, and **80% represented**.
 
 ## v5.2 — delivery-ready canonical accounting and build-next queue
 
-- Added delivery-ready canonical accounting over the existing 127-section ledger without rewriting canonical status.
-- A represented section became delivery-ready only when at least one mapped workflow satisfied Run, explicit Evidence, explicit execution-side metadata, and reporting traceability.
-- Added a prioritized Build Next queue ordered as implemented-quality debt, mapped-delivery debt, then canonical gaps.
-- Added direct source-file drill-down from Build Next into Methodology while preserving the five-item primary navigation.
-- Restructured README To-do content into North Star objectives, the latest three releases, and explicit next-build priorities.
-- Preserved **52 / 49 / 26 / 0**, **41% fully implemented**, **80% represented**.
+- Added delivery-ready accounting over the 127-section ledger and a prioritized Build Next queue ordered as implemented-quality debt, mapped-delivery debt, then canonical gaps.
+- Preserved **52 / 49 / 26 / 0**, **41% fully implemented**, and **80% represented**.
 
 ## v5.1 — delivery-debt drill-down and dashboard quality gates
 
-- Added mapped-workflow delivery-debt accounting to the dedicated North Star Dashboard.
-- Added searchable/filterable visibility for missing Run contracts, Evidence profiles, explicit execution-side metadata, and reporting contracts.
-- Kept delivery debt diagnostic only; it does not create facts, change applicability, or inflate methodology completion.
+- Added mapped-workflow delivery-debt accounting and searchable visibility for missing Run, Evidence, execution-side, and reporting contracts.
 - Preserved the five-item primary workflow and strict **52 / 49 / 26 / 0** baseline.
 
 ## v5.0 — dashboard IA, changelog separation, and UI hygiene
 
-- Moved full project-health reporting from Home into the dedicated **North Star Dashboard** under More.
+- Moved full project-health reporting from Home into the dedicated North Star Dashboard under More.
 - Kept Home limited to a compact completion/representation summary and dashboard link.
 - Added UI/UX policy accounting for five-item primary navigation, single-dashboard ownership, current-version contract, changelog ownership, and brand-surface policy.
 - Constrained Orange Cyber Defense branding to Dashboard and Home while retaining source provenance underneath neutral Methodology/Next Steps/Report surfaces.
@@ -328,7 +240,6 @@ The README is intentionally reserved for current project purpose, architecture, 
 - Reconciled the v4.2 canonical denominator against methodology already present in Obol.
 - Repaired the stale RBCD mapping and recognized existing DC identification, SCCM recon, GPP, MSSQL, trust, Golden Ticket, database, and other mature workflows.
 - Expanded the AD Hashcat reference and corrected NetNTLMv1 to mode 5500.
-- Added LM 3000, NTLM 1000, NetNTLMv2 5600, TGS RC4 13100, TGS AES128 19600, TGS AES256 19700, AS-REP 18200, MSCache2 2100, TimeRoast 31300, and explicit external-module semantics for SCCM PXE 19850.
 - Raised live coverage to **42 implemented / 39 partial / 46 gaps / 0 stale**, **33% fully implemented**, **64% represented**.
 
 ## v4.2 — canonical Orange 2025.03 snapshot
