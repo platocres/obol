@@ -4,9 +4,9 @@ Obol is a static, offline-capable study companion, methodology ledger, command-b
 
 Live site: `https://platocres.github.io/obol/`
 
-Current release: **v6.1**
+Current release: **v6.2**
 
-Release history belongs in [`CHANGELOG.md`](CHANGELOG.md). **Build agents must review this README, [`BUILDING.md`](BUILDING.md), and the changelog before changing architecture, methodology, Evidence behavior, reporting, CI, release workflow, or project metrics.** `BUILDING.md` owns the incremental draft-PR release policy and exact-head merge-readiness rules.
+Release history belongs in [`CHANGELOG.md`](CHANGELOG.md). **Build agents must review this README, [`BUILDING.md`](BUILDING.md), the changelog, and [`docs/ORANGE-SOURCE-DEPTH.md`](docs/ORANGE-SOURCE-DEPTH.md) before changing architecture, methodology, Evidence behavior, reporting, CI, release workflow, project metrics, or Orange depth accounting.** `BUILDING.md` owns the incremental draft-PR release policy and exact-head merge-readiness rules.
 
 ## Operating model
 
@@ -32,7 +32,7 @@ Primary navigation stays intentionally small:
 
 The **More** menu contains North Star Dashboard, Engagement Map, Methodology, Tool Library, Planned Work, Workspace Search, Evidence Lineage, Guide, and Workspace Data.
 
-The **North Star Dashboard** is the single in-app location for project-wide methodology, command UX, Evidence, execution-context, Next Steps mapping, tool-review, reporting, UI/UX, trend, backlog, delivery-debt, delivery-readiness, build-next, quality-repair, README queue-sync, canonical-progress, and release-contract metrics. Home may show a compact summary and link to it, but project-wide hard numbers belong on the Dashboard.
+The **North Star Dashboard** is the single in-app location for project-wide methodology, command UX, Evidence, execution-context, Next Steps mapping, tool-review, reporting, UI/UX, trend, backlog, delivery-debt, delivery-readiness, build-next, quality-repair, README queue-sync, canonical-progress, Orange source-depth, and release-contract metrics. Home may show a compact summary and link to it, but project-wide hard numbers belong on the Dashboard.
 
 ## Current canonical methodology status
 
@@ -40,20 +40,28 @@ The pinned 2025.03 Active Directory methodology denominator contains **127 canon
 
 Current live state:
 
-- **92 / 127 fully implemented**
+- **93 / 127 fully implemented**
 - **34 partial**
-- **1 gap**
+- **0 gaps**
 - **0 stale implemented mappings**
-- **72% fully implemented**
-- **99% represented**
+- **73% fully implemented**
+- **100% represented**
 
-These numbers are methodology accounting only. Parser coverage, reporting coverage, command controls, execution metadata, UI/UX health, delivery readiness, and quality-repair metrics have their own denominators on the North Star Dashboard and do not inflate methodology completion.
+These numbers are methodology accounting only. Parser coverage, reporting coverage, command controls, execution metadata, UI/UX health, delivery readiness, quality-repair metrics, and Orange source-depth accounting have their own denominators on the North Star Dashboard and do not inflate methodology completion.
 
 A canonical implemented or partial section is delivery-ready only when at least one tracked mapped workflow has a runnable command contract, an explicit copy/paste Evidence profile, explicit execution-side metadata, and reporting traceability.
 
-v6.1 consumes the next five canonical gaps from the synchronized v6.0 Build Next queue: PXE / NAA credential discovery, TimeRoasting, the SCCM PXE / NAA recovery mapping, child-to-parent trust paths, and external / forest trust paths. The shared PXE owner covers both canonical PXE entries without duplicating operator surfaces. Strict completion rises from 87/127 to 92/127 and canonical gaps fall from 6 to 1. The only remaining canonical gap is parent-to-child trust paths.
+v6.2 completes the only remaining canonical gap, parent-to-child trust paths. The pinned Orange source describes that direction as the same family of path as child-to-parent; Obol now models it explicitly with separate trust-context, secret-material, ticket-artifact, cross-domain-access, and privilege boundaries. Strict completion rises from 92/127 to 93/127 and represented coverage reaches 100%.
 
-The release-quality invariant introduced in v5.9 remains permanent. `tools/validate-release-quality.js` recalculates the live queue and blocks merge readiness whenever implemented-quality or mapped-delivery debt is nonzero. The gate runs in release preflight and the protected `test` job, so canonical expansion cannot ship while higher-priority delivery debt remains.
+### Canonical breadth is not source exhaustion
+
+**100% represented does not mean Obol has extracted 100% of the useful information in Orange.** The 127-section denominator is a normalized structural inventory. Broad canonical sections can contain subordinate variants, prerequisite distinctions, alternate tools, branch conditions, failure states, artifact handoffs, cleanup obligations, GUI-worthy controls, Evidence signatures, Next Steps transitions, and reporting implications that a broad card may only partially model.
+
+At the v6.2 boundary, the **34 partial canonical sections are frozen as a separate Orange source-depth audit baseline**. Future builds should mine those partials node by node and classify each baseline item as **modeled**, **superseded** by a better Obol path, or **rejected** with an explicit reason. Until all 34 baseline items have been reviewed, canonical breadth must not be described as Orange source exhaustion.
+
+The permanent plan and completion definition live in [`docs/ORANGE-SOURCE-DEPTH.md`](docs/ORANGE-SOURCE-DEPTH.md). North Star Dashboard owns the hard source-depth counts and prioritized audit queue. Once implemented-quality debt, mapped-delivery debt, and canonical gaps are zero, source-depth audits become the next Build Next priority.
+
+The release-quality invariant introduced in v5.9 remains permanent. `tools/validate-release-quality.js` recalculates the live queue and blocks merge readiness whenever implemented-quality or mapped-delivery debt is nonzero. The gate runs in release preflight and the protected `test` job, so methodology expansion cannot ship while higher-priority delivery debt remains.
 
 The release workflow is documented in [`BUILDING.md`](BUILDING.md): one `release/obol-vX.Y` branch, one visible draft PR, incremental coherent commits, lightweight smoke validation on ordinary pushes, explicit `[preflight]` validation for coherent release snapshots, `[release-final]` for the complete exact-head historical chain, and exact-final-head green validation before merge readiness. Normal documentation and maintenance PRs still receive regression coverage without being forced to impersonate a release PR.
 
@@ -77,6 +85,7 @@ The README/Dashboard backlog synchronization introduced in v5.4 remains permanen
 - PXE discovery is context only. Protected-PXE hash material and recovered NAA username/password material are separate facts.
 - TimeRoast collection produces offline SNTP-MS material; cracking it does not silently establish authenticated access.
 - Trust enumeration, recovered trust or krbtgt material, forged/saved Kerberos tickets, and successful cross-domain service access remain separate proof boundaries.
+- Parent-to-child trust context or ticket construction does not imply child-domain administrator or SYSTEM access; explicit service access and privilege proof remain separate.
 
 ## Command behavior contract
 
@@ -96,6 +105,7 @@ A fixed command is not automatically a UX defect. Single-purpose/native commands
 - Create infrastructure to keep up with how much of the Orange Cyber Defense mind map and its decision path and tools has been fully implemented and how much remains to be implemented within Obol.
 - Consider whether the tools from the Orange Cyber Defense mind map are actually the best, most user friendly tools and if they are not, add better tools to the path.
 - Make sure the Orange Defense Mindmap for 2025 is being fully implemented, gather data from it for use in this and future builds and improve upon it.
+- **Do not confuse normalized canonical representation with exhausting useful Orange source depth. Maintain the separate v6.2 source-depth baseline, mine every partial branch deeply, and require explicit modeled / superseded / rejected outcomes before claiming Orange is exhausted.**
 - Make sure the path considers whether a user is operating from Kali or from a Windows host on any given step of the path.
 - Make sure that the data being integrated from the Orange Cyber Defense mind map is improving "Next Steps" and that as users complete each step they are being properly led down the mind map's decision path.
 - Make sure that each tool for each step of the path is not only proper, but has the proper GUI based toggles to adjust commands and that OBOL is able to interpret copy/paste evidence from user terminals to improve its ability to determine next steps.
@@ -109,17 +119,17 @@ A fixed command is not automatically a UX defect. Single-purpose/native commands
 
 ### North Star objectives
 
-- Keep the pinned 2025.03 methodology denominator, source provenance, decision path, and tool review reproducible and visible from the single North Star Dashboard.
+- Keep the pinned 2025.03 methodology denominator, source provenance, decision path, tool review, and v6.2 source-depth baseline reproducible and visible from the single North Star Dashboard.
 - Make every represented workflow usable end to end: sensible command controls, explicit Kali/Windows execution context, conservative copy/paste Evidence, Next Steps integration, and reporting traceability.
-- Close canonical gaps without inflating completion from parser, UI, reporting, or metadata work alone.
+- Preserve zero canonical gaps while systematically converting useful partial-source depth into modeled, superseded, or explicitly rejected outcomes.
 - Prefer tools and command surfaces that are current, understandable, practical for OSCP-style labs, and better for the operator than blindly mirroring an upstream tool choice.
 - Preserve context isolation, proof boundaries, lineage, reachability, cleanup obligations, browser-local compatibility, and release-gate integrity while methodology depth increases.
 
 ### Recent changes
 
-- **v6.1** — completed PXE/NAA recovery, TimeRoasting, the SCCM PXE/NAA mapping, child-to-parent trust paths, and external/forest trust paths, raising strict completion from 69% to 72% and represented coverage from 95% to 99%; one canonical gap remains.
-- **v6.0** — completed Java RMI, Log4Shell, Tomcat / JBoss manager, Veeam quick-win, and MITM Kerberos relay, raising strict completion from 65% to 69% and represented coverage from 91% to 95%; also introduced tiered smoke / preflight / final CI and automatic historical-test future-safety validation to reduce noisy intermediate regression failures without weakening merge gates.
-- **v5.9** — made zero implemented-quality and mapped-delivery debt a generic release invariant, then completed UAC bypass, EternalBlue, Exchange ProxyShell, GLPI, and Java deserialization, raising strict completion from 61% to 65% and represented coverage from 87% to 91%.
+- **v6.2** — completed parent-to-child trust paths, reaching 100% canonical representation with 93/127 fully implemented and zero gaps; froze the 34 partial sections as a separate Orange source-depth baseline, documented the breadth-versus-depth problem and completion plan, and promoted source-depth audits into Dashboard/Build Next after higher-priority debt reaches zero.
+- **v6.1** — completed PXE/NAA recovery, TimeRoasting, the SCCM PXE/NAA mapping, child-to-parent trust paths, and external/forest trust paths, raising strict completion from 69% to 72% and represented coverage from 95% to 99%; one canonical gap remained.
+- **v6.0** — completed Java RMI, Log4Shell, Tomcat / JBoss manager, Veeam quick-win, and MITM Kerberos relay, raising strict completion from 65% to 69% and represented coverage from 91% to 95%; also introduced tiered smoke / preflight / final CI and automatic historical-test future-safety validation.
 
 ### Build next
 
@@ -128,11 +138,11 @@ The generated block below is the GitHub-readable agenda snapshot. **North Star D
 <!-- OBOL-BUILD-NEXT:START -->
 This block is generated from the same live repository state used by **North Star Dashboard → Build Next**. Do not edit the generated queue manually. The dashboard remains the authoritative full drill-down; this README snapshot is CI-enforced.
 
-**Current live queue:** 1 items — 0 implemented-quality repairs, 0 mapped-delivery repairs, 1 canonical gaps.
-**Canonical methodology:** 92/127 fully implemented (72%), 34 partial, 1 gaps, 99% represented.
+**Current live queue:** 34 items — 0 implemented-quality repairs, 0 mapped-delivery repairs, 0 canonical gaps.
+**Canonical methodology:** 93/127 fully implemented (73%), 34 partial, 0 gaps, 100% represented.
 
 **Highest-priority live items:**
-1. **Parent-to-child trust paths** — trusts.md · canonical gap.
+**Source-depth phase:** 34 partial canonical branches need a deeper node/tool/decision audit. Use **North Star Dashboard → Build Next** for the prioritized rows and explicit modeled / superseded / rejected outcomes.
 
 Generated by `node tools/sync-readme-build-next.js --write`. Verify with `node tools/sync-readme-build-next.js --check`.
 <!-- OBOL-BUILD-NEXT:END -->
@@ -144,7 +154,8 @@ Before every build:
 - read this README
 - read `BUILDING.md` and follow its single draft release PR / incremental commit policy
 - read `CHANGELOG.md`
-- inspect the current North Star Dashboard metrics, delivery-readiness view, quality-repair view, Build Next queue, and canonical backlog
+- read `docs/ORANGE-SOURCE-DEPTH.md` before Orange methodology work
+- inspect the current North Star Dashboard metrics, delivery-readiness view, quality-repair view, Build Next queue, canonical backlog, and source-depth queue
 - branch from refreshed current `main` directly to exactly one `release/obol-vX.Y` branch and open exactly one draft release PR immediately
 - push incremental coherent commits to that same draft PR; ordinary commits should rely on the lightweight `smoke` job rather than running release preflight or the complete historical chain
 - use `[preflight]` only when a coherent current-release snapshot is ready for current-release validation
@@ -153,7 +164,8 @@ Before every build:
 - before leaving Draft, ensure code, tests, documentation, changelog, release wiring, and README form one coherent release snapshot
 - regenerate the README Build Next snapshot with `node tools/sync-readme-build-next.js --write`
 - verify README/Dashboard queue synchronization with `node tools/sync-readme-build-next.js --check`
-- require `implemented-quality = 0` and `mapped-delivery = 0` with `node tools/validate-release-quality.js` before canonical-gap expansion is merge-ready
+- require `implemented-quality = 0` and `mapped-delivery = 0` with `node tools/validate-release-quality.js` before methodology expansion is merge-ready
+- when canonical gaps are zero, prioritize the v6.2 source-depth baseline and mark audited items explicitly as modeled, superseded, or rejected rather than silently treating broad representation as completion
 - run `node tools/validate-historical-tests.js` and keep historical suites free of mutable current-release assertions
 - run `node tools/release-preflight.js` or push a `[preflight]` commit before finalization
 - ensure `tools/validate-release-pr.js --repo-only` passes
@@ -162,7 +174,7 @@ Before every build:
 - mark the PR Ready for review only after smoke, preflight, and complete historical validation are green on that exact final head
 - require the complete historical regression chain, README synchronization, release-quality gate, and green required `test` status on the exact final PR head before merge
 - if another commit lands after green validation, treat the prior result as superseded and validate the new exact head again
-- keep generated reports, Evidence semantics, Next Steps, command UX, and execution context connected to methodology changes
+- keep generated reports, Evidence semantics, Next Steps, command UX, execution context, and source-depth outcomes connected to methodology changes
 
 ## Run locally
 
@@ -195,7 +207,7 @@ node tools/validate-historical-tests.js
 The current release suite is:
 
 ```bash
-node tests/run-v6.1-tests.js
+node tests/run-v6.2-tests.js
 ```
 
 The repository-only release contract check is:
