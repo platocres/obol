@@ -48,22 +48,22 @@ An atomic unit is fidelity-complete only when the relevant requirements are acco
 
 Terminal dispositions are `modeled`, `superseded`, or `rejected`, with rationale. Merely assigning one of those labels without satisfying the required review dimensions is not enough.
 
-## Current v6.9 baseline
+## Current v7.0 baseline
 
-v6.9 continues the already-inventoried AD CS source-fidelity queue and reconciles broad canonical parents only after every inventoried subordinate unit beneath them is fidelity-complete:
+v7.0 completes the already-inventoried AD CS source-fidelity queue and returns the quality-first work queue to source inventory/decomposition:
 
-- canonical: 99 / 127 implemented, 28 partial, 0 gaps, 0 stale;
-- strict completion: 78%;
+- canonical: 100 / 127 implemented, 27 partial, 0 gaps, 0 stale;
+- strict completion: 79%;
 - represented coverage: 100%;
 - methodology source files atomized: 1 / 17;
 - frozen partial baselines decomposed: 7 / 34;
-- inventoried atomic units fidelity-complete: 14 / 19;
-- remaining inventoried atomic audits: 5;
+- currently inventoried atomic units fidelity-complete: 19 / 19;
+- remaining inventoried atomic audits: 0;
 - remaining source-inventory/decomposition items: 27.
 
-The two canonical advances in v6.9 are accounting reconciliation, not denominator inflation. `adcs.pki-object-acl` advances because ESC5 is complete. `adcs.ca-misconfig` advances because both inventoried CA-misconfiguration units, ESC6 and ESC11, are complete. The frozen v6.2 baseline remains 34, so broad-parent promotion does not erase source-depth history.
+The canonical advance in v7.0 is accounting reconciliation, not denominator inflation. `adcs.certificate-mapping` advances only after all five of its remaining inventoried units are terminal and complete: four modeled paths plus the explicitly superseded ESC14 source-empty exploit branch. ESC14 remains represented through current configuration assessment/reporting rather than an invented exploitation recipe.
 
-The five remaining inventoried AD CS audits are certificate-mapping units. They remain higher priority than the 27 source-inventory/decomposition items because their missing delivery requirements are already known precisely.
+The frozen v6.2 baseline remains 34. Therefore 19/19 currently inventoried AD CS units does **not** mean Orange source fidelity is globally complete. It means the first atomized methodology file, `adcs.md`, has exhausted its current atomic ledger. The 27 remaining broad source-inventory/decomposition rows are now the active phase and will create new atomic denominators as useful source structure is mined.
 
 These denominators must remain visible. A percentage may summarize a denominator but must never make unfinished source disappear.
 
@@ -77,11 +77,13 @@ The repository work queue is ordered by product quality, not by whichever metric
 4. atomic source-fidelity audits for already-inventoried units;
 5. source-depth inventory/decomposition for remaining broad partial baselines.
 
-This ordering is derived from the repository model and exposed through the stable `C.currentProjectModel(...)` pointer. The current versioned implementation is `C.projectModel69(...)`.
+v7.0 has zero rows in priorities 1 through 4, so priority 5 is active. The first live source family is Kerberos delegation.
+
+This ordering is derived from the repository model and exposed through the stable `C.currentProjectModel(...)` pointer. The current versioned implementation is `C.projectModel70(...)`.
 
 ## Current-project projection rule
 
-Beginning with v6.6, project status has one current projection boundary. v6.8 added the stable non-versioned pointer `C.currentProjectModel(...)` so current consumers do not need to hard-code whichever versioned adapter happens to be newest. v6.9 keeps that pointer current while retaining versioned adapters as historical regression boundaries.
+Beginning with v6.6, project status has one current projection boundary. v6.8 added the stable non-versioned pointer `C.currentProjectModel(...)` so current consumers do not need to hard-code whichever versioned adapter happens to be newest. v7.0 keeps that pointer current while retaining versioned adapters as historical regression boundaries.
 
 The Dashboard and README may present or summarize its output, but they should not keep independent current counts or competing Build Next calculations. The underlying domain models remain the owners of canonical, delivery, and source-fidelity semantics; the project model provides a stable current view over them.
 
@@ -94,7 +96,8 @@ Use these distinctions consistently:
 - **100% represented** means every normalized canonical section has representation.
 - **100% fully implemented** would mean all 127 normalized canonical sections are implemented.
 - **Source fully inventoried** would mean every methodology-bearing source file and every frozen source-depth baseline is explicitly decomposed/accounted for.
-- **Source fidelity complete** would mean every useful inventoried unit has a complete terminal audit.
+- **Source fidelity complete** would mean every useful inventoried unit across the fully inventoried source has a complete terminal audit.
+- **19/19 currently inventoried atomic units complete** means the present AD CS atomic ledger is complete, not that the remaining 16 source files or 27 broad frozen-baseline rows have been exhausted.
 - **Orange exhausted of useful ideas** may only be claimed when the source inventory and fidelity work are complete, including explicit superseded/rejected rationales where appropriate.
 
 Canonical breadth is not source exhaustion.

@@ -4,6 +4,21 @@ This file is the release-history source for Obol. Future build work should revie
 
 The README is intentionally reserved for current project purpose, architecture, permanent requirements, a compact summary of only the latest three releases, and forward priorities.
 
+## v7.0 — AD CS certificate-mapping fidelity completion
+
+- Completed the five remaining inventoried AD CS certificate-mapping source-fidelity units: Shadow Credentials bridge, ESC9, both ESC10 mapping cases, and ESC14.
+- Added dedicated v7.0 methodology owners with pinned Orange provenance, current Certipy-oriented operator surfaces, explicit execution context, conservative Evidence profiles, reporting contracts, and cleanup/restoration guidance for temporary account changes.
+- Kept temporary Key Credential writes, returned NT-hash material, account-attribute mutation, certificate material, authentication, service access, privilege, and cleanup as separate proof states.
+- Modeled the Shadow Credentials bridge through Certipy `shadow auto` with explicit NT-hash and restoration proof boundaries.
+- Modeled ESC9 and both ESC10 cases as temporary identity-preparation plus certificate-request workflows while refusing to infer authentication or privilege from successful mutation or certificate issuance.
+- Explicitly **superseded** the pinned Orange ESC14 exploit branch rather than inventing mechanics that are not present in the source. v7.0 uses current Certipy finding collection and explicit `altSecurityIdentities` review as an assessment/reporting handoff.
+- Reconciled `adcs.certificate-mapping` from partial to implemented only after all five inventoried subordinate units became terminal and fidelity-complete.
+- Raised canonical methodology from **99 implemented / 28 partial / 0 gaps / 0 stale** to **100 implemented / 27 partial / 0 gaps / 0 stale**, **79% fully implemented**, and **100% represented**.
+- Advanced the currently inventoried AD CS atomic ledger from **14/19** to **19/19** complete while preserving **1/17 methodology files atomized** and **7/34 frozen partial baselines decomposed**.
+- Reduced the live Build Next queue from **32** to **27** items. With zero implemented-quality debt, zero mapped-delivery debt, zero canonical gaps, and zero pending inventoried AD CS units, the active phase becomes Orange source inventory/decomposition beginning with Kerberos delegation.
+- Advanced the stable current project projection to `C.projectModel70(...)` through `C.currentProjectModel(...)`, kept the overview-first Dashboard owner, and retained delta-based release scaffolding without creating a no-op Dashboard overlay.
+- Added v7.0 browser/runtime wiring, terminal Evidence interpretation, README/North Star synchronization, release documentation, future-safe v6.9 regression coverage, and a dedicated v7.0 regression suite while preserving the exact-head release workflow.
+
 ## v6.9 — ESC5, ESC6, and ESC11 source-fidelity delivery
 
 - Consumed the next three live North Star Build Next items after v6.8: ESC5 vulnerable PKI-object ACL / CA-key control, ESC6 CA SAN-flag identity selection, and ESC11 RPC/ICPR enrollment relay.
@@ -149,7 +164,7 @@ The README is intentionally reserved for current project purpose, architecture, 
 - Moved five canonical gaps to implemented, raising strict methodology from **77 implemented / 34 partial / 16 gaps / 0 stale** to **82 implemented / 34 partial / 11 gaps / 0 stale**.
 - Raised fully implemented coverage from **61% to 65%** and represented coverage from **87% to 91%**, preserving the pinned 127-section denominator and Orange 2025.03 upstream commit.
 - Extended the North Star Dashboard through v5.9 with canonical-progress and release-quality visibility.
-- Extended README Build Next generation through v5.9 and retained CI-enforced README/Dashboard queue synchronization.
+- Extended README Build Next generation through v5.9 and retained CI-enforced README/Dashboard synchronization.
 - Kept the v5.8 historical regression suite future-safe when a later release becomes current.
 
 ## v5.8 — canonical gap wave and release-contract enforcement
@@ -175,7 +190,7 @@ The README is intentionally reserved for current project purpose, architecture, 
 - Kept proof boundaries narrow: DNS configuration is not SYSTEM, hybrid-identity discovery is not credential recovery, certificate issuance is not domain-admin access, legacy OS context is not MS14-068 proof, and noPac ticket material is not administrator access.
 - Moved five canonical gaps to implemented, raising strict methodology from **67 implemented / 34 partial / 26 gaps / 0 stale** to **72 implemented / 34 partial / 21 gaps / 0 stale**.
 - Raised fully implemented coverage from **53% to 57%** and represented coverage from **80% to 83%** while preserving the pinned 127-section denominator.
-- Extended the North Star Dashboard and README Build Next generator through v5.7 and retained CI-enforced README/Dashboard queue synchronization.
+- Extended the North Star Dashboard and README Build Next generator through v5.7 and retained CI-enforced README/Dashboard synchronization.
 - Added v5.7 state coercion, sanitized-export compatibility, UI wiring, release notes, Evidence regressions, and historical-test future-safety for the v5.6 release-wiring check.
 
 ## v5.6 — mapped-delivery cleanup and canonical completion wave
