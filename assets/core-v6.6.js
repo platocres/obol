@@ -1,9 +1,9 @@
 // Obol v6.6 core overlay — one authoritative current project-status adapter.
 (function(root){
 'use strict';
-const C=root.OBOL_CORE_V2,D=root.OBOL_DASHBOARD_V66,M=root.OBOL_METHODOLOGY_V66;
-if(!C||!D||!M||!C.northStarDashboard65||!C.sourceFidelity65||!C.buildNext65)throw new Error('Obol v6.5 core and v6.6 metadata are required before core-v6.6.js');
-const VERSION='6.6.0',oldNew=C.newState,oldCoerce=C.coerceState,oldMigrate=C.migrateV1,oldSanitize=C.sanitizedCopy,oldDashboard=C.northStarDashboard65;
+const C=root.OBOL_CORE_V2,P=root.OBOL_PROJECT_V66;
+if(!C||!P||!C.northStarDashboard65||!C.sourceFidelity65||!C.buildNext65)throw new Error('Obol v6.5 core and v6.6 project metadata are required before core-v6.6.js');
+const VERSION=P.version,oldNew=C.newState,oldCoerce=C.coerceState,oldMigrate=C.migrateV1,oldSanitize=C.sanitizedCopy,oldDashboard=C.northStarDashboard65;
 function ensure66(s){
   s=s||{};
   s.obolVersion=VERSION;
@@ -19,9 +19,9 @@ C.migrateV1=function(raw){return ensure66(oldMigrate(raw));};
 function dashboard66(state,lanes,ctx){
   ensure66(state);
   const base=oldDashboard(state,lanes,ctx);
-  const milestones=[...(base.milestones||[])].filter(x=>x.release!=='v6.6');
-  milestones.push({...D.releaseMilestone});
-  return{...base,version:VERSION,milestones,consolidation66:{...D.phase},architecture66:{...D.architecture}};
+  const milestones=[...(base.milestones||[])].filter(x=>x.release!==P.release);
+  milestones.push({...P.releaseMilestone});
+  return{...base,version:VERSION,milestones,consolidation66:{...P.phase},architecture66:{...P.architecture}};
 }
 function projectModel66(state,lanes,ctx){
   ensure66(state);
@@ -30,8 +30,10 @@ function projectModel66(state,lanes,ctx){
   const next=(buildNext.rows||[])[0]||null;
   return{
     version:VERSION,
-    release:'v6.6',
-    phase:{...D.phase},
+    release:P.release,
+    phase:{...P.phase},
+    architecture:{...P.architecture},
+    docs:{...P.docs},
     canonical:{total:coverage.sections,implemented:coverage.implemented,partial:coverage.partial,gap:coverage.gap,stale:coverage.stale,completePct:coverage.coveragePct,representedPct:coverage.representedPct},
     source:{filesAtomized:fidelity.files.atomized,filesTotal:fidelity.files.total,filesPct:fidelity.files.pct,baselinesAtomized:fidelity.partialBaseline.atomized,baselinesTotal:fidelity.partialBaseline.total,baselinesPct:fidelity.partialBaseline.pct,atomicComplete:fidelity.complete,atomicTotal:fidelity.total,atomicPending:fidelity.pending,atomicPct:fidelity.completePct,broadOwned:fidelity.broadOwned},
     quality:{implementedQuality:buildNext.implementedQuality||0,mappedDelivery:buildNext.mappedDelivery||0,canonicalGaps:buildNext.canonicalGaps||0,totalDebt:(buildNext.implementedQuality||0)+(buildNext.mappedDelivery||0)},
