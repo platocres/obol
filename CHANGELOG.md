@@ -1,104 +1,94 @@
 # Obol Changelog
 
-This file is the release-history source for Obol. Future build work should review this changelog together with the current README before changing architecture or methodology.
+This file is the release-history source for Obol. Future build work should review this changelog together with the current README before changing architecture, methodology, Evidence behavior, reporting, or project metrics.
 
 The README is intentionally reserved for current project purpose, architecture, permanent requirements, a compact summary of only the latest three releases, and forward priorities.
+
+## v5.7 — highest-priority canonical gap completion wave
+
+- Consumed the synchronized v5.6 Build Next queue after implemented-quality debt and mapped-delivery debt had both reached zero.
+- Added delivery-ready owners for DNSAdmins plugin-DLL control, Entra ID / AD Connect discovery, Certifried, MS14-068, and noPac.
+- Added explicit Kali/Windows execution metadata, conservative Evidence profiles, decision-path placement, reporting traceability, and cleanup or negative-result semantics where applicable.
+- Kept proof boundaries narrow: DNS configuration is not SYSTEM, hybrid-identity discovery is not credential recovery, certificate issuance is not domain-admin access, legacy OS context is not MS14-068 proof, and noPac ticket material is not administrator access.
+- Moved five canonical gaps to implemented, raising strict methodology from **67 implemented / 34 partial / 26 gaps / 0 stale** to **72 implemented / 34 partial / 21 gaps / 0 stale**.
+- Raised fully implemented coverage from **53% to 57%** and represented coverage from **80% to 83%** while preserving the pinned 127-section denominator.
+- Extended the North Star Dashboard and README Build Next generator through v5.7 and retained CI-enforced README/Dashboard queue synchronization.
+- Added v5.7 state coercion, sanitized-export compatibility, UI wiring, release notes, Evidence regressions, and historical-test future-safety for the v5.6 release-wiring check.
 
 ## v5.6 — mapped-delivery cleanup and canonical completion wave
 
 - Consumed the synchronized v5.5 Build Next queue rather than maintaining a separate release backlog.
 - Added explicit v5.6 Evidence profiles to every remaining mapped workflow that lacked one, with technique-specific proof boundaries for Shadow Credentials, NTLM relay, MachineAccountQuota, S4U/getST, MySQL, PostgreSQL, web triage, AD ACL enumeration, PowerShell/.NET enumeration, PowerView, Zerologon detection, ticket reuse, and gMSA reads.
-- Added a conservative no-fact fallback profile for any residual mapped workflow so explicit expected output can close delivery-contract debt without manufacturing access, privilege, credentials, or compromise facts.
-- Audited the seven remaining execution-side metadata gaps from the live queue and made Kali/Windows command context explicit.
-- Cleared the mapped-workflow delivery-debt class in the live Build Next model while preserving zero implemented-quality debt.
-- Moved five canonical sections from partial to implemented: Shadow Credentials, gMSA password retrieval, S4U2Self/S4U service-ticket use, NTLM relay, and weak-web-service triage.
-- Raised the strict pinned 127-section baseline from 62 / 39 / 26 / 0 to **67 implemented / 34 partial / 26 gaps / 0 stale**, with **53% fully implemented** and **80% represented**.
-- Kept proof boundaries conservative: relay listener startup is not relay success; ticket creation/import is not administrator access; MAQ is readiness only; web reachability is not vulnerability; managed-password material is not plaintext; patched Zerologon output is a successful negative check with no vulnerability fact.
-- Extended the README Build Next generator through the v5.6 methodology/core layers and kept the README snapshot CI-enforced against the same live queue as the North Star Dashboard.
-- Strengthened `tools/release-preflight.js` so the generator must be wired through the current release and historical tests cannot hard-code a current README release token.
-- Added v5.6 Dashboard accounting, state coercion, sanitized-export compatibility, UI wiring, release notes, Evidence regression fixtures, and full historical PR CI coverage.
+- Added a conservative no-fact fallback profile for residual mapped workflows so expected output can close delivery-contract debt without manufacturing access, privilege, credentials, or compromise facts.
+- Audited the remaining execution-side metadata gaps and made Kali/Windows command context explicit.
+- Cleared mapped-workflow delivery debt while preserving zero implemented-quality debt.
+- Moved Shadow Credentials, gMSA password retrieval, S4U2Self/S4U service-ticket use, NTLM relay, and weak-web-service triage from partial to implemented.
+- Raised strict methodology to **67 implemented / 34 partial / 26 gaps / 0 stale**, **53% fully implemented**, **80% represented**.
+- Strengthened `tools/release-preflight.js` so the README generator must be wired through the current release and historical tests cannot hard-code the live README release token.
 
 ## v5.5 — implemented-quality cleanup and canonical completion wave
 
-- Consumed the CI-synchronized v5.4 Build Next queue rather than maintaining a separate release backlog.
-- Added explicit v5.5 Evidence profiles and audited execution-side metadata to the seven shared workflow owners serving all ten remaining implemented-quality queue items: Nmap, anonymous LDAP, username enumeration, AS-REP roasting, Kerberoasting, password spraying, and BloodHound collection.
-- Cleared the implemented-canonical quality-debt class in the live Build Next model before expanding methodology completion.
-- Added dedicated end-to-end owners for authenticated AD CS enumeration, Kerberos delegation discovery, domain DPAPI backup-key collection, LSASS credential extraction, and token/session impersonation.
-- Preserved conservative proof boundaries: enumeration does not create control or privilege; backup-key export does not imply decrypted user secrets; LSASS collection is separate from parsed credential recovery; token listing/elevation does not imply SYSTEM without explicit post-transition identity proof.
-- Moved five canonical sections from partial to implemented, raising the strict pinned 127-section baseline from 57 / 44 / 26 / 0 to **62 implemented / 39 partial / 26 gaps / 0 stale**, with **49% fully implemented** and **80% represented**.
-- Extended the README Build Next generator through the v5.5 methodology/core layers so the GitHub-readable agenda remains derived from the exact same live queue as the North Star Dashboard.
-- Made the inherited v5.4 README/current-queue regressions future-safe while retaining historical v5.4 baseline checks.
-- Added v5.5 Dashboard accounting, state coercion, sanitized-export compatibility, UI wiring, release notes, Evidence regression fixtures, and full historical CI coverage.
+- Consumed the CI-synchronized v5.4 Build Next queue and cleared the implemented-canonical quality-debt class before expanding methodology completion.
+- Added explicit Evidence and execution contracts to the shared owners serving the remaining implemented-quality rows: Nmap, anonymous LDAP, username enumeration, AS-REP roasting, Kerberoasting, password spraying, and BloodHound collection.
+- Added dedicated owners for authenticated AD CS enumeration, Kerberos delegation discovery, domain DPAPI backup-key collection, LSASS credential extraction, and token/session impersonation.
+- Kept collection/discovery/material/privilege boundaries conservative, including explicit SYSTEM verification after token transition.
+- Raised strict methodology to **62 implemented / 39 partial / 26 gaps / 0 stale**, **49% fully implemented**, **80% represented**.
+- Added release-process hardening: a reusable release preflight, release-branch preflight-only Actions, full historical regression on non-draft PRs/main, workflow concurrency cancellation, and future-safe historical README assertions.
 
 ## v5.4 — synchronized README agenda and persistence completion wave
 
-- Added `tools/sync-readme-build-next.js` so the README Build next block is generated from the same live `C.buildNext52(lanes)` model used by the North Star Dashboard rather than being maintained as a competing manual backlog.
-- Added `--write`, `--check`, and `--print` modes plus CI enforcement; release builds now fail when the GitHub-readable README agenda drifts from the live Dashboard queue.
-- Added a v5.4 Dashboard panel showing canonical progress, the five-section methodology delta, remaining Build Next counts, and README synchronization ownership.
+- Added `tools/sync-readme-build-next.js` so the README Build next block is generated from the same live `C.buildNext52(lanes)` model used by the North Star Dashboard.
+- Added `--write`, `--check`, and `--print` modes plus CI enforcement.
 - Completed dedicated lifecycle owners for Skeleton Key, Custom SSP/memssp, Diamond Ticket, Sapphire Ticket, and DCShadow.
-- Kept persistence proof conservative: module startup text alone is not persistence proof; forged tickets prove ticket material without implying privilege; DCShadow requires explicit bounded directory readback and preserves restoration semantics.
-- Checked the current Fortra Impacket `ticketer.py` contract before updating Diamond/Sapphire workflows; `-request` remains the request-template path and `-impersonate` is explicitly documented as the Sapphire Ticket S4U2Self+U2U PAC-acquisition path.
-- Moved five canonical persistence sections from partial to implemented, raising the strict pinned 127-section baseline from 52 / 49 / 26 / 0 to **57 implemented / 44 partial / 26 gaps / 0 stale**, with **45% fully implemented** and **80% represented**.
-- Corrected later-release Dashboard milestone composition so the historical v5.3 milestone remains 52 implemented rather than inheriting the current overlay's 57 count.
-- Added v5.4 state coercion, sanitized-export compatibility, UI wiring, release notes, terminal Evidence regression fixtures, and complete historical CI coverage.
+- Kept persistence proof conservative: module startup text is not persistence proof, forged ticket material is not privilege, and DCShadow requires explicit directory readback and restoration semantics.
+- Raised strict methodology to **57 implemented / 44 partial / 26 gaps / 0 stale**, **45% fully implemented**, **80% represented**.
+- Corrected Dashboard milestone composition so historical releases retain their historical counts.
 
 ## v5.3 — implemented-quality delivery repair wave
 
-- Followed the v5.2 Build next priority order by repairing already-implemented methodology before increasing the canonical implementation count.
-- Added explicit v5.3 Evidence profiles for Anonymous SMB Enumeration, DNS zone transfer, Kerberos ticket hygiene, LAPS reads, Windows local enumeration, SeImpersonatePrivilege verification, DPAPI credential recovery, and Windows stored-credential hunting.
-- Added audited execution-side metadata to remaining commands on those workflows so delivery readiness no longer depends on fallback platform inference.
-- Kept proof boundaries narrow: LAPS/DPAPI/stored credential discovery does not create access facts, saved/listed Kerberos tickets do not create privilege facts, and SeImpersonatePrivilege presence does not create SYSTEM without explicit SYSTEM output.
-- Updated the inherited reporting-contract metadata for repaired cards so their Evidence profile provenance stays aligned with the live v5.3 contract.
-- Added a dedicated North Star Dashboard repair panel showing repaired profiles, execution mappings, implemented sections served, and remaining implemented-quality debt.
-- Kept the strict canonical baseline unchanged at 52 implemented / 49 partial / 26 gaps / 0 stale, 41% fully implemented and 80% represented.
-- Added v5.3 state coercion, sanitized-export compatibility, release wiring, documentation, CSS, Evidence regression fixtures, and complete historical CI coverage.
+- Followed the v5.2 Build Next priority order by repairing existing implemented methodology before increasing canonical completion.
+- Added explicit Evidence profiles for Anonymous SMB Enumeration, DNS zone transfer, Kerberos ticket hygiene, LAPS reads, Windows local enumeration, SeImpersonatePrivilege verification, DPAPI credential recovery, and stored-credential hunting.
+- Added audited execution-side metadata to the remaining commands on those workflows.
+- Kept LAPS/DPAPI/stored-credential discovery below access, ticket state below privilege, and SeImpersonatePrivilege below SYSTEM without explicit identity output.
+- Preserved the strict baseline at **52 implemented / 49 partial / 26 gaps / 0 stale**, **41% fully implemented**, **80% represented**.
 
 ## v5.2 — delivery-ready canonical accounting and build-next queue
 
-- Added delivery-ready canonical accounting on top of the existing 127-section methodology ledger without rewriting canonical status.
-- A represented canonical section is now considered delivery-ready only when at least one tracked mapped workflow has all four established delivery contracts: runnable command, explicit Evidence profile, explicit execution-side metadata, and reporting traceability.
-- Added a dedicated delivery-readiness metric to the North Star Dashboard with separate accounting for implemented quality debt and delivery-ready partial coverage.
-- Added a prioritized **Build next** queue that orders repository work as: implemented canonical quality debt first, remaining mapped-workflow delivery debt second, and new canonical gaps third.
-- Added direct source-file drill-down from Build next rows into Methodology while keeping the five-item primary navigation unchanged.
-- Restructured README To-do content into North Star objectives, summaries of the latest three releases, and explicit next-build priorities as required by the current README contract.
-- Kept the strict canonical methodology baseline unchanged at 52 implemented / 49 partial / 26 gaps / 0 stale, 41% fully implemented and 80% represented.
-- Made inherited v5.1 release-wiring regression future-safe so later releases can remain current without breaking historical tests.
+- Added delivery-ready canonical accounting over the existing 127-section ledger without rewriting canonical status.
+- A represented section became delivery-ready only when at least one mapped workflow satisfied Run, explicit Evidence, explicit execution-side metadata, and reporting traceability.
+- Added a prioritized Build Next queue ordered as implemented-quality debt, mapped-delivery debt, then canonical gaps.
+- Added direct source-file drill-down from Build Next into Methodology while preserving the five-item primary navigation.
+- Restructured README To-do content into North Star objectives, the latest three releases, and explicit next-build priorities.
+- Preserved **52 / 49 / 26 / 0**, **41% fully implemented**, **80% represented**.
 
 ## v5.1 — delivery-debt drill-down and dashboard quality gates
 
 - Added mapped-workflow delivery-debt accounting to the dedicated North Star Dashboard.
-- Added searchable/filterable visibility for missing runnable command contracts, explicit copy/paste Evidence profiles, explicit execution-side metadata, and reporting contracts.
-- Kept the delivery-debt model diagnostic only: it does not create facts, change applicability, mark success, or inflate methodology completion.
-- Preserved the five-item primary workflow and single Dashboard ownership established in v5.0.
-- Preserved the strict canonical baseline at 52 implemented / 49 partial / 26 gaps / 0 stale, 41% fully implemented and 80% represented.
-- Added v5.1 state coercion, sanitized-export compatibility, release wiring, documentation, CSS, and regression coverage.
+- Added searchable/filterable visibility for missing Run contracts, Evidence profiles, explicit execution-side metadata, and reporting contracts.
+- Kept delivery debt diagnostic only; it does not create facts, change applicability, or inflate methodology completion.
+- Preserved the five-item primary workflow and strict **52 / 49 / 26 / 0** baseline.
 
 ## v5.0 — dashboard IA, changelog separation, and UI hygiene
 
-- Moved the full project-health dashboard off Home into a dedicated **North Star Dashboard** entry under More.
-- Kept Home limited to a compact completion/representation summary and a direct dashboard link.
-- Added UI/UX policy accounting to the dashboard for the five-item primary nav, single-dashboard ownership, current-version contract, changelog ownership, and brand-surface policy.
-- Constrained Orange Cyber Defense branding to Dashboard and Home; live Methodology, Next Steps, Report, cards, and Guide use neutral canonical/North Star language while retaining source provenance underneath.
-- Removed duplicate project-health panels from Methodology while keeping the technique-level canonical ledger and source filters.
-- Replaced stacked historical Guide release cards with a current workflow guide and a link to this changelog.
-- Added a v5.0 report overlay so generated reports retain methodology traceability without leaking project-brand language outside the dashboard/home surfaces.
-- Preserved the strict canonical baseline at 52 implemented / 49 partial / 26 gaps / 0 stale, 41% fully implemented and 80% represented.
+- Moved full project-health reporting from Home into the dedicated **North Star Dashboard** under More.
+- Kept Home limited to a compact completion/representation summary and dashboard link.
+- Added UI/UX policy accounting for five-item primary navigation, single-dashboard ownership, current-version contract, changelog ownership, and brand-surface policy.
+- Constrained Orange Cyber Defense branding to Dashboard and Home while retaining source provenance underneath neutral Methodology/Next Steps/Report surfaces.
+- Replaced stacked release cards in Guide with a current workflow guide and changelog link.
+- Preserved **52 / 49 / 26 / 0**, **41% fully implemented**, **80% represented**.
 
 ## v4.9 — single North Star dashboard
 
-- Added one consolidated project dashboard with hard counts and percentages for canonical methodology, represented coverage, Run → Evidence readiness, explicit Evidence profiles, execution-side metadata, decision-path mapping, tool-choice review, reporting traceability, command UX, active-context progress, release trend, and backlog concentration.
-- Added broad execution-metadata accounting over all live North Star-mapped commands.
+- Added one consolidated project dashboard with hard counts and percentages for canonical methodology, represented coverage, Run → Evidence readiness, Evidence profiles, execution metadata, decision-path mapping, tool review, reporting traceability, command UX, active-context progress, release trend, and backlog concentration.
+- Added broad execution-metadata accounting and source-file backlog drill-down.
 - Kept fixed commands separate from GUI-adjustable commands rather than treating every fixed command as a defect.
-- Added source-file backlog drill-down and live active-context reporting/decision/SCCM/persistence summaries.
-- Preserved canonical methodology completion at 52 / 49 / 26 / 0.
 
 ## v4.8 — domain persistence branch depth and lifecycle
 
 - Added dedicated Silver Ticket, DSRM, Golden Certificate, credential-subsystem persistence, Diamond/Sapphire ticket, DCShadow, and ACL-persistence lifecycle workflows.
-- Added explicit execution-side metadata, GUI controls where meaningful, conservative copy/paste Evidence profiles, Next Steps integration, cleanup semantics, and report traceability for the new persistence owners.
-- Added context-scoped persistence progression and Domain Persistence Lifecycle reporting.
-- Moved Silver Ticket, DSRM, Golden Certificate, and ACL persistence to implemented; kept Skeleton Key, Custom SSP, Diamond/Sapphire, and DCShadow partial.
-- Raised canonical coverage to 52 implemented / 49 partial / 26 gaps / 0 stale, 41% fully implemented and 80% represented.
+- Added explicit execution-side metadata, GUI controls where meaningful, conservative Evidence profiles, Next Steps integration, cleanup semantics, and report traceability.
+- Moved Silver Ticket, DSRM, Golden Certificate, and ACL persistence to implemented while keeping Skeleton Key, Custom SSP, Diamond/Sapphire, and DCShadow partial.
+- Raised canonical coverage to **52 implemented / 49 partial / 26 gaps / 0 stale**, **41% fully implemented**, **80% represented**.
 
 ## v4.7 — retroactive reporting traceability
 
@@ -106,39 +96,35 @@ The README is intentionally reserved for current project purpose, architecture, 
 - Kept finding-bearing methodology separate from path/context methodology.
 - Added canonical decision-path provenance to Standard and OSCP report drafts.
 - Added Draft Reporting Gaps from existing proof-readiness requirements without rewriting successful activity.
-- Added Report and card-level traceability UI.
-- Preserved the 48 / 45 / 34 / 0 methodology baseline from v4.6.
 
 ## v4.6 — SCCM branch depth and operator loop
 
 - Expanded SCCM beyond reconnaissance into credential recovery, relay/site takeover, administrative execution, cleanup, and post-exploitation mapping.
 - Added explicit Kali/Windows metadata and full Run → Evidence contracts for the new SCCM workflows.
 - Added context-scoped SCCM progression to Next Steps/Home.
-- Moved six SCCM sections to implemented and six additional sections from gap to partial.
-- Raised canonical coverage to 48 implemented / 45 partial / 34 gaps / 0 stale, 38% fully implemented and 73% represented.
+- Moved six SCCM sections to implemented and six more from gap to partial.
+- Raised canonical coverage to **48 implemented / 45 partial / 34 gaps / 0 stale**, **38% fully implemented**, **73% represented**.
 
 ## v4.5 — Run / Evidence contract audit
 
-- Added reusable per-card run/evidence contract accounting.
+- Added reusable per-card Run/Evidence contract accounting.
 - Cataloged inherited parser coverage instead of treating mature earlier Evidence handlers as unknown.
-- Added explicit copy/paste profiles for Hashcat AD modes, BloodHound collection, SCCM discovery, trust enumeration, GPP recovery, AD CS enumeration, MSSQL access, and Golden Ticket creation.
+- Added explicit Evidence profiles for Hashcat AD modes, BloodHound collection, SCCM discovery, trust enumeration, GPP recovery, AD CS enumeration, MSSQL access, and Golden Ticket creation.
 - Added GUI-control improvements for SCCMHunter and Impacket MSSQL.
-- Added Next Steps and card-level visibility for Run → paste → interpret → decide readiness.
 
 ## v4.4 — canonical decision-path integration
 
-- Grouped mapped methodology into bounded decision stages from environment identification through credentials, authenticated mapping, control paths, movement, host control, domain-level control, and persistence.
-- Added context-scoped stage progress from successful mapped activity and conservative fact floors.
-- Added small positive decision-path ranking signals to already-applicable Next Steps without creating applicability or success.
+- Grouped mapped methodology into bounded stages from environment identification through credentials, authenticated mapping, control paths, movement, host control, domain control, and persistence.
+- Added context-scoped stage progress and small positive ranking signals to already-applicable Next Steps.
 - Added current/next stage and canonical direction visibility to Next Steps and Home.
 
 ## v4.3 — canonical reconciliation and cracking audit
 
 - Reconciled the v4.2 canonical denominator against methodology already present in Obol.
-- Repaired the stale RBCD mapping and recognized existing DC identification, SCCM recon, GPP, MSSQL, trust, Golden Ticket, and database workflows.
+- Repaired the stale RBCD mapping and recognized existing DC identification, SCCM recon, GPP, MSSQL, trust, Golden Ticket, database, and other mature workflows.
 - Expanded the AD Hashcat reference and corrected NetNTLMv1 to mode 5500.
 - Added LM 3000, NTLM 1000, NetNTLMv2 5600, TGS RC4 13100, TGS AES128 19600, TGS AES256 19700, AS-REP 18200, MSCache2 2100, TimeRoast 31300, and explicit external-module semantics for SCCM PXE 19850.
-- Raised live coverage to 42 implemented / 39 partial / 46 gaps / 0 stale, 33% fully implemented and 64% represented.
+- Raised live coverage to **42 implemented / 39 partial / 46 gaps / 0 stale**, **33% fully implemented**, **64% represented**.
 
 ## v4.2 — canonical Orange 2025.03 snapshot
 
@@ -146,7 +132,7 @@ The README is intentionally reserved for current project purpose, architecture, 
 - Pinned upstream commit `6d16ca0d1434875e0617f2f3cfa825fad0bc7d7e` and AD tree `51b414fc0c0a1a4414e86986ec5e2b5225a6d698`.
 - Established the stable 127-section completion denominator.
 - Added snapshot integrity, duplicate-key checks, source-file filtering, stale mapping detection, and persistent completion visibility.
-- Validated baseline: 25 implemented / 39 partial / 62 gaps / 1 stale, 20% fully implemented and 50% represented.
+- Validated baseline: **25 implemented / 39 partial / 62 gaps / 1 stale**, **20% fully implemented**, **50% represented**.
 
 ## v4.1 — methodology coverage and tool audit
 
@@ -154,15 +140,13 @@ The README is intentionally reserved for current project purpose, architecture, 
 - Added implemented / partial / gap / stale states and live card-reference validation.
 - Added structured keep / supplement / replace / review tool decisions.
 - Began replacing execution-side inference with explicit audited command metadata.
-- Kept the coverage ledger inside Methodology rather than adding primary navigation clutter.
 
 ## v4.0 — execution context
 
 - Added per-context operator planning mode: Either, Kali, or Windows host.
 - Added Kali / Windows / target-local / neutral command-side classification and small ranking relevance signals.
 - Preserved opposite-side fallbacks instead of hiding them.
-- Snapshotted operator planning mode and command execution side into activity history.
-- Added Operator Execution Context provenance to generated reports.
+- Snapshotted operator planning mode and command execution side into activity history and reports.
 
 ## v3.9 — Evidence normalization expansion
 
@@ -192,13 +176,11 @@ The README is intentionally reserved for current project purpose, architecture, 
 - Corrected overloaded-tool activity classification and anonymous LDAP outcome handling.
 - Consolidated Report around proof readiness, external screenshot confirmation, rendered preview, and PDF export.
 - Strengthened lineage repair and retained Evidence normalization.
-- Remaining priorities included multi-hop navigation and broader transcript handling.
 
 ## v3.4 — decision-first Next Steps
 
 - Made the recommendation queue the center of Next Steps.
 - Added active target/reachability context, compact decision metrics, lane/status filters, planning signals, and exact activity-ID handoff from methodology cards.
-- Remaining priorities included stronger transcript classification and deeper pivot handling.
 
 ## v3.3 — command-behavior audit
 
