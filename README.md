@@ -4,7 +4,7 @@ Obol is a static, offline-capable study companion, methodology ledger, command-b
 
 Live site: `https://platocres.github.io/obol/`
 
-Current release: **v5.5**
+Current release: **v5.6**
 
 Release history belongs in [`CHANGELOG.md`](CHANGELOG.md). Build agents should review both this README and the changelog before changing architecture, methodology, Evidence behavior, reporting, or project metrics.
 
@@ -50,20 +50,20 @@ The pinned 2025.03 Active Directory methodology denominator contains **127 canon
 
 Current live state:
 
-- **62 / 127 fully implemented**
-- **39 partial**
+- **67 / 127 fully implemented**
+- **34 partial**
 - **26 gaps**
 - **0 stale implemented mappings**
-- **49% fully implemented**
+- **53% fully implemented**
 - **80% represented**
 
 These numbers are methodology accounting only. Parser coverage, reporting coverage, command controls, execution metadata, UI/UX health, delivery readiness, and quality-repair metrics have their own denominators on the North Star Dashboard and do not inflate methodology completion.
 
 A canonical implemented or partial section is delivery-ready only when at least one tracked mapped workflow has a runnable command contract, an explicit copy/paste Evidence profile, explicit execution-side metadata, and reporting traceability.
 
-v5.5 consumes the synchronized v5.4 Build Next queue in priority order. The ten implemented canonical sections that were still carrying delivery-quality debt are now backed by clean mapped owners through seven shared workflows: Nmap, anonymous LDAP enumeration, username enumeration, AS-REP roasting, Kerberoasting, password spraying, and BloodHound collection. This clears implemented-quality debt before the release expands strict canonical completion.
+v5.6 consumes the synchronized v5.5 Build Next queue in priority order. It closes the remaining mapped-workflow delivery-debt class before expanding strict methodology completion. High-impact remaining workflows receive technique-specific Evidence boundaries, while any residual mapped workflow receives a conservative expected-output profile that records only explicit reviewed completion and creates no outcome facts by default.
 
-v5.5 also moves five mature partial sections to implemented with dedicated end-to-end owners: authenticated AD CS enumeration, Kerberos delegation discovery, domain DPAPI backup-key collection, LSASS credential extraction, and token/session impersonation. Enumeration does not imply control, exported key material does not imply decrypted user secrets, LSASS collection is separate from credential recovery, and token presence or elevation startup text does not imply SYSTEM.
+v5.6 then moves five mature partial sections to implemented with delivery-ready owners: Shadow Credentials, gMSA password retrieval, S4U2Self/S4U service-ticket use, NTLM relay, and weak-web-service triage. This raises strict completion from 62/127 to 67/127 while preserving the distinction between discovery, material collection, access, privilege, and execution.
 
 The README/Dashboard backlog synchronization introduced in v5.4 remains permanent. The README Build next agenda is generated from the same repository model that powers **North Star Dashboard → Build Next**. The dashboard is the authoritative full drill-down, while the README contains a CI-enforced human-readable snapshot of that queue.
 
@@ -77,6 +77,7 @@ The README/Dashboard backlog synchronization introduced in v5.4 remains permanen
 - Material foothold, privilege, objective, credential, and network transitions use explicit proof requirements.
 - Screenshot checks remain operator-confirmed and external; Obol does not capture or inspect screenshots.
 - Generated tickets, certificates, relay listeners, startup banners, discovery output, or command presence never silently become access or compromise facts.
+- Shadow Credential listing is not a successful write; successful relay requires explicit relayed authentication; ticket creation/import does not prove service access; managed-password material does not become plaintext without explicit decoding; detection-only checks preserve negative results without inventing vulnerability facts.
 
 ## Command behavior contract
 
@@ -117,9 +118,9 @@ A fixed command is not automatically a UX defect. Single-purpose/native commands
 
 ### Recent changes
 
-- **v5.5** — cleared the implemented-quality queue from v5.4, completed five mature partial branches to raise strict canonical completion from 45% to 49%, and hardened release CI so release-branch pushes use a current-release preflight while pull requests and `main` own the full historical regression chain.
+- **v5.6** — cleared the remaining mapped-workflow delivery debt, strengthened Evidence proof boundaries across the live queue, and completed five mature partial branches, raising strict canonical completion from 49% to 53%.
+- **v5.5** — cleared the implemented-quality queue from v5.4 by repairing seven shared workflow owners, then completed five mature partial branches, raising strict canonical completion from 45% to 49%.
 - **v5.4** — synchronized the README agenda to the live North Star Build Next model with CI drift enforcement and moved five persistence sections from partial to implemented, raising strict canonical completion from 41% to 45%.
-- **v5.3** — repaired the first implemented-quality debt wave by adding explicit Evidence profiles and audited execution-side metadata to eight already-implemented or implementation-bearing workflows, with conservative proof boundaries and live Dashboard accounting.
 
 ### Build next
 
@@ -128,22 +129,22 @@ The generated block below is the GitHub-readable agenda snapshot. **North Star D
 <!-- OBOL-BUILD-NEXT:START -->
 This block is generated from the same live repository state used by **North Star Dashboard → Build Next**. Do not edit the generated queue manually. The dashboard remains the authoritative full drill-down; this README snapshot is CI-enforced.
 
-**Current live queue:** 39 items — 0 implemented-quality repairs, 13 mapped-delivery repairs, 26 canonical gaps.
-**Canonical methodology:** 62/127 fully implemented (49%), 39 partial, 26 gaps, 80% represented.
+**Current live queue:** 26 items — 0 implemented-quality repairs, 0 mapped-delivery repairs, 26 canonical gaps.
+**Canonical methodology:** 67/127 fully implemented (53%), 34 partial, 26 gaps, 80% represented.
 
 **Highest-priority live items:**
-1. **Shadow Credentials** — project-wide · mapped delivery. Missing contracts: evidence, execution.
-2. **NTLM Relay** — adcs.md · mapped delivery. Missing contracts: evidence, execution.
-3. **MachineAccountQuota & RBCD Readiness** — delegation.md · mapped delivery. Missing contracts: evidence, execution.
-4. **S4U Impersonation (getST)** — delegation.md · mapped delivery. Missing contracts: evidence, execution.
-5. **MySQL Access and File Operations** — low_hanging.md · mapped delivery. Missing contracts: evidence, execution.
-6. **PostgreSQL Access and COPY FROM PROGRAM** — low_hanging.md · mapped delivery. Missing contracts: evidence, execution.
-7. **Web Service Triage** — low_hanging.md · mapped delivery. Missing contracts: evidence, execution.
-8. **Object ACL Abuse (GenericAll and Friends)** — acl.md · mapped delivery. Missing contracts: evidence.
-9. **AD Enumeration via PowerShell + .NET (No PowerView)** — authenticated.md · mapped delivery. Missing contracts: evidence.
-10. **PowerView Enumeration (from a Windows Foothold)** — authenticated.md · mapped delivery. Missing contracts: evidence.
-11. **Zerologon Check (CVE-2020-1472) — Detection Only** — authenticated.md · mapped delivery. Missing contracts: evidence.
-12. **Pass-the-Ticket / Overpass-the-Hash** — lat_move.md · mapped delivery. Missing contracts: evidence.
+1. **DNS Admin abuse** — acl.md · canonical gap.
+2. **Entra ID / AD Connect discovery** — authenticated.md · canonical gap.
+3. **Certifried** — know_vuln_auth.md · canonical gap.
+4. **MS14-068** — know_vuln_auth.md · canonical gap.
+5. **noPac** — know_vuln_auth.md · canonical gap.
+6. **PrintNightmare** — know_vuln_auth.md · canonical gap.
+7. **PrivExchange** — know_vuln_auth.md · canonical gap.
+8. **ProxyNotShell** — know_vuln_auth.md · canonical gap.
+9. **AppLocker bypass** — low_access.md · canonical gap.
+10. **Kerberos relay** — low_access.md · canonical gap.
+11. **UAC bypass** — low_access.md · canonical gap.
+12. **EternalBlue** — low_hanging.md · canonical gap.
 
 Generated by `node tools/sync-readme-build-next.js --write`. Verify with `node tools/sync-readme-build-next.js --check`.
 <!-- OBOL-BUILD-NEXT:END -->
@@ -157,13 +158,12 @@ Before every build:
 - inspect the current North Star Dashboard metrics, delivery-readiness view, quality-repair view, Build Next queue, and canonical backlog
 - branch from refreshed current `main`
 - preserve browser-local state compatibility when practical
-- build the release as one coherent repository state instead of using GitHub Actions as an iterative test runner
-- update code, tests, docs, changelog, release wiring, and README only when current requirements change
+- prepare code, tests, documentation, changelog, release wiring, and README as one coherent release snapshot rather than using GitHub Actions as an iterative development runner
 - regenerate the README Build Next snapshot with `node tools/sync-readme-build-next.js --write`
-- run `node tools/release-preflight.js` and do not move the release branch until it passes
-- push a coherent release snapshot in one branch update whenever practical; avoid file-by-file release-branch pushes
-- open or update the pull request only after branch preflight is green; if iterative PR repair is unavoidable, keep the PR draft until the release is ready for the full regression chain
-- require a green full historical regression run on the non-draft pull request before merge
+- verify README/Dashboard queue synchronization with `node tools/sync-readme-build-next.js --check`
+- run `node tools/release-preflight.js` before moving the release branch
+- make historical tests assert historical model invariants rather than hard-coding whichever release is currently visible in README
+- require a green non-draft pull-request regression run before merge
 - keep generated reports, Evidence semantics, Next Steps, command UX, and execution context connected to methodology changes
 
 ## Run locally
@@ -176,9 +176,7 @@ The repository is designed to serve directly from `main` and `/ (root)`.
 
 ## Regression tests
 
-GitHub Actions runs a lightweight current-release preflight on pushes to `release/**`. Non-draft pull requests and `main` run the complete historical regression chain. Rapid superseding runs on the same ref are cancelled automatically.
-
-The mandatory release preflight is:
+Release-branch pushes run the current-release preflight rather than the complete historical chain:
 
 ```bash
 node tools/release-preflight.js
@@ -187,8 +185,10 @@ node tools/release-preflight.js
 The current release suite is:
 
 ```bash
-node tests/run-v5.5-tests.js
+node tests/run-v5.6-tests.js
 ```
+
+Non-draft pull requests and `main` run the complete historical regression chain plus the README queue synchronization check. Superseded runs on the same ref are cancelled by workflow concurrency.
 
 The README queue synchronization check is:
 
