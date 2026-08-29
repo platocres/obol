@@ -4,6 +4,20 @@ This file is the release-history source for Obol. Future build work should revie
 
 The README is intentionally reserved for current project purpose, architecture, permanent requirements, a compact summary of only the latest three releases, and forward priorities.
 
+## v5.6 — mapped-delivery cleanup and canonical completion wave
+
+- Consumed the synchronized v5.5 Build Next queue rather than maintaining a separate release backlog.
+- Added explicit v5.6 Evidence profiles to every remaining mapped workflow that lacked one, with technique-specific proof boundaries for Shadow Credentials, NTLM relay, MachineAccountQuota, S4U/getST, MySQL, PostgreSQL, web triage, AD ACL enumeration, PowerShell/.NET enumeration, PowerView, Zerologon detection, ticket reuse, and gMSA reads.
+- Added a conservative no-fact fallback profile for any residual mapped workflow so explicit expected output can close delivery-contract debt without manufacturing access, privilege, credentials, or compromise facts.
+- Audited the seven remaining execution-side metadata gaps from the live queue and made Kali/Windows command context explicit.
+- Cleared the mapped-workflow delivery-debt class in the live Build Next model while preserving zero implemented-quality debt.
+- Moved five canonical sections from partial to implemented: Shadow Credentials, gMSA password retrieval, S4U2Self/S4U service-ticket use, NTLM relay, and weak-web-service triage.
+- Raised the strict pinned 127-section baseline from 62 / 39 / 26 / 0 to **67 implemented / 34 partial / 26 gaps / 0 stale**, with **53% fully implemented** and **80% represented**.
+- Kept proof boundaries conservative: relay listener startup is not relay success; ticket creation/import is not administrator access; MAQ is readiness only; web reachability is not vulnerability; managed-password material is not plaintext; patched Zerologon output is a successful negative check with no vulnerability fact.
+- Extended the README Build Next generator through the v5.6 methodology/core layers and kept the README snapshot CI-enforced against the same live queue as the North Star Dashboard.
+- Strengthened `tools/release-preflight.js` so the generator must be wired through the current release and historical tests cannot hard-code a current README release token.
+- Added v5.6 Dashboard accounting, state coercion, sanitized-export compatibility, UI wiring, release notes, Evidence regression fixtures, and full historical PR CI coverage.
+
 ## v5.5 — implemented-quality cleanup and canonical completion wave
 
 - Consumed the CI-synchronized v5.4 Build Next queue rather than maintaining a separate release backlog.
