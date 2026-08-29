@@ -112,6 +112,30 @@ test('dashboard exposes v6.0 progress and release quality',()=>{
   assert(d.milestones.some(x=>x.release==='v5.9'&&x.implemented===82));
 });
 
+test('lightweight release smoke validation passes',()=>{
+  const r=cp.spawnSync(process.execPath,[path.join(root,'tools','release-smoke.js')],{cwd:root,encoding:'utf8'});
+  assert.strictEqual(r.status,0,r.stderr||r.stdout);
+  assert((r.stdout||'').includes('Release smoke validation passed'));
+});
+
+test('historical regression suites are future-safe',()=>{
+  const r=cp.spawnSync(process.execPath,[path.join(root,'tools','validate-historical-tests.js')],{cwd:root,encoding:'utf8'});
+  assert.strictEqual(r.status,0,r.stderr||r.stdout);
+  assert((r.stdout||'').includes('Historical test future-safety validation passed'));
+});
+
+test('tiered workflow avoids full regressions on ordinary release commits',()=>{
+  const workflow=fs.readFileSync(path.join(root,'.github','workflows','tests.yml'),'utf8');
+  assert(/\n  smoke:\n/.test(workflow));
+  assert(workflow.includes('node tools/release-smoke.js'));
+  assert(workflow.includes("contains(github.event.head_commit.message, '[preflight]')"));
+  assert(workflow.includes("contains(github.event.head_commit.message, '[release-final]')"));
+  assert(workflow.includes('node tools/validate-historical-tests.js'));
+  const preflightBlock=workflow.slice(workflow.indexOf('\n  preflight:'),workflow.indexOf('\n  test:'));
+  assert(preflightBlock.includes("'[preflight]'"));
+  assert(preflightBlock.includes("'[release-final]'"));
+});
+
 test('release quality gate passes the live v6.0 model',()=>{
   const r=cp.spawnSync(process.execPath,[path.join(root,'tools','validate-release-quality.js')],{cwd:root,encoding:'utf8'});
   assert.strictEqual(r.status,0,r.stderr||r.stdout);
@@ -143,8 +167,11 @@ test('v6.0 release wiring is complete',()=>{
   for(const x of ['methodology-v6.0.js','dashboard-v6.0.js','core-v6.0.js','intake-v6.0.js','app-v6.0.js','obol-v6.0.css'])assert(idx.includes(x),x);
   assert(readme.includes('Current release: **v6.0**'));
   assert(changelog.includes('## v6.0'));
+  for(const x of ['tools/release-smoke.js','tools/validate-historical-tests.js'])assert(fs.existsSync(path.join(root,x)),x);
   assert(fs.existsSync(path.join(root,'docs','v6.0.md')));
-  assert(fs.readFileSync(path.join(root,'tests','run-v6.0-tests.js'),'utf8').includes('validate-release-pr.js'));
+  const self=fs.readFileSync(path.join(root,'tests','run-v6.0-tests.js'),'utf8');
+  assert(self.includes('validate-release-pr.js'));
+  assert(self.includes('validate-historical-tests.js'));
 });
 
 test('README Build Next generator is wired through v6.0',()=>{
