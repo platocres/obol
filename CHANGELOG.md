@@ -4,6 +4,20 @@ This file is the release-history source for Obol. Future build work should revie
 
 The README is intentionally reserved for current project purpose, architecture, permanent requirements, a compact summary of only the latest three releases, and forward priorities.
 
+## v6.8 — ESC4 and ESC7 source-fidelity delivery
+
+- Consumed the next three live North Star Build Next items after v6.7: ESC4 writable certificate-template ACL, ESC7 Manage CA officer transition, and ESC7 Manage Certificates enable / request / issue / retrieve.
+- Added dedicated owners `adcs-esc4-68`, `adcs-esc7-manage-ca-68`, and `adcs-esc7-manage-cert-68` with pinned Orange provenance, current Certipy operator surfaces, Kali/Windows execution context, semantic controls, conservative Evidence profiles, Next Steps transitions, cleanup/restoration, and reporting contracts.
+- Modernized the pinned Orange ESC4 switches to current Certipy template-management semantics while preserving the source technique: save the pre-test template configuration, apply the reviewed ESC1-compatible configuration, route explicit mutation proof into the existing ESC1 owner, and restore the exact saved configuration as separately evidenced cleanup.
+- Modeled ESC7 Manage CA as a distinct certificate-officer role transition, with explicit add/remove proof and no certificate, access, or privilege inference from role assignment alone.
+- Modeled ESC7 Manage Certificates as a staged workflow that keeps template publication, a denied request with preserved request ID/private key, request issuance, certificate retrieval, and conditional cleanup as separate proof states.
+- Reconciled `adcs.template-misconfig` from partial to implemented only after all six inventoried template units became fidelity-complete, and reconciled `adcs.acl-misconfig` only after all three inventoried ACL units became fidelity-complete.
+- Raised canonical methodology from **95 implemented / 32 partial / 0 gaps / 0 stale** to **97 implemented / 30 partial / 0 gaps / 0 stale**, **76% fully implemented**, and **100% represented**, while preserving the frozen 34-section v6.2 source-depth denominator.
+- Advanced atomic source fidelity from **8/19** to **11/19** complete, leaving **8** already-inventoried AD CS audits followed by **27** source-inventory/decomposition items for a **35-item** Build Next queue. ESC5 becomes the next live item.
+- Added `C.currentProjectModel(...)` as the stable non-versioned current project-status pointer so README synchronization, release-quality checks, Dashboard consumers, and future tooling no longer need to hard-code the newest versioned adapter name.
+- Made the v6.7 title/tagline UI observer future-safe so later releases can own version hygiene without historical overlays fighting the current release.
+- Added v6.8 browser/runtime wiring, Intake interpretation, current-project documentation, README synchronization, future-safe v6.7 regression coverage, and a dedicated v6.8 regression suite while preserving the exact-head release workflow.
+
 ## v6.7 — ESC13 and ESC15 source-fidelity delivery
 
 - Resumed the live North Star Build Next queue after v6.6 architecture consolidation and consumed the next three already-inventoried AD CS atomic source-fidelity items: ESC13 issuance-policy/group-link template abuse, ESC15 Client Authentication application-policy injection, and ESC15 Certificate Request Agent application-policy injection.
