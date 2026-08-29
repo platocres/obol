@@ -4,6 +4,19 @@ This file is the release-history source for Obol. Future build work should revie
 
 The README is intentionally reserved for current project purpose, architecture, permanent requirements, a compact summary of only the latest three releases, and forward priorities.
 
+## v6.9 — ESC5, ESC6, and ESC11 source-fidelity delivery
+
+- Consumed the next three live North Star Build Next items after v6.8: ESC5 vulnerable PKI-object ACL / CA-key control, ESC6 CA SAN-flag identity selection, and ESC11 RPC/ICPR enrollment relay.
+- Added dedicated owners `adcs-esc5-69`, `adcs-esc6-69`, and `adcs-esc11-69` with pinned Orange provenance, current Certipy-oriented operator surfaces, explicit Kali/Windows execution context where practical, conservative Evidence profiles, Next Steps transitions, and reporting contracts.
+- Kept ESC5 CA backup material separate from the offline forged certificate it can enable. CA private-key material, forged certificate material, authenticated access, privilege, and DCSync capability remain separate proof states.
+- Modeled ESC6 as a requester-controlled SAN identity-selection path only after the CA flag and a suitable client-authentication template are explicitly established. Certificate issuance remains credential material until later authentication/access Evidence proves more.
+- Modeled ESC11 RPC/ICPR relay with Certipy as the preferred compact operator surface and ntlmrelayx as the pinned-source-compatible fallback. Listener startup and inbound authentication are not certificate issuance, and certificate/ticket material is not DCSync or privilege proof.
+- Reconciled `adcs.pki-object-acl` from partial to implemented after ESC5 became fidelity-complete and reconciled `adcs.ca-misconfig` only after both inventoried ESC6 and ESC11 branches became fidelity-complete.
+- Raised canonical methodology from **97 implemented / 30 partial / 0 gaps / 0 stale** to **99 implemented / 28 partial / 0 gaps / 0 stale**, **78% fully implemented**, and **100% represented**, while preserving the frozen 34-section v6.2 source-depth denominator.
+- Advanced atomic source fidelity from **11/19** to **14/19** complete, leaving **5** inventoried AD CS certificate-mapping audits followed by **27** source-inventory/decomposition items for a **32-item** Build Next queue. The certificate-mapping shadow-credential bridge becomes the next live item.
+- Kept `C.currentProjectModel(...)` and `C.currentNorthStarDashboard(...)` as the stable current pointers backed by the v6.9 adapters, and made the v6.8 UI decorator inactive when a later release owns the current version surface.
+- Added v6.9 browser/runtime wiring, terminal Evidence interpretation, release documentation, README/North Star synchronization, future-safe v6.8 regression coverage, and a dedicated v6.9 regression suite while preserving the exact-head release workflow.
+
 ## v6.8 — ESC4 and ESC7 source-fidelity delivery
 
 - Consumed the next three live North Star Build Next items after v6.7: ESC4 writable certificate-template ACL, ESC7 Manage CA officer transition, and ESC7 Manage Certificates enable / request / issue / retrieve.
