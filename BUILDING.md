@@ -15,9 +15,12 @@ The intended release flow is:
 - do not create a second build/release PR to work around a red intermediate state
 - before leaving Draft, regenerate the README Build Next block and run the repository release contract, release preflight, and current release regression suite
 - require `implemented-quality = 0` and `mapped-delivery = 0` before a release that expands canonical methodology coverage can be considered merge-ready
-- mark the PR Ready for review only after the release snapshot is coherent
-- require the complete historical regression chain, README Build Next synchronization, and required `test` status check to pass on the exact current PR head
+- once the draft snapshot is coherent, make the exact final release-branch commit with `[release-final]` in its commit message; this explicitly triggers the complete historical `test` job while the PR is still Draft
+- require that pre-ready `test` run, release preflight, release-quality gate, and README synchronization to pass on that exact final head before marking the PR Ready for review
+- mark the PR Ready for review only after the exact final head is green; the `ready_for_review` event may run the complete `test` job again and that result becomes the protected merge check
 - if another commit is pushed after a green run, treat the previous result as superseded and require the new head to pass again before merge
+
+The `[release-final]` trigger exists to avoid a circular gate: draft PRs normally skip the expensive complete historical chain, but policy requires that chain to pass before a release leaves Draft. It is a finalization signal, not an iterative development test runner. Do not put `[release-final]` on ordinary work-in-progress commits.
 
 Release-PR metadata enforcement applies only to release-intent pull requests. Normal documentation, maintenance, and CI-fix PRs still run the regression suite and required status checks, but they are not required to use a release branch name or release-description template.
 
