@@ -4,7 +4,7 @@ Obol is a static, offline-capable browser workspace for OSCP-style labs, Active 
 
 Live site: `https://platocres.github.io/obol/`
 
-Current release: **v6.6**
+Current release: **v6.7**
 
 Release history lives in [`CHANGELOG.md`](CHANGELOG.md). Architecture, source-accounting, Evidence, and release contracts live in dedicated engineering documents instead of being duplicated here. **The readme is not a changelog.**
 
@@ -32,13 +32,13 @@ Primary navigation stays intentionally small:
 
 The **More** menu contains North Star Dashboard, Engagement Map, Methodology, Tool Library, Planned Work, Workspace Search, Evidence Lineage, Guide, and Workspace Data.
 
-The **North Star Dashboard** is the single in-app location for project-wide hard numbers. v6.6 makes its default view intentionally scan-friendly. Detailed engineering metrics, source-fidelity accounting, and the complete Build Next queue remain available as drill-downs.
+The **North Star Dashboard** is the single in-app location for project-wide hard numbers. Its overview-first v6.6 layout remains the current presentation shell, while v6.7 advances the underlying consolidated project model and surfaces the latest AD CS source-fidelity delivery wave. Detailed engineering metrics, source-fidelity accounting, and the complete Build Next queue remain available as drill-downs.
 
 ## Project status
 
 Obol keeps methodology breadth and source-depth/source-fidelity accounting separate. A broad methodology section can be represented while subordinate source material still needs decomposition or end-to-end review.
 
-Current v6.6 baseline:
+Current v6.7 baseline:
 
 - **95 / 127** canonical sections fully implemented
 - **32** partial
@@ -48,14 +48,14 @@ Current v6.6 baseline:
 - **100%** represented
 - **1 / 17** methodology source files atomized
 - **7 / 34** frozen partial baselines decomposed
-- **5 / 19** inventoried atomic units fidelity-complete
-- **41** items in the live Build Next queue
+- **8 / 19** inventoried atomic units fidelity-complete
+- **38** items in the live Build Next queue
 - **0** implemented-quality repairs
 - **0** mapped-delivery repairs
 
-The **127 canonical** section denominator measures structural breadth. It is deliberately separate from source-depth and atomic source-fidelity progress. v6.6 does not increase these numbers; it consolidates how project truth is derived and presented so future methodology work can move faster without multiplying bookkeeping.
+The **127 canonical** section denominator measures structural breadth. It is deliberately separate from source-depth and atomic source-fidelity progress. v6.7 does not inflate canonical completion: it moves ESC13 and both inventoried ESC15 branches from broad ownership to explicit end-to-end source-fidelity completion while the broader template-misconfiguration parent remains partial.
 
-The detailed definitions, pinned provenance, denominators, completion language, and audit requirements live in [`docs/NORTH-STAR.md`](docs/NORTH-STAR.md). The current presentation boundary is `C.projectModel66(...)`, which derives Dashboard and README status from the existing domain models instead of maintaining competing copies of the same counts.
+The detailed definitions, pinned provenance, denominators, completion language, and audit requirements live in [`docs/NORTH-STAR.md`](docs/NORTH-STAR.md). The current presentation boundary is `C.projectModel67(...)`, which advances the consolidated project model established in v6.6 without creating a competing status system.
 
 ## Permanent North Star requirements
 
@@ -99,7 +99,7 @@ Obol generates commands for humans to review and run elsewhere. It does not sile
 
 ## Architecture direction
 
-Obol grew through additive release overlays while the product model was still changing. Those historical layers remain where they still encode behavior protected by regression tests, but v6.6 establishes a consolidation boundary:
+Obol grew through additive release overlays while the product model was still changing. Those historical layers remain where they still encode behavior protected by regression tests. v6.6 established the consolidation boundary and v6.7 continues through it:
 
 - project status has one current projection model;
 - Dashboard and README consume that model instead of recalculating progress independently;
@@ -121,9 +121,9 @@ This is intentionally not a rewrite. The goal is a smaller set of explicit owner
 
 ### Recent changes
 
+- **v6.7** - delivered ESC13 issuance-policy/group-link abuse plus both inventoried ESC15 application-policy injection branches, preserving certificate material, access, and privilege as separate proof boundaries and advancing atomic source fidelity to 8/19.
 - **v6.6** - consolidated current project status behind one derived model, rebuilt the Dashboard around an overview-first design with drill-downs, shortened the README, split durable engineering contracts into dedicated docs, centralized the Node-side current runtime loader, and changed release scaffolding so releases add only the behavior-specific surfaces they actually need.
 - **v6.5** - delivered the first five atomic source-fidelity units end to end and advanced only the broad canonical parents whose inventoried depth was actually exhausted.
-- **v6.4** - introduced atomic source-fidelity accounting below the 127-section canonical layer and separated broad ownership from end-to-end fidelity completion.
 
 For older releases, see [`CHANGELOG.md`](CHANGELOG.md).
 
@@ -134,15 +134,15 @@ The block below is generated from the same current project model used by the Nor
 <!-- OBOL-BUILD-NEXT:START -->
 This block is generated from the same live repository state used by **North Star Dashboard → Build Next**. Do not edit it manually.
 
-**Current live queue:** 41 items — 0 implemented-quality repairs, 0 mapped-delivery repairs, 0 canonical gaps.
+**Current live queue:** 38 items — 0 implemented-quality repairs, 0 mapped-delivery repairs, 0 canonical gaps.
 **Canonical methodology:** 95/127 fully implemented (75%), 32 partial, 0 gaps, 100% represented.
-**Orange source fidelity:** 1/17 source files atomized, 7/34 partial baselines decomposed, 5/19 inventoried atomic units fidelity-complete.
-**Current phase:** Architecture consolidation.
+**Orange source fidelity:** 1/17 source files atomized, 7/34 partial baselines decomposed, 8/19 inventoried atomic units fidelity-complete.
+**Current phase:** AD CS source-fidelity delivery.
 
 **Highest-priority live items:**
-1. **ESC13 issuance-policy / group-link template path** — adcs.md · source fidelity.
-2. **ESC15 application-policy injection for Schannel** — adcs.md · source fidelity.
-3. **ESC15 application-policy injection for request-agent use** — adcs.md · source fidelity.
+1. **ESC4 writable certificate-template ACL** — adcs.md · source fidelity.
+2. **ESC7 ManageCA officer transition** — adcs.md · source fidelity.
+3. **ESC7 ManageCertificates enable / issue / retrieve path** — adcs.md · source fidelity.
 
 Generated by `node tools/sync-readme-build-next.js --write`. Verify with `node tools/sync-readme-build-next.js --check`.
 <!-- OBOL-BUILD-NEXT:END -->
@@ -155,7 +155,7 @@ Open `index.html` in a browser. No server or package install is required.
 
 ```bash
 node tools/release-smoke.js
-node tests/run-v6.6-tests.js
+node tests/run-v6.7-tests.js
 node tools/release-preflight.js
 node tools/sync-readme-build-next.js --check
 node tools/validate-release-quality.js

@@ -4,6 +4,19 @@ This file is the release-history source for Obol. Future build work should revie
 
 The README is intentionally reserved for current project purpose, architecture, permanent requirements, a compact summary of only the latest three releases, and forward priorities.
 
+## v6.7 — ESC13 and ESC15 source-fidelity delivery
+
+- Resumed the live North Star Build Next queue after v6.6 architecture consolidation and consumed the next three already-inventoried AD CS atomic source-fidelity items: ESC13 issuance-policy/group-link template abuse, ESC15 Client Authentication application-policy injection, and ESC15 Certificate Request Agent application-policy injection.
+- Added dedicated owners `adcs-esc13-67`, `adcs-esc15-schannel-67`, and `adcs-esc15-agent-67` with explicit source provenance, Kali/Windows execution context where the pinned source provides both, semantic command controls, conservative Evidence profiles, Next Steps transitions, and reporting contracts.
+- Preserved the pinned 127-section canonical baseline at **95 implemented / 32 partial / 0 gaps / 0 stale**, **75% fully implemented**, and **100% represented**. The broad `adcs.template-misconfig` parent remains partial because additional atomic template branches are still pending.
+- Advanced atomic source fidelity from **5/19** to **8/19** complete while preserving **1/17 methodology files atomized** and **7/34 frozen partial baselines decomposed**.
+- Reduced the synchronized Build Next queue from **41** to **38** items: **11 remaining atomic AD CS fidelity audits** followed by **27 source-inventory/decomposition items**, with zero implemented-quality repairs, zero mapped-delivery repairs, and zero canonical gaps.
+- Kept ESC13 certificate issuance below PKINIT success, authenticated service access, group membership, and privilege. Certificate/PFX material is a credential artifact only until later Evidence proves a stronger state.
+- Kept the ESC15 Client Authentication branch explicitly Schannel-scoped and below successful Schannel service access; application-policy injection is the maneuver itself rather than a hidden optional switch.
+- Kept the ESC15 Certificate Request Agent branch as an intermediate enrollment-agent artifact that routes to the existing ESC3 on-behalf-of workflow without claiming the target identity, access, or privilege.
+- Advanced the consolidated current project projection through `C.projectModel67(...)`, preserving the overview-first v6.6 Dashboard shell rather than creating another project-wide accounting surface.
+- Added v6.7 browser/runtime wiring, terminal Evidence interpretation, release documentation, README synchronization, release-quality current-model consumption, future-safe v6.6 compatibility coverage, and v6.7 regression tests.
+
 ## v6.6 — architecture consolidation and project-status simplification
 
 - Established `C.projectModel66(...)` as the single current projection for canonical progress, source-depth/source-fidelity progress, quality debt, Build Next, recent release trend, and the next priority.

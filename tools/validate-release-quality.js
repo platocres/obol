@@ -5,7 +5,8 @@ const {loadCurrent}=require('./current-runtime');
 
 const root=path.join(__dirname,'..');
 const {C,lanes}=loadCurrent(root);
-const p=C.projectModel66(C.newState(),lanes),state={
+const projectModel=C.projectModel67||C.projectModel66;
+const p=projectModel(C.newState(),lanes),state={
   total:p.buildNext.total,
   implementedQuality:p.quality.implementedQuality,
   mappedDelivery:p.quality.mappedDelivery,
