@@ -55,7 +55,7 @@ v6.0 consumes the next five canonical gaps from the synchronized v5.9 Build Next
 
 The release-quality invariant introduced in v5.9 remains permanent. `tools/validate-release-quality.js` recalculates the live queue and blocks merge readiness whenever implemented-quality or mapped-delivery debt is nonzero. The gate runs in release preflight and the protected `test` job, so canonical expansion cannot ship while higher-priority delivery debt remains.
 
-The release workflow is documented in [`BUILDING.md`](BUILDING.md): one `release/obol-vX.Y` branch, one visible draft PR, incremental coherent commits, intermediate red checks allowed while Draft, and exact-final-head green validation before merge readiness. Normal documentation and maintenance PRs still receive regression coverage without being forced to impersonate a release PR.
+The release workflow is documented in [`BUILDING.md`](BUILDING.md): one `release/obol-vX.Y` branch, one visible draft PR, incremental coherent commits, lightweight smoke validation on ordinary pushes, explicit `[preflight]` validation for coherent release snapshots, `[release-final]` for the complete exact-head historical chain, and exact-final-head green validation before merge readiness. Normal documentation and maintenance PRs still receive regression coverage without being forced to impersonate a release PR.
 
 The README/Dashboard backlog synchronization introduced in v5.4 remains permanent. The README Build next agenda is generated from the same repository model that powers **North Star Dashboard → Build Next**. The dashboard is the authoritative full drill-down, while the README contains a CI-enforced human-readable snapshot of that queue.
 
@@ -114,7 +114,7 @@ A fixed command is not automatically a UX defect. Single-purpose/native commands
 
 ### Recent changes
 
-- **v6.0** — completed Java RMI, Log4Shell, Tomcat / JBoss manager, Veeam quick-win, and MITM Kerberos relay, raising strict completion from 65% to 69% and represented coverage from 91% to 95% while preserving zero implemented-quality and mapped-delivery debt.
+- **v6.0** — completed Java RMI, Log4Shell, Tomcat / JBoss manager, Veeam quick-win, and MITM Kerberos relay, raising strict completion from 65% to 69% and represented coverage from 91% to 95%; also introduced tiered smoke / preflight / final CI and automatic historical-test future-safety validation to reduce noisy intermediate regression failures without weakening merge gates.
 - **v5.9** — made zero implemented-quality and mapped-delivery debt a generic release invariant, then completed UAC bypass, EternalBlue, Exchange ProxyShell, GLPI, and Java deserialization, raising strict completion from 61% to 65% and represented coverage from 87% to 91%.
 - **v5.8** — completed PrintNightmare, PrivExchange, ProxyNotShell, AppLocker bypass, and Kerberos relay, raising strict completion from 57% to 61% and represented coverage from 83% to 87%; also added a release PR contract so the required CI check rejects wrong release branches or missing PR descriptions.
 
@@ -148,18 +148,20 @@ Before every build:
 - read `CHANGELOG.md`
 - inspect the current North Star Dashboard metrics, delivery-readiness view, quality-repair view, Build Next queue, and canonical backlog
 - branch from refreshed current `main` directly to exactly one `release/obol-vX.Y` branch and open exactly one draft release PR immediately
-- push incremental coherent commits to that same draft PR; intermediate red checks are acceptable while the PR is Draft
-- search for an existing release PR before creating one; never create a duplicate `build/obol-vX.Y` or staging release PR to work around a red state
+- push incremental coherent commits to that same draft PR; ordinary commits should rely on the lightweight `smoke` job rather than running release preflight or the complete historical chain
+- use `[preflight]` only when a coherent current-release snapshot is ready for current-release validation
+- search for an existing release PR before creating one; never create a duplicate `build/obol-vX.Y` or staging release PR to work around a failed check
 - preserve browser-local state compatibility when practical
 - before leaving Draft, ensure code, tests, documentation, changelog, release wiring, and README form one coherent release snapshot
 - regenerate the README Build Next snapshot with `node tools/sync-readme-build-next.js --write`
 - verify README/Dashboard queue synchronization with `node tools/sync-readme-build-next.js --check`
 - require `implemented-quality = 0` and `mapped-delivery = 0` with `node tools/validate-release-quality.js` before canonical-gap expansion is merge-ready
-- run `node tools/release-preflight.js` before marking the PR ready for review
+- run `node tools/validate-historical-tests.js` and keep historical suites free of mutable current-release assertions
+- run `node tools/release-preflight.js` or push a `[preflight]` commit before finalization
 - ensure `tools/validate-release-pr.js --repo-only` passes
-- make historical tests assert historical model invariants rather than hard-coding whichever release is currently visible in README
 - require a substantive release PR description with Summary, Canonical methodology accounting, Conservative Evidence boundaries, Release wiring, Regression coverage, and Compatibility sections
-- mark the PR Ready for review only after the release snapshot is coherent
+- make the exact final release commit with `[release-final]` only after the snapshot is coherent
+- mark the PR Ready for review only after smoke, preflight, and complete historical validation are green on that exact final head
 - require the complete historical regression chain, README synchronization, release-quality gate, and green required `test` status on the exact final PR head before merge
 - if another commit lands after green validation, treat the prior result as superseded and validate the new exact head again
 - keep generated reports, Evidence semantics, Next Steps, command UX, and execution context connected to methodology changes
@@ -174,10 +176,22 @@ The repository is designed to serve directly from `main` and `/ (root)`.
 
 ## Regression tests
 
-Release-branch pushes run the current-release preflight rather than the complete historical chain:
+Ordinary release-branch pushes run only lightweight smoke validation:
+
+```bash
+node tools/release-smoke.js
+```
+
+A commit containing `[preflight]` runs the current-release preflight without running the complete historical chain:
 
 ```bash
 node tools/release-preflight.js
+```
+
+Historical suites are scanned for mutable live-release assertions with:
+
+```bash
+node tools/validate-historical-tests.js
 ```
 
 The current release suite is:
@@ -198,7 +212,7 @@ The permanent release-quality debt gate is:
 node tools/validate-release-quality.js
 ```
 
-Draft PRs may remain red while work is in progress. Ready-for-review pull requests and `main` run the complete historical regression chain, the generic release-quality check, and README queue synchronization. Release-intent PRs additionally validate branch naming and description completeness. Superseded runs on the same ref are cancelled by workflow concurrency.
+`[release-final]` commits, ready-for-review pull requests, and `main` run the complete historical regression chain, historical-test future-safety validation, the release contract, the generic release-quality check, and README queue synchronization. Superseded runs on the same ref are cancelled by workflow concurrency.
 
 The README queue synchronization check is:
 
