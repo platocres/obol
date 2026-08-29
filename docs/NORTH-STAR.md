@@ -52,20 +52,20 @@ Terminal dispositions are `modeled`, `superseded`, or `rejected`, with rationale
 
 v7.3 completes the pinned MITM / relay source family and continues the quality-first queue into authenticated source inventory:
 
-- canonical: 109 / 127 implemented, 18 partial, 0 gaps, 0 stale;
-- strict completion: 86%;
+- canonical: 108 / 127 implemented, 19 partial, 0 gaps, 0 stale;
+- strict completion: 85%;
 - represented coverage: 100%;
 - methodology source files atomized: 4 / 17;
-- frozen partial baselines decomposed: 16 / 34;
+- frozen partial baselines decomposed: 15 / 34;
 - currently inventoried atomic units fidelity-complete: 51 / 51;
 - remaining inventoried atomic audits: 0;
-- remaining source-inventory/decomposition items: 18.
+- remaining source-inventory/decomposition items: 19.
 
-The canonical advance in v7.3 is accounting reconciliation, not denominator inflation. The two MITM parents that were still frozen partials at the v6.2 boundary advance only after their meaningful subordinate source branches are terminal and fidelity-complete: `mitm.listen` and `mitm.ntlm-relay`. `mitm.kerberos-relay` was already a canonical completion from v6.0 and retains that historical milestone while its HTTP, SMB, and LDAP(S) relay variants now have explicit atomic accounting.
+The canonical advance in v7.3 is deliberately narrow. `mitm.listen` was the only MITM parent that remained in the frozen v6.2 partial baseline and advances only after its listener-preparation and inbound-authentication Evidence contract is complete. `mitm.ntlm-relay` was already a canonical completion from v5.6 and `mitm.kerberos-relay` was already complete from v6.0; v7.3 preserves both historical milestones while adding explicit atomic accounting for their meaningful subordinate relay branches.
 
 The ten v7.3 MITM units cover credential/hash listening, legacy MS08-068 self-relay, NTLM relay to LDAP(S), SMB, HTTP, MSSQL, and NETLOGON/DCSync, plus Kerberos relay to HTTP/AD CS, SMB, and LDAP(S). Nine are modeled. The obsolete MS08-068 self-relay branch is explicitly `superseded` as a preferred modern workflow while remaining visible in the source ledger. Listener startup, inbound authentication, relay success, directory/service mutation, credential/hash/certificate/ticket material, authenticated access, execution, administrator access, privilege, and cleanup remain separate proof states throughout.
 
-The frozen v6.2 baseline remains 34. Therefore 51/51 currently inventoried units does **not** mean Orange source fidelity is globally complete. It means the four atomized methodology files, `adcs.md`, `delegation.md`, `acl.md`, and `mitm.md`, have exhausted their current atomic ledgers. The 18 remaining broad source-inventory/decomposition rows are now the active phase and will create new atomic denominators as useful source structure is mined.
+The frozen v6.2 baseline remains 34. Therefore 51/51 currently inventoried units does **not** mean Orange source fidelity is globally complete. It means the four atomized methodology files, `adcs.md`, `delegation.md`, `acl.md`, and `mitm.md`, have exhausted their current atomic ledgers. The 19 remaining broad source-inventory/decomposition rows are now the active phase and will create new atomic denominators as useful source structure is mined.
 
 These denominators must remain visible. A percentage may summarize a denominator but must never make unfinished source disappear.
 
@@ -79,7 +79,7 @@ The repository work queue is ordered by product quality, not by whichever metric
 4. atomic source-fidelity audits for already-inventoried units;
 5. source-depth inventory/decomposition for remaining broad partial baselines.
 
-v7.3 has zero rows in priorities 1 through 4, so priority 5 remains active. With MITM / relay source depth complete, the next live source family is `authenticated.md`, beginning with authenticated coercion and the remaining authenticated source-depth baselines.
+v7.3 has zero rows in priorities 1 through 4, so priority 5 remains active. With MITM / relay source depth complete, the next live source family is `authenticated.md`, beginning with authenticated coercion, authenticated known-vulnerability routing, and automated AD posture scanning.
 
 This ordering is derived from the repository model and exposed through the stable `C.currentProjectModel(...)` pointer. The current versioned implementation is `C.projectModel73(...)`.
 
@@ -99,7 +99,7 @@ Use these distinctions consistently:
 - **100% fully implemented** would mean all 127 normalized canonical sections are implemented.
 - **Source fully inventoried** would mean every methodology-bearing source file and every frozen source-depth baseline is explicitly decomposed/accounted for.
 - **Source fidelity complete** would mean every useful inventoried unit across the fully inventoried source has a complete terminal audit.
-- **51/51 currently inventoried atomic units complete** means the present AD CS, Kerberos delegation, ACL / ACE, and MITM / relay atomic ledgers are complete, not that the remaining 13 source files or 18 broad frozen-baseline rows have been exhausted.
+- **51/51 currently inventoried atomic units complete** means the present AD CS, Kerberos delegation, ACL / ACE, and MITM / relay atomic ledgers are complete, not that the remaining 13 source files or 19 broad frozen-baseline rows have been exhausted.
 - **Orange exhausted of useful ideas** may only be claimed when the source inventory and fidelity work are complete, including explicit superseded/rejected rationales where appropriate.
 
 Canonical breadth is not source exhaustion.
