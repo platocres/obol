@@ -1,0 +1,5 @@
+// Obol v6.5 dashboard metadata — first atomic AD CS source-fidelity delivery wave.
+(function(root){
+'use strict';
+root.OBOL_DASHBOARD_V65={version:'6.5.0',releaseMilestone:{release:'v6.5',implemented:95,partial:32,gap:0,stale:0,coveragePct:75,representedPct:100,label:'first five atomic AD CS fidelity units modeled'},fidelityWave:{title:'AD CS source fidelity is now moving from inventory to delivery',statement:'v6.5 completes five of the nineteen inventoried AD CS source units end to end: enumeration/routing, ESC8, ESC1, ESC2, and ESC3. The Dashboard keeps those five modeled outcomes separate from the fourteen still-pending atomic AD CS units and the twenty-seven frozen partial baselines that have not yet been atomized.',completion:'5/19 AD CS atomic units fidelity-complete; 14/19 remain pending. Two broad canonical parents are now fully implemented because all useful atomized depth beneath those parents is accounted for.',next:'Continue the remaining fourteen AD CS atomic audits before moving to the twenty-seven still-unatomized frozen partial baselines.'}};
+})(typeof window!=='undefined'?window:globalThis);
