@@ -46,9 +46,10 @@ This keeps future releases from rebuilding the same scaffolding around unchanged
 
 ## Consolidated current-state rule
 
-v6.6 establishes a boundary between domain models and current project-status presentation.
+v6.6 established the boundary between domain models and current project-status presentation. v6.8 adds a stable non-versioned pointer for current consumers.
 
-- `C.projectModel66(...)` is the current projection boundary for canonical progress, source-fidelity progress, quality debt, Build Next, recent progress, and the next priority.
+- `C.currentProjectModel(...)` is the preferred current projection boundary for canonical progress, source-fidelity progress, quality debt, Build Next, recent progress, and the next priority. In v6.8 it points to `C.projectModel68(...)`.
+- Versioned project adapters remain available as historical regression boundaries. Current tooling and documentation should not require edits merely to discover the newest adapter name when the stable pointer is available.
 - Dashboard, README synchronization, release-quality checks, and other current-status consumers use the consolidated current model instead of parsing README text or independently recalculating current counts.
 - Current release/project metadata has one owner. Do not create competing project-wide count tables in UI or release-specific metadata.
 - New UI overlays should express genuine behavior changes. Do not append another project-health panel merely because the version changed.
