@@ -32,7 +32,7 @@ Primary navigation stays intentionally small:
 
 The **More** menu contains North Star Dashboard, Engagement Map, Methodology, Tool Library, Planned Work, Workspace Search, Evidence Lineage, Guide, and Workspace Data.
 
-The **North Star Dashboard** is the single in-app location for project-wide hard numbers. Its overview-first v6.6 layout remains the current presentation shell, while v7.2 atomizes the pinned ACL / ACE source family, completes sixteen ACL fidelity units, advances the seven frozen partial ACL parents after their subordinate work is complete, and continues the live Build Next queue into man-in-the-middle / relay source inventory. Detailed engineering metrics, source-fidelity accounting, and the complete Build Next queue remain available as drill-downs.
+The **North Star Dashboard** is the single in-app location for project-wide hard numbers. Its overview-first v6.6 layout remains the current presentation shell, while v7.2 atomizes the pinned ACL / ACE source family, completes sixteen ACL fidelity units, advances the five ACL parents that were still frozen partials at the v6.2 boundary, and continues the live Build Next queue into man-in-the-middle / relay source inventory. Detailed engineering metrics, source-fidelity accounting, and the complete Build Next queue remain available as drill-downs.
 
 ## Project status
 
@@ -40,20 +40,20 @@ Obol keeps methodology breadth and source-depth/source-fidelity accounting separ
 
 Current v7.2 baseline:
 
-- **109 / 127** canonical sections fully implemented
-- **18** partial
+- **107 / 127** canonical sections fully implemented
+- **20** partial
 - **0** gaps
 - **0** stale mappings
-- **86%** fully implemented
+- **84%** fully implemented
 - **100%** represented
 - **3 / 17** methodology source files atomized
-- **16 / 34** frozen partial baselines decomposed
+- **14 / 34** frozen partial baselines decomposed
 - **41 / 41** currently inventoried atomic units fidelity-complete
-- **18** items in the live Build Next queue
+- **20** items in the live Build Next queue
 - **0** implemented-quality repairs
 - **0** mapped-delivery repairs
 
-The **127 canonical** section denominator measures structural breadth. It is deliberately separate from source-depth and atomic source-fidelity progress. v7.2 advances `acl.shadow-credentials`, `acl.group-control`, `acl.computer-control`, `acl.user-control`, `acl.ou-control`, `acl.gmsa`, and `acl.gpo` only after the pinned `acl.md` family is decomposed and all sixteen meaningful source units are terminal and fidelity-complete. Completing 41/41 currently inventoried units does **not** mean the pinned Orange source is exhausted: the frozen 34-section v6.2 source-depth denominator is preserved, with 18 broad source-inventory/decomposition items still live.
+The **127 canonical** section denominator measures structural breadth. It is deliberately separate from source-depth and atomic source-fidelity progress. v7.2 advances `acl.group-control`, `acl.computer-control`, `acl.user-control`, `acl.ou-control`, and `acl.gpo` only after the pinned `acl.md` family is decomposed and all sixteen meaningful source units are terminal and fidelity-complete. `acl.shadow-credentials` and `acl.gmsa` were already canonical completions from v5.6, while DCSync, LAPS, and DNS Admin were also already implemented; v7.2 gives those branches deeper atomic source accounting without rewriting their historical canonical milestones. Completing 41/41 currently inventoried units does **not** mean the pinned Orange source is exhausted: the frozen 34-section v6.2 source-depth denominator is preserved, with 20 broad source-inventory/decomposition items still live.
 
 The detailed definitions, pinned provenance, denominators, completion language, and audit requirements live in [`docs/NORTH-STAR.md`](docs/NORTH-STAR.md). The current presentation boundary is the stable `C.currentProjectModel(...)` pointer, backed by `C.projectModel72(...)` in v7.2.
 
@@ -123,7 +123,7 @@ This is intentionally not a rewrite. The goal is a smaller set of explicit owner
 
 ### Recent changes
 
-- **v7.2** - atomized the pinned `acl.md` family into sixteen meaningful units, reused mature DCSync, LAPS, and RBCD owners where they already satisfied the operator contract, added dedicated owners for Shadow Credentials, group/user/OU/GPO control, gMSA retrieval, and DNSAdmins, advanced seven frozen partial ACL parents, and moved Build Next into MITM / relay source inventory.
+- **v7.2** - atomized the pinned `acl.md` family into sixteen meaningful units, reused mature DCSync, LAPS, and RBCD owners where they already satisfied the operator contract, added dedicated owners for Shadow Credentials, group/user/OU/GPO control, gMSA retrieval, and DNSAdmins, advanced the five ACL parents that were still frozen partials at v6.2, and moved Build Next into MITM / relay source inventory.
 - **v7.1** - atomized the pinned `delegation.md` family into six meaningful units, completed discovery, unconstrained delegation, both constrained-delegation variants, RBCD, and S4U2Self fidelity, advanced the two remaining partial delegation parents, and moved Build Next into ACL / ACE source inventory.
 - **v7.0** - completed all five remaining AD CS certificate-mapping source-fidelity units, explicitly superseded the source-empty ESC14 exploit branch with current assessment/reporting rather than invented mechanics, reconciled `adcs.certificate-mapping`, reached 19/19 then-inventoried atomic units complete, and moved Build Next into source inventory/decomposition.
 
@@ -136,15 +136,15 @@ The block below is generated from the same current project model used by the Nor
 <!-- OBOL-BUILD-NEXT:START -->
 This block is generated from the same live repository state used by **North Star Dashboard → Build Next**. Do not edit it manually.
 
-**Current live queue:** 18 items — 0 implemented-quality repairs, 0 mapped-delivery repairs, 0 canonical gaps.
-**Canonical methodology:** 109/127 fully implemented (86%), 18 partial, 0 gaps, 100% represented.
-**Orange source fidelity:** 3/17 source files atomized, 16/34 partial baselines decomposed, 41/41 inventoried atomic units fidelity-complete.
+**Current live queue:** 20 items — 0 implemented-quality repairs, 0 mapped-delivery repairs, 0 canonical gaps.
+**Canonical methodology:** 107/127 fully implemented (84%), 20 partial, 0 gaps, 100% represented.
+**Orange source fidelity:** 3/17 source files atomized, 14/34 partial baselines decomposed, 41/41 inventoried atomic units fidelity-complete.
 **Current phase:** Orange source inventory and decomposition.
 
 **Highest-priority live items:**
 1. **Credential/hash listening** — mitm.md · source depth inventory.
-2. **NTLM relay** — mitm.md · source depth inventory.
-3. **Authenticated coercion** — authenticated.md · source depth inventory.
+2. **Authenticated coercion** — authenticated.md · source depth inventory.
+3. **Authenticated known-vulnerability path** — authenticated.md · source depth inventory.
 
 Generated by `node tools/sync-readme-build-next.js --write`. Verify with `node tools/sync-readme-build-next.js --check`.
 <!-- OBOL-BUILD-NEXT:END -->
