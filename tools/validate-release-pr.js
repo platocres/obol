@@ -38,10 +38,8 @@ if(!repoOnly&&eventName==='pull_request'){
 const version=eventVersion||currentVersion;
 const releaseBranch=`release/obol-v${version}`;
 const requiredFiles=[
-  `data/methodology-v${version}.js`,
-  `data/dashboard-v${version}.js`,
+  `data/project-model-v${version}.js`,
   `assets/core-v${version}.js`,
-  `assets/intake-v${version}.js`,
   `assets/app-v${version}.js`,
   `assets/obol-v${version}.css`,
   `tests/run-v${version}-tests.js`,
@@ -55,8 +53,10 @@ if(!index.includes(`Obol v${version}`))fail.push(`index.html does not expose v${
 
 const changelog=read('CHANGELOG.md');
 if(!changelog.includes(`## v${version}`))fail.push(`CHANGELOG.md is missing v${version}`);
+const runtime=read('tools/current-runtime.js');
+for(const f of [`project-model-v${version}.js`,`core-v${version}.js`])if(!runtime.includes(f))fail.push(`current runtime loader is not wired through ${f}`);
 const sync=read('tools/sync-readme-build-next.js');
-for(const f of [`methodology-v${version}.js`,`dashboard-v${version}.js`,`core-v${version}.js`])if(!sync.includes(f))fail.push(`README generator is not wired through ${f}`);
+if(!sync.includes("require('./current-runtime')"))fail.push('README generator does not consume the shared current runtime loader');
 const currentTest=read(`tests/run-v${version}-tests.js`);
 if(!currentTest.includes('validate-release-pr.js'))fail.push(`tests/run-v${version}-tests.js does not invoke the release PR validator`);
 if(!readme.includes('<!-- OBOL-BUILD-NEXT:START -->')||!readme.includes('<!-- OBOL-BUILD-NEXT:END -->'))fail.push('README Build Next markers are missing');
