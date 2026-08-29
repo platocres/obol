@@ -4,6 +4,20 @@ This file is the release-history source for Obol. Future build work should revie
 
 The README is intentionally reserved for current project purpose, architecture, permanent requirements, a compact summary of only the latest three releases, and forward priorities.
 
+## v6.1 — PXE, TimeRoast, and trust-path completion wave
+
+- Consumed the next five items from the synchronized v6.0 Build Next queue after confirming **0 implemented-quality repairs** and **0 mapped-delivery repairs**.
+- Completed PXE / NAA credential discovery, TimeRoasting, the SCCM PXE / NAA recovery mapping, child-to-parent trust paths, and external / forest trust paths.
+- Added delivery-ready owners `pxe-naa61`, `timeroast61`, `trust-child-parent61`, and `trust-external61`; the shared PXE owner intentionally covers both no-credential PXE and SCCM PXE/NAA canonical sections instead of duplicating operator workflows.
+- Kept PXE discovery, protected-PXE hash material, cracked secrets, and explicit Network Access Account username/password output as separate proof boundaries.
+- Kept TimeRoast/SNTP-MS hash collection below plaintext credentials and authenticated access; a cracked result remains credential material until separately validated.
+- Kept trust relationship context, recovered trust/krbtgt material, saved Kerberos ticket artifacts, and explicit cross-domain service access as separate proof boundaries.
+- Moved five canonical gaps to implemented, raising strict methodology from **87 implemented / 34 partial / 6 gaps / 0 stale** to **92 implemented / 34 partial / 1 gap / 0 stale**.
+- Raised fully implemented coverage from **69% to 72%** and represented coverage from **95% to 99%**, preserving the pinned 127-section denominator and Orange 2025.03 upstream commit.
+- Left **Parent-to-child trust paths** as the only remaining canonical gap in the synchronized Build Next queue.
+- Extended the North Star Dashboard, state coercion, sanitized-export compatibility, terminal Evidence interpretation, live UI/version wiring, release notes, README queue generation, and regression coverage through v6.1.
+- Retained the tiered smoke / preflight / `[release-final]` CI contract and historical-test future-safety gate introduced in v6.0.
+
 ## v6.0 — canonical quick-win and relay completion wave
 
 - Consumed the next five items from the synchronized v5.9 Build Next queue after confirming **0 implemented-quality repairs** and **0 mapped-delivery repairs**.
