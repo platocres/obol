@@ -8,29 +8,30 @@ At the v6.2 boundary, 34 canonical sections remained partial. Those 34 sections 
 
 ## Current progress
 
-As of v8.3, all 34 frozen v6.2 partial baselines are decomposed and fidelity-complete. The project is also 127/127 canonically implemented with zero quality debt and zero canonical gaps.
+As of v8.4, all 34 frozen v6.2 partial baselines are decomposed and fidelity-complete. The project is also 127/127 canonically implemented with zero quality debt and zero canonical gaps.
 
-Twelve of the 17 methodology-bearing source files are fully atomized at the file level: `adcs.md`, `delegation.md`, `acl.md`, `mitm.md`, `authenticated.md`, `sccm.md`, `admin.md`, `no_creds.md`, `lat_move.md`, `low_access.md`, `crack_hash.md`, and `low_hanging.md`.
+Thirteen of the 17 methodology-bearing source files are fully atomized at the file level: `adcs.md`, `delegation.md`, `acl.md`, `mitm.md`, `authenticated.md`, `sccm.md`, `admin.md`, `no_creds.md`, `lat_move.md`, `low_access.md`, `crack_hash.md`, `low_hanging.md`, and `persistence.md`.
 
-The five files still requiring complete whole-file inventory are:
+The four files still requiring complete whole-file inventory are:
 
-- `persistence.md`
 - `dom_admin.md`
 - `know_vuln_auth.md`
 - `trusts.md`
 - `valid_user.md`
 
-All 243 currently inventoried atomic units are fidelity-complete. That denominator must expand as these remaining files are atomized.
+All 258 currently inventoried atomic units are fidelity-complete. That denominator must expand as these remaining files are atomized.
 
-## v8.3 low_hanging.md whole-file wave
+## v8.4 persistence.md whole-file wave
 
-v8.3 completes the third whole-file inventory after the frozen v6.2 baseline by finishing `low_hanging.md` end to end. v8.0 had already atomized the safe Zerologon check plus the explicitly superseded destructive machine-account reset branch. v8.3 inventories the remaining EternalBlue, Tomcat/JBoss Manager, Java RMI, Java serialization, Log4Shell, database, Exchange, Veeam, GLPI, and weak-service terminal variants.
+v8.4 completes the fourth whole-file inventory after the frozen v6.2 baseline by finishing `persistence.md` end to end. v8.0 had already atomized the Add Domain Admin membership branch. v8.4 inventories the remaining Golden Ticket, Silver Ticket, DSRM, Skeleton Key, Custom SSP, Golden Certificate, Diamond Ticket, Sapphire Ticket, DCShadow, ACL manipulation, and trailing-placeholder source elements.
 
-Seventeen new source units receive terminal dispositions and complete North Star dimension review. Sixteen are modeled through mature or focused owners and the Nessus alternative is explicitly superseded as Obol's default operator route rather than silently omitted. The two inherited v8.0 Zerologon units remain part of the complete file-level denominator.
+Fifteen new source units receive terminal dispositions and complete North Star dimension review. Fourteen are modeled through mature persistence owners. The final source ellipsis is explicitly rejected as non-actionable placeholder text rather than silently omitted or expanded into invented methodology. The inherited v8.0 Add Domain Admin unit remains part of the complete file-level denominator.
 
-The wave deliberately gates quick-compromise branches on product/version or service-specific context. Scanner hits, module selection, payload generation, exploit invocation, callbacks, recovered credential material, authenticated access, execution, and resulting privilege remain separate Evidence states.
+The wave reviews upstream command quality rather than copying lines blindly. The pinned Golden Ticket Mimikatz line concatenates `/aes256` to `/sid`; v8.4 separates the arguments. The pinned Silver Ticket Mimikatz fields use SID/domain values inconsistently and the Impacket line omits `-spn`; v8.4 preserves those source variants in lineage but models the correct service-scoped workflow. Diamond and Sapphire source placeholders for password, NT hash, and AES key are treated as alternative authentication materials.
 
-The source wave advances the file-level denominator from 11/17 to 12/17 and the current atomic ledger from 226/226 to 243/243 complete. Canonical breadth remains 127/127 and the historical frozen baseline remains 34/34.
+Persistence state remains conservative. Registry or directory mutations, memory-resident changes, saved tickets, CA private keys, forged certificates, kiwissp.log material, authentication, service acceptance, execution, privilege, and cleanup/restoration remain distinct Evidence stages.
+
+The source wave advances the file-level denominator from 12/17 to 13/17 and the current atomic ledger from 243/243 to 258/258 complete. Canonical breadth remains 127/127 and the historical frozen baseline remains 34/34.
 
 ## Accounting model
 
@@ -70,11 +71,11 @@ The permanent release ordering is:
 5. frozen v6.2 baseline decomposition while frozen rows remain
 6. whole-file source inventory for remaining methodology-bearing files
 
-v8.0 exhausted priority 5. v8.1 completed `low_access.md`, v8.2 completed `crack_hash.md`, and v8.3 completes `low_hanging.md` in priority 6.
+v8.0 exhausted priority 5. v8.1 completed `low_access.md`, v8.2 completed `crack_hash.md`, v8.3 completed `low_hanging.md`, and v8.4 completes `persistence.md` in priority 6.
 
 ## Whole-file inventory phase
 
-`low_access.md`, `crack_hash.md`, and `low_hanging.md` are now fully atomized and protected as completed file-level denominators. Build Next proceeds through `persistence.md`, `dom_admin.md`, `know_vuln_auth.md`, `trusts.md`, and `valid_user.md`.
+`low_access.md`, `crack_hash.md`, `low_hanging.md`, and `persistence.md` are now fully atomized and protected as completed file-level denominators. Build Next proceeds through `dom_admin.md`, `know_vuln_auth.md`, `trusts.md`, and `valid_user.md`.
 
 Each file must be decomposed completely enough that useful source nodes are either modeled, superseded, or rejected with rationale. Completing only a previously frozen parent inside one of these files is not sufficient for file-level credit.
 
