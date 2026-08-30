@@ -5,7 +5,7 @@ const lanes=root.OBOL_LANES||[],O=root.OBOL_ORANGE_AD_2025_03,F=root.OBOL_ORANGE
 if(!O||!F||!F82||!M81)throw new Error('Obol Orange, source fidelity, and v8.1 methodology are required before methodology-v8.2.js');
 function card(id){for(const l of lanes)for(const c of l.cards||[])if(c.id===id)return c;return null;}
 function section(key){for(const f of O.files||[])for(const s of f.sections||[])if(s.key===key)return s;return null;}
-function addCommand(c,needle,cmd){c.commands=c.commands||[];let hit=c.commands.find(x=>String(x.run||'').includes(needle));if(!hit){c.commands.push(cmd);hit=cmd;}return hit;}
+function addCommand(c,needle,cmd){c.commands=c.commands||[];let hit=c.commands.find(x=>String(x.run||'')===String(cmd.run||''));if(!hit){c.commands.push(cmd);hit=cmd;}return hit;}
 function addShow(cmd){if(!cmd)return;cmd.opts=cmd.opts||[];if(!cmd.opts.some(x=>x&&x.flag==='--show'))cmd.opts.push({flag:'--show',tip:'Show locally recovered plaintext from the Hashcat potfile after a successful run. Preserve only the Evidence you need; recovered plaintext is still a credential candidate until separately validated.'});}
 function provenance(c,key){const s=section(key);if(!c)throw new Error('Missing owner for '+key);c.orange43=c.orange43||[];if(!c.orange43.some(x=>x.key===key))c.orange43.push({key,file:'crack_hash.md',label:(s&&s.label)||key,status:(s&&s.status)||'implemented',advancedIn:(s&&s.advancedIn)||''});}
 const hashcat=card('hashcat-modes'),john=card('john-modes'),kerberoast=card('kerberoast'),asrep=card('asrep-roast'),pxe=card('pxe-naa61');
