@@ -8,26 +8,25 @@ At the v6.2 boundary, 34 canonical sections remained partial. Those 34 sections 
 
 ## Current progress
 
-As of v8.6, all 34 frozen v6.2 partial baselines are decomposed and fidelity-complete. The project is also 127/127 canonically implemented with zero quality debt and zero canonical gaps.
+As of v8.7, all 34 frozen v6.2 partial baselines are decomposed and fidelity-complete. The project is also 127/127 canonically implemented with zero quality debt and zero canonical gaps.
 
-Fifteen of the 17 methodology-bearing source files are fully atomized at the file level: `adcs.md`, `delegation.md`, `acl.md`, `mitm.md`, `authenticated.md`, `sccm.md`, `admin.md`, `no_creds.md`, `lat_move.md`, `low_access.md`, `crack_hash.md`, `low_hanging.md`, `persistence.md`, `dom_admin.md`, and `know_vuln_auth.md`.
+Sixteen of the 17 methodology-bearing source files are fully atomized at the file level: `adcs.md`, `delegation.md`, `acl.md`, `mitm.md`, `authenticated.md`, `sccm.md`, `admin.md`, `no_creds.md`, `lat_move.md`, `low_access.md`, `crack_hash.md`, `low_hanging.md`, `persistence.md`, `dom_admin.md`, `know_vuln_auth.md`, and `trusts.md`.
 
-The two files still requiring complete whole-file inventory are:
+The only file still requiring complete whole-file inventory is:
 
-- `trusts.md`
 - `valid_user.md`
 
-All 282 currently inventoried atomic units are fidelity-complete. That denominator must expand as these remaining files are atomized.
+All 316 currently inventoried atomic units are fidelity-complete. That denominator must expand once more when the final file is atomized.
 
-## v8.6 know_vuln_auth.md whole-file wave
+## v8.7 trusts.md whole-file wave
 
-v8.6 completes the sixth whole-file inventory after the frozen v6.2 baseline by finishing `know_vuln_auth.md` end to end. Sixteen source units receive terminal dispositions and complete North Star dimension review. Fourteen are modeled through mature MS14-068, GPP, PrivExchange, noPac, PrintNightmare, Certifried, and ProxyNotShell owners. The redundant Metasploit MS14-068 and GPP scanner variants are explicitly superseded rather than silently omitted or duplicated.
+v8.7 completes the seventh whole-file inventory after the frozen v6.2 baseline by finishing `trusts.md` end to end. Thirty-four source units receive terminal dispositions and complete North Star dimension review. Thirty-three are modeled through mature trust-enumeration, child/parent, external/forest, BloodHound, DCSync, Golden Ticket, delegation, AD CS, lateral-movement, and MSSQL owners. The legacy MSSQL `trustlink` / `sp_linkedservers` spelling is explicitly superseded rather than silently omitted or duplicated.
 
-The wave reviews upstream command quality rather than copying lines blindly. The pinned `goldenPac.py` and `Get-GPPPassword.py` spellings are normalized to current packaged Impacket command names. The PrintNightmare source's `add_user.dll` remains lineage only; the mature operator surface stays detection-first and uses an operator-reviewed benign validation DLL when a lab validation is appropriate. ProxyNotShell keeps the source's arbitrary-command shape in lineage while the base operator action remains a bounded identity check.
+The wave reviews upstream command quality rather than copying lines blindly. The pinned concatenated `lookupsid.py` command is split into one current Impacket call per reviewed domain/DC. The child-to-parent Golden Ticket SID field is corrected to use the child domain SID. External-trust Impacket ticket paths keep the source domain SID distinct from the DNS domain and use the reviewed trusted-domain `krbtgt` SPN. One-way trust direction constraints remain explicit.
 
-Authenticated known-vulnerability state remains conservative. Platform age, scan findings, GPP policy material, recovered credentials, coercion callbacks, ticket/certificate material, command execution, administrator/SYSTEM context, DCSync capability, domain privilege, and cleanup remain distinct Evidence stages.
+Trust state remains conservative. Trust relationships, domain SIDs, recovered trust/krbtgt material, forged tickets, foreign membership, credential reuse, delegation/coercion context, SQL links, certificate paths, cross-domain authentication, service access, execution, administrator/SYSTEM context, Enterprise Admin membership, privilege, and cleanup remain distinct Evidence stages.
 
-The source wave advances the file-level denominator from 14/17 to 15/17 and the current atomic ledger from 266/266 to 282/282 complete. Canonical breadth remains 127/127 and the historical frozen baseline remains 34/34.
+The source wave advances the file-level denominator from 15/17 to 16/17 and the current atomic ledger from 282/282 to 316/316 complete. Canonical breadth remains 127/127 and the historical frozen baseline remains 34/34.
 
 ## Accounting model
 
@@ -67,19 +66,19 @@ The permanent release ordering is:
 5. frozen v6.2 baseline decomposition while frozen rows remain
 6. whole-file source inventory for remaining methodology-bearing files
 
-v8.0 exhausted priority 5. v8.1 completed `low_access.md`, v8.2 completed `crack_hash.md`, v8.3 completed `low_hanging.md`, v8.4 completed `persistence.md`, v8.5 completed `dom_admin.md`, and v8.6 completes `know_vuln_auth.md` in priority 6.
+v8.0 exhausted priority 5. v8.1 completed `low_access.md`, v8.2 completed `crack_hash.md`, v8.3 completed `low_hanging.md`, v8.4 completed `persistence.md`, v8.5 completed `dom_admin.md`, v8.6 completed `know_vuln_auth.md`, and v8.7 completes `trusts.md` in priority 6.
 
 ## Whole-file inventory phase
 
-`low_access.md`, `crack_hash.md`, `low_hanging.md`, `persistence.md`, `dom_admin.md`, and `know_vuln_auth.md` are now fully atomized and protected as completed file-level denominators. Build Next proceeds through `trusts.md` and `valid_user.md`.
+`low_access.md`, `crack_hash.md`, `low_hanging.md`, `persistence.md`, `dom_admin.md`, `know_vuln_auth.md`, and `trusts.md` are now fully atomized and protected as completed file-level denominators. Build Next proceeds to the final file, `valid_user.md`.
 
-Each file must be decomposed completely enough that useful source nodes are either modeled, superseded, or rejected with rationale. Completing only a previously frozen parent inside one of these files is not sufficient for file-level credit.
+The final file must be decomposed completely enough that useful source nodes are either modeled, superseded, or rejected with rationale. Completing only a previously frozen parent is not sufficient for file-level credit.
 
 ## Dashboard and Build Next contract
 
 North Star Dashboard remains authoritative. The Dashboard separately shows canonical accounting, source files atomized, the historical frozen-baseline milestone, atomic units inventoried, broad owner coverage, completed review dimensions, terminal dispositions, and the live queue. The README Build Next block remains a compact CI-enforced snapshot generated from the same current project model.
 
-Once the frozen baseline is complete, Build Next must not become empty while unatomized source files remain. It stays on explicit `source-file-inventory` rows so unfinished file-level source work remains visible.
+Build Next must not become empty while `valid_user.md` remains unatomized. It stays on an explicit `source-file-inventory` row so unfinished file-level source work remains visible.
 
 ## Completion target
 
