@@ -52,7 +52,8 @@ for(const f of requiredFiles.filter(x=>/^(?:data|assets)\//.test(x)))if(!index.i
 if(!index.includes(`Obol v${version}`))fail.push(`index.html does not expose v${version}`);
 
 const changelog=read('CHANGELOG.md');
-if(!changelog.includes(`## v${version}`))fail.push(`CHANGELOG.md is missing v${version}`);
+const releaseDoc=exists(`docs/v${version}.md`)?read(`docs/v${version}.md`):'';
+if(!changelog.includes(`## v${version}`)&&!releaseDoc.includes(`# Obol v${version}`))fail.push(`release documentation is missing v${version}`);
 const runtime=read('tools/current-runtime.js');
 for(const f of [`project-model-v${version}.js`,`core-v${version}.js`])if(!runtime.includes(f))fail.push(`current runtime loader is not wired through ${f}`);
 const sync=read('tools/sync-readme-build-next.js');
