@@ -8,30 +8,27 @@ At the v6.2 boundary, 34 canonical sections remained partial. Those 34 sections 
 
 ## Current progress
 
-As of v8.4, all 34 frozen v6.2 partial baselines are decomposed and fidelity-complete. The project is also 127/127 canonically implemented with zero quality debt and zero canonical gaps.
+As of v8.5, all 34 frozen v6.2 partial baselines are decomposed and fidelity-complete. The project is also 127/127 canonically implemented with zero quality debt and zero canonical gaps.
 
-Thirteen of the 17 methodology-bearing source files are fully atomized at the file level: `adcs.md`, `delegation.md`, `acl.md`, `mitm.md`, `authenticated.md`, `sccm.md`, `admin.md`, `no_creds.md`, `lat_move.md`, `low_access.md`, `crack_hash.md`, `low_hanging.md`, and `persistence.md`.
+Fourteen of the 17 methodology-bearing source files are fully atomized at the file level: `adcs.md`, `delegation.md`, `acl.md`, `mitm.md`, `authenticated.md`, `sccm.md`, `admin.md`, `no_creds.md`, `lat_move.md`, `low_access.md`, `crack_hash.md`, `low_hanging.md`, `persistence.md`, and `dom_admin.md`.
 
-The four files still requiring complete whole-file inventory are:
+The three files still requiring complete whole-file inventory are:
 
-- `dom_admin.md`
 - `know_vuln_auth.md`
 - `trusts.md`
 - `valid_user.md`
 
-All 258 currently inventoried atomic units are fidelity-complete. That denominator must expand as these remaining files are atomized.
+All 266 currently inventoried atomic units are fidelity-complete. That denominator must expand as these remaining files are atomized.
 
-## v8.4 persistence.md whole-file wave
+## v8.5 dom_admin.md whole-file wave
 
-v8.4 completes the fourth whole-file inventory after the frozen v6.2 baseline by finishing `persistence.md` end to end. v8.0 had already atomized the Add Domain Admin membership branch. v8.4 inventories the remaining Golden Ticket, Silver Ticket, DSRM, Skeleton Key, Custom SSP, Golden Certificate, Diamond Ticket, Sapphire Ticket, DCShadow, ACL manipulation, and trailing-placeholder source elements.
+v8.5 completes the fifth whole-file inventory after the frozen v6.2 baseline by finishing `dom_admin.md` end to end. Eight source units receive terminal dispositions and complete North Star dimension review. Seven are modeled through mature DCSync, credential-dump, and domain DPAPI backup-key owners. The Meterpreter-coupled `windows/gather/credentials/domain_hashdump` variant is explicitly superseded by clearer direct NetExec and Impacket workflows rather than silently omitted or duplicated.
 
-Fifteen new source units receive terminal dispositions and complete North Star dimension review. Fourteen are modeled through mature persistence owners. The final source ellipsis is explicitly rejected as non-actionable placeholder text rather than silently omitted or expanded into invented methodology. The inherited v8.0 Add Domain Admin unit remains part of the complete file-level denominator.
+The wave reviews upstream command quality rather than copying lines blindly. The pinned NTDSUtil abbreviation is expanded into an explicit activate-instance/IFM/create sequence, the offline `secretsdump` route drops the unnecessary pinned `-hashes lmhash:nthash` placeholder when the matching SYSTEM hive is supplied, and the DonPAPI `- H` spacing is corrected to `-H`.
 
-The wave reviews upstream command quality rather than copying lines blindly. The pinned Golden Ticket Mimikatz line concatenates `/aes256` to `/sid`; v8.4 separates the arguments. The pinned Silver Ticket Mimikatz fields use SID/domain values inconsistently and the Impacket line omits `-spn`; v8.4 preserves those source variants in lineage but models the correct service-scoped workflow. Diamond and Sapphire source placeholders for password, NT hash, and AES key are treated as alternative authentication materials.
+Domain credential state remains conservative. NTDS/SYSTEM snapshots, returned hashes, certificate-assisted synchronization output, DPAPI backup keys, later authentication, service access, execution, privilege, and cleanup remain distinct Evidence stages. Temporary target-side IFM artifacts carry an explicit cleanup obligation.
 
-Persistence state remains conservative. Registry or directory mutations, memory-resident changes, saved tickets, CA private keys, forged certificates, kiwissp.log material, authentication, service acceptance, execution, privilege, and cleanup/restoration remain distinct Evidence stages.
-
-The source wave advances the file-level denominator from 12/17 to 13/17 and the current atomic ledger from 243/243 to 258/258 complete. Canonical breadth remains 127/127 and the historical frozen baseline remains 34/34.
+The source wave advances the file-level denominator from 13/17 to 14/17 and the current atomic ledger from 258/258 to 266/266 complete. Canonical breadth remains 127/127 and the historical frozen baseline remains 34/34.
 
 ## Accounting model
 
@@ -71,11 +68,11 @@ The permanent release ordering is:
 5. frozen v6.2 baseline decomposition while frozen rows remain
 6. whole-file source inventory for remaining methodology-bearing files
 
-v8.0 exhausted priority 5. v8.1 completed `low_access.md`, v8.2 completed `crack_hash.md`, v8.3 completed `low_hanging.md`, and v8.4 completes `persistence.md` in priority 6.
+v8.0 exhausted priority 5. v8.1 completed `low_access.md`, v8.2 completed `crack_hash.md`, v8.3 completed `low_hanging.md`, v8.4 completed `persistence.md`, and v8.5 completes `dom_admin.md` in priority 6.
 
 ## Whole-file inventory phase
 
-`low_access.md`, `crack_hash.md`, `low_hanging.md`, and `persistence.md` are now fully atomized and protected as completed file-level denominators. Build Next proceeds through `dom_admin.md`, `know_vuln_auth.md`, `trusts.md`, and `valid_user.md`.
+`low_access.md`, `crack_hash.md`, `low_hanging.md`, `persistence.md`, and `dom_admin.md` are now fully atomized and protected as completed file-level denominators. Build Next proceeds through `know_vuln_auth.md`, `trusts.md`, and `valid_user.md`.
 
 Each file must be decomposed completely enough that useful source nodes are either modeled, superseded, or rejected with rationale. Completing only a previously frozen parent inside one of these files is not sufficient for file-level credit.
 
