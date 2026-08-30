@@ -10,9 +10,9 @@ At the v6.2 boundary, 34 canonical sections remained partial. Those 34 sections 
 
 ## Current progress
 
-As of v7.6, seven methodology-bearing source files have been atomized: `adcs.md`, `delegation.md`, `acl.md`, `mitm.md`, `authenticated.md`, `sccm.md`, and `admin.md`. Twenty-five of the 34 frozen partial baselines have been decomposed, and all 118 currently inventoried atomic units are fidelity-complete. Nine broad source-inventory/decomposition rows remain live, beginning with `no_creds.md`.
+As of v7.7, eight methodology-bearing source files have been atomized: `adcs.md`, `delegation.md`, `acl.md`, `mitm.md`, `authenticated.md`, `sccm.md`, `admin.md`, and `no_creds.md`. Twenty-seven of the 34 frozen partial baselines have been decomposed, and all 149 currently inventoried atomic units are fidelity-complete. Seven broad source-inventory/decomposition rows remain live, beginning with `lat_move.md`.
 
-The completed 118/118 atomic denominator describes the seven source families already inventoried. It must expand as the remaining source files are decomposed; it is not a claim that the pinned Orange source is exhausted. The `admin.md` family also demonstrates that terminal accounting can include an explicit **superseded** outcome: the pinned pre-July-2022 PPLdump route remains auditable without being promoted as a preferred current operator workflow.
+The completed 149/149 atomic denominator describes the eight source families already inventoried. It must expand as the remaining source files are decomposed; it is not a claim that the pinned Orange source is exhausted. Terminal accounting can include explicit **superseded** outcomes: v7.6 preserved the pinned pre-July-2022 PPLdump route without promoting it as a preferred modern workflow, while v7.7 preserves the deprecated Nmap `-sP` spelling and redundant Bettercap DHCPv6 alternative as reviewed source outcomes rather than duplicating weaker operator paths.
 
 ## v6.4 accounting model
 
