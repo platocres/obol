@@ -4,6 +4,19 @@ This file is the release-history source for Obol. Future build work should revie
 
 The README is intentionally reserved for current project purpose, architecture, permanent requirements, a compact summary of only the latest three releases, and forward priorities.
 
+## v7.4 - authenticated source-depth completion
+
+- Atomized the pinned `authenticated.md` methodology family into nineteen meaningful source-fidelity units spanning authenticated users and SMB shares, BloodHound Legacy and CE collection, LDAP and AD-integrated DNS inventory, AD CS and SCCM routing, AD-miner, PingCastle, adPEAS, Kerberoasting, four coercion families, Entra / AD Connect discovery, lateral-movement routing, and known-vulnerability routing.
+- Modeled all nineteen units end to end and reused mature BloodHound, AD CS, SCCM, Kerberoast, Entra, lateral-movement, and vulnerability-specific owners instead of creating release-only duplicates.
+- Added focused v7.4 owners for classic authenticated enumeration, automated AD posture assessment, and authenticated authentication coercion, with explicit Kali/Windows execution context, semantic command behavior, conservative Evidence profiles, Next Steps integration, cleanup where relevant, and report contracts.
+- Preserved strict separation between enumeration, scanner findings, coercion preparation/triggering, inbound authentication, relay success, vulnerability validation, credential/hash/certificate/ticket material, authenticated access, execution, administrator/SYSTEM access, privilege, and cleanup.
+- Advanced only the three authenticated parents that remained partial in the frozen v6.2 source-depth baseline: `authenticated.auto-scan`, `authenticated.coerce`, and `authenticated.known-vulns`. Historical canonical completions remain historical while gaining atomic accounting.
+- Raised canonical methodology from **108 implemented / 19 partial / 0 gaps / 0 stale** to **111 implemented / 16 partial / 0 gaps / 0 stale**, **87% fully implemented**, and **100% represented**.
+- Expanded source inventory from **4/17** to **5/17** methodology files atomized, from **15/34** to **18/34** frozen partial baselines decomposed, and from **51/51** to **70/70** currently inventoried atomic units fidelity-complete.
+- Reduced the live Build Next queue from **19** to **16** broad source-inventory/decomposition items, moving the active priority into `sccm.md` with zero implemented-quality, mapped-delivery, canonical-gap, or inventoried-fidelity debt.
+- Advanced the stable current projection through `C.projectModel74(...)`, `C.currentProjectModel(...)`, and `C.currentNorthStarDashboard(...)`, retained the overview-first Dashboard owner, and added no no-op Dashboard metadata layer.
+- Added v7.4 browser/runtime wiring, authenticated-source terminal Evidence interpretation, current-project documentation, README/North Star synchronization, source-wave UI summary, sanitized-export version migration, future-safe v7.3 regression coverage, and a dedicated v7.4 regression suite under the exact-head release workflow.
+
 ## v7.3 — MITM / relay source-depth completion
 
 - Atomized the pinned `mitm.md` methodology family into ten meaningful source-fidelity units spanning credential/hash listening, legacy MS08-068 self-relay, NTLM relay to LDAP(S), SMB, HTTP, MSSQL, and NETLOGON/DCSync, plus Kerberos relay to HTTP/AD CS, SMB, and LDAP(S).
