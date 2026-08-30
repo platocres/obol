@@ -4,6 +4,19 @@ This file is the release-history source for Obol. Future build work should revie
 
 The README is intentionally reserved for current project purpose, architecture, permanent requirements, a compact summary of only the latest three releases, and forward priorities.
 
+## v7.6 — admin source-depth completion
+
+- Atomized the pinned `admin.md` methodology family into twenty-five meaningful source-fidelity units spanning LSASS, SAM, LSA, DPAPI, token/session impersonation, RDP session transfer, user-profile discovery, KeePass credential recovery, and AD Connect synchronization-account recovery.
+- Modeled twenty-four units end to end and preserved the pinned pre-July-2022 PPLdump route as an explicitly superseded historical source branch rather than presenting it as a preferred current workflow.
+- Reused mature LSASS, credential-dumping, DPAPI, token-impersonation, and SeImpersonate owners while adding focused v7.6 owners for protected LSASS handling, logged-on/RDP session impersonation, AD CS-backed impersonation, user-profile discovery, KeePass recovery, and AD Connect MSOL credential recovery.
+- Preserved strict separation between protection/configuration changes, dump and registry artifacts, DPAPI masterkeys, session inventory, plugin/trigger preparation, certificate/hash/password material, authenticated access, execution, administrator/SYSTEM context, DCSync capability, privilege, and cleanup.
+- Advanced only `admin.misc`, the one `admin.md` parent still partial in the frozen v6.2 source-depth baseline. `admin.lsass`, `admin.sam`, `admin.lsa`, `admin.dpapi`, and `admin.impersonation` retain their historical canonical completion milestones while gaining complete atomic accounting.
+- Raised canonical methodology from **117 implemented / 10 partial / 0 gaps / 0 stale** to **118 implemented / 9 partial / 0 gaps / 0 stale**, **93% fully implemented**, and **100% represented**.
+- Expanded source inventory from **6/17** to **7/17** methodology files atomized, from **24/34** to **25/34** frozen partial baselines decomposed, and from **93/93** to **118/118** currently inventoried atomic units fidelity-complete.
+- Reduced the live Build Next queue from **10** to **9** broad source-inventory/decomposition items, moving the active priority into `no_creds.md` with zero implemented-quality, mapped-delivery, canonical-gap, or inventoried-fidelity debt.
+- Advanced the stable current projection through `C.projectModel76(...)`, `C.currentProjectModel(...)`, and `C.currentNorthStarDashboard(...)`, retained the overview-first Dashboard owner, and added no no-op Dashboard metadata layer.
+- Added v7.6 browser/runtime wiring, admin terminal Evidence interpretation, current-project documentation, README/North Star synchronization, source-wave UI summary, sanitized-export version migration, future-safe v7.5 regression coverage, and a dedicated v7.6 regression suite under the exact-head release workflow.
+
 ## v7.5 — SCCM source-depth completion
 
 - Atomized the pinned `sccm.md` methodology family into twenty-three meaningful source-fidelity units spanning reconnaissance, PXE/NAA routing, site-system relay, forced and automatic client push, distribution-point credential recovery, site-database takeover, MSSQL-server relay, policy-request credentials, local/client secret recovery, site-database credentials, administrative execution, cleanup, and SCCMHound post-exploitation mapping.

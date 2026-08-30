@@ -10,9 +10,9 @@ At the v6.2 boundary, 34 canonical sections remained partial. Those 34 sections 
 
 ## Current progress
 
-As of v7.5, six methodology-bearing source files have been atomized: `adcs.md`, `delegation.md`, `acl.md`, `mitm.md`, `authenticated.md`, and `sccm.md`. Twenty-four of the 34 frozen partial baselines have been decomposed, and all 93 currently inventoried atomic units are fidelity-complete. Ten broad source-inventory/decomposition rows remain live, beginning with `admin.md`.
+As of v7.6, seven methodology-bearing source files have been atomized: `adcs.md`, `delegation.md`, `acl.md`, `mitm.md`, `authenticated.md`, `sccm.md`, and `admin.md`. Twenty-five of the 34 frozen partial baselines have been decomposed, and all 118 currently inventoried atomic units are fidelity-complete. Nine broad source-inventory/decomposition rows remain live, beginning with `no_creds.md`.
 
-The completed 93/93 atomic denominator describes the six source families already inventoried. It must expand as the remaining source files are decomposed; it is not a claim that the pinned Orange source is exhausted.
+The completed 118/118 atomic denominator describes the seven source families already inventoried. It must expand as the remaining source files are decomposed; it is not a claim that the pinned Orange source is exhausted. The `admin.md` family also demonstrates that terminal accounting can include an explicit **superseded** outcome: the pinned pre-July-2022 PPLdump route remains auditable without being promoted as a preferred current operator workflow.
 
 ## v6.4 accounting model
 
