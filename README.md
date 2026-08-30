@@ -4,7 +4,7 @@ Obol is a static, offline-capable browser workspace for OSCP-style labs, Active 
 
 Live site: `https://platocres.github.io/obol/`
 
-Current release: **v8.0**
+Current release: **v8.1**
 
 Release history lives in [`CHANGELOG.md`](CHANGELOG.md). Architecture, source-accounting, Evidence, and release contracts live in dedicated engineering documents instead of being duplicated here. **The readme is not a changelog.**
 
@@ -32,13 +32,13 @@ Primary navigation stays intentionally small:
 
 The **More** menu contains North Star Dashboard, Engagement Map, Methodology, Tool Library, Planned Work, Workspace Search, Evidence Lineage, Guide, and Workspace Data.
 
-The **North Star Dashboard** is the single in-app location for project-wide hard numbers. v8.0 completes all 34 frozen v6.2 source-depth baselines, reaches 127/127 canonical implementation, explicitly supersedes the destructive Zerologon machine-account reset branch, and moves the live Build Next queue into whole-file Orange source inventory for the eight methodology-bearing files that are not yet fully atomized.
+The **North Star Dashboard** is the single in-app location for project-wide hard numbers. v8.1 completes the whole-file inventory for `low_access.md`, advances file-level source inventory to 10/17, expands the fidelity ledger to 211/211 complete atomic units, and moves the live Build Next queue to the seven remaining methodology-bearing Orange files.
 
 ## Project status
 
 Obol keeps methodology breadth and source-depth/source-fidelity accounting separate. A broad methodology section can be fully implemented while subordinate source material still needs decomposition or end-to-end review.
 
-Current v8.0 baseline:
+Current v8.1 baseline:
 
 - **127 / 127** canonical sections fully implemented
 - **0** partial
@@ -46,16 +46,16 @@ Current v8.0 baseline:
 - **0** stale mappings
 - **100%** fully implemented
 - **100%** represented
-- **9 / 17** methodology source files atomized
+- **10 / 17** methodology source files atomized
 - **34 / 34** frozen partial baselines decomposed
-- **194 / 194** currently inventoried atomic units fidelity-complete
-- **8** items in the live Build Next queue
+- **211 / 211** currently inventoried atomic units fidelity-complete
+- **7** items in the live Build Next queue
 - **0** implemented-quality repairs
 - **0** mapped-delivery repairs
 
-The **127 canonical** section denominator measures structural breadth. v8.0 closes that breadth milestone and also closes the frozen 34-row v6.2 source-depth baseline, but neither milestone means the Orange source is exhausted. Eight methodology-bearing source files are still not fully atomized, so new atomic denominators will continue to appear as those files are mined end to end.
+The **127 canonical** section denominator measures structural breadth. v8.0 closed canonical breadth and the frozen 34-row v6.2 source-depth baseline; v8.1 advances the separate whole-file source-inventory denominator by fully atomizing `low_access.md`. Seven methodology-bearing source files are still not fully atomized, so new atomic denominators will continue to appear as those files are mined end to end.
 
-v8.0 advances only `crack_hash.pxe`, `low_hanging.zerologon`, and `persistence.add-da`. PXE/SCCM hash cracking and temporary Domain Admin membership are modeled through mature owners. Zerologon safe detection is modeled, while the pinned destructive DC machine-account password-reset exploit is explicitly **superseded** rather than copied into the current operator surface.
+v8.1 adds seventeen terminal `low_access.md` source units beneath mature AppLocker, UAC, Windows enumeration, credential hunting, Kerberos relay, and SeImpersonate owners. Twelve are modeled end to end. Five legacy or duplicate variants are explicitly **superseded** with rationale rather than silently omitted. Existing v7.9 SMBGhost/SeriousSAM and WebDAV atoms remain preserved.
 
 The detailed definitions, pinned provenance, denominators, completion language, and audit requirements live in [`docs/NORTH-STAR.md`](docs/NORTH-STAR.md). The source-depth work plan is in [`docs/ORANGE-SOURCE-DEPTH.md`](docs/ORANGE-SOURCE-DEPTH.md).
 
@@ -101,7 +101,7 @@ Obol generates commands for humans to review and run elsewhere. It does not sile
 
 ## Architecture direction
 
-Obol grew through additive release overlays while the product model was still changing. Those historical layers remain where they still encode behavior protected by regression tests. v6.6 established the consolidation boundary, v6.8 added stable current-project pointers, and v8.0 keeps all current status consumers on those stable boundaries:
+Obol grew through additive release overlays while the product model was still changing. Those historical layers remain where they still encode behavior protected by regression tests. v6.6 established the consolidation boundary, v6.8 added stable current-project pointers, and v8.1 keeps all current status consumers on those stable boundaries:
 
 - project status has one current projection model exposed through `C.currentProjectModel(...)`;
 - Dashboard and README consume that model instead of recalculating progress independently;
@@ -117,8 +117,8 @@ This is intentionally not a rewrite. The goal is a smaller set of explicit owner
 ### North Star objectives
 
 - Consume the live Build Next queue in quality-first order.
-- Atomize the eight remaining methodology-bearing source files completely before claiming Orange source inventory is complete.
-- Finish the remaining `low_access.md` branches first, then continue through `crack_hash.md`, `low_hanging.md`, `persistence.md`, `dom_admin.md`, `know_vuln_auth.md`, `trusts.md`, and `valid_user.md`.
+- Atomize the seven remaining methodology-bearing source files completely before claiming Orange source inventory is complete.
+- Continue through `crack_hash.md`, `low_hanging.md`, `persistence.md`, `dom_admin.md`, `know_vuln_auth.md`, `trusts.md`, and `valid_user.md`.
 - Preserve the completed 34/34 frozen-baseline milestone as a historical denominator while whole-file inventories create new atomic units.
 - Preserve completed source-family atomic ledgers as regression-protected denominators while new source families are inventoried.
 - Compact historical runtime ownership one stable area at a time behind regression-equivalent replacements.
@@ -126,9 +126,9 @@ This is intentionally not a rewrite. The goal is a smaller set of explicit owner
 
 ### Recent changes
 
+- **v8.1** - completed whole-file source inventory for `low_access.md`, added seventeen terminal atomic units across AppLocker/UAC/enumeration/credential hunting/Kerberos relay/SeImpersonate, advanced file-level inventory to 10/17, and moved Build Next to `crack_hash.md`.
 - **v8.0** - completed the final three frozen v6.2 source-depth baselines, reached 127/127 canonical implementation, modeled SCCM/PXE hash cracking and Domain Admin membership through mature owners, explicitly superseded the destructive Zerologon reset branch, and transitioned Build Next to eight whole-file source inventories.
 - **v7.9** - decomposed SMBGhost and SeriousSAM validation plus the WebDAV/searchConnector-ms coercion chain, advanced the two remaining frozen low-access parents, and reduced the frozen source-depth queue to three items without falsely marking the whole low-access file atomized.
-- **v7.8** - atomized the pinned `lat_move.md` family into thirty-eight meaningful units, advanced only the remaining frozen SOCKS/certificate parents, preserved historical movement milestones, and moved Build Next into low-access source inventory.
 
 For older releases, see [`CHANGELOG.md`](CHANGELOG.md) and the versioned documents under `docs/`.
 
@@ -139,15 +139,15 @@ The block below is generated from the same current project model used by the Nor
 <!-- OBOL-BUILD-NEXT:START -->
 This block is generated from the same live repository state used by **North Star Dashboard → Build Next**. Do not edit it manually.
 
-**Current live queue:** 8 items — 0 implemented-quality repairs, 0 mapped-delivery repairs, 0 canonical gaps.
+**Current live queue:** 7 items — 0 implemented-quality repairs, 0 mapped-delivery repairs, 0 canonical gaps.
 **Canonical methodology:** 127/127 fully implemented (100%), 0 partial, 0 gaps, 100% represented.
-**Orange source fidelity:** 9/17 source files atomized, 34/34 partial baselines decomposed, 194/194 inventoried atomic units fidelity-complete.
+**Orange source fidelity:** 10/17 source files atomized, 34/34 partial baselines decomposed, 211/211 inventoried atomic units fidelity-complete.
 **Current phase:** Orange whole-file source inventory.
 
 **Highest-priority live items:**
-1. **Windows low access / privilege escalation source inventory** — low_access.md · source file inventory.
-2. **Hash cracking source inventory** — crack_hash.md · source file inventory.
-3. **Quick compromise / low-hanging fruit source inventory** — low_hanging.md · source file inventory.
+1. **Hash cracking source inventory** — crack_hash.md · source file inventory.
+2. **Quick compromise / low-hanging fruit source inventory** — low_hanging.md · source file inventory.
+3. **Persistence source inventory** — persistence.md · source file inventory.
 
 Generated by `node tools/sync-readme-build-next.js --write`. Verify with `node tools/sync-readme-build-next.js --check`.
 <!-- OBOL-BUILD-NEXT:END -->
@@ -160,7 +160,7 @@ Open `index.html` in a browser. No server or package install is required.
 
 ```bash
 node tools/release-smoke.js
-node tests/run-v8.0-tests.js
+node tests/run-v8.1-tests.js
 node tools/release-preflight.js
 node tools/sync-readme-build-next.js --check
 node tools/validate-release-quality.js
