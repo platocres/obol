@@ -10,9 +10,9 @@ At the v6.2 boundary, 34 canonical sections remained partial. Those 34 sections 
 
 ## Current progress
 
-As of v7.7, eight methodology-bearing source files have been atomized: `adcs.md`, `delegation.md`, `acl.md`, `mitm.md`, `authenticated.md`, `sccm.md`, `admin.md`, and `no_creds.md`. Twenty-seven of the 34 frozen partial baselines have been decomposed, and all 149 currently inventoried atomic units are fidelity-complete. Seven broad source-inventory/decomposition rows remain live, beginning with `lat_move.md`.
+As of v7.8, nine methodology-bearing source files have been atomized: `adcs.md`, `delegation.md`, `acl.md`, `mitm.md`, `authenticated.md`, `sccm.md`, `admin.md`, `no_creds.md`, and `lat_move.md`. Twenty-nine of the 34 frozen partial baselines have been decomposed, and all 187 currently inventoried atomic units are fidelity-complete. Five broad source-inventory/decomposition rows remain live, beginning with `low_access.md` and WebDAV coercion.
 
-The completed 149/149 atomic denominator describes the eight source families already inventoried. It must expand as the remaining source files are decomposed; it is not a claim that the pinned Orange source is exhausted. Terminal accounting can include explicit **superseded** outcomes: v7.6 preserved the pinned pre-July-2022 PPLdump route without promoting it as a preferred modern workflow, while v7.7 preserves the deprecated Nmap `-sP` spelling and redundant Bettercap DHCPv6 alternative as reviewed source outcomes rather than duplicating weaker operator paths.
+The completed 187/187 atomic denominator describes the nine source families already inventoried. It must expand as the remaining source files are decomposed; it is not a claim that the pinned Orange source is exhausted. Terminal accounting can include explicit **superseded** outcomes: v7.6 preserved the pinned pre-July-2022 PPLdump route without promoting it as a preferred modern workflow, while v7.7 preserves the deprecated Nmap `-sP` spelling and redundant Bettercap DHCPv6 alternative as reviewed source outcomes rather than duplicating weaker operator paths. v7.8 adds no superseded lateral-movement units; all thirty-eight inventoried `lat_move.md` units are modeled.
 
 ## v6.4 accounting model
 
@@ -68,6 +68,21 @@ Every atomic source unit and every frozen source-depth baseline item must eventu
 Do not copy an inferior or obsolete upstream path merely to raise a percentage. Superseding it with a better operator path is a successful audit outcome when the rationale is explicit.
 
 A terminal status alone is not enough. A source unit is fidelity-complete only when its required North Star dimensions are also complete.
+
+## Lateral-movement source wave
+
+v7.8 adds the complete pinned `lat_move.md` family as thirty-eight atomic units. The family covers:
+
+- cleartext-password PsExec, pseudo-shell, NetExec, WinRM, RDP, SMB file access, and MSSQL authentication;
+- pass-the-hash and overpass-the-hash/pass-the-key variants, including Restricted Admin RDP and WinRM;
+- Kerberos ticket conversion, ccache/Windows injection, proxied service use, SPN substitution, and AES-key authentication;
+- relay-backed SOCKS use for SID lookup, MSSQL, secretsdump/DCSync output, SMB, atexec, and smbexec;
+- certificate PKINIT, UnPAC-the-hash, Rubeus TGT, Schannel LDAP shell, and PassTheCert workflows;
+- MSSQL access discovery, SQLAdmin graph paths, database enumeration, xp_cmdshell, impersonation, xp_dirtree coercion, and linked-server traversal.
+
+Only `lat_move.socks` and `lat_move.certificate` advance canonically because those are the lateral-movement rows still present in the frozen v6.2 partial baseline. `lat_move.plaintext`, `lat_move.nt-hash`, `lat_move.kerberos`, and `lat_move.mssql` retain their historical completion milestones while receiving atomic source accounting.
+
+The v7.8 Evidence contract keeps relay state, certificate material, ticket/hash material, service authentication, file access, SQL access, coercion, execution, privilege, and cleanup separate. Source accounting never creates engagement facts.
 
 ## Priority order
 

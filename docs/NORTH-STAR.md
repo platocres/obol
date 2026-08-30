@@ -48,26 +48,26 @@ An atomic unit is fidelity-complete only when the relevant requirements are acco
 
 Terminal dispositions are `modeled`, `superseded`, or `rejected`, with rationale. Merely assigning one of those labels without satisfying the required review dimensions is not enough.
 
-## Current v7.7 baseline
+## Current v7.8 baseline
 
-v7.7 completes the pinned `no_creds.md` source family and continues the quality-first queue into `lat_move.md` source inventory:
+v7.8 completes the pinned `lat_move.md` source family and continues the quality-first queue into `low_access.md` source inventory:
 
-- canonical: 120 / 127 implemented, 7 partial, 0 gaps, 0 stale;
-- strict completion: 94%;
+- canonical: 122 / 127 implemented, 5 partial, 0 gaps, 0 stale;
+- strict completion: 96%;
 - represented coverage: 100%;
-- methodology source files atomized: 8 / 17;
-- frozen partial baselines decomposed: 27 / 34;
-- currently inventoried atomic units fidelity-complete: 149 / 149;
+- methodology source files atomized: 9 / 17;
+- frozen partial baselines decomposed: 29 / 34;
+- currently inventoried atomic units fidelity-complete: 187 / 187;
 - remaining inventoried atomic audits: 0;
-- remaining source-inventory/decomposition items: 7.
+- remaining source-inventory/decomposition items: 5.
 
-The canonical advance in v7.7 is deliberately limited to `no_creds.poisoning` and `no_creds.coerce`, the two `no_creds.md` parents still present in the frozen v6.2 source-depth baseline. The other no-credential parents retain their historical canonical completion milestones while gaining complete atomic accounting.
+The canonical advance in v7.8 is deliberately limited to `lat_move.socks` and `lat_move.certificate`, the two `lat_move.md` parents still present in the frozen v6.2 source-depth baseline. The historically complete cleartext, NT-hash, Kerberos, and MSSQL parents retain their original completion milestones while gaining complete atomic accounting. `lat_move.mssql` specifically retains its v4.3 completion.
 
-The thirty-one v7.7 source units cover service discovery, domain-controller discovery, DNS zone transfer, anonymous/guest SMB, anonymous LDAP, username enumeration, Kerberos username validation, LLMNR/NBT-NS/mDNS listening, DHCPv6 poisoning, ARP interception, unauthenticated PetitPotam coercion, PXE/NAA recovery, and TimeRoast. Twenty-nine are modeled. The deprecated Nmap `-sP` spelling and redundant Bettercap DHCPv6 alternative are retained as reviewed, explicitly superseded source outcomes rather than being presented as preferred operator workflows.
+The thirty-eight v7.8 source units cover cleartext-password PsExec/pseudo-shell/WinRM/RDP/SMB/MSSQL movement, pass-the-hash and overpass-the-hash variants, Kerberos ticket conversion/injection/service use, relay-backed SOCKS movement, certificate PKINIT/Schannel movement, and MSSQL discovery, SQLAdmin, enumeration, execution, impersonation, coercion, and linked-server branches. All thirty-eight are modeled.
 
-Evidence remains conservative across the family. Discovery, listener state, DHCPv6/ARP poison state, inbound authentication, captured hash or credential material, coercion, relay success, authenticated access, remote execution, administrator/SYSTEM context, privilege, and cleanup are separate proof states. A listener or poison state never silently becomes credential capture, relay success, access, or privilege.
+Evidence remains conservative across the family. Credential/hash/ticket/certificate material, relay sessions, authentication, service access, file access, coercion, returned hashes, remote execution, administrator/SYSTEM context, privilege, and cleanup are separate proof states. A relay session or certificate file never silently becomes DCSync rights, access, execution, or privilege.
 
-The frozen v6.2 baseline remains 34. Therefore 149/149 currently inventoried units does **not** mean Orange source fidelity is globally complete. It means the eight atomized methodology files, `adcs.md`, `delegation.md`, `acl.md`, `mitm.md`, `authenticated.md`, `sccm.md`, `admin.md`, and `no_creds.md`, have exhausted their current atomic ledgers. The 7 remaining broad source-inventory/decomposition rows are the active phase and will create new atomic denominators as useful source structure is mined.
+The frozen v6.2 baseline remains 34. Therefore 187/187 currently inventoried units does **not** mean Orange source fidelity is globally complete. It means the nine atomized methodology files, `adcs.md`, `delegation.md`, `acl.md`, `mitm.md`, `authenticated.md`, `sccm.md`, `admin.md`, `no_creds.md`, and `lat_move.md`, have exhausted their current atomic ledgers. The 5 remaining broad source-inventory/decomposition rows are the active phase and will create new atomic denominators as useful source structure is mined.
 
 These denominators must remain visible. A percentage may summarize a denominator but must never make unfinished source disappear.
 
@@ -81,13 +81,13 @@ The repository work queue is ordered by product quality, not by whichever metric
 4. atomic source-fidelity audits for already-inventoried units;
 5. source-depth inventory/decomposition for remaining broad partial baselines.
 
-v7.7 has zero rows in priorities 1 through 4, so priority 5 remains active. With no-credential source depth complete, the next live source family is `lat_move.md`, beginning with certificate-based movement and SOCKS/relayed movement.
+v7.8 has zero rows in priorities 1 through 4, so priority 5 remains active. With lateral-movement source depth complete, the next live source family is `low_access.md`, beginning with WebDAV coercion.
 
-This ordering is derived from the repository model and exposed through the stable `C.currentProjectModel(...)` pointer. The current versioned implementation is `C.projectModel77(...)`.
+This ordering is derived from the repository model and exposed through the stable `C.currentProjectModel(...)` pointer. The current versioned implementation is `C.projectModel78(...)`.
 
 ## Current-project projection rule
 
-Beginning with v6.6, project status has one current projection boundary. v6.8 added the stable non-versioned pointer `C.currentProjectModel(...)` so current consumers do not need to hard-code whichever versioned adapter happens to be newest. v7.7 keeps that pointer current while retaining versioned adapters as historical regression boundaries.
+Beginning with v6.6, project status has one current projection boundary. v6.8 added the stable non-versioned pointer `C.currentProjectModel(...)` so current consumers do not need to hard-code whichever versioned adapter happens to be newest. v7.8 keeps that pointer current while retaining versioned adapters as historical regression boundaries.
 
 The Dashboard and README may present or summarize its output, but they should not keep independent current counts or competing Build Next calculations. The underlying domain models remain the owners of canonical, delivery, and source-fidelity semantics; the project model provides a stable current view over them.
 
@@ -101,7 +101,7 @@ Use these distinctions consistently:
 - **100% fully implemented** would mean all 127 normalized canonical sections are implemented.
 - **Source fully inventoried** would mean every methodology-bearing source file and every frozen source-depth baseline is explicitly decomposed/accounted for.
 - **Source fidelity complete** would mean every useful inventoried unit across the fully inventoried source has a complete terminal audit.
-- **149/149 currently inventoried atomic units complete** means the present AD CS, Kerberos delegation, ACL / ACE, MITM / relay, authenticated, SCCM, admin, and no-credential atomic ledgers are complete, not that the remaining 9 source files or 7 broad frozen-baseline rows have been exhausted.
+- **187/187 currently inventoried atomic units complete** means the present AD CS, Kerberos delegation, ACL / ACE, MITM / relay, authenticated, SCCM, admin, no-credential, and lateral-movement atomic ledgers are complete, not that the remaining 8 source files or 5 broad frozen-baseline rows have been exhausted.
 - **Orange exhausted of useful ideas** may only be claimed when the source inventory and fidelity work are complete, including explicit superseded/rejected rationales where appropriate.
 
 Canonical breadth is not source exhaustion.
