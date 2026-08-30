@@ -45,9 +45,9 @@ Do not create no-op `methodology-vX.Y.js`, `dashboard-vX.Y.js`, `intake-vX.Y.js`
 
 ## Consolidated current-state rule
 
-v6.6 established the boundary between domain models and current project-status presentation. v6.8 added a stable non-versioned pointer for current consumers, and v8.0 continues through that boundary.
+v6.6 established the boundary between domain models and current project-status presentation. v6.8 added a stable non-versioned pointer for current consumers, and v8.1 continues through that boundary.
 
-- `C.currentProjectModel(...)` is the preferred current projection boundary for canonical progress, source-fidelity progress, quality debt, Build Next, recent progress, and the next priority. In v8.0 it points to `C.projectModel80(...)`.
+- `C.currentProjectModel(...)` is the preferred current projection boundary for canonical progress, source-fidelity progress, quality debt, Build Next, recent progress, and the next priority. In v8.1 it points to `C.projectModel81(...)`.
 - Versioned project adapters remain available as historical regression boundaries. Current tooling and documentation should not require edits merely to discover the newest adapter name when the stable pointer is available.
 - Dashboard, README synchronization, release-quality checks, and other current-status consumers use the consolidated current model instead of parsing README text or independently recalculating current counts.
 - Current release/project metadata has one owner. Do not create competing project-wide count tables in UI or release-specific metadata.
@@ -84,7 +84,7 @@ The current Build Next model preserves this priority order:
 
 A methodology-expansion release must not skip priority 1 or 2 debt. Canonical gaps outrank source-fidelity work while gaps remain. Already-inventoried atomic units outrank new inventory because their missing requirements are known precisely. Frozen v6.2 baseline rows historically outrank whole-file cleanup so their original denominator cannot disappear.
 
-v8.0 completes all 34 frozen v6.2 baseline rows. The live queue therefore moves to eight whole-file source inventories, beginning with `low_access.md` and then `crack_hash.md`, `low_hanging.md`, `persistence.md`, `dom_admin.md`, `know_vuln_auth.md`, `trusts.md`, and `valid_user.md`.
+v8.0 completed all 34 frozen v6.2 baseline rows. v8.1 completes whole-file inventory for `low_access.md`, taking file-level atomization to 10/17 and moving the live queue to seven remaining files: `crack_hash.md`, `low_hanging.md`, `persistence.md`, `dom_admin.md`, `know_vuln_auth.md`, `trusts.md`, and `valid_user.md`.
 
 The 127-section canonical denominator measures structural representation. The frozen v6.2 source-depth denominator remains the historical 34 then-partial canonical sections. The atomic source-fidelity ledger measures meaningful subordinate branches and the requirements needed to translate them into Obol's Run -> Evidence -> Next Steps -> Report loop. The file-level denominator remains 17 methodology-bearing source files.
 
