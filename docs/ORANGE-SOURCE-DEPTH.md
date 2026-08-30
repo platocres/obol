@@ -8,27 +8,26 @@ At the v6.2 boundary, 34 canonical sections remained partial. Those 34 sections 
 
 ## Current progress
 
-As of v8.5, all 34 frozen v6.2 partial baselines are decomposed and fidelity-complete. The project is also 127/127 canonically implemented with zero quality debt and zero canonical gaps.
+As of v8.6, all 34 frozen v6.2 partial baselines are decomposed and fidelity-complete. The project is also 127/127 canonically implemented with zero quality debt and zero canonical gaps.
 
-Fourteen of the 17 methodology-bearing source files are fully atomized at the file level: `adcs.md`, `delegation.md`, `acl.md`, `mitm.md`, `authenticated.md`, `sccm.md`, `admin.md`, `no_creds.md`, `lat_move.md`, `low_access.md`, `crack_hash.md`, `low_hanging.md`, `persistence.md`, and `dom_admin.md`.
+Fifteen of the 17 methodology-bearing source files are fully atomized at the file level: `adcs.md`, `delegation.md`, `acl.md`, `mitm.md`, `authenticated.md`, `sccm.md`, `admin.md`, `no_creds.md`, `lat_move.md`, `low_access.md`, `crack_hash.md`, `low_hanging.md`, `persistence.md`, `dom_admin.md`, and `know_vuln_auth.md`.
 
-The three files still requiring complete whole-file inventory are:
+The two files still requiring complete whole-file inventory are:
 
-- `know_vuln_auth.md`
 - `trusts.md`
 - `valid_user.md`
 
-All 266 currently inventoried atomic units are fidelity-complete. That denominator must expand as these remaining files are atomized.
+All 282 currently inventoried atomic units are fidelity-complete. That denominator must expand as these remaining files are atomized.
 
-## v8.5 dom_admin.md whole-file wave
+## v8.6 know_vuln_auth.md whole-file wave
 
-v8.5 completes the fifth whole-file inventory after the frozen v6.2 baseline by finishing `dom_admin.md` end to end. Eight source units receive terminal dispositions and complete North Star dimension review. Seven are modeled through mature DCSync, credential-dump, and domain DPAPI backup-key owners. The Meterpreter-coupled `windows/gather/credentials/domain_hashdump` variant is explicitly superseded by clearer direct NetExec and Impacket workflows rather than silently omitted or duplicated.
+v8.6 completes the sixth whole-file inventory after the frozen v6.2 baseline by finishing `know_vuln_auth.md` end to end. Sixteen source units receive terminal dispositions and complete North Star dimension review. Fourteen are modeled through mature MS14-068, GPP, PrivExchange, noPac, PrintNightmare, Certifried, and ProxyNotShell owners. The redundant Metasploit MS14-068 and GPP scanner variants are explicitly superseded rather than silently omitted or duplicated.
 
-The wave reviews upstream command quality rather than copying lines blindly. The pinned NTDSUtil abbreviation is expanded into an explicit activate-instance/IFM/create sequence, the offline `secretsdump` route drops the unnecessary pinned `-hashes lmhash:nthash` placeholder when the matching SYSTEM hive is supplied, and the DonPAPI `- H` spacing is corrected to `-H`.
+The wave reviews upstream command quality rather than copying lines blindly. The pinned `goldenPac.py` and `Get-GPPPassword.py` spellings are normalized to current packaged Impacket command names. The PrintNightmare source's `add_user.dll` remains lineage only; the mature operator surface stays detection-first and uses an operator-reviewed benign validation DLL when a lab validation is appropriate. ProxyNotShell keeps the source's arbitrary-command shape in lineage while the base operator action remains a bounded identity check.
 
-Domain credential state remains conservative. NTDS/SYSTEM snapshots, returned hashes, certificate-assisted synchronization output, DPAPI backup keys, later authentication, service access, execution, privilege, and cleanup remain distinct Evidence stages. Temporary target-side IFM artifacts carry an explicit cleanup obligation.
+Authenticated known-vulnerability state remains conservative. Platform age, scan findings, GPP policy material, recovered credentials, coercion callbacks, ticket/certificate material, command execution, administrator/SYSTEM context, DCSync capability, domain privilege, and cleanup remain distinct Evidence stages.
 
-The source wave advances the file-level denominator from 13/17 to 14/17 and the current atomic ledger from 258/258 to 266/266 complete. Canonical breadth remains 127/127 and the historical frozen baseline remains 34/34.
+The source wave advances the file-level denominator from 14/17 to 15/17 and the current atomic ledger from 266/266 to 282/282 complete. Canonical breadth remains 127/127 and the historical frozen baseline remains 34/34.
 
 ## Accounting model
 
@@ -68,11 +67,11 @@ The permanent release ordering is:
 5. frozen v6.2 baseline decomposition while frozen rows remain
 6. whole-file source inventory for remaining methodology-bearing files
 
-v8.0 exhausted priority 5. v8.1 completed `low_access.md`, v8.2 completed `crack_hash.md`, v8.3 completed `low_hanging.md`, v8.4 completed `persistence.md`, and v8.5 completes `dom_admin.md` in priority 6.
+v8.0 exhausted priority 5. v8.1 completed `low_access.md`, v8.2 completed `crack_hash.md`, v8.3 completed `low_hanging.md`, v8.4 completed `persistence.md`, v8.5 completed `dom_admin.md`, and v8.6 completes `know_vuln_auth.md` in priority 6.
 
 ## Whole-file inventory phase
 
-`low_access.md`, `crack_hash.md`, `low_hanging.md`, `persistence.md`, and `dom_admin.md` are now fully atomized and protected as completed file-level denominators. Build Next proceeds through `know_vuln_auth.md`, `trusts.md`, and `valid_user.md`.
+`low_access.md`, `crack_hash.md`, `low_hanging.md`, `persistence.md`, `dom_admin.md`, and `know_vuln_auth.md` are now fully atomized and protected as completed file-level denominators. Build Next proceeds through `trusts.md` and `valid_user.md`.
 
 Each file must be decomposed completely enough that useful source nodes are either modeled, superseded, or rejected with rationale. Completing only a previously frozen parent inside one of these files is not sufficient for file-level credit.
 
