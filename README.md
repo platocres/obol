@@ -4,7 +4,7 @@ Obol is a static, offline-capable browser workspace for OSCP-style labs, Active 
 
 Live site: `https://platocres.github.io/obol/`
 
-Current release: **v8.4**
+Current release: **v8.5**
 
 Release history lives in [`CHANGELOG.md`](CHANGELOG.md). Architecture, source-accounting, Evidence, and release contracts live in dedicated engineering documents instead of being duplicated here. **The readme is not a changelog.**
 
@@ -32,13 +32,13 @@ Primary navigation stays intentionally small:
 
 The **More** menu contains North Star Dashboard, Engagement Map, Methodology, Tool Library, Planned Work, Workspace Search, Evidence Lineage, Guide, and Workspace Data.
 
-The **North Star Dashboard** is the single in-app location for project-wide hard numbers. v8.4 completes the whole-file inventory for `persistence.md`, advances file-level source inventory to 13/17, expands the fidelity ledger to 258/258 complete atomic units, and moves the live Build Next queue to the four remaining methodology-bearing Orange files.
+The **North Star Dashboard** is the single in-app location for project-wide hard numbers. v8.5 completes the whole-file inventory for `dom_admin.md`, advances file-level source inventory to 14/17, expands the fidelity ledger to 266/266 complete atomic units, and moves the live Build Next queue to the three remaining methodology-bearing Orange files.
 
 ## Project status
 
 Obol keeps methodology breadth and source-depth/source-fidelity accounting separate. A broad methodology section can be fully implemented while subordinate source material still needs decomposition or end-to-end review.
 
-Current v8.4 baseline:
+Current v8.5 baseline:
 
 - **127 / 127** canonical sections fully implemented
 - **0** partial
@@ -46,16 +46,16 @@ Current v8.4 baseline:
 - **0** stale mappings
 - **100%** fully implemented
 - **100%** represented
-- **13 / 17** methodology source files atomized
+- **14 / 17** methodology source files atomized
 - **34 / 34** frozen partial baselines decomposed
-- **258 / 258** currently inventoried atomic units fidelity-complete
-- **4** items in the live Build Next queue
+- **266 / 266** currently inventoried atomic units fidelity-complete
+- **3** items in the live Build Next queue
 - **0** implemented-quality repairs
 - **0** mapped-delivery repairs
 
-The **127 canonical** section denominator measures structural breadth. v8.0 closed canonical breadth and the frozen 34-row v6.2 source-depth baseline. v8.1 fully atomized `low_access.md`; v8.2 fully atomized `crack_hash.md`; v8.3 fully atomized `low_hanging.md`; v8.4 fully atomizes `persistence.md`. Four methodology-bearing source files are still not fully atomized, so new atomic denominators will continue to appear as those files are mined end to end.
+The **127 canonical** section denominator measures structural breadth. v8.0 closed canonical breadth and the frozen 34-row v6.2 source-depth baseline. v8.1 fully atomized `low_access.md`; v8.2 fully atomized `crack_hash.md`; v8.3 fully atomized `low_hanging.md`; v8.4 fully atomized `persistence.md`; v8.5 fully atomizes `dom_admin.md`. Three methodology-bearing source files are still not fully atomized, so new atomic denominators will continue to appear as those files are mined end to end.
 
-v8.4 reviews fifteen new `persistence.md` source units and preserves the already-audited Add Domain Admin unit from v8.0, yielding sixteen fully accounted source elements for the file. Fourteen new units are modeled through mature persistence owners and the trailing source ellipsis is explicitly rejected as non-actionable placeholder text. Golden and Silver Ticket spellings are corrected rather than copied blindly, Diamond/Sapphire authentication inputs are treated as alternatives, and DSRM, Custom SSP, Golden Certificate, DCShadow, and ACL persistence retain explicit configuration/artifact/use/cleanup boundaries.
+v8.5 reviews eight `dom_admin.md` source units. Seven are modeled through mature DCSync, credential-dump, and domain DPAPI backup-key owners. The Meterpreter-coupled `domain_hashdump` variant is explicitly superseded by clearer NetExec/Impacket routes instead of being silently dropped. NTDSUtil IFM collection, offline NTDS parsing, CertSync, and DonPAPI are source-accounted with corrected command spellings, sensitive-artifact handling, and strict separation between returned credential/recovery material, later authentication, execution, privilege, and cleanup.
 
 The detailed definitions, pinned provenance, denominators, completion language, and audit requirements live in [`docs/NORTH-STAR.md`](docs/NORTH-STAR.md). The source-depth work plan is in [`docs/ORANGE-SOURCE-DEPTH.md`](docs/ORANGE-SOURCE-DEPTH.md).
 
@@ -101,7 +101,7 @@ Obol generates commands for humans to review and run elsewhere. It does not sile
 
 ## Architecture direction
 
-Obol grew through additive release overlays while the product model was still changing. Those historical layers remain where they still encode behavior protected by regression tests. v6.6 established the consolidation boundary, v6.8 added stable current-project pointers, and v8.4 keeps all current status consumers on those stable boundaries:
+Obol grew through additive release overlays while the product model was still changing. Those historical layers remain where they still encode behavior protected by regression tests. v6.6 established the consolidation boundary, v6.8 added stable current-project pointers, and v8.5 keeps all current status consumers on those stable boundaries:
 
 - project status has one current projection model exposed through `C.currentProjectModel(...)`;
 - Dashboard and README consume that model instead of recalculating progress independently;
@@ -117,8 +117,8 @@ This is intentionally not a rewrite. The goal is a smaller set of explicit owner
 ### North Star objectives
 
 - Consume the live Build Next queue in quality-first order.
-- Atomize the four remaining methodology-bearing source files completely before claiming Orange source inventory is complete.
-- Continue through `dom_admin.md`, `know_vuln_auth.md`, `trusts.md`, and `valid_user.md`.
+- Atomize the three remaining methodology-bearing source files completely before claiming Orange source inventory is complete.
+- Continue through `know_vuln_auth.md`, `trusts.md`, and `valid_user.md`.
 - Preserve the completed 34/34 frozen-baseline milestone as a historical denominator while whole-file inventories create new atomic units.
 - Preserve completed source-family atomic ledgers as regression-protected denominators while new source families are inventoried.
 - Compact historical runtime ownership one stable area at a time behind regression-equivalent replacements.
@@ -126,9 +126,9 @@ This is intentionally not a rewrite. The goal is a smaller set of explicit owner
 
 ### Recent changes
 
+- **v8.5** - completed whole-file source inventory for `dom_admin.md`, reviewed eight source units, preserved seven modeled variants plus one explicitly superseded Metasploit route, corrected source command issues, advanced file-level inventory to 14/17, expanded the atomic ledger to 266/266, and moved Build Next to `know_vuln_auth.md`.
 - **v8.4** - completed whole-file source inventory for `persistence.md`, reviewed fifteen new source units plus the inherited Add Domain Admin atom, corrected incomplete ticket spellings, advanced file-level inventory to 13/17, expanded the atomic ledger to 258/258, and moved Build Next to `dom_admin.md`.
 - **v8.3** - completed whole-file source inventory for `low_hanging.md`, reviewed seventeen remaining terminal quick-compromise variants plus the two inherited Zerologon units, advanced file-level inventory to 12/17, expanded the atomic ledger to 243/243, and moved Build Next to `persistence.md`.
-- **v8.2** - completed whole-file source inventory for `crack_hash.md`, reviewed fifteen remaining terminal cracking variants plus the inherited SCCM/PXE unit, corrected the pinned NetNTLMv1 Hashcat mode, advanced file-level inventory to 11/17, and moved Build Next to `low_hanging.md`.
 
 For older releases, see [`CHANGELOG.md`](CHANGELOG.md) and the versioned documents under `docs/`.
 
@@ -139,15 +139,15 @@ The block below is generated from the same current project model used by the Nor
 <!-- OBOL-BUILD-NEXT:START -->
 This block is generated from the same live repository state used by **North Star Dashboard → Build Next**. Do not edit it manually.
 
-**Current live queue:** 4 items — 0 implemented-quality repairs, 0 mapped-delivery repairs, 0 canonical gaps.
+**Current live queue:** 3 items — 0 implemented-quality repairs, 0 mapped-delivery repairs, 0 canonical gaps.
 **Canonical methodology:** 127/127 fully implemented (100%), 0 partial, 0 gaps, 100% represented.
-**Orange source fidelity:** 13/17 source files atomized, 34/34 partial baselines decomposed, 258/258 inventoried atomic units fidelity-complete.
+**Orange source fidelity:** 14/17 source files atomized, 34/34 partial baselines decomposed, 266/266 inventoried atomic units fidelity-complete.
 **Current phase:** Orange whole-file source inventory.
 
 **Highest-priority live items:**
-1. **Domain admin source inventory** — dom_admin.md · source file inventory.
-2. **Authenticated known vulnerabilities source inventory** — know_vuln_auth.md · source file inventory.
-3. **Trusts source inventory** — trusts.md · source file inventory.
+1. **Authenticated known vulnerabilities source inventory** — know_vuln_auth.md · source file inventory.
+2. **Trusts source inventory** — trusts.md · source file inventory.
+3. **Valid user / no password source inventory** — valid_user.md · source file inventory.
 
 Generated by `node tools/sync-readme-build-next.js --write`. Verify with `node tools/sync-readme-build-next.js --check`.
 <!-- OBOL-BUILD-NEXT:END -->
@@ -160,7 +160,7 @@ Open `index.html` in a browser. No server or package install is required.
 
 ```bash
 node tools/release-smoke.js
-node tests/run-v8.4-tests.js
+node tests/run-v8.5-tests.js
 node tools/release-preflight.js
 node tools/sync-readme-build-next.js --check
 node tools/validate-release-quality.js
