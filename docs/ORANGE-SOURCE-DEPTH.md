@@ -8,13 +8,12 @@ At the v6.2 boundary, 34 canonical sections remained partial. Those 34 sections 
 
 ## Current progress
 
-As of v8.1, all 34 frozen v6.2 partial baselines are decomposed and fidelity-complete. The project is also 127/127 canonically implemented with zero quality debt and zero canonical gaps.
+As of v8.2, all 34 frozen v6.2 partial baselines are decomposed and fidelity-complete. The project is also 127/127 canonically implemented with zero quality debt and zero canonical gaps.
 
-Ten of the 17 methodology-bearing source files are fully atomized at the file level: `adcs.md`, `delegation.md`, `acl.md`, `mitm.md`, `authenticated.md`, `sccm.md`, `admin.md`, `no_creds.md`, `lat_move.md`, and `low_access.md`.
+Eleven of the 17 methodology-bearing source files are fully atomized at the file level: `adcs.md`, `delegation.md`, `acl.md`, `mitm.md`, `authenticated.md`, `sccm.md`, `admin.md`, `no_creds.md`, `lat_move.md`, `low_access.md`, and `crack_hash.md`.
 
-The seven files still requiring complete whole-file inventory are:
+The six files still requiring complete whole-file inventory are:
 
-- `crack_hash.md`
 - `low_hanging.md`
 - `persistence.md`
 - `dom_admin.md`
@@ -22,15 +21,17 @@ The seven files still requiring complete whole-file inventory are:
 - `trusts.md`
 - `valid_user.md`
 
-All 211 currently inventoried atomic units are fidelity-complete. That denominator must expand as these remaining files are atomized.
+All 226 currently inventoried atomic units are fidelity-complete. That denominator must expand as these remaining files are atomized.
 
-## v8.1 low_access.md whole-file wave
+## v8.2 crack_hash.md whole-file wave
 
-v8.1 completes the first whole-file inventory after the frozen v6.2 baseline by finishing `low_access.md` end to end. v7.9 had already atomized the SMBGhost/SeriousSAM local-exploit branch and the WebDAV/searchConnector-ms coercion branch. v8.1 inventories the remaining AppLocker, UAC, automated enumeration, credential-file search, Kerberos relay, and SeImpersonate source elements.
+v8.2 completes the second whole-file inventory after the frozen v6.2 baseline by finishing `crack_hash.md` end to end. v8.0 had already atomized the SCCM/PXE Hashcat mode-19850 branch. v8.2 inventories the remaining LM, NT, NetNTLMv1, NetNTLMv2, Kerberos TGS RC4/AES128, AS-REP, MSCache2, and TimeRoast terminal variants.
 
-Seventeen new source units receive terminal dispositions and complete North Star dimension review. Twelve are modeled through mature owners. Five legacy or duplicate variants are explicitly superseded with rationale rather than silently omitted: `mshta`, `wsreset`, `msdt`, RoguePotato, and RemotePotato0 as a direct local-SYSTEM route.
+Fifteen new source units receive terminal dispositions and complete North Star dimension review. Fourteen are modeled through mature local Hashcat, John, Kerberoast, AS-REP, and SCCM/PXE owners. The external `crack.sh` branch is explicitly superseded as the preferred Obol route rather than silently omitted.
 
-The source wave advances the file-level denominator from 9/17 to 10/17 and the current atomic ledger from 194/194 to 211/211 complete. Canonical breadth remains 127/127 and the historical frozen baseline remains 34/34.
+The pinned NetNTLMv1 Hashcat line is also reviewed rather than copied blindly. Its `-m 1000` mode is retained in source lineage, but the operator surface uses mode 5500 for NetNTLMv1 / NetNTLMv1+ESS. The useful source idea is therefore preserved with an explicit correction.
+
+The source wave advances the file-level denominator from 10/17 to 11/17 and the current atomic ledger from 211/211 to 226/226 complete. Canonical breadth remains 127/127 and the historical frozen baseline remains 34/34.
 
 ## Accounting model
 
@@ -70,11 +71,11 @@ The permanent release ordering is:
 5. frozen v6.2 baseline decomposition while frozen rows remain
 6. whole-file source inventory for remaining methodology-bearing files
 
-v8.0 exhausted priority 5. v8.1 completes the first priority-6 whole-file inventory.
+v8.0 exhausted priority 5. v8.1 completed `low_access.md`; v8.2 completes `crack_hash.md` in priority 6.
 
 ## Whole-file inventory phase
 
-`low_access.md` is now fully atomized and protected as a completed file-level denominator. Build Next proceeds through `crack_hash.md`, `low_hanging.md`, `persistence.md`, `dom_admin.md`, `know_vuln_auth.md`, `trusts.md`, and `valid_user.md`.
+`low_access.md` and `crack_hash.md` are now fully atomized and protected as completed file-level denominators. Build Next proceeds through `low_hanging.md`, `persistence.md`, `dom_admin.md`, `know_vuln_auth.md`, `trusts.md`, and `valid_user.md`.
 
 Each file must be decomposed completely enough that useful source nodes are either modeled, superseded, or rejected with rationale. Completing only a previously frozen parent inside one of these files is not sufficient for file-level credit.
 
