@@ -17,9 +17,10 @@ The intended release flow is:
 - regenerate the README Build Next block and validate repository wiring before finalization;
 - require `implemented-quality = 0` and `mapped-delivery = 0` before methodology expansion is merge-ready;
 - when canonical gaps are zero, continue through source-fidelity accounting rather than declaring the source complete;
-- preserve the frozen v6.2 partial baseline and existing atomic units;
+- preserve the frozen v6.2 partial baseline and existing atomic units as historical denominators;
+- after the frozen baseline is complete, continue through whole-file source inventory until every methodology-bearing Orange file is atomized;
 - audited source units must end as explicitly `modeled`, `superseded`, or `rejected` with rationale and required review dimensions accounted for;
-- make the exact final release commit with `[release-final]` only after code, tests, docs, README, changelog, and PR description form one coherent snapshot;
+- make the exact final release commit with `[release-final]` only after code, tests, docs, README, changelog or dedicated release documentation, and PR description form one coherent snapshot;
 - require smoke, preflight, historical-test future safety, the complete historical regression chain, release-quality gate, release-contract validation, and README synchronization on that exact head;
 - mark the PR Ready for review only after that exact final head is green;
 - treat any later commit as a new head that must be validated again.
@@ -38,17 +39,15 @@ Release-PR metadata enforcement applies only to release-intent pull requests. No
 
 Beginning with v6.6, release scaffolding is **delta-based**. A new version number is not a reason to create empty compatibility files.
 
-Every release must provide the current release/project metadata, current state/version adapter, current regression suite, release documentation, changelog entry or dedicated release document, README update, and whatever UI/runtime wiring the release actually changes. Type-specific overlays such as methodology, Dashboard metadata, Intake/Evidence, reporting, or tool data are added only when that release genuinely changes that ownership area.
+Every release must provide the current release/project metadata, current state/version adapter, current regression suite, release documentation, README update, and whatever UI/runtime wiring the release actually changes. Type-specific overlays such as methodology, Dashboard metadata, Intake/Evidence, reporting, or tool data are added only when that release genuinely changes that ownership area.
 
 Do not create no-op `methodology-vX.Y.js`, `dashboard-vX.Y.js`, `intake-vX.Y.js`, or similar shims solely for naming symmetry. `tools/validate-release-pr.js` enforces the minimal release contract; release-specific tests should explicitly verify any additional behavior-specific surfaces that the release requires.
 
-This keeps future releases from rebuilding the same scaffolding around unchanged behavior.
-
 ## Consolidated current-state rule
 
-v6.6 established the boundary between domain models and current project-status presentation. v6.8 added a stable non-versioned pointer for current consumers, and v7.8 continues through that boundary.
+v6.6 established the boundary between domain models and current project-status presentation. v6.8 added a stable non-versioned pointer for current consumers, and v8.0 continues through that boundary.
 
-- `C.currentProjectModel(...)` is the preferred current projection boundary for canonical progress, source-fidelity progress, quality debt, Build Next, recent progress, and the next priority. In v7.8 it points to `C.projectModel78(...)`.
+- `C.currentProjectModel(...)` is the preferred current projection boundary for canonical progress, source-fidelity progress, quality debt, Build Next, recent progress, and the next priority. In v8.0 it points to `C.projectModel80(...)`.
 - Versioned project adapters remain available as historical regression boundaries. Current tooling and documentation should not require edits merely to discover the newest adapter name when the stable pointer is available.
 - Dashboard, README synchronization, release-quality checks, and other current-status consumers use the consolidated current model instead of parsing README text or independently recalculating current counts.
 - Current release/project metadata has one owner. Do not create competing project-wide count tables in UI or release-specific metadata.
@@ -80,13 +79,16 @@ The current Build Next model preserves this priority order:
 2. mapped-delivery repairs;
 3. canonical gaps;
 4. atomic source-fidelity audits for already inventoried units;
-5. source-depth inventory/decomposition for remaining broad partial baselines.
+5. source-depth inventory/decomposition for any remaining frozen v6.2 baseline rows;
+6. whole-file source inventory for methodology-bearing Orange files that are not yet fully atomized.
 
-A methodology-expansion release must not skip priority 1 or 2 debt. Canonical gaps outrank source-fidelity work while gaps remain. Once gaps are zero, already-inventoried atomic units outrank still-unatomized broad sections because their missing requirements are known precisely. In v7.8, all 187 currently inventoried AD CS, Kerberos delegation, ACL / ACE, MITM / relay, authenticated, SCCM, admin, no-credential, and lateral-movement atomic units are complete, so the live queue remains in source-depth inventory/decomposition and proceeds into `low_access.md`, beginning with WebDAV coercion. New source families must be atomized explicitly rather than silently extending an earlier completed denominator.
+A methodology-expansion release must not skip priority 1 or 2 debt. Canonical gaps outrank source-fidelity work while gaps remain. Already-inventoried atomic units outrank new inventory because their missing requirements are known precisely. Frozen v6.2 baseline rows historically outrank whole-file cleanup so their original denominator cannot disappear.
 
-The 127-section canonical denominator measures structural representation. The frozen v6.2 source-depth baseline remains 34 then-partial canonical sections. The atomic source-fidelity ledger measures meaningful subordinate branches and the requirements needed to translate them into Obol's Run -> Evidence -> Next Steps -> Report loop.
+v8.0 completes all 34 frozen v6.2 baseline rows. The live queue therefore moves to eight whole-file source inventories, beginning with `low_access.md` and then `crack_hash.md`, `low_hanging.md`, `persistence.md`, `dom_admin.md`, `know_vuln_auth.md`, `trusts.md`, and `valid_user.md`.
 
-Never equate 100% represented, a broad card mapping, or a terminal audit label by itself with source exhaustion. See `docs/ORANGE-SOURCE-DEPTH.md` and `docs/NORTH-STAR.md`.
+The 127-section canonical denominator measures structural representation. The frozen v6.2 source-depth denominator remains the historical 34 then-partial canonical sections. The atomic source-fidelity ledger measures meaningful subordinate branches and the requirements needed to translate them into Obol's Run -> Evidence -> Next Steps -> Report loop. The file-level denominator remains 17 methodology-bearing source files.
+
+Never equate 100% represented, 100% canonical implementation, 34/34 frozen-baseline completion, a broad card mapping, or a terminal audit label by itself with source exhaustion. See `docs/ORANGE-SOURCE-DEPTH.md` and `docs/NORTH-STAR.md`.
 
 ## Merge-readiness rule
 
