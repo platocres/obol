@@ -4,6 +4,19 @@ This file is the release-history source for Obol. Future build work should revie
 
 The README is intentionally reserved for current project purpose, architecture, permanent requirements, a compact summary of only the latest three releases, and forward priorities.
 
+## v7.5 — SCCM source-depth completion
+
+- Atomized the pinned `sccm.md` methodology family into twenty-three meaningful source-fidelity units spanning reconnaissance, PXE/NAA routing, site-system relay, forced and automatic client push, distribution-point credential recovery, site-database takeover, MSSQL-server relay, policy-request credentials, local/client secret recovery, site-database credentials, administrative execution, cleanup, and SCCMHound post-exploitation mapping.
+- Modeled all twenty-three units end to end, reusing mature SCCM reconnaissance, PXE, credential-recovery, takeover, execution, cleanup, and post-mapping owners where they already satisfy the operator contract.
+- Added focused v7.5 owners for site-system relay, forced client push, automatic client push, MSSQL-server relay, policy-request credentials, and site-database credential recovery, with explicit Kali/Windows execution context, semantic controls, conservative Evidence profiles, cleanup obligations, Next Steps integration, and reporting contracts.
+- Preserved strict separation between SCCM discovery, temporary DNS/SPN/device state, coercion, inbound authentication, relay success, machine-account hashes, SQL authentication, encrypted database values, decrypted credentials, authenticated service access, execution, administrator/SYSTEM context, privilege, and cleanup.
+- Advanced only the six SCCM parents that remained partial in the frozen v6.2 source-depth baseline: `sccm.elevate1`, `sccm.elevate2`, `sccm.elevate3`, `sccm.takeover2`, `sccm.creds2`, and `sccm.creds5`. Historical SCCM canonical completions remain historical while gaining atomic accounting.
+- Raised canonical methodology from **111 implemented / 16 partial / 0 gaps / 0 stale** to **117 implemented / 10 partial / 0 gaps / 0 stale**, **92% fully implemented**, and **100% represented**.
+- Expanded source inventory from **5/17** to **6/17** methodology files atomized, from **18/34** to **24/34** frozen partial baselines decomposed, and from **70/70** to **93/93** currently inventoried atomic units fidelity-complete.
+- Reduced the live Build Next queue from **16** to **10** broad source-inventory/decomposition items, moving the active priority into `admin.md` with zero implemented-quality, mapped-delivery, canonical-gap, or inventoried-fidelity debt.
+- Advanced the stable current projection through `C.projectModel75(...)`, `C.currentProjectModel(...)`, and `C.currentNorthStarDashboard(...)`, retained the overview-first Dashboard owner, and added no no-op Dashboard metadata layer.
+- Added v7.5 browser/runtime wiring, SCCM terminal Evidence interpretation, current-project documentation, README/North Star synchronization, source-wave UI summary, sanitized-export version migration, historical-test future-safety repairs, and a dedicated v7.5 regression suite under the exact-head release workflow.
+
 ## v7.4 - authenticated source-depth completion
 
 - Atomized the pinned `authenticated.md` methodology family into nineteen meaningful source-fidelity units spanning authenticated users and SMB shares, BloodHound Legacy and CE collection, LDAP and AD-integrated DNS inventory, AD CS and SCCM routing, AD-miner, PingCastle, adPEAS, Kerberoasting, four coercion families, Entra / AD Connect discovery, lateral-movement routing, and known-vulnerability routing.

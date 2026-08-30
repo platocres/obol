@@ -8,6 +8,12 @@ This distinction became critical at v6.2. The final canonical gap was closed, so
 
 At the v6.2 boundary, 34 canonical sections remained partial. Those 34 sections are frozen as the initial **source-depth audit baseline**. Future builds must preserve those baseline keys even when a broad section is later upgraded, so unfinished subordinate source work cannot disappear from accounting.
 
+## Current progress
+
+As of v7.5, six methodology-bearing source files have been atomized: `adcs.md`, `delegation.md`, `acl.md`, `mitm.md`, `authenticated.md`, and `sccm.md`. Twenty-four of the 34 frozen partial baselines have been decomposed, and all 93 currently inventoried atomic units are fidelity-complete. Ten broad source-inventory/decomposition rows remain live, beginning with `admin.md`.
+
+The completed 93/93 atomic denominator describes the six source families already inventoried. It must expand as the remaining source files are decomposed; it is not a claim that the pinned Orange source is exhausted.
+
 ## v6.4 accounting model
 
 v6.4 makes source-depth accounting atomic rather than section-only. North Star Dashboard now keeps three different denominators visible at the same time:

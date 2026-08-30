@@ -48,24 +48,24 @@ An atomic unit is fidelity-complete only when the relevant requirements are acco
 
 Terminal dispositions are `modeled`, `superseded`, or `rejected`, with rationale. Merely assigning one of those labels without satisfying the required review dimensions is not enough.
 
-## Current v7.4 baseline
+## Current v7.5 baseline
 
-v7.4 completes the pinned authenticated source family and continues the quality-first queue into SCCM source inventory:
+v7.5 completes the pinned SCCM source family and continues the quality-first queue into admin source inventory:
 
-- canonical: 111 / 127 implemented, 16 partial, 0 gaps, 0 stale;
-- strict completion: 87%;
+- canonical: 117 / 127 implemented, 10 partial, 0 gaps, 0 stale;
+- strict completion: 92%;
 - represented coverage: 100%;
-- methodology source files atomized: 5 / 17;
-- frozen partial baselines decomposed: 18 / 34;
-- currently inventoried atomic units fidelity-complete: 70 / 70;
+- methodology source files atomized: 6 / 17;
+- frozen partial baselines decomposed: 24 / 34;
+- currently inventoried atomic units fidelity-complete: 93 / 93;
 - remaining inventoried atomic audits: 0;
-- remaining source-inventory/decomposition items: 16.
+- remaining source-inventory/decomposition items: 10.
 
-The canonical advance in v7.4 is deliberately limited to the three `authenticated.md` parents that remained partial at the frozen v6.2 boundary: `authenticated.auto-scan`, `authenticated.coerce`, and `authenticated.known-vulns`. Classic authenticated enumeration, AD CS enumeration, SCCM enumeration, Kerberoasting, Entra / AD Connect discovery, and computer-connect / lateral-movement routing retain their historical canonical completion while gaining atomic source accounting.
+The canonical advance in v7.5 is deliberately limited to the six `sccm.md` parents that remained partial at the frozen v6.2 boundary: `sccm.elevate1`, `sccm.elevate2`, `sccm.elevate3`, `sccm.takeover2`, `sccm.creds2`, and `sccm.creds5`. SCCM reconnaissance, PXE/NAA recovery, distribution-point credential recovery, site-database takeover, computer-admin NAA recovery, administrative execution, cleanup, and post-exploitation mapping retain their historical canonical completion while gaining atomic source accounting.
 
-The nineteen v7.4 authenticated units cover user and SMB-share inventory, BloodHound Legacy and CE collection, LDAP and AD-integrated DNS enumeration, AD CS and SCCM routing, AD-miner, PingCastle, adPEAS, Kerberoasting, file/WebDAV/RPC/Kerberos coercion, Entra Connect discovery, lateral-movement routing, and authenticated known-vulnerability routing. All nineteen are modeled. Enumeration, posture findings, coercion preparation/triggering, inbound authentication, relay success, vulnerability validation, credential/ticket material, authenticated access, execution, administrator/SYSTEM access, privilege, and cleanup remain separate proof states throughout.
+The twenty-three v7.5 SCCM units cover three reconnaissance branches, PXE/NAA routing, site-system relay, forced and automatic client push, four distribution-point credential paths, two database takeover/relay paths, two policy-request credential paths, three local/client secret paths, site-database credential recovery, two administrative execution paths, exact-device cleanup, and SCCMHound post-exploitation mapping. All twenty-three are modeled. Discovery, temporary DNS/SPN/device state, coercion, inbound authentication, relay success, machine-account hash material, SQL authentication, encrypted database values, decrypted credentials, authenticated service access, execution, administrator/SYSTEM context, privilege, and cleanup remain separate proof states throughout.
 
-The frozen v6.2 baseline remains 34. Therefore 70/70 currently inventoried units does **not** mean Orange source fidelity is globally complete. It means the five atomized methodology files, `adcs.md`, `delegation.md`, `acl.md`, `mitm.md`, and `authenticated.md`, have exhausted their current atomic ledgers. The 16 remaining broad source-inventory/decomposition rows are the active phase and will create new atomic denominators as useful source structure is mined.
+The frozen v6.2 baseline remains 34. Therefore 93/93 currently inventoried units does **not** mean Orange source fidelity is globally complete. It means the six atomized methodology files, `adcs.md`, `delegation.md`, `acl.md`, `mitm.md`, `authenticated.md`, and `sccm.md`, have exhausted their current atomic ledgers. The 10 remaining broad source-inventory/decomposition rows are the active phase and will create new atomic denominators as useful source structure is mined.
 
 These denominators must remain visible. A percentage may summarize a denominator but must never make unfinished source disappear.
 
@@ -79,13 +79,13 @@ The repository work queue is ordered by product quality, not by whichever metric
 4. atomic source-fidelity audits for already-inventoried units;
 5. source-depth inventory/decomposition for remaining broad partial baselines.
 
-v7.4 has zero rows in priorities 1 through 4, so priority 5 remains active. With authenticated source depth complete, the next live source family is `sccm.md`.
+v7.5 has zero rows in priorities 1 through 4, so priority 5 remains active. With SCCM source depth complete, the next live source family is `admin.md`.
 
-This ordering is derived from the repository model and exposed through the stable `C.currentProjectModel(...)` pointer. The current versioned implementation is `C.projectModel74(...)`.
+This ordering is derived from the repository model and exposed through the stable `C.currentProjectModel(...)` pointer. The current versioned implementation is `C.projectModel75(...)`.
 
 ## Current-project projection rule
 
-Beginning with v6.6, project status has one current projection boundary. v6.8 added the stable non-versioned pointer `C.currentProjectModel(...)` so current consumers do not need to hard-code whichever versioned adapter happens to be newest. v7.4 keeps that pointer current while retaining versioned adapters as historical regression boundaries.
+Beginning with v6.6, project status has one current projection boundary. v6.8 added the stable non-versioned pointer `C.currentProjectModel(...)` so current consumers do not need to hard-code whichever versioned adapter happens to be newest. v7.5 keeps that pointer current while retaining versioned adapters as historical regression boundaries.
 
 The Dashboard and README may present or summarize its output, but they should not keep independent current counts or competing Build Next calculations. The underlying domain models remain the owners of canonical, delivery, and source-fidelity semantics; the project model provides a stable current view over them.
 
@@ -99,7 +99,7 @@ Use these distinctions consistently:
 - **100% fully implemented** would mean all 127 normalized canonical sections are implemented.
 - **Source fully inventoried** would mean every methodology-bearing source file and every frozen source-depth baseline is explicitly decomposed/accounted for.
 - **Source fidelity complete** would mean every useful inventoried unit across the fully inventoried source has a complete terminal audit.
-- **70/70 currently inventoried atomic units complete** means the present AD CS, Kerberos delegation, ACL / ACE, MITM / relay, and authenticated-source atomic ledgers are complete, not that the remaining 12 source files or 16 broad frozen-baseline rows have been exhausted.
+- **93/93 currently inventoried atomic units complete** means the present AD CS, Kerberos delegation, ACL / ACE, MITM / relay, authenticated, and SCCM atomic ledgers are complete, not that the remaining 11 source files or 10 broad frozen-baseline rows have been exhausted.
 - **Orange exhausted of useful ideas** may only be claimed when the source inventory and fidelity work are complete, including explicit superseded/rejected rationales where appropriate.
 
 Canonical breadth is not source exhaustion.
