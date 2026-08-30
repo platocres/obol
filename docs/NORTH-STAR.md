@@ -31,49 +31,34 @@ Source inventory asks whether methodology-bearing source files and frozen partia
 
 Atomic fidelity asks whether each inventoried source unit has been translated through the complete Obol operator contract. A broad owner mapping is not completion.
 
-An atomic unit is fidelity-complete only when the relevant requirements are accounted for, including:
-
-1. source structure;
-2. branch conditions;
-3. tool inventory;
-4. Obol owner mapping;
-5. tool suitability review;
-6. Run contract and semantic controls;
-7. execution context;
-8. Evidence and proof boundaries;
-9. Next Steps transitions;
-10. reporting and lineage;
-11. cleanup/restoration where relevant;
-12. terminal disposition.
+An atomic unit is fidelity-complete only when the relevant requirements are accounted for, including source structure, branch conditions, tool inventory, owner mapping, tool suitability, Run controls, Kali/Windows execution context, Evidence and proof boundaries, Next Steps, reporting/lineage, cleanup/restoration, and terminal disposition.
 
 Terminal dispositions are `modeled`, `superseded`, or `rejected`, with rationale. Merely assigning one of those labels without satisfying the required review dimensions is not enough.
 
-## Current v7.8 baseline
+## Current v7.9 baseline
 
-v7.8 completes the pinned `lat_move.md` source family and continues the quality-first queue into `low_access.md` source inventory:
+v7.9 completes the two `low_access.md` parents that remained partial at the frozen v6.2 boundary while intentionally preserving the larger low-access file inventory as unfinished:
 
-- canonical: 122 / 127 implemented, 5 partial, 0 gaps, 0 stale;
-- strict completion: 96%;
+- canonical: 124 / 127 implemented, 3 partial, 0 gaps, 0 stale;
+- strict completion: 98%;
 - represented coverage: 100%;
 - methodology source files atomized: 9 / 17;
-- frozen partial baselines decomposed: 29 / 34;
-- currently inventoried atomic units fidelity-complete: 187 / 187;
+- frozen partial baselines decomposed: 31 / 34;
+- currently inventoried atomic units fidelity-complete: 190 / 190;
 - remaining inventoried atomic audits: 0;
-- remaining source-inventory/decomposition items: 5.
+- remaining source-inventory/decomposition items: 3.
 
-The canonical advance in v7.8 is deliberately limited to `lat_move.socks` and `lat_move.certificate`, the two `lat_move.md` parents still present in the frozen v6.2 source-depth baseline. The historically complete cleartext, NT-hash, Kerberos, and MSSQL parents retain their original completion milestones while gaining complete atomic accounting. `lat_move.mssql` specifically retains its v4.3 completion.
+The canonical advance in v7.9 is deliberately limited to `low_access.local-exploit` and `low_access.webdav`. Three new atomic units cover SMBGhost/CVE-2020-0796 validation, HiveNightmare/SeriousSAM/CVE-2021-36934 validation, and the WebDAV/searchConnector-ms coercion chain. All three are modeled with focused operator cards, explicit execution context, reporting lineage, and conservative Evidence.
 
-The thirty-eight v7.8 source units cover cleartext-password PsExec/pseudo-shell/WinRM/RDP/SMB/MSSQL movement, pass-the-hash and overpass-the-hash variants, Kerberos ticket conversion/injection/service use, relay-backed SOCKS movement, certificate PKINIT/Schannel movement, and MSSQL discovery, SQLAdmin, enumeration, execution, impersonation, coercion, and linked-server branches. All thirty-eight are modeled.
+The file-level atomized denominator remains 9/17. `low_access.md` is not marked fully atomized merely because its two frozen partial parents are complete; the other already-implemented low-access branches still require subordinate source inventory. This is the intended distinction between frozen-baseline decomposition and whole-file source inventory.
 
-Evidence remains conservative across the family. Credential/hash/ticket/certificate material, relay sessions, authentication, service access, file access, coercion, returned hashes, remote execution, administrator/SYSTEM context, privilege, and cleanup are separate proof states. A relay session or certificate file never silently becomes DCSync rights, access, execution, or privilege.
+Evidence remains conservative. OS/build context, vulnerability conditions, shadow copies, lure creation, DNS changes, coercion triggers, inbound authentication, relay success, credential material, execution, administrator/SYSTEM context, privilege, and cleanup are separate proof states. A named CVE, a file open, or a successful coercion trigger never silently becomes exploit success or privilege.
 
-The frozen v6.2 baseline remains 34. Therefore 187/187 currently inventoried units does **not** mean Orange source fidelity is globally complete. It means the nine atomized methodology files, `adcs.md`, `delegation.md`, `acl.md`, `mitm.md`, `authenticated.md`, `sccm.md`, `admin.md`, `no_creds.md`, and `lat_move.md`, have exhausted their current atomic ledgers. The 5 remaining broad source-inventory/decomposition rows are the active phase and will create new atomic denominators as useful source structure is mined.
-
-These denominators must remain visible. A percentage may summarize a denominator but must never make unfinished source disappear.
+The frozen v6.2 baseline remains 34. Therefore 190/190 currently inventoried units does **not** mean Orange source fidelity is globally complete. The three remaining broad source-depth rows are the active phase and will create new atomic denominators as useful source structure is mined.
 
 ## Build Next ordering
 
-The repository work queue is ordered by product quality, not by whichever metric is easiest to increase:
+The repository work queue is ordered by product quality:
 
 1. implemented-quality repairs;
 2. mapped-delivery repairs;
@@ -81,17 +66,15 @@ The repository work queue is ordered by product quality, not by whichever metric
 4. atomic source-fidelity audits for already-inventoried units;
 5. source-depth inventory/decomposition for remaining broad partial baselines.
 
-v7.8 has zero rows in priorities 1 through 4, so priority 5 remains active. With lateral-movement source depth complete, the next live source family is `low_access.md`, beginning with WebDAV coercion.
+v7.9 has zero rows in priorities 1 through 4, so priority 5 remains active. The final frozen source-depth queue begins with `crack_hash.md`.
 
-This ordering is derived from the repository model and exposed through the stable `C.currentProjectModel(...)` pointer. The current versioned implementation is `C.projectModel78(...)`.
+This ordering is derived from the repository model and exposed through the stable `C.currentProjectModel(...)` pointer. The current versioned implementation is `C.projectModel79(...)`.
 
 ## Current-project projection rule
 
-Beginning with v6.6, project status has one current projection boundary. v6.8 added the stable non-versioned pointer `C.currentProjectModel(...)` so current consumers do not need to hard-code whichever versioned adapter happens to be newest. v7.8 keeps that pointer current while retaining versioned adapters as historical regression boundaries.
+Beginning with v6.6, project status has one current projection boundary. v6.8 added the stable non-versioned pointer `C.currentProjectModel(...)` so current consumers do not need to hard-code whichever versioned adapter happens to be newest. v7.9 keeps that pointer current while retaining versioned adapters as historical regression boundaries.
 
 The Dashboard and README may present or summarize its output, but they should not keep independent current counts or competing Build Next calculations. The underlying domain models remain the owners of canonical, delivery, and source-fidelity semantics; the project model provides a stable current view over them.
-
-Versioned adapters remain useful as historical regression boundaries. They are not an invitation for current tooling or documentation to guess the newest version-specific function name.
 
 ## Completion language
 
@@ -101,7 +84,7 @@ Use these distinctions consistently:
 - **100% fully implemented** would mean all 127 normalized canonical sections are implemented.
 - **Source fully inventoried** would mean every methodology-bearing source file and every frozen source-depth baseline is explicitly decomposed/accounted for.
 - **Source fidelity complete** would mean every useful inventoried unit across the fully inventoried source has a complete terminal audit.
-- **187/187 currently inventoried atomic units complete** means the present AD CS, Kerberos delegation, ACL / ACE, MITM / relay, authenticated, SCCM, admin, no-credential, and lateral-movement atomic ledgers are complete, not that the remaining 8 source files or 5 broad frozen-baseline rows have been exhausted.
+- **190/190 currently inventoried atomic units complete** means the present atomized ledgers plus the three v7.9 low-access units are complete, not that the remaining source files or three broad frozen-baseline rows have been exhausted.
 - **Orange exhausted of useful ideas** may only be claimed when the source inventory and fidelity work are complete, including explicit superseded/rejected rationales where appropriate.
 
 Canonical breadth is not source exhaustion.

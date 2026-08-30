@@ -4,85 +4,52 @@
 
 Obol's 127-section Orange 2025.03 denominator is a normalized structural inventory. It answers whether a canonical Orange section is represented and how completely Obol currently owns that section. It does **not** prove that every useful subordinate Orange branch, command variant, prerequisite, decision edge, failure condition, tool choice, artifact transition, cleanup obligation, Evidence signature, Next Steps transition, GUI control, or reporting implication beneath that section has been mined.
 
-This distinction became critical at v6.2. The final canonical gap was closed, so Orange reached 100% representation at the normalized-section level. That is a breadth milestone, not a declaration that Orange has been exhausted as a source.
-
 At the v6.2 boundary, 34 canonical sections remained partial. Those 34 sections are frozen as the initial **source-depth audit baseline**. Future builds must preserve those baseline keys even when a broad section is later upgraded, so unfinished subordinate source work cannot disappear from accounting.
 
 ## Current progress
 
-As of v7.8, nine methodology-bearing source files have been atomized: `adcs.md`, `delegation.md`, `acl.md`, `mitm.md`, `authenticated.md`, `sccm.md`, `admin.md`, `no_creds.md`, and `lat_move.md`. Twenty-nine of the 34 frozen partial baselines have been decomposed, and all 187 currently inventoried atomic units are fidelity-complete. Five broad source-inventory/decomposition rows remain live, beginning with `low_access.md` and WebDAV coercion.
+As of v7.9, nine methodology-bearing source files remain fully atomized at the file level: `adcs.md`, `delegation.md`, `acl.md`, `mitm.md`, `authenticated.md`, `sccm.md`, `admin.md`, `no_creds.md`, and `lat_move.md`. Thirty-one of the 34 frozen partial baselines have been decomposed, and all 190 currently inventoried atomic units are fidelity-complete. Three broad source-inventory/decomposition rows remain live.
 
-The completed 187/187 atomic denominator describes the nine source families already inventoried. It must expand as the remaining source files are decomposed; it is not a claim that the pinned Orange source is exhausted. Terminal accounting can include explicit **superseded** outcomes: v7.6 preserved the pinned pre-July-2022 PPLdump route without promoting it as a preferred modern workflow, while v7.7 preserves the deprecated Nmap `-sP` spelling and redundant Bettercap DHCPv6 alternative as reviewed source outcomes rather than duplicating weaker operator paths. v7.8 adds no superseded lateral-movement units; all thirty-eight inventoried `lat_move.md` units are modeled.
+v7.9 adds three `low_access.md` atomic units for SMBGhost, SeriousSAM, and WebDAV coercion and completes the two frozen low-access parents that were still partial. It deliberately does not increment the file-level atomized count because AppLocker, UAC, automated enumeration, file hunting, Kerberos relay, and service-account impersonation still require subordinate low-access source inventory even though their canonical rows were already implemented historically.
 
-## v6.4 accounting model
+The completed 190/190 atomic denominator describes only the units inventoried so far. It must expand as the remaining source files and already-implemented low-access branches are decomposed; it is not a claim that the pinned Orange source is exhausted.
 
-v6.4 makes source-depth accounting atomic rather than section-only. North Star Dashboard now keeps three different denominators visible at the same time:
+## Accounting model
+
+North Star keeps three denominators visible at the same time:
 
 1. **Canonical breadth** — the stable 127 normalized Orange sections.
-2. **Source inventory depth** — whether the methodology-bearing Orange source files and frozen partial sections have been decomposed into meaningful subordinate source units.
+2. **Source inventory depth** — whether methodology-bearing Orange source files and frozen partial sections have been decomposed into meaningful subordinate source units.
 3. **Atomic source fidelity** — whether each inventoried unit has been carried through the complete Obol operator contract and given an explicit terminal disposition.
 
-The first atomized file is `adcs.md`. Its seven broad partial canonical parents are decomposed into 19 meaningful source units spanning AD CS enumeration plus the distinct ESC families and important variants present in the pinned source. This includes ESC1, ESC2/3, ESC4, ESC5, ESC6, ESC7, ESC8, ESC9/10, ESC11, ESC13, ESC14, and ESC15 rather than treating one broad `adcs-esc` owner as proof that all of those branches are complete.
-
-A broad owner mapping remains useful context, but it is **not** source-fidelity completion. The Dashboard therefore shows broad-owner coverage separately from atomic audit completion.
+A broad owner mapping remains useful context, but it is **not** source-fidelity completion.
 
 ## What an atomic source unit records
 
-Every source unit should preserve enough upstream structure to answer what the source actually says and what Obol must do with it. The machine-readable ledger records:
+Every source unit preserves enough upstream structure to answer what the source says and what Obol must do with it: source file/hash, canonical parent, source node path, prerequisites, tools, transitions, owner mappings, cleanup obligations, explicit audit state, rationale, and the full North Star review matrix.
 
-- source file and pinned source hash
-- canonical parent key
-- meaningful source node / subnode path
-- prerequisite or branch-condition distinctions
-- upstream tool inventory
-- transitions to other methodology states or artifacts
-- existing broad Obol owner mappings
-- cleanup or restoration obligations when applicable
-- explicit audit state and reason
-- per-requirement review dimensions
-
-The required North Star review dimensions are:
-
-- source node / branch captured
-- prerequisites / decision edges captured
-- upstream tools captured
-- Obol owner mapping captured
-- tool suitability reviewed
-- Run contract and semantic GUI controls reviewed
-- Kali / Windows execution context reviewed
-- copy/paste Evidence and proof boundaries reviewed
-- Next Steps transitions reviewed
-- reporting and lineage reviewed
-- cleanup / restoration reviewed
-- final modeled / superseded / rejected disposition recorded
+The required review dimensions cover source structure, decision edges, tools, owner mapping, tool suitability, Run controls, execution context, Evidence/proof boundaries, Next Steps, reporting/lineage, cleanup, and terminal disposition.
 
 ## Audit states
 
 Every atomic source unit and every frozen source-depth baseline item must eventually end in one of these explicit states:
 
-- **modeled** — the useful Orange depth is represented end to end in Obol
-- **superseded** — Orange is accounted for, but Obol intentionally uses a better, clearer, more current, or more practical workflow
-- **rejected** — the source detail was reviewed and intentionally not incorporated, with a recorded reason
-- **needs-audit** — the default state until the deeper review is complete
-
-Do not copy an inferior or obsolete upstream path merely to raise a percentage. Superseding it with a better operator path is a successful audit outcome when the rationale is explicit.
+- **modeled** — useful Orange depth is represented end to end in Obol;
+- **superseded** — Orange is accounted for, but Obol intentionally uses a better or more current workflow;
+- **rejected** — the source detail was reviewed and intentionally not incorporated, with a recorded reason;
+- **needs-audit** — the default state until the deeper review is complete.
 
 A terminal status alone is not enough. A source unit is fidelity-complete only when its required North Star dimensions are also complete.
 
-## Lateral-movement source wave
+## v7.9 low-access frozen-baseline wave
 
-v7.8 adds the complete pinned `lat_move.md` family as thirty-eight atomic units. The family covers:
+v7.9 models three atomic units under the two frozen low-access parents:
 
-- cleartext-password PsExec, pseudo-shell, NetExec, WinRM, RDP, SMB file access, and MSSQL authentication;
-- pass-the-hash and overpass-the-hash/pass-the-key variants, including Restricted Admin RDP and WinRM;
-- Kerberos ticket conversion, ccache/Windows injection, proxied service use, SPN substitution, and AES-key authentication;
-- relay-backed SOCKS use for SID lookup, MSSQL, secretsdump/DCSync output, SMB, atexec, and smbexec;
-- certificate PKINIT, UnPAC-the-hash, Rubeus TGT, Schannel LDAP shell, and PassTheCert workflows;
-- MSSQL access discovery, SQLAdmin graph paths, database enumeration, xp_cmdshell, impersonation, xp_dirtree coercion, and linked-server traversal.
+- SMBGhost/CVE-2020-0796 build, SMB capability, and bounded vulnerability-check context;
+- SeriousSAM/HiveNightmare ACL and existing-shadow-copy validation without manufacturing new shadow state;
+- WebDAV/searchConnector-ms coercion with temporary DNS preparation, lure creation, trigger, separately evidenced inbound authentication, and cleanup.
 
-Only `lat_move.socks` and `lat_move.certificate` advance canonically because those are the lateral-movement rows still present in the frozen v6.2 partial baseline. `lat_move.plaintext`, `lat_move.nt-hash`, `lat_move.kerberos`, and `lat_move.mssql` retain their historical completion milestones while receiving atomic source accounting.
-
-The v7.8 Evidence contract keeps relay state, certificate material, ticket/hash material, service authentication, file access, SQL access, coercion, execution, privilege, and cleanup separate. Source accounting never creates engagement facts.
+The release adds focused human-run cards for both source families. It keeps vulnerability conditions below execution/privilege, and keeps DNS/lure/coercion state below inbound authentication, relay, access, execution, and privilege.
 
 ## Priority order
 
@@ -98,32 +65,10 @@ This keeps quality debt ahead of methodology expansion while preventing broad se
 
 ## Dashboard and Build Next contract
 
-North Star Dashboard remains authoritative. The Dashboard must separately show:
-
-- canonical implemented / partial / gap accounting
-- methodology source files atomized versus remaining
-- frozen partial baseline sections decomposed versus remaining
-- atomic source units inventoried
-- atomic units with broad Obol owners
-- atomic units reviewed and fidelity-complete
-- modeled / superseded / rejected / needs-audit outcomes
-- the aggregate North Star requirement matrix across atomic units
-- a drill-down ledger showing each unit's source family, canonical parent, existing owner, and audit state
-
-Build Next must preserve the ordering above. Once quality debt and canonical gaps are zero, already-inventoried atomic units are higher priority than still-unatomized broad sections because their missing delivery requirements are known precisely.
-
-The README Build Next block remains a compact CI-enforced snapshot. The Dashboard owns the full source-fidelity drill-down.
+North Star Dashboard remains authoritative. The Dashboard separately shows canonical accounting, source files atomized, frozen baselines decomposed, atomic units inventoried, broad owner coverage, completed review dimensions, terminal dispositions, and the live queue. The README Build Next block remains a compact CI-enforced snapshot generated from the same current project model.
 
 ## Completion target
 
-The Orange phase is genuinely complete only when:
+The Orange phase is genuinely complete only when canonical gaps and quality debt are zero, every methodology-bearing source file has an atomic source inventory, every frozen baseline is decomposed/accounted for, every useful atomic unit has a terminal reviewed disposition, and command controls, Evidence, Next Steps, execution context, cleanup, artifacts, and reporting are wired end to end.
 
-- canonical gaps are zero
-- implemented-quality and mapped-delivery debt are zero
-- every methodology-bearing Orange source file has an atomic source inventory
-- every frozen v6.2 partial baseline has been decomposed or explicitly accounted for
-- every useful atomic source unit has been reviewed
-- every reviewed unit is explicitly modeled, superseded, or rejected with rationale
-- required tool choices, command controls, Evidence handling, Next Steps transitions, execution context, cleanup, artifacts, and reporting are wired end to end
-
-At that point Obol can reasonably claim that the pinned Orange 2025.03 methodology has been exhausted of useful ideas rather than merely represented structurally.
+Only then can Obol reasonably claim that the pinned Orange 2025.03 methodology has been exhausted of useful ideas rather than merely represented structurally.
