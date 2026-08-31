@@ -4,6 +4,8 @@ Obol is a static, offline-capable browser workspace for OSCP-style labs, Active 
 
 Live site: `https://platocres.github.io/obol/`
 
+Current release: **v9.1**
+
 Current Obol release: **v9.1**
 
 Completed Orange methodology/source baseline: **v8.8**
