@@ -18,7 +18,8 @@ const app = read('assets/app-v8.8.js');
 for (const token of [
   "const PRODUCT_RELEASE='v9.1'",
   "const ORANGE_BASELINE='v8.8'",
-  'Offensive Box Operations Ledger · \' + '" + PRODUCT_RELEASE + "' + ' product hardening',
+  'Offensive Box Operations Ledger · ',
+  'product hardening',
   'renderProductDashboard88',
   'ensureProductAssets88',
   'data/product-hardening/product-hardening-queue.js',
