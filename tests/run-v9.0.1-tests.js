@@ -73,8 +73,21 @@ assert.strictEqual(q.totals().modeled, 9, 'v9.0.1 preserves the modeled foundati
 assert.strictEqual(q.totals().notes, 556, 'notes denominator remains intact');
 assert.strictEqual(q.totals().resources, 1326, 'embedded resource denominator remains intact');
 
+const app = fs.readFileSync(path.join(root, 'assets', 'app-v8.8.js'), 'utf8');
+assert(app.includes('product-hardening.html'), 'current app exposes product-hardening.html link');
+assert(app.includes('product-hardening-nav88'), 'current app injects Product Hardening nav link');
+assert(app.includes('product-hardening-entry88'), 'current app injects dashboard/build queue entry card');
+assert(app.includes('Product Build Next queue'), 'current app entry card names the Product Build Next queue');
+assert(app.includes('Product Hardening Dashboard'), 'current app entry card names the Product Hardening Dashboard');
+
+const css = fs.readFileSync(path.join(root, 'assets', 'obol-v8.8.css'), 'utf8');
+assert(css.includes('.product-hardening-nav88'), 'current CSS styles Product Hardening nav link');
+assert(css.includes('.product-hardening-entry88'), 'current CSS styles Product Hardening entry card');
+assert(css.includes('.product-hardening-actions88'), 'current CSS styles Product Hardening entry actions');
+
 for (const command of [
   ['tools/validate-product-hardening-queue.js'],
+  ['tools/validate-asset-references.js'],
   ['tools/sync-product-build-next.js', '--check'],
   ['tools/validate-release-pr.js', '--repo-only', '--release-version=9.0.1']
 ]) {
@@ -82,4 +95,4 @@ for (const command of [
   assert.strictEqual(result.status, 0, (result.stderr || result.stdout || '').trim());
 }
 
-console.log('v9.0.1 product-hardening Definition of Done tests passed.');
+console.log('v9.0.1 product-hardening Definition of Done and discoverability tests passed.');
