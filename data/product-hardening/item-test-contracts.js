@@ -6,6 +6,11 @@ const contracts={
   validationCommands:['node tools/validate-current-release.js','node tools/sync-current-release.js --check','node tests/run-v9.2-tests.js'],
   proofFiles:['data/current-release.js','assets/app-v8.8.js','assets/product-hardening-dashboard.js','product-hardening.html','README.md','tools/sync-current-release.js','tools/validate-current-release.js','tests/run-v9.2-tests.js']
  },
+ 'cc-asset-validation':{
+  acceptance:['Every local asset reachable from Obol HTML entrypoints through src, href, srcset, poster, object data, inline or linked CSS, and supported dynamic script/style/worker loaders resolves inside the repository; missing or repository-escaping references fail validation and release smoke CI.'],
+  validationCommands:['node tools/validate-asset-references.js','node tools/release-smoke.js','node tests/run-v9.3-tests.js'],
+  proofFiles:['tools/validate-asset-references.js','tools/release-smoke.js','tools/release-preflight.js','tests/run-v9.3-tests.js','docs/v9.3.md']
+ },
  'dash-product-foundation':{
   acceptance:['Product Hardening Dashboard renders quantified totals, Build Next, track ledger, full seeded work ledger, and private notes source status from queue data.'],
   validationCommands:['node tools/validate-product-hardening-queue.js','node tests/run-v9.0-tests.js'],
@@ -53,5 +58,5 @@ const contracts={
  }
 };
 const requiredForStatuses=['modeled','complete','superseded','rejected'];
-root.OBOL_PRODUCT_HARDENING_TEST_CONTRACTS={version:'9.2.0',requiredForStatuses,contracts};
+root.OBOL_PRODUCT_HARDENING_TEST_CONTRACTS={version:'9.3.0',requiredForStatuses,contracts};
 })(typeof window!=='undefined'?window:globalThis);
