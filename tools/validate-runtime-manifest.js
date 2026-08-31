@@ -20,16 +20,31 @@ function exists(label,list){
 }
 
 assert.strictEqual(manifest.schemaVersion,'1.0.0','runtime manifest schema is stable');
-assert.strictEqual(manifest.compatibility.strategy,'exact-load-order','v9.6 must preserve the v9.5 parser load order exactly');
+assert.strictEqual(manifest.compatibility.strategy,'script-exact-load-order+style-import-equivalence','runtime compatibility strategy protects script order and CSS cascade equivalence');
 assert.strictEqual(fixture.release,manifest.compatibility.baselineRelease,'runtime manifest baseline release matches fixture');
-assert.strictEqual(manifest.styles.length,fixture.styleCount,'historical stylesheet count is preserved');
+const historicalStyles=manifest.compatibility.historicalStyles;
+assert(Array.isArray(historicalStyles)&&historicalStyles.length,'historical stylesheet compatibility list is explicit');
+assert.strictEqual(historicalStyles.length,fixture.styleCount,'historical stylesheet cardinality remains preserved');
 assert.strictEqual(manifest.scripts.length,fixture.scriptCount,'historical script count is preserved');
-assert.strictEqual(hash(manifest.styles),fixture.styleOrderSha256,'historical stylesheet order fingerprint is preserved');
+assert.strictEqual(hash(historicalStyles),fixture.styleOrderSha256,'historical stylesheet order fingerprint is preserved');
 assert.strictEqual(hash(manifest.scripts),fixture.scriptOrderSha256,'historical script order fingerprint is preserved');
-unique('runtime styles',manifest.styles);
+assert.deepStrictEqual(manifest.styles,[manifest.compatibility.styleOwner],'current runtime exposes exactly one stable stylesheet owner');
+assert.strictEqual(manifest.compatibility.styleOwner,'assets/obol-current.css','stable current stylesheet owner is non-versioned');
+unique('historical runtime styles',historicalStyles);
 unique('runtime scripts',manifest.scripts);
-exists('runtime styles',manifest.styles);
+exists('current runtime styles',manifest.styles);
+exists('historical runtime styles',historicalStyles);
 exists('runtime scripts',manifest.scripts);
+
+const css=read(manifest.compatibility.styleOwner).replace(/\r\n/g,'\n');
+const imported=[];
+const importRe=/@import\s+url\(["']([^"']+)["']\)\s*;/g;
+let importMatch;
+while((importMatch=importRe.exec(css)))imported.push(importMatch[1]);
+assert.deepStrictEqual(imported,historicalStyles.map(rel=>path.basename(rel)),'current stylesheet imports historical fragments in exact cascade order');
+const cssWithoutComments=css.replace(/\/\*[\s\S]*?\*\//g,'');
+const cssWithoutImports=cssWithoutComments.replace(/@import\s+url\(["'][^"']+["']\)\s*;/g,'').trim();
+assert.strictEqual(cssWithoutImports,'','current stylesheet owner is a pure generated compatibility projection, not a competing style layer');
 
 const flattened=[].concat(
  manifest.groups.domain,
@@ -61,8 +76,8 @@ const endAt=index.indexOf(projectionEnd,startAt+projectionStart.length);
 assert(startAt>=0&&endAt>startAt,'index exposes one inert generated runtime-manifest projection for legacy regression observation');
 assert.strictEqual(index.indexOf(projectionStart,startAt+1),-1,'index has only one runtime-manifest projection');
 const projected=index.slice(startAt+projectionStart.length,endAt).split('\n').filter(Boolean);
-const expectedProjection=manifest.styles.concat(manifest.scripts).map(rel=>path.basename(rel));
-assert.deepStrictEqual(projected,expectedProjection,'legacy index observation projection is generated from the exact manifest order and cannot become a competing owner');
+const expectedProjection=historicalStyles.concat(manifest.scripts).map(rel=>path.basename(rel));
+assert.deepStrictEqual(projected,expectedProjection,'legacy index observation projection preserves historical CSS/script order without becoming an executable owner');
 assert.strictEqual(new Set(projected).size,projected.length,'projected manifest basenames are unique');
 
 const loader=read('assets/runtime-current.js');
@@ -88,4 +103,4 @@ assert(loaded&&loaded.C&&loaded.lanes,'manifest-backed Node current runtime init
 assert.strictEqual(loaded.C.VERSION,'8.8.0','runtime consolidation preserves the v8.8 workspace schema identity');
 assert(loaded.project,'manifest-backed runtime preserves the current v8.8 project adapter');
 
-console.log('Runtime manifest valid: one browser entrypoint and one Node loader consume the same ordered asset authority; v9.5 load-order fingerprints, inert browser/Node compatibility projections, and v8.8 runtime initialization remain equivalent.');
+console.log('Runtime manifest valid: one browser stylesheet owner preserves the v9.5 CSS cascade by generated ordered imports; script load-order fingerprints, inert compatibility projections, and v8.8 runtime initialization remain equivalent.');
