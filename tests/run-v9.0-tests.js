@@ -8,14 +8,20 @@ const cp = require('child_process');
 
 const root = path.join(__dirname, '..');
 const queuePath = path.join(root, 'data', 'product-hardening', 'product-hardening-queue.js');
+const contractsPath = path.join(root, 'data', 'product-hardening', 'item-test-contracts.js');
 const sandbox = { window: {}, globalThis: null };
 sandbox.globalThis = sandbox.window;
 vm.createContext(sandbox);
 vm.runInContext(fs.readFileSync(queuePath, 'utf8'), sandbox, { filename: queuePath });
+vm.runInContext(fs.readFileSync(contractsPath, 'utf8'), sandbox, { filename: contractsPath });
 
 const q = sandbox.window.OBOL_PRODUCT_HARDENING;
+const contracts = sandbox.window.OBOL_PRODUCT_HARDENING_TEST_CONTRACTS;
 assert(q, 'product-hardening queue exposed');
+assert(contracts, 'product-hardening item test contracts exposed');
 assert.strictEqual(q.version, '9.0.0');
+assert(contracts.requiredForStatuses.includes('modeled'), 'modeled queue items require item-specific tests');
+assert(contracts.requiredForStatuses.includes('complete'), 'complete queue items require item-specific tests');
 
 const requiredTracks = [
   'critical-correctness',
@@ -63,6 +69,15 @@ const requiredItems = [
 const itemIds = new Set(q.items.map(i => i.id));
 for (const id of requiredItems) assert(itemIds.has(id), 'required queue item remains modeled or queued: ' + id);
 assert(q.buildNext(5).some(i => i.id === 'cc-version-authority'), 'version authority remains top build item');
+
+for (const item of q.items.filter(i => contracts.requiredForStatuses.includes(i.status))) {
+  const contract = contracts.contracts[item.id];
+  assert(contract, 'status-bearing queue item has item-specific test contract: ' + item.id);
+  assert(Array.isArray(contract.acceptance) && contract.acceptance.length, 'contract has acceptance criteria: ' + item.id);
+  assert(Array.isArray(contract.validationCommands) && contract.validationCommands.length, 'contract has validation commands: ' + item.id);
+  assert(Array.isArray(contract.proofFiles) && contract.proofFiles.length, 'contract has proof files: ' + item.id);
+  for (const rel of contract.proofFiles) assert(fs.existsSync(path.join(root, rel)), 'contract proof file exists for ' + item.id + ': ' + rel);
+}
 
 const readme = fs.readFileSync(path.join(root, 'README.md'), 'utf8');
 assert(readme.includes('Future agents should read this README'), 'README contains future-agent handoff');
