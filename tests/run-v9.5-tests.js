@@ -52,7 +52,7 @@ const uxDoc=read('docs/UX-QUALITY.md');
 const releaseDoc=read('docs/v9.5.md');
 const readme=read('README.md');
 for(const token of ['--obol-link:#8ecbff','--obol-link-hover:#c4e6ff','--obol-focus:#ffd166',':focus-visible','@media (forced-colors:active)'])assert(a11yCss.includes(token),'stable accessibility CSS contains '+token);
-for(const token of ['.card-head','.state-card','.variant-pill',"event.key==='Enter'","event.key===' '","event.key==='Tab'","aria-modal","lastDialogFocus','button'])assert(a11yJs.includes(token),'stable keyboard owner contains '+token);
+for(const token of ['.card-head','.state-card','.variant-pill',"event.key==='Enter'","event.key===' '","event.key==='Tab'",'aria-modal','lastDialogFocus',"role','button",'tabIndex=0'])assert(a11yJs.includes(token),'stable keyboard owner contains '+token);
 assert(app.includes("addStyle88('assets/accessibility.css')")&&app.includes("addScript88('assets/accessibility.js')"),'live v8.8 browser bridge loads stable accessibility owners');
 assert(dashboardCss.includes('.ph-link:focus-visible')&&dashboardCss.includes('--obol-link:#8ecbff'),'Product Hardening Dashboard uses current link/focus contract');
 assert(preflight.includes("run('contrast and focus accessibility',['tools/validate-accessibility-contract.js'])"),'preflight permanently gates accessibility contract');
