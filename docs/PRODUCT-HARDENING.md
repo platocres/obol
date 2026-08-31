@@ -38,9 +38,17 @@ Do not implement these goals by adding a new versioned product-hardening runtime
 
 v9.2 completes `cc-version-authority`. `data/current-release.js` is now the stable owner for the current product release label and phase identity used by live presentation and generated product metadata.
 
-The header, browser title, settings identity, report release metadata/footer, export release metadata, README current release, in-app Product Hardening Dashboard, and standalone Product Hardening Dashboard consume this authority. README projection is enforced by `tools/sync-current-release.js`; the authority boundary is checked by `tools/validate-current-release.js` and `tests/run-v9.2-tests.js`.
+The header, browser title, settings identity, report release metadata/footer, export release metadata, README current release, in-app Product Hardening Dashboard, and standalone Product Hardening Dashboard consume this authority. README projection is enforced by `tools/sync-current-release.js`; the authority boundary is checked by `tools/validate-current-release.js` and current release regression coverage.
 
 This does **not** make the product release and workspace schema the same concept. `C.VERSION` remains the v8.8 browser workspace/runtime schema compatibility identity until a deliberate storage/runtime migration changes it. Future product releases should update `data/current-release.js` rather than inventing a new current-version constant or a fake v9 runtime overlay.
+
+## Asset reference integrity
+
+v9.3 completes `cc-asset-validation`. `tools/validate-asset-references.js` owns local asset-graph integrity for Obol's HTML entrypoints and follows reachable HTML, CSS, and supported dynamic browser resource references. Missing local assets and references that escape the repository root fail validation with owning-file and resolved-path context.
+
+`tools/release-smoke.js` consumes that validator so broken assets fail ordinary release-branch pushes, not only the final regression gate. `tools/release-preflight.js` is phase-aware: Product Hardening releases validate stable v9 owners and do not require fake `core-v9.x` or `project-model-v9.x` layers.
+
+Future asset-manifest work may replace hand-maintained load order, but it must preserve or strengthen this invariant: every asset reachable from an Obol entrypoint is resolvable before a release can merge.
 
 ## Single dashboard rule
 
@@ -126,6 +134,7 @@ node tests/run-v9.0-tests.js
 node tests/run-v9.1-tests.js
 node tests/run-v9.1.1-tests.js
 node tests/run-v9.2-tests.js
+node tests/run-v9.3-tests.js
 ```
 
 These checks do not replace smoke, preflight, release-contract validation, or the complete historical chain. They add the phase-specific governance needed for v9 product hardening.
