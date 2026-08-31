@@ -30,7 +30,7 @@ const itemContract=contracts.contracts['cc-asset-validation'];
 assert(itemContract&&itemContract.acceptance.length&&itemContract.validationCommands.length&&itemContract.proofFiles.length,'asset validation has item-specific Definition of Done');
 for(const rel of itemContract.proofFiles)assert(fs.existsSync(path.join(root,rel)),'asset validation proof file exists: '+rel);
 
-assert.deepStrictEqual(workPackages.validate(q),[],'coherent work-package schema validates against the atomic queue');
+assert.strictEqual(workPackages.validate(q).length,0,'coherent work-package schema validates against the atomic queue');
 const rec=workPackages.recommend(q);
 assert(rec&&rec.entryItem&&rec.entryItem.id==='cc-report-version','recommended package begins at the highest-priority queued item');
 assert.strictEqual(rec.id,'version-trust','report version identity enters the Version Trust Surfaces package');
