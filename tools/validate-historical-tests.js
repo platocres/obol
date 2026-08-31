@@ -70,3 +70,5 @@ if(failures.length){
 }
 
 console.log(`Historical test future-safety validation passed for all suites older than v${currentVersion}.`);
+
+// v9.6 keeps legacy index-observation assertions working through a generated, inert manifest projection. The runtime-manifest validator owns that projection and prevents it from becoming a second load-order source of truth.

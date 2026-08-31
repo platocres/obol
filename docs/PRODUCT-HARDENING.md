@@ -44,11 +44,11 @@ This does **not** make the product release and workspace schema the same concept
 
 ## Asset reference integrity
 
-v9.3 completes `cc-asset-validation`. `tools/validate-asset-references.js` owns local asset-graph integrity for Obol's HTML entrypoints and follows reachable HTML, CSS, and supported dynamic browser resource references. Missing local assets and references that escape the repository root fail validation with owning-file and resolved-path context.
+v9.3 completes `cc-asset-validation`. `tools/validate-asset-references.js` owns local asset-graph integrity for Obol's HTML entrypoints and follows reachable HTML, CSS, supported dynamic browser resource references, and the stable current runtime manifest. Missing local assets and references that escape the repository root fail validation with owning-file and resolved-path context.
 
 `tools/release-smoke.js` consumes that validator so broken assets fail ordinary release-branch pushes, not only the final regression gate. `tools/release-preflight.js` is phase-aware: Product Hardening releases validate stable v9 owners and do not require fake `core-v9.x` or `project-model-v9.x` layers.
 
-Future asset-manifest work may replace hand-maintained load order, but it must preserve or strengthen this invariant: every asset reachable from an Obol entrypoint is resolvable before a release can merge.
+Runtime-manifest ownership may replace hand-maintained load projection, but it must preserve or strengthen this invariant: every current or lazy asset reachable from an Obol entrypoint is resolvable before a release can merge.
 
 ## Version trust surfaces
 
@@ -73,6 +73,18 @@ The live `assets/app-v8.8.js` bridge loads these stable non-versioned owners bec
 `tools/validate-accessibility-contract.js` permanently calculates dark-surface contrast ratios and checks focus-visible, forced-colors, keyboard activation, modal focus management, live asset wiring, and the screenshot-assisted QA contract. `docs/visual-qa/contrast-focus.md` defines the representative routes, viewports, and focus/link states that visual review should inspect. Numerical contrast remains deterministic; screenshots supplement it by catching composition/clipping problems static analysis cannot see.
 
 Future UI/runtime work should preserve or strengthen this stable accessibility boundary rather than inventing local focus colors or bypassing the current owner.
+
+## Runtime consolidation foundation
+
+v9.6 completes `runtime-current-entry`, `runtime-data-manifest`, and `runtime-historical-equivalence` inside the **Runtime Consolidation Foundation** package without deleting historical behavior layers.
+
+`data/runtime-manifest.js` is the stable owner for the exact current browser stylesheet/script order and the Node current-runtime data/core subsets. `index.html` now loads `data/runtime-manifest.js` and `assets/runtime-current.js` instead of hand-maintaining hundreds of versioned asset tags. `tools/current-runtime.js` consumes the same manifest rather than duplicating historical DATA/CORE arrays.
+
+This is an ownership and validation foundation, not the final runtime compaction. `assets/runtime-current.js` preserves parser-blocking order for the existing browser chain. The v9.5 load shape is frozen in `tests/fixtures/runtime-v9.5-load-order.json`, and `tools/validate-runtime-manifest.js` checks exact counts and SHA-256 order fingerprints, manifest path existence, browser/Node projection agreement, and manifest-backed v8.8 runtime initialization. Product Hardening preflight permanently runs this equivalence gate before historical runtime files may be removed.
+
+`tools/validate-asset-references.js` also traverses manifest-owned current and lazy assets, so moving load-order ownership out of `index.html` does not weaken missing-asset detection.
+
+The rest of the package remains real work. `runtime-css-consolidation`, `runtime-lazy-load-plan`, and `perf-bundle-budget` remain queued because they require separate replacement/migration and performance reasoning. v9.6 does not mark them complete for package-count optics. Historical CSS/core/app/intake/report/data layers remain in place until later regression-equivalent consolidation can safely remove them.
 
 ## Single dashboard rule
 
@@ -175,6 +187,7 @@ node tools/validate-product-hardening-queue.js
 node tools/validate-current-release.js
 node tools/validate-version-identity.js
 node tools/validate-accessibility-contract.js
+node tools/validate-runtime-manifest.js
 node tools/validate-asset-references.js
 node tools/sync-current-release.js --check
 node tools/sync-product-build-next.js --check
@@ -186,6 +199,7 @@ node tests/run-v9.2-tests.js
 node tests/run-v9.3-tests.js
 node tests/run-v9.4-tests.js
 node tests/run-v9.5-tests.js
+node tests/run-v9.6-tests.js
 ```
 
 These checks do not replace smoke, preflight, release-contract validation, or the complete historical chain. They add the phase-specific governance needed for v9 product hardening.
