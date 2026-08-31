@@ -4,8 +4,6 @@ Obol is a static, offline-capable browser workspace for OSCP-style labs, Active 
 
 Live site: `https://platocres.github.io/obol/`
 
-Current release: **v9.1**
-
 Current Obol release: **v9.1**
 
 Completed Orange methodology/source baseline: **v8.8**
@@ -45,6 +43,8 @@ The active **Dashboard** route now opens the Product Hardening Dashboard. This i
 v9.0 created the product-hardening queue and dashboard. v9.1 makes that queue visible from the app dashboard, fixes confusing v8.8/v9 wording, and adds item-specific test contracts so future agents cannot mark product-hardening work as modeled, complete, superseded, or rejected without naming the tests and proof files that support that disposition.
 
 Future agents should read this README, open the product-hardening dashboard, pick the highest-priority Product Build Next item, update the queue data, sync the README, validate, and push one coherent PR. Do not add another product-hardening data/runtime file per release unless there is a real ownership change.
+
+There must be only one open release/product-hardening PR at a time. Before creating a new release, product-hardening, dashboard, queue, Definition of Done, or burn-down PR, agents must search open PRs. If one already exists, continue that PR or close it as superseded before opening another. CI enforces this with `tools/validate-open-pr-uniqueness.js`.
 
 Raw notes are staged privately in `platocres/obol-source-notes`. Public Obol must receive only normalized, derived guidance and implementation changes, not raw course notes or notebook dumps.
 
@@ -159,7 +159,7 @@ Runtime compaction should replace one stable ownership area at a time, prove reg
 
 ### Recent changes
 
-- **v9.1** - made the app dashboard the active product-hardening dashboard, clarified current release language, preserved v8.8 as the completed Orange baseline, and added item-specific test contracts for product-hardening queue dispositions.
+- **v9.1** - made the app dashboard the active product-hardening dashboard, clarified current release language, preserved v8.8 as the completed Orange baseline, added item-specific test contracts for product-hardening queue dispositions, and restored the one-open-release-PR rule with CI enforcement.
 - **v9.0 foundation** - added the product-hardening queue, standalone dashboard, generated Product Build Next block, private notes source pointer, and validation/docs needed for future agents to continue without reopening the Orange queue.
 - **v8.8** - completed whole-file source inventory for `valid_user.md`, advanced file-level inventory to 17/17, expanded the atomic ledger to 334/334, closed the live methodology/source queue, and preserved explicit proof and supersession boundaries.
 - **v8.7** - completed whole-file source inventory for `trusts.md`, advanced file-level inventory to 16/17, and expanded the atomic ledger to 316/316.
@@ -201,6 +201,7 @@ node tools/validate-release-quality.js
 node tools/validate-product-hardening-queue.js
 node tools/validate-asset-references.js
 node tools/sync-product-build-next.js --check
+node tools/validate-open-pr-uniqueness.js
 node tests/run-v9.0-tests.js
 node tests/run-v9.1-tests.js
 ```
