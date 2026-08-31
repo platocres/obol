@@ -55,7 +55,7 @@ Do not create duplicate release/product-hardening PRs. If one exists, continue i
 
 The active queue is Product Build Next, backed by `data/product-hardening/product-hardening-queue.js` and surfaced in `#/dashboard` plus `product-hardening.html`.
 
-The completed Orange methodology/source queue is historical baseline material now. Its detailed 127/127 canonical, 17/17 source-file, 34/34 frozen-baseline, and 334/334 atomic-fidelity accounting belongs in `docs/NORTH-STAR.md` and `docs/ORANGE-SOURCE-DEPTH.md`, not in this README.
+The completed Orange methodology/source queue is historical baseline material now. Its detailed 127 canonical sections, 17/17 source-file, 34/34 frozen-baseline, and 334/334 atomic-fidelity accounting belongs in `docs/NORTH-STAR.md` and `docs/ORANGE-SOURCE-DEPTH.md`, not in this README. The atomic source-fidelity ledger is retained in durable docs and data files rather than expanded here.
 
 Pinned Orange Cyber Defense mind map/source provenance remains: https://orange-cyberdefense.github.io/ocd-mindmaps/img/mindmap_ad_dark_classic_2025.03.excalidraw.svg and https://github.com/Orange-Cyberdefense/ocd-mindmaps/tree/main.
 
