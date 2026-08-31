@@ -6,12 +6,15 @@ const vm = require('vm');
 
 const root = path.join(__dirname, '..');
 const queueFile = path.join(root, 'data', 'product-hardening', 'product-hardening-queue.js');
+const dodFile = path.join(root, 'data', 'product-hardening', 'product-hardening-dod.js');
 const sandbox = { window: {}, globalThis: null };
 sandbox.globalThis = sandbox.window;
 vm.createContext(sandbox);
 vm.runInContext(fs.readFileSync(queueFile, 'utf8'), sandbox, { filename: queueFile });
+if (fs.existsSync(dodFile)) vm.runInContext(fs.readFileSync(dodFile, 'utf8'), sandbox, { filename: dodFile });
 
 const q = sandbox.window.OBOL_PRODUCT_HARDENING;
+const dod = sandbox.window.OBOL_PRODUCT_HARDENING_DOD;
 const failures = [];
 
 function fail(message) {
@@ -36,7 +39,52 @@ function walk(dir, out = []) {
   return out;
 }
 
+function textArray(value) {
+  return Array.isArray(value) && value.length > 0 && value.every(v => typeof v === 'string' && v.trim().length > 0);
+}
+
+function validateProof(item, proof) {
+  const prefix = item.id + ' DoD: ';
+  if (!proof || typeof proof !== 'object') {
+    fail(prefix + 'missing item-specific Definition of Done/test proof');
+    return;
+  }
+  for (const field of dod.statusRules.requiredFields || []) {
+    if (!(field in proof)) fail(prefix + 'missing required field ' + field);
+  }
+  if (!textArray(proof.acceptance) || proof.acceptance.length < (dod.statusRules.minimumAcceptanceItems || 1)) {
+    fail(prefix + 'acceptance must name concrete acceptance checks');
+  }
+  if (typeof proof.test_plan !== 'string' || proof.test_plan.trim().length < 20) {
+    fail(prefix + 'test_plan must explain how this item is proven');
+  }
+  if (!textArray(proof.validation_commands)) {
+    fail(prefix + 'validation_commands must name runnable commands');
+  } else if (!proof.validation_commands.some(cmd => /^node\s+(?:tests|tools)\//.test(cmd.trim()))) {
+    fail(prefix + 'validation_commands must include at least one node tests/ or node tools/ command');
+  }
+  if (!textArray(proof.required_tests)) {
+    fail(prefix + 'required_tests must name test or validator files');
+  } else if (!proof.required_tests.every(f => /^(?:tests|tools)\//.test(f))) {
+    fail(prefix + 'required_tests entries must live under tests/ or tools/');
+  }
+  if (!textArray(proof.proof_files)) {
+    fail(prefix + 'proof_files must name files that demonstrate the work');
+  } else {
+    for (const f of proof.proof_files) {
+      if (!exists(f)) fail(prefix + 'proof file does not exist: ' + f);
+    }
+  }
+  if (typeof proof.risk !== 'string' || proof.risk.trim().length < 20) {
+    fail(prefix + 'risk must explain what the test coverage prevents');
+  }
+  if (typeof proof.status_notes !== 'string' || proof.status_notes.trim().length < 10) {
+    fail(prefix + 'status_notes must explain the current status rationale');
+  }
+}
+
 if (!q) fail('queue object missing');
+if (!dod) fail('product-hardening DoD object missing');
 
 if (q) {
   if (q.version !== '9.0.0') fail('unexpected queue version ' + q.version);
@@ -67,10 +115,21 @@ if (q) {
     if (!t.id || !t.label || !Number.isFinite(t.total)) fail('invalid track ' + JSON.stringify(t));
   }
 
+  const allowedStatuses = ['queued', 'modeled', 'implemented', 'tested', 'complete', 'superseded', 'rejected'];
+  const itemIds = new Set((q.items || []).map(i => i.id));
+  const statusesRequiringDefinition = new Set(dod && dod.statusRules ? dod.statusRules.statusesRequiringDefinition || [] : []);
+
   for (const item of q.items || []) {
     if (!item.id || !item.track || !item.label || !item.status) fail('invalid item ' + JSON.stringify(item));
     if (!trackIds.has(item.track)) fail('unknown item track ' + item.track);
-    if (!['queued', 'modeled', 'complete', 'superseded', 'rejected'].includes(item.status)) fail('bad status ' + item.status + ' for ' + item.id);
+    if (!allowedStatuses.includes(item.status)) fail('bad status ' + item.status + ' for ' + item.id);
+    if (statusesRequiringDefinition.has(item.status)) validateProof(item, dod.itemProof && dod.itemProof[item.id]);
+  }
+
+  if (dod && dod.itemProof) {
+    for (const id of Object.keys(dod.itemProof)) {
+      if (!itemIds.has(id)) fail('DoD proof references unknown queue item: ' + id);
+    }
   }
 
   const requiredItems = [
@@ -98,7 +157,6 @@ if (q) {
     'qa-asset-test',
     'qa-release-contract-v9'
   ];
-  const itemIds = new Set((q.items || []).map(i => i.id));
   for (const id of requiredItems) {
     if (!itemIds.has(id)) fail('required queue item missing: ' + id);
   }
@@ -116,11 +174,18 @@ if (q) {
   if (!q.buildNext(5).some(i => i.id === 'cc-version-authority')) fail('version-authority item is no longer near top of Build Next');
 }
 
+if (dod) {
+  if (!dod.version) fail('DoD ledger version missing');
+  if (!dod.statusRules || !Array.isArray(dod.statusRules.statusesRequiringDefinition)) fail('DoD status rules missing');
+  if (!dod.itemProof || typeof dod.itemProof !== 'object') fail('DoD itemProof map missing');
+}
+
 const readme = read('README.md');
 if (!readme.includes('Future agents should read this README')) fail('README future-agent handoff is missing');
 if (!readme.includes('open the product-hardening dashboard')) fail('README does not direct agents to the product-hardening dashboard');
 if (!readme.includes('pick the highest-priority Product Build Next item')) fail('README does not direct agents to the highest-priority Product Build Next item');
 if (!readme.includes('data/product-hardening/product-hardening-queue.js')) fail('README does not name the product-hardening queue source of truth');
+if (!readme.includes('item-specific test or validation coverage')) fail('README does not preserve the item-specific testing rule');
 if (!readme.includes('platocres/obol-source-notes')) fail('README does not point to the private notes source repo');
 if (!readme.includes('Public Obol must receive only normalized, derived guidance')) fail('README does not preserve the public/private notes boundary');
 if (!readme.includes('<!-- OBOL-PRODUCT-BUILD-NEXT:START -->') || !readme.includes('<!-- OBOL-PRODUCT-BUILD-NEXT:END -->')) fail('README Product Build Next markers are missing');
