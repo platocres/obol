@@ -4,7 +4,7 @@ Obol is a static, browser-local workspace for OSCP-style labs, Active Directory 
 
 Live site: `https://platocres.github.io/obol/`
 
-Current release: **v9.7**
+Current release: **v9.8**
 
 Open `#/dashboard` for the active Product Hardening Dashboard and Product Build Next queue.
 
@@ -65,38 +65,35 @@ The completed Orange methodology/source queue is historical, regression-protecte
 This block is generated from `data/product-hardening/product-hardening-queue.js`. Do not edit it manually.
 Recommended work-package metadata comes from `data/product-hardening/work-packages.js`.
 
-**Current product-hardening queue:** 11/632 complete (2%), 63 queued, 9 foundation items modeled.
+**Current product-hardening queue:** 16/632 complete (3%), 58 queued, 9 foundation items modeled.
 **Private notes source:** `platocres/obol-source-notes` — 556 notes and 1326 embedded resources accounted.
 
-**Recommended work package:** **Dashboard and User Workflow Rebalance** — 5 live items / 5 tracked.
-**Work-package entry:** **Dashboard ownership consolidation**
-**Ownership area:** `dashboard/home/navigation`
-**Package guidance:** Keep project accounting in the dashboard while making Home, navigation, and Path visibly user-first.
+**Recommended work package:** **Runtime Consolidation Foundation** — 2 live items / 6 tracked.
+**Work-package entry:** **Lazy-load deep engineering views**
+**Ownership area:** `runtime/build-loading`
+**Package guidance:** Treat the current entrypoint, active CSS ownership, generated asset manifest, equivalence harness, lazy-load boundary, and request budget as one consolidation area when the same runtime context is already loaded.
 **Package dependencies:** none.
 
 **Live items in this package:**
-- **Dashboard ownership consolidation** — Keep one dashboard owner for project/product progress and avoid release-specific competing status panels.
-- **Make Home user-first** — Home should prioritize active target, known facts, queued intent, evidence needing review, best next move, and proof readiness.
-- **Move build metrics out of prime workflow** — Source accounting and product-hardening metrics belong in the dashboard/About surfaces, not the main box workflow.
-- **Expose dashboard clearly in navigation** — Make the master dashboard easy to find from normal site navigation without cluttering the primary operator loop.
-- **Improve Path clarity** — Path should make the best next move, unlocks, queued actions, and blockers obvious.
+- **Lazy-load deep engineering views** — Move heavy dashboard, methodology, tool library, lineage, and historical surfaces behind deliberate loading boundaries.
+- **Bundle and request budget** — Reduce request count and parse cost from the current historical-load chain.
 
-**Related items to consider, not automatically in scope:** Keep Build Next near dashboard top.
+**Related items to consider, not automatically in scope:** No new layered queue architecture.
 
 **Highest-priority live items:**
-1. **Dashboard ownership consolidation** — Keep one dashboard owner for project/product progress and avoid release-specific competing status panels.
-2. **Lazy-load deep engineering views** — Move heavy dashboard, methodology, tool library, lineage, and historical surfaces behind deliberate loading boundaries.
-3. **Make Home user-first** — Home should prioritize active target, known facts, queued intent, evidence needing review, best next move, and proof readiness.
-4. **Move build metrics out of prime workflow** — Source accounting and product-hardening metrics belong in the dashboard/About surfaces, not the main box workflow.
-5. **Expose dashboard clearly in navigation** — Make the master dashboard easy to find from normal site navigation without cluttering the primary operator loop.
-6. **Improve Path clarity** — Path should make the best next move, unlocks, queued actions, and blockers obvious.
-7. **Design contextual field-notes disclosure** — Notes should appear as expandable relevant context, not as a dumped notebook.
-8. **Review responsive density** — Check dashboard and builders on small screens, narrow laptops, and exam-like layouts.
+1. **Lazy-load deep engineering views** — Move heavy dashboard, methodology, tool library, lineage, and historical surfaces behind deliberate loading boundaries.
+2. **Design contextual field-notes disclosure** — Notes should appear as expandable relevant context, not as a dumped notebook.
+3. **Review responsive density** — Check dashboard and builders on small screens, narrow laptops, and exam-like layouts.
+4. **Define Tool Builder schema** — A data-driven schema must describe inputs, toggles, target autofill, credential modes, output options, evidence expectations, and report lineage.
+5. **Build generic Tool Builder renderer** — One renderer should power tool GUIs instead of custom JavaScript per tool.
+6. **Nmap GUI builder** — Targets view gets a canonical Nmap launchpad with toggles for ports, scripts, timing, output files, discovery, and canonical scan profiles.
+7. **NetExec / nxc builder hardening** — Use the existing nxc work as the pattern for credential-aware builders across the app.
+8. **Hashcat builder with hash detection** — User can paste a hash, select/confirm type, and generate the correct minimal command plus optional rules/workload toggles.
 
 **Track status:**
 - **Critical correctness:** 4/4 complete (100%), 0 modeled.
-- **Architecture / runtime:** 4/10 complete (40%), 3 modeled.
-- **UI / UX repair:** 1/8 complete (13%), 1 modeled.
+- **Architecture / runtime:** 5/10 complete (50%), 3 modeled.
+- **UI / UX repair:** 5/8 complete (63%), 1 modeled.
 - **Tool GUI builders:** 0/18 complete (0%), 0 modeled.
 - **Credential modes:** 0/14 complete (0%), 0 modeled.
 - **Manual outcomes:** 0/8 complete (0%), 0 modeled.
@@ -125,6 +122,7 @@ node tools/validate-product-hardening-queue.js
 node tools/validate-current-release.js
 node tools/validate-version-identity.js
 node tools/validate-accessibility-contract.js
+node tools/validate-current-workflow.js
 node tools/sync-current-styles.js --check
 node tools/validate-runtime-manifest.js
 node tools/validate-asset-references.js
@@ -140,6 +138,7 @@ node tests/run-v9.4-tests.js
 node tests/run-v9.5-tests.js
 node tests/run-v9.6-tests.js
 node tests/run-v9.7-tests.js
+node tests/run-v9.8-tests.js
 ```
 
 ## GitHub Pages

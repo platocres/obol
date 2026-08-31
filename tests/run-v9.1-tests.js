@@ -22,21 +22,31 @@ for (const token of [
   "RELEASE_SOURCE='data/current-release.js'",
   'window.OBOL_CURRENT_RELEASE',
   'Offensive Box Operations Ledger · ',
-  'renderProductDashboard88',
   'ensureProductAssets88',
   'data/product-hardening/product-hardening-queue.js',
   'assets/product-hardening-dashboard.js',
-  'active product-hardening queue surface',
-  'Completed Orange baseline',
-  'Open product dashboard'
+  "WORKFLOW_SOURCE='assets/workflow-current.js'"
 ]) {
-  assert(app.includes(token), 'v9.1 product-hardening bridge remains present through current ownership: ' + token);
+  assert(app.includes(token), 'v9.1 current product-hardening bridge invariant remains present: ' + token);
 }
 assert(!app.includes('MutationObserver'), 'product-hardening bridge must not rely on a broad MutationObserver loop');
 assert(!/const PRODUCT_RELEASE=/.test(app), 'current product release is no longer duplicated in the historical app bridge');
 
+const workflow = read('assets/workflow-current.js');
+for (const token of [
+  "renderProductHardeningDashboard(v,{embedded:true})",
+  "link.href='#/dashboard'",
+  'Product Dashboard',
+  'Product/build metrics live in'
+]) assert(workflow.includes(token), 'stable current workflow preserves the v9.1 dashboard bridge outcome: ' + token);
+
+const renderer = read('assets/product-hardening-dashboard.js');
+assert(renderer.includes('window.OBOL_CURRENT_RELEASE'), 'current dashboard renderer consumes release authority');
+assert(renderer.includes('window.OBOL_PRODUCT_HARDENING_WORK_PACKAGES'), 'current dashboard renderer consumes work-package metadata');
+assert(renderer.includes('Recommended work package'), 'current dashboard renderer preserves Product Build Next package visibility');
+
 const css = read('assets/product-hardening-dashboard.css');
-assert(css.includes('.app-phase-badge88'), 'in-app product phase badge is styled');
+assert(css.includes('.app-phase-badge88'), 'historical in-app product phase badge styling remains available for compatibility');
 assert(css.includes('.dashboard66 .ph-shell'), 'product dashboard is styled when embedded in the app dashboard');
 
 const contracts = read('data/product-hardening/item-test-contracts.js');

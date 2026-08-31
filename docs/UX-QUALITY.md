@@ -40,6 +40,27 @@ v9.5 completes the first dedicated accessibility quality package. Stable non-ver
 
 Future UI work should consume this baseline rather than locally inventing new focus colors or bypassing the stable accessibility owner.
 
+## v9.8 user-first workflow baseline
+
+v9.8 moves current workflow ownership into stable `assets/workflow-current.js` and removes product-build accounting from Home's prime scan path.
+
+Home now prioritizes:
+
+- the active target/context;
+- known facts and typed artifacts;
+- queued operator intent;
+- Evidence attention and a direct path back to Evidence review;
+- the evidence-ranked best next move and downstream unlock count;
+- explicit blockers such as broken/unverified paths and credential validation gaps;
+- recent activity;
+- report proof readiness.
+
+Product/build metrics remain available in `#/dashboard`, which uses the same Product Hardening renderer as the standalone dashboard. Home keeps only a quiet link to that surface instead of duplicating Product Hardening or Orange accounting totals.
+
+Product Dashboard is exposed in the secondary navigation menu so it is easy to find without changing the five-item primary loop. Next Steps retains the existing recommendation engine and now adds an explicit decision brief showing best move, unlocks, queued intent, and blockers together.
+
+`tools/validate-current-workflow.js` protects this division of responsibility. Future UI changes should preserve the operator-first Home/Path contract and keep project/build accounting in the dashboard rather than reintroducing release-specific status panels.
+
 ## Visual QA direction
 
 Browser/screenshot QA should catch UI regressions in addition to deterministic repository validation. v9.5 establishes screenshot-assisted contrast/focus review; the separate `qa-playwright-smoke` item remains queued for automated route opening, console-error detection, and captured screenshots across the full core route set.
