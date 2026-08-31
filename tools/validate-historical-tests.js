@@ -5,7 +5,7 @@ const path=require('path');
 
 const root=path.join(__dirname,'..');
 const readme=fs.readFileSync(path.join(root,'README.md'),'utf8');
-const currentMatch=readme.match(/Current release:\s*\*\*v(\d+\.\d+)\*\*/);
+const currentMatch=readme.match(/Current release:\s*\*\*v(\d+\.\d+)(?:[^*]*)?\*\*/);
 if(!currentMatch)throw new Error('Unable to determine current release from README.md');
 const currentVersion=currentMatch[1];
 const failures=[];
@@ -27,9 +27,9 @@ for(const name of fs.readdirSync(path.join(root,'tests')).filter(x=>/^run-v\d+\.
   if(version===currentVersion)continue;
   const text=fs.readFileSync(path.join(root,'tests',name),'utf8');
 
-  if(/Current release:\s*\*\*v[0-9]+\.[0-9]+\*\*/.test(text))add(name,'hard-codes a README current-release token');
+  if(/Current release:\s*\*\*v[0-9]+\.[0-9]+(?:[^*]*)?\*\*/.test(text))add(name,'hard-codes a README current-release token');
   for(const literal of includeLiterals(text,'readme')){
-    if(/Current release:.*\*\*v[0-9]+\.[0-9]+\*\*/.test(literal))add(name,'asserts a live README version literal instead of a historical invariant');
+    if(/Current release:.*\*\*v[0-9]+\.[0-9]+(?:[^*]*)?\*\*/.test(literal))add(name,'asserts a live README version literal instead of a historical invariant');
   }
 
   if(text.includes('sync-readme-build-next.js')){
