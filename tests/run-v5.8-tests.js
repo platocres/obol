@@ -123,7 +123,7 @@ test('release PR validator rejects missing descriptions and accepts the current 
   const tool=path.join(root,'tools','validate-release-pr.js');
   const eventPath=path.join(os.tmpdir(),'obol-release-pr-event.json');
   const readme=fs.readFileSync(path.join(root,'README.md'),'utf8');
-  const current=readme.match(/Current release: \*\*v(\d+\.\d+)\*\*/);
+  const current=readme.match(/Current release: \*\*v(\d+\.\d+(?:\.\d+)?)\*\*/);
   assert(current,'current release marker');
   const version=current[1];
   const goodBody='## Summary\n'+('Release summary. '.repeat(50))+
@@ -156,7 +156,8 @@ test('v5.8 release wiring is complete',()=>{
   const readme=fs.readFileSync(path.join(root,'README.md'),'utf8');
   const changelog=fs.readFileSync(path.join(root,'CHANGELOG.md'),'utf8');
   for(const x of ['methodology-v5.8.js','dashboard-v5.8.js','core-v5.8.js','intake-v5.8.js','app-v5.8.js','obol-v5.8.css'])assert(idx.includes(x),x);
-  assert(/Current release: \*\*v\d+\.\d+\*\*/.test(readme));
+  assert(/Current release: \*\*v\d+\.\d+(?:\.\d+)?\*\*/.test(readme));
+  assert(readme.includes('BUILDING.md'));
   assert(changelog.includes('## v5.8'));
   assert(fs.existsSync(path.join(root,'docs','v5.8.md')));
   assert(fs.existsSync(path.join(root,'tools','validate-release-pr.js')));
