@@ -3,14 +3,29 @@
 const fs=require('fs');
 const path=require('path');
 const cp=require('child_process');
+const vm=require('vm');
 
 const root=path.join(__dirname,'..');
-const readme=fs.readFileSync(path.join(root,'README.md'),'utf8');
-const match=readme.match(/Current release: \*\*v(\d+\.\d+)\*\*/);
-if(!match)throw new Error('Unable to determine current release from README.md');
-const version=match[1];
-const currentTest=path.join(root,'tests',`run-v${version}-tests.js`);
-if(!fs.existsSync(currentTest))throw new Error(`Missing current release regression suite: tests/run-v${version}-tests.js`);
+const read=rel=>fs.readFileSync(path.join(root,rel),'utf8');
+const exists=rel=>fs.existsSync(path.join(root,rel));
+
+function loadRelease(){
+  if(exists('data/current-release.js')){
+    const sandbox={window:{},globalThis:null};sandbox.globalThis=sandbox.window;vm.createContext(sandbox);
+    vm.runInContext(read('data/current-release.js'),sandbox,{filename:'data/current-release.js'});
+    if(sandbox.window.OBOL_CURRENT_RELEASE)return sandbox.window.OBOL_CURRENT_RELEASE;
+  }
+  const match=read('README.md').match(/Current release:\s*\*\*v(\d+\.\d+(?:\.\d+)?)\*\*/);
+  if(!match)throw new Error('Unable to determine current release');
+  return{version:match[1]+(match[1].split('.').length===2?'.0':''),label:'v'+match[1],phase:/^9\./.test(match[1])?'product-hardening':'runtime'};
+}
+
+const release=loadRelease();
+const version=String(release.label||'').replace(/^v/,'');
+if(!/^\d+\.\d+(?:\.\d+)?$/.test(version))throw new Error('Invalid current release label: '+String(release.label||''));
+const currentTest=`tests/run-v${version}-tests.js`;
+if(!exists(currentTest))throw new Error(`Missing current release regression suite: ${currentTest}`);
+const isProductHardening=release.phase==='product-hardening'||/^9\./.test(version);
 
 function run(label,args){
   console.log(`\n== ${label} ==`);
@@ -19,29 +34,39 @@ function run(label,args){
   if(r.status!==0)process.exit(r.status||1);
 }
 
-const syntaxFiles=[];
-for(const dir of ['data','assets']){
-  for(const name of fs.readdirSync(path.join(root,dir))){
-    if(name.endsWith(`-v${version}.js`))syntaxFiles.push(path.join(dir,name));
+const syntaxFiles=['tools/release-smoke.js','tools/validate-historical-tests.js','tools/sync-readme-build-next.js','tools/release-preflight.js','tools/validate-release-pr.js','tools/validate-release-quality.js',currentTest];
+if(isProductHardening){
+  syntaxFiles.push('data/current-release.js','data/product-hardening/product-hardening-queue.js','data/product-hardening/item-test-contracts.js','tools/validate-current-release.js','tools/sync-current-release.js','tools/validate-product-hardening-queue.js','tools/validate-asset-references.js','tools/sync-product-build-next.js','tools/validate-open-pr-uniqueness.js');
+}else{
+  for(const dir of ['data','assets']){
+    for(const name of fs.readdirSync(path.join(root,dir))){if(name.endsWith(`-v${version}.js`))syntaxFiles.push(path.join(dir,name));}
   }
 }
-for(const file of ['tools/current-runtime.js','tools/release-smoke.js','tools/validate-historical-tests.js','tools/sync-readme-build-next.js','tools/release-preflight.js','tools/validate-release-pr.js','tools/validate-release-quality.js',`tests/run-v${version}-tests.js`]){
-  if(fs.existsSync(path.join(root,file)))syntaxFiles.push(file);
-}
-if(!syntaxFiles.length)throw new Error(`No v${version} JavaScript release files found for syntax validation`);
-for(const file of [...new Set(syntaxFiles)].sort())run(`syntax ${file}`,['--check',file]);
+for(const file of [...new Set(syntaxFiles)].sort())if(exists(file))run(`syntax ${file}`,['--check',file]);
 
-const runtimeText=fs.readFileSync(path.join(root,'tools','current-runtime.js'),'utf8');
-for(const required of [`project-model-v${version}.js`,`core-v${version}.js`]){
-  if(!runtimeText.includes(required))throw new Error(`Current runtime loader is not wired through release file: ${required}`);
+if(!isProductHardening){
+  const runtimeText=read('tools/current-runtime.js');
+  for(const required of [`project-model-v${version}.js`,`core-v${version}.js`]){
+    if(!runtimeText.includes(required))throw new Error(`Current runtime loader is not wired through release file: ${required}`);
+  }
 }
-const syncText=fs.readFileSync(path.join(root,'tools','sync-readme-build-next.js'),'utf8');
+const syncText=read('tools/sync-readme-build-next.js');
 if(!syncText.includes("require('./current-runtime')"))throw new Error('README Build Next generator must consume the shared current runtime loader');
 
 run('release smoke validation',['tools/release-smoke.js']);
 run('historical test future safety',['tools/validate-historical-tests.js']);
 run('repository release contract',['tools/validate-release-pr.js','--repo-only']);
 run('release quality debt gate',['tools/validate-release-quality.js']);
-run(`v${version} regression suite`,[path.relative(root,currentTest)]);
-run('README Build Next synchronization',['tools/sync-readme-build-next.js','--check']);
-console.log(`\nRelease preflight passed for v${version}.`);
+
+if(isProductHardening){
+  run('current release authority',['tools/validate-current-release.js']);
+  run('current release README synchronization',['tools/sync-current-release.js','--check']);
+  run('product-hardening queue contracts',['tools/validate-product-hardening-queue.js']);
+  run('asset reference graph',['tools/validate-asset-references.js']);
+  run('Product Build Next synchronization',['tools/sync-product-build-next.js','--check']);
+  run('open release PR uniqueness',['tools/validate-open-pr-uniqueness.js']);
+}
+
+run(`v${version} regression suite`,[currentTest]);
+run('retired Orange Build Next synchronization',['tools/sync-readme-build-next.js','--check']);
+console.log(`\nRelease preflight passed for v${version} (${isProductHardening?'product-hardening':'runtime'}).`);
