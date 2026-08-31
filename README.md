@@ -28,21 +28,21 @@ Before building:
 
 1. Read this README.
 2. Read [`BUILDING.md`](BUILDING.md) for release workflow, exact-head validation, and merge-readiness rules.
-3. Read [`docs/PRODUCT-HARDENING.md`](docs/PRODUCT-HARDENING.md) for the v9 product vision, queue rules, and Definition of Done.
-4. Open `#/dashboard` or inspect `data/product-hardening/product-hardening-queue.js` for Product Build Next.
-5. Confirm there is no open release/product-hardening PR.
-6. Pick the highest-priority Product Build Next item unless the user directs otherwise.
-7. Implement it without adding unnecessary versioned compatibility layers.
-8. Add or update item-specific acceptance criteria, validation commands, proof files, and tests.
-9. Sync generated Product Build Next output and run the required validation.
-10. Push one coherent release/product-hardening PR and require the exact final head to be green before merge.
+3. Read [`docs/PRODUCT-HARDENING.md`](docs/PRODUCT-HARDENING.md) for the v9 product vision, queue rules, coherent work-package model, and Definition of Done.
+4. Open `#/dashboard` or inspect `data/product-hardening/product-hardening-queue.js` plus `data/product-hardening/work-packages.js` for Product Build Next.
+5. Confirm there is no open release/product-hardening PR. If one exists, continue it instead of opening another.
+6. Start with the highest-priority Product Build Next item unless the user directs otherwise. Treat it as the entry point into the recommended coherent work package, not as a one-item limit.
+7. Inspect related, adjacent, and dependency-linked items in the same ownership area. Complete as many as safely fit the same architectural context and blast radius. Do not stop merely because the first item's acceptance criteria are satisfied if closely related work can be completed and fully tested in the same PR.
+8. Keep queue-item accountability atomic. Every item advanced or closed still needs its own acceptance criteria, validation commands, proof files, and item-specific tests.
+9. Do not batch unrelated work. Stop expanding the package when the next item materially changes ownership area, architectural context, migration risk, or test strategy.
+10. Sync generated Product Build Next output, run the required validation, and keep the entire coherent work package in the one active release/product-hardening PR until the exact final head is green.
 
 There must be only one open release/product-hardening PR at a time. If one exists, continue it or close it as superseded before opening another. CI enforces this with `tools/validate-open-pr-uniqueness.js`.
 
 ## Required context map
 
-- [`BUILDING.md`](BUILDING.md) - exact release flow, validation tiers, one-open-PR rule, and merge-readiness contract.
-- [`docs/PRODUCT-HARDENING.md`](docs/PRODUCT-HARDENING.md) - active v9 product vision, tracks, queue rules, and item Definition of Done.
+- [`BUILDING.md`](BUILDING.md) - exact release flow, validation tiers, one-open-PR rule, coherent work-package burn-down, and merge-readiness contract.
+- [`docs/PRODUCT-HARDENING.md`](docs/PRODUCT-HARDENING.md) - active v9 product vision, tracks, work-package rules, and item Definition of Done.
 - [`docs/ARCHITECTURE.md`](docs/ARCHITECTURE.md) - runtime ownership, compaction strategy, and legacy-layer boundaries.
 - [`docs/PROOF-CONTRACT.md`](docs/PROOF-CONTRACT.md) - Evidence, proof boundaries, manual outcomes, and report readiness.
 - [`docs/NOTES-INTEGRATION.md`](docs/NOTES-INTEGRATION.md) - private source repo `platocres/obol-source-notes` and normalized public-output workflow.
@@ -54,7 +54,7 @@ Pinned Orange Cyber Defense mind map provenance remains `https://orange-cyberdef
 
 ## Active product queue
 
-Product Build Next is the only active development queue. Its source of truth is `data/product-hardening/product-hardening-queue.js`, and the same data feeds the README and Product Hardening Dashboard.
+Product Build Next is the only active development queue. Its atomic item source of truth is `data/product-hardening/product-hardening-queue.js`; coherent multi-item package metadata lives in `data/product-hardening/work-packages.js`. The README and Product Hardening Dashboard consume both so the highest-priority item remains the entry point while agents are encouraged to burn down a meaningful same-ownership work package rather than nibbling one checkbox at a time.
 
 The completed Orange methodology/source queue is historical, regression-protected baseline material. Do not reopen it unless a real defect is found or the pinned upstream source is deliberately repinned. Detailed Orange accounting belongs in the North Star/source-depth docs above, not in this README.
 
@@ -62,9 +62,22 @@ The completed Orange methodology/source queue is historical, regression-protecte
 
 <!-- OBOL-PRODUCT-BUILD-NEXT:START -->
 This block is generated from `data/product-hardening/product-hardening-queue.js`. Do not edit it manually.
+Recommended work-package metadata comes from `data/product-hardening/work-packages.js`.
 
 **Current product-hardening queue:** 2/632 complete (0%), 72 queued, 9 foundation items modeled.
 **Private notes source:** `platocres/obol-source-notes` — 556 notes and 1326 embedded resources accounted.
+
+**Recommended work package:** **Version Trust Surfaces** — 2 live items / 2 tracked.
+**Work-package entry:** **Normalize report version identity**
+**Ownership area:** `release-identity/reporting`
+**Package guidance:** Normalize remaining report-facing release identity and prove all visible/exported version surfaces agree.
+**Package dependencies:** none.
+
+**Live items in this package:**
+- **Normalize report version identity** — Generated report text and footers must not retain stale historical version strings.
+- **Version identity test** — Assert title, header, settings, report preview, report footer, and export metadata agree.
+
+**Related items to consider, not automatically in scope:** Create one version authority.
 
 **Highest-priority live items:**
 1. **Normalize report version identity** — Generated report text and footers must not retain stale historical version strings.
