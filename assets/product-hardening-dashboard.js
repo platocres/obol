@@ -1,0 +1,17 @@
+'use strict';
+(function(){
+function esc(v){return String(v==null?'':v).replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));}
+function pct(a,b){return b?Math.round((a/b)*100):0;}
+function renderProductHardeningDashboard(target){
+ const q=window.OBOL_PRODUCT_HARDENING;if(!q||!target)return;
+ const totals=q.totals(),tracks=q.trackSummary(),next=q.buildNext(8);
+ target.innerHTML='<div class="ph-shell"><div class="ph-top"><div><h1>Obol Product Hardening</h1><p>v9.0 starts the post-Orange product-hardening phase. This dashboard is the single high-level surface for progress, Build Next, notes integration, tool GUI coverage, manual outcomes, runtime consolidation, and QA.</p></div><a class="ph-link" href="index.html#/dashboard">Open Obol app dashboard</a></div>'+ 
+ '<section class="ph-hero"><div class="ph-score"><div><b>'+esc(totals.pct)+'%</b><span>'+esc(totals.complete+'/'+totals.total)+' product-hardening units complete</span><span>'+esc(totals.modeled)+' foundation items modeled</span></div></div><div class="ph-bars">'+tracks.map(t=>'<div class="ph-bar-row"><div class="ph-bar-head"><span>'+esc(t.label)+'</span><b>'+esc(t.pct)+'%</b></div><div class="ph-bar-track"><div class="ph-bar-fill" style="--p:'+esc(t.pct)+'%"></div></div><small>'+esc(t.complete+'/'+t.total+' complete')+(t.modeled?' · '+esc(t.modeled)+' modeled in v9.0':'')+'</small></div>').join('')+'</div></section>'+ 
+ '<div class="ph-grid"><section class="ph-card"><h2>Build Next</h2><div class="ph-queue">'+next.map((i,idx)=>'<div class="ph-queue-row"><span class="ph-rank">'+(idx+1)+'</span><div><b>'+esc(i.label)+'</b><small>'+esc(i.track.replace(/-/g,' '))+' · '+esc(i.detail)+'</small></div><span class="ph-pill">'+esc(i.status)+'</span></div>').join('')+'</div></section>'+ 
+ '<section class="ph-card"><h2>Private notes source</h2><p>Raw ENEX exports stay private. Public Obol should receive only normalized, derived guidance.</p><p><b>'+esc(q.notes.privateRepo)+'</b></p><div class="ph-notes">'+q.notes.sources.map(s=>'<div class="ph-note-source"><b>'+esc(s.title)+'</b><span>'+esc(s.notes)+' notes · '+esc(s.resources)+' resources · sha256 '+esc(s.sha256.slice(0,16))+'…</span></div>').join('')+'</div><p><b>'+esc(totals.notes)+'</b> notes and <b>'+esc(totals.resources)+'</b> embedded resources are now accounted for in the notes-integration queue.</p></section></div>'+ 
+ '<section class="ph-detail"><h2>Detailed track ledger</h2><table class="ph-table"><thead><tr><th>Track</th><th>Goal</th><th>Status</th></tr></thead><tbody>'+tracks.map(t=>'<tr><td><b>'+esc(t.label)+'</b><small>'+esc(t.id)+'</small></td><td>'+esc(t.goal)+'</td><td>'+esc(t.complete+'/'+t.total)+' complete · '+esc(t.modeled)+' modeled</td></tr>').join('')+'</tbody></table></section>'+ 
+ '<section class="ph-detail"><h2>Full seeded work ledger</h2><table class="ph-table"><thead><tr><th>Priority</th><th>Item</th><th>Track</th><th>Status</th></tr></thead><tbody>'+q.items.slice().sort((a,b)=>a.priority-b.priority).map(i=>'<tr><td>'+esc(i.priority)+'</td><td><b>'+esc(i.label)+'</b><small>'+esc(i.detail)+'</small></td><td>'+esc(i.track)+'</td><td>'+esc(i.status)+'</td></tr>').join('')+'</tbody></table></section>'+ 
+ '<p class="ph-footer">Future agents should update the queue data, sync the README Product Build Next block, and validate dashboard totals from the same source of truth. Do not add new product-hardening runtime layers for every release.</p></div>';
+}
+window.renderProductHardeningDashboard=renderProductHardeningDashboard;
+})();
