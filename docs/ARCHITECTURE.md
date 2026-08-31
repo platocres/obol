@@ -41,6 +41,14 @@ The current versioned adapter remains available for regression history. Consumer
 
 v7.2 demonstrates the intended boundary: the completed AD CS, Kerberos delegation, and ACL / ACE atomic ledgers remain source-accounting state, while the current project projection reports 41/41 inventoried units complete and moves Build Next into the 20 remaining broad source-inventory rows without creating a second progress model.
 
+### Product release identity
+
+`data/current-release.js` is the stable owner for the current product-release identity. Header/title presentation, settings identity, report release metadata/footer, export release metadata, README current-release synchronization, and Product Hardening Dashboard presentation consume this authority rather than keeping independent current-version literals.
+
+The product release is deliberately separate from `C.VERSION`. `C.VERSION` remains the browser-workspace/runtime schema compatibility version until a deliberate storage/runtime migration changes it. Product releases must not rewrite historical workspace schema identity merely to make the visible application version advance.
+
+`tools/sync-current-release.js` is the documentation projection for the README, and `tools/validate-current-release.js` guards the authority boundary. Future product-hardening releases update the stable authority instead of creating `core-v9.x`, `app-v9.x`, or project-model overlays solely for version presentation.
+
 ### Engagement state
 
 The browser-local state model remains authoritative for target context, facts, evidence, activities, artifacts, credentials, reachability, decisions, and report proof. Project-status refactoring must not change proof semantics.
