@@ -45,14 +45,26 @@ function cssReferences(text){
 }
 
 function jsDynamicReferences(text){
+ text=String(text||'');
  const refs=[];
+ const constants=new Map();
  let m;
- const patterns=[
-  /\b(?:addScript\w*|addStyle\w*|loadScript\w*|loadStyle\w*)\s*\(\s*(["'])([^"']+)\1/g,
-  /\bnew\s+(?:Worker|SharedWorker)\s*\(\s*(["'])([^"']+)\1/g,
-  /\bserviceWorker\.register\s*\(\s*(["'])([^"']+)\1/g
+ const constRe=/\bconst\s+([A-Za-z_$][\w$]*)\s*=\s*(["'])([^"']+)\2\s*;/g;
+ while((m=constRe.exec(text)))constants.set(m[1],m[3]);
+ const callPatterns=[
+  /\b(?:addScript\w*|addStyle\w*|loadScript\w*|loadStyle\w*)\s*\(\s*(?:(["'])([^"']+)\1|([A-Za-z_$][\w$]*))/g,
+  /\bnew\s+(?:Worker|SharedWorker)\s*\(\s*(?:(["'])([^"']+)\1|([A-Za-z_$][\w$]*))/g,
+  /\bserviceWorker\.register\s*\(\s*(?:(["'])([^"']+)\1|([A-Za-z_$][\w$]*))/g,
+  /\bimport\s*\(\s*(?:(["'])([^"']+)\1|([A-Za-z_$][\w$]*))/g
  ];
- for(const re of patterns){while((m=re.exec(text||'')))refs.push(m[2]);}
+ for(const re of callPatterns){
+  while((m=re.exec(text))){
+   const literal=m[2];
+   const identifier=m[3];
+   const ref=literal||(identifier&&constants.get(identifier));
+   if(ref)refs.push(ref);
+  }
+ }
  return refs;
 }
 
