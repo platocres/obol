@@ -4,7 +4,7 @@ Obol is a static, browser-local workspace for OSCP-style labs, Active Directory 
 
 Live site: `https://platocres.github.io/obol/`
 
-Current release: **v9.3**
+Current release: **v9.4**
 
 Open `#/dashboard` for the active Product Hardening Dashboard and Product Build Next queue.
 
@@ -64,33 +64,34 @@ The completed Orange methodology/source queue is historical, regression-protecte
 This block is generated from `data/product-hardening/product-hardening-queue.js`. Do not edit it manually.
 Recommended work-package metadata comes from `data/product-hardening/work-packages.js`.
 
-**Current product-hardening queue:** 2/632 complete (0%), 72 queued, 9 foundation items modeled.
+**Current product-hardening queue:** 4/632 complete (1%), 70 queued, 9 foundation items modeled.
 **Private notes source:** `platocres/obol-source-notes` — 556 notes and 1326 embedded resources accounted.
 
-**Recommended work package:** **Version Trust Surfaces** — 2 live items / 2 tracked.
-**Work-package entry:** **Normalize report version identity**
-**Ownership area:** `release-identity/reporting`
-**Package guidance:** Normalize remaining report-facing release identity and prove all visible/exported version surfaces agree.
+**Recommended work package:** **Contrast and Focus Quality Pass** — 3 live items / 3 tracked.
+**Work-package entry:** **Fix dark-theme link contrast**
+**Ownership area:** `theme/accessibility`
+**Package guidance:** Repair dark-theme readability and focus behavior together, then protect the result with automated and screenshot-assisted checks.
 **Package dependencies:** none.
 
 **Live items in this package:**
-- **Normalize report version identity** — Generated report text and footers must not retain stale historical version strings.
-- **Version identity test** — Assert title, header, settings, report preview, report footer, and export metadata agree.
+- **Fix dark-theme link contrast** — Dark-blue links on dark panels need readable contrast, hover, and focus states.
+- **Keyboard and focus pass** — Command builders, toggles, outcome controls, modals, and dashboard drilldowns need clear focus behavior.
+- **Contrast and focus checks** — Automated and screenshot-assisted checks should catch invisible links and weak focus states.
 
-**Related items to consider, not automatically in scope:** Create one version authority.
+**Related items to consider, not automatically in scope:** Review responsive density.
 
 **Highest-priority live items:**
-1. **Normalize report version identity** — Generated report text and footers must not retain stale historical version strings.
-2. **Fix dark-theme link contrast** — Dark-blue links on dark panels need readable contrast, hover, and focus states.
-3. **Current runtime entrypoint** — Move toward one current browser entrypoint and one current Node loader boundary instead of expanding historical load arrays forever.
-4. **CSS ownership consolidation** — Collapse active styling into a small current set while preserving regressions for historical behavior.
-5. **Asset manifest and generated load order** — Generate asset references from a manifest instead of hand-editing long script/link chains.
-6. **Dashboard ownership consolidation** — Keep one dashboard owner for project/product progress and avoid release-specific competing status panels.
-7. **Historical regression equivalence harness** — Before deleting old layers, prove current and historical observable contracts are unchanged.
-8. **Lazy-load deep engineering views** — Move heavy dashboard, methodology, tool library, lineage, and historical surfaces behind deliberate loading boundaries.
+1. **Fix dark-theme link contrast** — Dark-blue links on dark panels need readable contrast, hover, and focus states.
+2. **Current runtime entrypoint** — Move toward one current browser entrypoint and one current Node loader boundary instead of expanding historical load arrays forever.
+3. **CSS ownership consolidation** — Collapse active styling into a small current set while preserving regressions for historical behavior.
+4. **Asset manifest and generated load order** — Generate asset references from a manifest instead of hand-editing long script/link chains.
+5. **Dashboard ownership consolidation** — Keep one dashboard owner for project/product progress and avoid release-specific competing status panels.
+6. **Historical regression equivalence harness** — Before deleting old layers, prove current and historical observable contracts are unchanged.
+7. **Lazy-load deep engineering views** — Move heavy dashboard, methodology, tool library, lineage, and historical surfaces behind deliberate loading boundaries.
+8. **Make Home user-first** — Home should prioritize active target, known facts, queued intent, evidence needing review, best next move, and proof readiness.
 
 **Track status:**
-- **Critical correctness:** 2/4 complete (50%), 0 modeled.
+- **Critical correctness:** 3/4 complete (75%), 0 modeled.
 - **Architecture / runtime:** 0/10 complete (0%), 3 modeled.
 - **UI / UX repair:** 0/8 complete (0%), 1 modeled.
 - **Tool GUI builders:** 0/18 complete (0%), 0 modeled.
@@ -98,7 +99,7 @@ Recommended work-package metadata comes from `data/product-hardening/work-packag
 - **Manual outcomes:** 0/8 complete (0%), 0 modeled.
 - **Notes integration:** 0/556 complete (0%), 2 modeled.
 - **Offline / performance:** 0/6 complete (0%), 0 modeled.
-- **Testing / visual QA:** 0/8 complete (0%), 3 modeled.
+- **Testing / visual QA:** 1/8 complete (13%), 3 modeled.
 
 Generated by `node tools/sync-product-build-next.js --write`. Verify with `node tools/sync-product-build-next.js --check`.
 <!-- OBOL-PRODUCT-BUILD-NEXT:END -->
@@ -119,6 +120,7 @@ node tools/validate-release-pr.js
 node tools/validate-release-quality.js
 node tools/validate-product-hardening-queue.js
 node tools/validate-current-release.js
+node tools/validate-version-identity.js
 node tools/validate-asset-references.js
 node tools/sync-current-release.js --check
 node tools/sync-product-build-next.js --check
@@ -128,6 +130,7 @@ node tests/run-v9.1-tests.js
 node tests/run-v9.1.1-tests.js
 node tests/run-v9.2-tests.js
 node tests/run-v9.3-tests.js
+node tests/run-v9.4-tests.js
 ```
 
 ## GitHub Pages
