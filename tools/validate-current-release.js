@@ -23,5 +23,5 @@ if(!standalone.includes('data/current-release.js'))bad('standalone dashboard doe
 if(!dashboard.includes('window.OBOL_CURRENT_RELEASE'))bad('dashboard renderer does not consume current release authority');
 if(!dashboard.includes("document.title='Obol '+r.label+' '+r.phaseLabel+' Dashboard'"))bad('standalone dashboard title does not consume current release authority');
 if(!core.includes('C.VERSION=VERSION'))bad('v8.8 workspace/runtime schema version contract changed unexpectedly');
-for(const forbidden of ['assets/core-v9.2.js','assets/app-v9.2.js','data/project-model-v9.2.js','assets/obol-v9.2.css'])if(fs.existsSync(path.join(root,forbidden)))bad('version authority must not create fake runtime layer: '+forbidden);
+if(r){const v=r.label.replace(/^v/,'');for(const forbidden of [`assets/core-v${v}.js`,`assets/app-v${v}.js`,`data/project-model-v${v}.js`,`assets/obol-v${v}.css`])if(fs.existsSync(path.join(root,forbidden)))bad('version authority must not create fake runtime layer: '+forbidden);}
 if(fail.length){console.error('Current release authority validation failed:');for(const m of fail)console.error('- '+m);process.exit(1);}console.log('Current release authority valid:',r.label,'with v8.8 workspace schema preserved.');
