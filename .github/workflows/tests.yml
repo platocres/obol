@@ -65,7 +65,7 @@ jobs:
         uses: actions/setup-node@v4
         with:
           node-version: '24'
-      - name: Run protected regression gate when applicable
+      - name: Run complete historical regression chain when applicable
         run: |
           set -euo pipefail
           if [[ "${SHOULD_FULL_TEST}" != "true" ]]; then
