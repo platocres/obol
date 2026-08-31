@@ -30,13 +30,21 @@ From v6.6 forward:
 
 v9.6 establishes `data/runtime-manifest.js` as the stable owner for the current ordered browser runtime and the Node-side current-runtime subsets. This is an ownership consolidation, not a deletion of historical behavior.
 
-`index.html` now loads only the stable manifest and `assets/runtime-current.js` for the historical application chain. The browser entrypoint projects styles and scripts from the manifest in the same parser-blocking order that v9.5 used. `tools/current-runtime.js` consumes the manifest's Node data/core subsets rather than carrying its own duplicated arrays.
+`index.html` loads only the stable manifest and `assets/runtime-current.js` for the historical application chain. The browser entrypoint projects scripts from the manifest in the same parser-blocking order that v9.5 used. `tools/current-runtime.js` consumes the manifest's Node data/core subsets rather than carrying its own duplicated arrays.
 
-The v9.5 load shape is frozen in `tests/fixtures/runtime-v9.5-load-order.json`. `tools/validate-runtime-manifest.js` verifies the ordered stylesheet/script counts and SHA-256 fingerprints, requires every manifest path to exist, proves browser and Node projections agree, and initializes the manifest-backed Node runtime to confirm the v8.8 workspace schema and current v8.8 project adapter remain intact. Product Hardening preflight runs this validator before a release can merge.
+The v9.5 load shape is frozen in `tests/fixtures/runtime-v9.5-load-order.json`. `tools/validate-runtime-manifest.js` verifies the historical stylesheet order fingerprint, current stylesheet ownership, ordered script counts and SHA-256 fingerprint, browser and Node compatibility projections, and manifest-backed v8.8 runtime initialization. Product Hardening preflight runs this validator before a release can merge.
 
 The manifest also makes lazy/current assets visible to repository asset validation, so moving the long chains out of `index.html` does not make broken references invisible to CI.
 
-Historical CSS, data, core, report, intake, and app files still exist and still execute where they own behavior. v9.6 does **not** claim CSS compaction, deep-view lazy loading, or request-budget reduction. Those remain queued until each can be replaced with regression-equivalent current owners and a controlled rollback boundary.
+### Current CSS ownership
+
+v9.7 advances `runtime-css-consolidation` without pretending that request-count optimization is already complete. The executable workspace runtime now exposes exactly one stable, non-versioned stylesheet owner: `assets/obol-current.css`.
+
+The source of truth for historical cascade order remains `data/runtime-manifest.js` under `compatibility.historicalStyles`. `tools/sync-current-styles.js` generates `assets/obol-current.css` as a pure ordered `@import` projection of that list. The generated owner adds no independent rules, so it cannot become a second styling layer or silently change precedence. `tools/validate-runtime-manifest.js` verifies that every historical stylesheet is imported exactly once in the frozen v9.5 order and that the compatibility fingerprint still matches the v9.5 fixture.
+
+This deliberately separates **ownership consolidation** from **performance consolidation**. The historical CSS fragments still exist and still execute through the stable owner, preserving regression behavior and an easy rollback boundary. `perf-bundle-budget` remains queued to reduce network requests and parse cost later; v9.7 does not claim that `@import` by itself reduces requests.
+
+Historical data, core, report, intake, app, and CSS fragment files therefore remain available where they still encode behavior. Future compaction may physically bundle or remove superseded fragments only after equivalent observable behavior is proven.
 
 ## Ownership rules
 
