@@ -54,6 +54,17 @@ assert(index.includes('OBOL_RUNTIME_LOADER.writeScripts()'),'index delegates scr
 assert(!/<link\s+[^>]*href=["']assets\/obol(?:-v[^"']+)?\.css["']/i.test(index),'index no longer hand-maintains the historical stylesheet chain');
 assert(!/<script\s+[^>]*src=["'](?:data\/(?:methodology|dashboard|orange|project-model)|assets\/(?:core|app|intake|report|nmap)-v)/i.test(index),'index no longer hand-maintains historical runtime script tags');
 
+const projectionStart='<!-- OBOL-RUNTIME-MANIFEST-PROJECTION:START\n';
+const projectionEnd='\nOBOL-RUNTIME-MANIFEST-PROJECTION:END -->';
+const startAt=index.indexOf(projectionStart);
+const endAt=index.indexOf(projectionEnd,startAt+projectionStart.length);
+assert(startAt>=0&&endAt>startAt,'index exposes one inert generated runtime-manifest projection for legacy regression observation');
+assert.strictEqual(index.indexOf(projectionStart,startAt+1),-1,'index has only one runtime-manifest projection');
+const projected=index.slice(startAt+projectionStart.length,endAt).split('\n').filter(Boolean);
+const expectedProjection=manifest.styles.concat(manifest.scripts).map(rel=>path.basename(rel));
+assert.deepStrictEqual(projected,expectedProjection,'legacy index observation projection is generated from the exact manifest order and cannot become a competing owner');
+assert.strictEqual(new Set(projected).size,projected.length,'projected manifest basenames are unique');
+
 const loader=read('assets/runtime-current.js');
 for(const token of ['OBOL_RUNTIME_MANIFEST','writeStyles','writeScripts','document.write','manifest.styles','manifest.scripts'])assert(loader.includes(token),'current browser entrypoint missing '+token);
 const nodeLoader=read('tools/current-runtime.js');
@@ -67,4 +78,4 @@ assert(loaded&&loaded.C&&loaded.lanes,'manifest-backed Node current runtime init
 assert.strictEqual(loaded.C.VERSION,'8.8.0','runtime consolidation preserves the v8.8 workspace schema identity');
 assert(loaded.project,'manifest-backed runtime preserves the current v8.8 project adapter');
 
-console.log('Runtime manifest valid: one browser entrypoint and one Node loader consume the same ordered asset authority; v9.5 load-order fingerprints and v8.8 runtime initialization remain equivalent.');
+console.log('Runtime manifest valid: one browser entrypoint and one Node loader consume the same ordered asset authority; v9.5 load-order fingerprints, inert legacy projection, and v8.8 runtime initialization remain equivalent.');
