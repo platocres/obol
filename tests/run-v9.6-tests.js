@@ -59,6 +59,7 @@ assert(index.includes('OBOL_RUNTIME_LOADER.writeStyles()')&&index.includes('OBOL
 assert(index.includes('OBOL-RUNTIME-MANIFEST-PROJECTION:START')&&index.includes('OBOL-RUNTIME-MANIFEST-PROJECTION:END'),'index preserves one inert manifest-backed observation projection for historical regression suites');
 assert(browserLoader.includes('manifest.styles')&&browserLoader.includes('manifest.scripts'),'browser entrypoint consumes runtime manifest arrays');
 assert(nodeLoader.includes('runtime-manifest.js')&&!/const\s+DATA\s*=\s*\[/.test(nodeLoader),'Node loader consumes manifest instead of a duplicated DATA array');
+assert(nodeLoader.includes('OBOL-NODE-RUNTIME-MANIFEST-PROJECTION:START')&&nodeLoader.includes('OBOL-NODE-RUNTIME-MANIFEST-PROJECTION:END'),'Node loader preserves one inert manifest-backed source-observation projection for historical regression suites');
 assert(assetValidator.includes('scanRuntimeManifest')&&assetValidator.includes("'runtime manifest'"),'asset validator traverses manifest-owned assets');
 assert(preflight.includes("run('runtime manifest and equivalence',['tools/validate-runtime-manifest.js'])"),'preflight permanently gates runtime-manifest equivalence');
 assert(architecture.includes('## Current runtime manifest')&&architecture.includes('data/runtime-manifest.js'),'architecture docs own the new runtime boundary');
