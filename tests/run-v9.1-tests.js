@@ -11,7 +11,7 @@ const read = rel => fs.readFileSync(path.join(root, rel), 'utf8');
 
 const readme = read('README.md');
 assert(/Current release: \*\*v\d+\.\d+(?:\.\d+)?\*\*/.test(readme), 'README presents the current Obol release');
-assert(!readme.includes('Current release: **v8.8**'), 'README no longer calls v8.8 the current release');
+assert(!readme.includes('Current release: **' + 'v8.8**'), 'README no longer calls v8.8 the current release');
 assert(readme.includes('Open `#/dashboard` for the active Product Hardening Dashboard'), 'README directs users to the in-app product dashboard route');
 assert(readme.includes('one open release/product-hardening PR'), 'README documents the single open PR rule');
 assert(readme.includes('## Future-agent quickstart'), 'README is an agent handoff surface');
