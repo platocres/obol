@@ -3,6 +3,7 @@ const assert=require('assert');
 const path=require('path');
 const fs=require('fs');
 const vm=require('vm');
+const cp=require('child_process');
 const root=path.join(__dirname,'..');
 const queuePath=path.join(root,'data','product-hardening','product-hardening-queue.js');
 const sandbox={window:{},globalThis:null};sandbox.globalThis=sandbox.window;vm.createContext(sandbox);vm.runInContext(fs.readFileSync(queuePath,'utf8'),sandbox,{filename:queuePath});
@@ -23,4 +24,9 @@ assert(readme.includes('platocres/obol-source-notes'),'README points to private 
 const dashboard=fs.readFileSync(path.join(root,'product-hardening.html'),'utf8');
 assert(dashboard.includes('product-hardening-dashboard'),'standalone dashboard entrypoint exists');
 assert(dashboard.includes('data/product-hardening/product-hardening-queue.js'),'dashboard loads queue data');
+assert(dashboard.includes('assets/product-hardening-dashboard.js'),'dashboard loads renderer');
+assert(dashboard.includes('assets/product-hardening-dashboard.css'),'dashboard loads styles');
+const contract=cp.spawnSync(process.execPath,[path.join(root,'tools','validate-release-pr.js'),'--repo-only','--release-version=9.0'],{cwd:root,encoding:'utf8'});
+assert.strictEqual(contract.status,0,contract.stderr||contract.stdout);
+assert((contract.stdout||'').includes('product-hardening'),contract.stdout||contract.stderr);
 console.log('v9.0 product-hardening foundation tests passed.');
