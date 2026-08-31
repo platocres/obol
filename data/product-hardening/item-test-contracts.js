@@ -7,7 +7,7 @@ const contracts={
   proofFiles:['data/current-release.js','assets/app-v8.8.js','assets/product-hardening-dashboard.js','product-hardening.html','README.md','tools/sync-current-release.js','tools/validate-current-release.js','tests/run-v9.2-tests.js']
  },
  'cc-asset-validation':{
-  acceptance:['Every local asset reachable from Obol HTML entrypoints, the current runtime manifest, supported dynamic browser loaders, and CSS references resolves inside the repository; missing or repository-escaping references fail validation and release smoke CI.'],
+  acceptance:['Every local asset reachable from Obol HTML entrypoints, the current runtime manifest, supported dynamic browser resource references, and CSS references resolves inside the repository; missing or repository-escaping references fail validation and release smoke CI.'],
   validationCommands:['node tools/validate-asset-references.js','node tools/release-smoke.js','node tests/run-v9.3-tests.js'],
   proofFiles:['tools/validate-asset-references.js','tools/release-smoke.js','tools/release-preflight.js','tests/run-v9.3-tests.js','docs/v9.3.md']
  },
@@ -46,6 +46,11 @@ const contracts={
   validationCommands:['node tools/validate-runtime-manifest.js','node tools/validate-asset-references.js','node tests/run-v9.6-tests.js'],
   proofFiles:['data/runtime-manifest.js','index.html','assets/runtime-current.js','tools/current-runtime.js','tools/validate-asset-references.js','tools/validate-runtime-manifest.js','tests/run-v9.6-tests.js']
  },
+ 'runtime-dashboard-owner':{
+  acceptance:['Current project/product progress renders through one stable Product Hardening Dashboard owner. The v8.8 bridge delegates to assets/workflow-current.js, which embeds assets/product-hardening-dashboard.js, and no release-specific Home or Orange status panel competes with that owner in the live workflow.'],
+  validationCommands:['node tools/validate-current-workflow.js','node tests/run-v9.8-tests.js'],
+  proofFiles:['assets/workflow-current.js','assets/app-v8.8.js','assets/product-hardening-dashboard.js','data/runtime-manifest.js','tools/validate-current-workflow.js','tests/run-v9.8-tests.js','docs/v9.8.md']
+ },
  'runtime-historical-equivalence':{
   acceptance:['A deterministic runtime equivalence gate snapshots the v9.5 ordered load contract, verifies current manifest counts and SHA-256 order fingerprints, proves manifest-backed Node initialization retains workspace schema v8.8, and runs permanently in Product Hardening preflight before historical owners may be removed.'],
   validationCommands:['node tools/validate-runtime-manifest.js','node tests/run-v9.6-tests.js'],
@@ -56,10 +61,30 @@ const contracts={
   validationCommands:['node tools/validate-product-hardening-queue.js','node tools/validate-release-pr.js --repo-only --release-version=9.0'],
   proofFiles:['tools/validate-product-hardening-queue.js','tools/validate-release-pr.js','tests/run-v9.0-tests.js']
  },
+ 'ux-home-user-first':{
+  acceptance:['Home is rendered from engagement state and prioritizes the active context, known Evidence, queued operator intent, Evidence attention, best next move, blockers, recent activity, and report proof readiness without presenting product-build totals in its prime scan path.'],
+  validationCommands:['node tools/validate-current-workflow.js','node tests/run-v9.8-tests.js'],
+  proofFiles:['assets/workflow-current.js','assets/app-v8.8.js','tools/validate-current-workflow.js','tests/run-v9.8-tests.js','docs/UX-QUALITY.md','docs/v9.8.md']
+ },
+ 'ux-build-metrics-collapse':{
+  acceptance:['Product-hardening, Orange source-accounting, and release-build metrics are removed from Home and other prime workflow screens; those metrics remain discoverable in Product Dashboard while the normal workflow retains only engagement-state metrics.'],
+  validationCommands:['node tools/validate-current-workflow.js','node tests/run-v9.8-tests.js'],
+  proofFiles:['assets/workflow-current.js','assets/app-v8.8.js','assets/product-hardening-dashboard.js','tools/validate-current-workflow.js','tests/run-v9.8-tests.js','docs/UX-QUALITY.md']
+ },
  'ux-build-next-top':{
   acceptance:['Dashboard top area presents progress figures and Product Build Next before detailed ledgers.'],
   validationCommands:['node tests/run-v9.0-tests.js'],
   proofFiles:['assets/product-hardening-dashboard.js','product-hardening.html']
+ },
+ 'ux-nav-dashboard':{
+  acceptance:['Product Dashboard is exposed as a clearly labeled secondary navigation destination while the five-item primary operator loop remains Home, Targets, Evidence, Next Steps, and Report.'],
+  validationCommands:['node tools/validate-current-workflow.js','node tests/run-v9.8-tests.js'],
+  proofFiles:['assets/workflow-current.js','assets/core-v3.0.js','tools/validate-current-workflow.js','tests/run-v9.8-tests.js','docs/v9.8.md']
+ },
+ 'ux-path-clarity':{
+  acceptance:['Next Steps exposes an explicit decision brief that makes the best next move, downstream unlock count, queued operator intent, and blocker count/detail visible together while preserving the existing evidence-ranked recommendation engine.'],
+  validationCommands:['node tools/validate-current-workflow.js','node tests/run-v9.8-tests.js'],
+  proofFiles:['assets/workflow-current.js','assets/core-v3.4.js','assets/app-v3.4.js','tools/validate-current-workflow.js','tests/run-v9.8-tests.js','docs/UX-QUALITY.md','docs/v9.8.md']
  },
  'ux-keyboard-focus':{
   acceptance:['Native controls and existing non-native interactive workspace surfaces expose a clearly visible focus-visible ring; card headers, state cards, phase/toggle chips, facts, progress/timer controls, and lane tabs are keyboard reachable and activate with Enter or Space; open modals receive dialog semantics, initial focus, contained Tab order, and focus restoration on close.'],
@@ -103,5 +128,5 @@ const contracts={
  }
 };
 const requiredForStatuses=['modeled','complete','superseded','rejected'];
-root.OBOL_PRODUCT_HARDENING_TEST_CONTRACTS={version:'9.7.0',requiredForStatuses,contracts};
+root.OBOL_PRODUCT_HARDENING_TEST_CONTRACTS={version:'9.8.0',requiredForStatuses,contracts};
 })(typeof window!=='undefined'?window:globalThis);
