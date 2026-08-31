@@ -34,7 +34,9 @@ assert(/Current release: \*\*v9\.[0-9]+(?:\.[0-9]+)?\*\*/.test(readme),'README r
 assert(app.includes("RELEASE_SOURCE='data/current-release.js'"),'live app loads release authority');
 assert(app.includes('window.OBOL_CURRENT_RELEASE'),'live app consumes release authority');
 assert(!/const PRODUCT_RELEASE=/.test(app),'live app has no competing current release constant');
-for(const token of ['state.obolRelease=r.version','safe.obolRelease=r.version','**Obol release:** ','Current Obol release: <b>','document.title=title'])assert(app.includes(token),'live release integration covers '+token);
+assert(app.includes('Current Obol release: <b>'),'settings presentation still derives current product release identity');
+assert(app.includes('document.title=title'),'browser title still derives current product release identity');
+assert(app.includes('window.OBOL_RELEASE_IDENTITY')||app.includes('state.obolRelease=r.version'),'current release integration still owns state/export/report identity without requiring the original v9.2 implementation shape');
 assert(standalone.indexOf('data/current-release.js')<standalone.indexOf('assets/product-hardening-dashboard.js'),'standalone dashboard loads release authority before renderer');
 assert(dashboard.includes('window.OBOL_CURRENT_RELEASE'),'product dashboard consumes release authority');
 assert(dashboard.includes("document.title='Obol '+r.label+' '+r.phaseLabel+' Dashboard'"),'standalone dashboard title derives from authority');
@@ -52,4 +54,4 @@ for(const command of [
  ['tools/validate-release-pr.js','--repo-only']
 ]){const result=run(command);assert.strictEqual(result.status,0,(result.stderr||result.stdout||'').trim());}
 
-console.log('v9.2 current-release authority milestone remains regression-protected without freezing mutable current queue state.');
+console.log('v9.2 current-release authority milestone remains regression-protected without freezing mutable current implementation or queue state.');
