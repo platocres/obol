@@ -103,7 +103,7 @@ Raw notes are staged privately in `platocres/obol-source-notes`. Public Obol mus
 <!-- OBOL-PRODUCT-BUILD-NEXT:START -->
 This block is generated from `data/product-hardening/product-hardening-queue.js`. Do not edit it manually.
 
-**Current product-hardening queue:** 0/632 complete (0%), 71 queued, 9 foundation items modeled.
+**Current product-hardening queue:** 0/632 complete (0%), 74 queued, 9 foundation items modeled.
 **Private notes source:** `platocres/obol-source-notes` — 556 notes and 1326 embedded resources accounted.
 
 **Highest-priority live items:**
