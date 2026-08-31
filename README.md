@@ -115,7 +115,7 @@ This section is permanent. The pinned source links and product contracts below m
 - Source integration must include improving "Next Steps", command generation or an explicit supersession rationale, copy/paste Evidence interpretation, cleanup/restoration where relevant, lineage, and reporting.
 - Meaningful optional command behavior belongs in **proper GUI based toggles** or equivalent semantic controls instead of opaque default one-liners.
 - New methodology must **fit well into the reporting that Obol performs**, with traceability from decision path and preserved Evidence to report-ready proof.
-- Project-wide progress belongs in one North Star Dashboard. In v9, that route opens the Product Hardening Dashboard first while the completed Orange North Star accounting remains available as a baseline summary.
+- Project-wide progress belongs in one North Star Dashboard for project-wide hard numbers. In v9, that route opens the Product Hardening Dashboard first while the completed Orange North Star accounting remains available as a baseline summary.
 - **The UI and UX should always be reviewed** for navigation clarity, version hygiene, understandable terminology, and useful progressive disclosure when capability changes.
 - Broad card ownership, 100% represented coverage, 100% canonical implementation, or a terminal audit label alone never proves the source has been fully mined.
 - Facts, artifacts, credentials, access, privilege, execution, and compromise remain separate proof boundaries. Project/source accounting metadata never creates engagement facts.
