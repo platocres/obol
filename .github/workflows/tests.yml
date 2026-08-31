@@ -75,6 +75,7 @@ jobs:
 # [preflight] runs the current-release gate; [release-final] runs preflight plus the complete
 # historical chain. Ready-for-review PRs are handled by pr-required.yml so pull requests do
 # not show skipped release-only jobs. Main retains the complete protected test job here.
+# Historical PR draft gate marker now lives in pr-required.yml: github.event.pull_request.draft == false
 # Historical CI contract markers retained for release-specific tests.
 # The live workflow above is intentionally generic so future releases do not require CI-step duplication.
 # Run v2 regression suite | node tests/run-tests.js
