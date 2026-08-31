@@ -66,7 +66,7 @@ This section is permanent. The pinned source links and product contracts below m
 - Obol models its Active Directory methodology from the **Orange Cyber Defense mind map**, pinned to the 2025.03 snapshot: https://orange-cyberdefense.github.io/ocd-mindmaps/img/mindmap_ad_dark_classic_2025.03.excalidraw.svg
 - Source repository: https://github.com/Orange-Cyberdefense/ocd-mindmaps/tree/main
 - Keep comparing Obol against the pinned source and preserve reproducible source provenance.
-- Do not confuse normalized canonical representation with source depth. Canonical breadth, source inventory, broad-owner coverage, and atomic source fidelity remain separate measures.
+- Do not confuse normalized canonical representation with exhausting useful source depth. Canonical breadth, source inventory, broad-owner coverage, and atomic source fidelity remain separate measures.
 - Every useful source element must ultimately be modeled end to end, explicitly superseded with rationale, or explicitly rejected with rationale.
 - Preserve completed and unfinished denominators rather than making work disappear from percentages.
 - Maintain the machine-readable **atomic source-fidelity ledger** and enough upstream structure to preserve prerequisites, branches, variants, transitions, tools, outcomes, cleanup, and reporting implications.
