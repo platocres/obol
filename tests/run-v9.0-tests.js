@@ -8,14 +8,19 @@ const cp = require('child_process');
 
 const root = path.join(__dirname, '..');
 const queuePath = path.join(root, 'data', 'product-hardening', 'product-hardening-queue.js');
+const dodPath = path.join(root, 'data', 'product-hardening', 'product-hardening-dod.js');
 const sandbox = { window: {}, globalThis: null };
 sandbox.globalThis = sandbox.window;
 vm.createContext(sandbox);
 vm.runInContext(fs.readFileSync(queuePath, 'utf8'), sandbox, { filename: queuePath });
+vm.runInContext(fs.readFileSync(dodPath, 'utf8'), sandbox, { filename: dodPath });
 
 const q = sandbox.window.OBOL_PRODUCT_HARDENING;
+const dod = sandbox.window.OBOL_PRODUCT_HARDENING_DOD;
 assert(q, 'product-hardening queue exposed');
+assert(dod, 'product-hardening DoD ledger exposed');
 assert.strictEqual(q.version, '9.0.0');
+assert(dod.version, 'DoD ledger version is present');
 
 const requiredTracks = [
   'critical-correctness',
@@ -64,11 +69,29 @@ const itemIds = new Set(q.items.map(i => i.id));
 for (const id of requiredItems) assert(itemIds.has(id), 'required queue item remains modeled or queued: ' + id);
 assert(q.buildNext(5).some(i => i.id === 'cc-version-authority'), 'version authority remains top build item');
 
+const statusesRequiringDefinition = new Set(dod.statusRules.statusesRequiringDefinition);
+const modeledItems = q.items.filter(item => statusesRequiringDefinition.has(item.status));
+assert(modeledItems.length >= 9, 'foundation modeled items require DoD proof');
+for (const item of modeledItems) {
+  const proof = dod.itemProof[item.id];
+  assert(proof, item.id + ' has item-specific DoD proof');
+  assert(Array.isArray(proof.acceptance) && proof.acceptance.length >= 2, item.id + ' has acceptance criteria');
+  assert(typeof proof.test_plan === 'string' && proof.test_plan.length >= 20, item.id + ' has test plan');
+  assert(Array.isArray(proof.validation_commands) && proof.validation_commands.some(cmd => /^node\s+(?:tests|tools)\//.test(cmd)), item.id + ' has runnable validation command');
+  assert(Array.isArray(proof.required_tests) && proof.required_tests.every(f => /^(?:tests|tools)\//.test(f)), item.id + ' names required test/validator files');
+  assert(Array.isArray(proof.proof_files) && proof.proof_files.length > 0, item.id + ' names proof files');
+  for (const file of proof.proof_files) assert(fs.existsSync(path.join(root, file)), item.id + ' proof file exists: ' + file);
+  assert(typeof proof.risk === 'string' && proof.risk.length >= 20, item.id + ' explains risk');
+  assert(typeof proof.status_notes === 'string' && proof.status_notes.length >= 10, item.id + ' explains status notes');
+}
+for (const id of Object.keys(dod.itemProof)) assert(itemIds.has(id), 'DoD proof references a real queue item: ' + id);
+
 const readme = fs.readFileSync(path.join(root, 'README.md'), 'utf8');
 assert(readme.includes('Future agents should read this README'), 'README contains future-agent handoff');
 assert(readme.includes('open the product-hardening dashboard'), 'README points agents to product-hardening dashboard');
 assert(readme.includes('pick the highest-priority Product Build Next item'), 'README tells agents how to choose next work');
 assert(readme.includes('data/product-hardening/product-hardening-queue.js'), 'README names product-hardening queue source of truth');
+assert(readme.includes('item-specific test or validation coverage'), 'README preserves item-specific testing rule');
 assert(readme.includes('OBOL-PRODUCT-BUILD-NEXT:START'), 'README has Product Build Next block start');
 assert(readme.includes('OBOL-PRODUCT-BUILD-NEXT:END'), 'README has Product Build Next block end');
 assert(readme.includes('This block is generated from `data/product-hardening/product-hardening-queue.js`. Do not edit it manually.'), 'Product Build Next block is marked generated');
