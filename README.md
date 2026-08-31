@@ -22,6 +22,8 @@ The normal loop is:
 
 Command recognition is not success. Durable facts come only from explicit supported Evidence. Manual outcome advancement is workflow state, not report-ready proof, unless Evidence is supplied.
 
+Durable operator expectations remain compact but active: support operating from Kali or from a Windows host, keep improving "Next Steps", expose proper GUI based toggles, make generated work fit well into the reporting that Obol performs, and keep product/project health in a single in-app location. The UI and UX should always be reviewed as part of product-hardening work. The historical North Star Dashboard is baseline context now; the active surface is the Product Hardening Dashboard.
+
 ## Future-agent quickstart
 
 Before building:
