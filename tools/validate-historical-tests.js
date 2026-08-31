@@ -38,6 +38,7 @@ const staleReadmePatterns=[
   /Retired historical methodology\/source Build Next block/i,
   /Current Obol release:/i
 ];
+const versionedRuntimeAsset=/(?:obol|core|app|intake|report|nmap|methodology|dashboard|project-model|orange-fidelity|source-delivery)-v\d+\.\d+(?:\.\d+)?\.(?:js|css)/g;
 
 for(const name of fs.readdirSync(path.join(root,'tests')).filter(x=>/^run-v\d+\.\d+(?:\.\d+)?(?:-.+)?-tests\.js$/.test(x)||/^run-v\d+\.\d+(?:\.\d+)?-tests\.js$/.test(x))){
   const version=(name.match(/^run-v(\d+\.\d+(?:\.\d+)?)/)||[])[1]||'';
@@ -52,6 +53,12 @@ for(const name of fs.readdirSync(path.join(root,'tests')).filter(x=>/^run-v\d+\.
     if(staleReadmePatterns.some(re=>re.test(literal)))add(name,`asserts a stale README contract instead of a historical model/durable-doc invariant: ${literal}`);
   }
 
+  const readsIndex=/readFileSync\s*\([^\n;]*index\.html/.test(text);
+  if(readsIndex){
+    const assets=[...new Set(text.match(versionedRuntimeAsset)||[])];
+    if(assets.length)add(name,'asserts retired direct index.html runtime wiring instead of data/runtime-manifest.js ordering: '+assets.join(', '));
+  }
+
   if(text.includes('sync-readme-build-next.js')){
     for(const literal of includeLiterals(text,'out')){
       if(/Current live queue:\*\*\s*[0-9]+/.test(literal))add(name,'hard-codes the live Build Next queue total');
@@ -64,7 +71,7 @@ for(const name of fs.readdirSync(path.join(root,'tests')).filter(x=>/^run-v\d+\.
 }
 
 if(failures.length){
-  console.error('Historical test future-safety validation failed. Historical suites must test historical models and structural live-output contracts, not mutable current-release values or stale README contracts.');
+  console.error('Historical test future-safety validation failed. Historical suites must test historical models and durable current ownership contracts, not mutable release values, stale README wording, or retired direct index wiring.');
   for(const item of failures)console.error(`- ${item}`);
   process.exit(1);
 }
