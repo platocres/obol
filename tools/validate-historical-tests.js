@@ -5,7 +5,8 @@ const path=require('path');
 
 const root=path.join(__dirname,'..');
 const readme=fs.readFileSync(path.join(root,'README.md'),'utf8');
-const currentMatch=readme.match(/Current(?: Obol)? release:\s*\*\*v(\d+\.\d+)(?:[^*]*)?\*\*/);
+const versionPattern='(\\d+\\.\\d+(?:\\.\\d+)?)';
+const currentMatch=readme.match(new RegExp('Current(?: Obol)? release:\\s*\\*\\*v'+versionPattern+'(?:[^*]*)?\\*\\*'));
 if(!currentMatch)throw new Error('Unable to determine current release from README.md');
 const currentVersion=currentMatch[1];
 const failures=[];
@@ -21,15 +22,34 @@ function includeLiterals(text,objectName){
   for(const re of patterns){let m;while((m=re.exec(text)))out.push(m[1]);}
   return out;
 }
+function positiveReadmeIncludes(text){
+  const out=[];
+  const re=/assert\s*\(\s*readme\.includes\s*\(\s*(['"`])([\s\S]*?)\1\s*\)/g;
+  let m;while((m=re.exec(text)))out.push(m[2]);
+  return out;
+}
+const staleReadmePatterns=[
+  /Completed Orange methodology\/source baseline/i,
+  /##\s*Permanent North Star requirements/i,
+  /##\s*Completed Orange baseline/i,
+  /###\s*Recent changes/i,
+  /###\s*Build next/i,
+  /OBOL-BUILD-NEXT:(?:START|END)/,
+  /Retired historical methodology\/source Build Next block/i,
+  /Current Obol release:/i
+];
 
-for(const name of fs.readdirSync(path.join(root,'tests')).filter(x=>/^run-v\d+\.\d+.*-tests\.js$/.test(x))){
-  const version=(name.match(/^run-v(\d+\.\d+)/)||[])[1]||'';
+for(const name of fs.readdirSync(path.join(root,'tests')).filter(x=>/^run-v\d+\.\d+(?:\.\d+)?(?:-.+)?-tests\.js$/.test(x)||/^run-v\d+\.\d+(?:\.\d+)?-tests\.js$/.test(x))){
+  const version=(name.match(/^run-v(\d+\.\d+(?:\.\d+)?)/)||[])[1]||'';
   if(version===currentVersion)continue;
   const text=fs.readFileSync(path.join(root,'tests',name),'utf8');
 
-  if(/Current(?: Obol)? release:\s*\*\*v[0-9]+\.[0-9]+(?:[^*]*)?\*\*/.test(text))add(name,'hard-codes a README current-release token');
+  if(new RegExp('Current(?: Obol)? release:\\s*\\*\\*v[0-9]+\\.[0-9]+(?:\\.[0-9]+)?(?:[^*]*)?\\*\\*').test(text))add(name,'hard-codes a README current-release token');
   for(const literal of includeLiterals(text,'readme')){
-    if(/Current(?: Obol)? release:.*\*\*v[0-9]+\.[0-9]+(?:[^*]*)?\*\*/.test(literal))add(name,'asserts a live README version literal instead of a historical invariant');
+    if(new RegExp('Current(?: Obol)? release:.*\\*\\*v[0-9]+\\.[0-9]+(?:\\.[0-9]+)?(?:[^*]*)?\\*\\*').test(literal))add(name,'asserts a live README version literal instead of a historical invariant');
+  }
+  for(const literal of positiveReadmeIncludes(text)){
+    if(staleReadmePatterns.some(re=>re.test(literal)))add(name,`asserts a stale README contract instead of a historical model/durable-doc invariant: ${literal}`);
   }
 
   if(text.includes('sync-readme-build-next.js')){
@@ -44,7 +64,7 @@ for(const name of fs.readdirSync(path.join(root,'tests')).filter(x=>/^run-v\d+\.
 }
 
 if(failures.length){
-  console.error('Historical test future-safety validation failed. Historical suites must test historical models and structural live-output contracts, not mutable current-release values.');
+  console.error('Historical test future-safety validation failed. Historical suites must test historical models and structural live-output contracts, not mutable current-release values or stale README contracts.');
   for(const item of failures)console.error(`- ${item}`);
   process.exit(1);
 }

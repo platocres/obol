@@ -37,7 +37,7 @@ const requiredTracks = [
 const trackIds = new Set(q.tracks.map(t => t.id));
 for (const id of requiredTracks) assert(trackIds.has(id), 'required product-hardening track exists: ' + id);
 
-assert(q.items.length >= 70, 'work ledger is seeded');
+assert(q.items.length >= 70, 'work ledger remains seeded');
 assert.strictEqual(q.notes.privateRepo, 'platocres/obol-source-notes');
 assert.strictEqual(q.totals().notes, 556, 'all staged source notes accounted');
 assert.strictEqual(q.totals().resources, 1326, 'all staged embedded resources accounted');
@@ -67,8 +67,7 @@ const requiredItems = [
   'qa-release-contract-v9'
 ];
 const itemIds = new Set(q.items.map(i => i.id));
-for (const id of requiredItems) assert(itemIds.has(id), 'required queue item remains modeled or queued: ' + id);
-assert(q.buildNext(5).some(i => i.id === 'cc-version-authority'), 'version authority remains top build item');
+for (const id of requiredItems) assert(itemIds.has(id), 'required queue item remains in the durable ledger: ' + id);
 
 for (const item of q.items.filter(i => contracts.requiredForStatuses.includes(i.status))) {
   const contract = contracts.contracts[item.id];
@@ -80,15 +79,19 @@ for (const item of q.items.filter(i => contracts.requiredForStatuses.includes(i.
 }
 
 const readme = fs.readFileSync(path.join(root, 'README.md'), 'utf8');
-assert(readme.includes('Future agents should read this README'), 'README contains future-agent handoff');
-assert(readme.includes('open the product-hardening dashboard'), 'README points agents to product-hardening dashboard');
-assert(readme.includes('pick the highest-priority Product Build Next item'), 'README tells agents how to choose next work');
+assert(readme.includes('## Future-agent quickstart'), 'README is a future-agent handoff');
+assert(readme.includes('[`BUILDING.md`](BUILDING.md)'), 'README points agents to BUILDING.md');
+assert(readme.includes('[`docs/PRODUCT-HARDENING.md`](docs/PRODUCT-HARDENING.md)'), 'README points agents to product-hardening contract');
 assert(readme.includes('data/product-hardening/product-hardening-queue.js'), 'README names product-hardening queue source of truth');
 assert(readme.includes('OBOL-PRODUCT-BUILD-NEXT:START'), 'README has Product Build Next block start');
 assert(readme.includes('OBOL-PRODUCT-BUILD-NEXT:END'), 'README has Product Build Next block end');
 assert(readme.includes('This block is generated from `data/product-hardening/product-hardening-queue.js`. Do not edit it manually.'), 'Product Build Next block is marked generated');
 assert(readme.includes('platocres/obol-source-notes'), 'README points to private notes repo');
-assert(readme.includes('Public Obol must receive only normalized, derived guidance'), 'README preserves public/private notes boundary');
+assert(!readme.includes('<!-- OBOL-BUILD-NEXT:START -->'), 'retired Orange Build Next block is not carried in the active README');
+
+const notesDoc = fs.readFileSync(path.join(root, 'docs', 'NOTES-INTEGRATION.md'), 'utf8');
+assert(notesDoc.includes('platocres/obol-source-notes'), 'notes integration doc owns the private source pointer');
+assert(/normalized|derived/i.test(notesDoc), 'notes integration doc preserves the normalized public-output boundary');
 
 const dashboard = fs.readFileSync(path.join(root, 'product-hardening.html'), 'utf8');
 assert(dashboard.includes('product-hardening-dashboard'), 'standalone dashboard entrypoint exists');
@@ -127,7 +130,7 @@ for (const command of [
   ['tools/sync-product-build-next.js', '--check'],
   ['tools/validate-release-pr.js', '--repo-only', '--release-version=9.0']
 ]) {
-  const result = cp.spawnSync(process.execPath, command.map(part => path.join(root, part)).map((part, idx) => idx === 0 ? part : command[idx]), { cwd: root, encoding: 'utf8' });
+  const result = cp.spawnSync(process.execPath, command.map((part, idx) => idx === 0 ? path.join(root, part) : part), { cwd: root, encoding: 'utf8' });
   assert.strictEqual(result.status, 0, (result.stderr || result.stdout || '').trim());
 }
 

@@ -151,16 +151,23 @@ if (q) {
 }
 
 const readme = read('README.md');
-if (!readme.includes('Future agents should read this README')) fail('README future-agent handoff is missing');
-if (!readme.includes('open the product-hardening dashboard')) fail('README does not direct agents to the product-hardening dashboard');
-if (!readme.includes('pick the highest-priority Product Build Next item')) fail('README does not direct agents to the highest-priority Product Build Next item');
+const northStar = read('docs/NORTH-STAR.md');
+const notesIntegration = read('docs/NOTES-INTEGRATION.md');
+if (!readme.includes('## Future-agent quickstart')) fail('README future-agent handoff is missing');
+if (!readme.includes('Open `#/dashboard` for the active Product Hardening Dashboard') && !readme.includes('Use `#/dashboard` for the active Product Hardening Dashboard')) fail('README does not direct agents to the product-hardening dashboard');
+if (!/Pick the highest-priority Product Build Next item/i.test(readme)) fail('README does not direct agents to the highest-priority Product Build Next item');
 if (!readme.includes('data/product-hardening/product-hardening-queue.js')) fail('README does not name the product-hardening queue source of truth');
 if (!readme.includes('platocres/obol-source-notes')) fail('README does not point to the private notes source repo');
-if (!readme.includes('Public Obol must receive only normalized, derived guidance')) fail('README does not preserve the public/private notes boundary');
+if (!readme.includes('[`docs/NOTES-INTEGRATION.md`](docs/NOTES-INTEGRATION.md)')) fail('README does not point agents to the notes-integration boundary');
+if (!/normalized|derived/i.test(notesIntegration)) fail('notes integration doc does not preserve the normalized public-output boundary');
 if (!readme.includes('<!-- OBOL-PRODUCT-BUILD-NEXT:START -->') || !readme.includes('<!-- OBOL-PRODUCT-BUILD-NEXT:END -->')) fail('README Product Build Next markers are missing');
 if (!readme.includes('This block is generated from `data/product-hardening/product-hardening-queue.js`. Do not edit it manually.')) fail('README Product Build Next block is not marked generated');
-if (!readme.includes('Current Obol release: **v9.1**')) fail('README must expose the current product-hardening release without calling v8.8 current');
-if (!readme.includes('Completed Orange methodology/source baseline: **v8.8**')) fail('README must label v8.8 as the completed Orange baseline');
+const currentRelease = readme.match(/Current release:\s*\*\*v(\d+\.\d+(?:\.\d+)?)\*\*/);
+if (!currentRelease || !/^9\./.test(currentRelease[1])) fail('README must expose the current v9 product-hardening release without calling v8.8 current');
+if (readme.includes('Current release: **v8.8**')) fail('README must not call v8.8 the current release');
+if (!readme.includes('[`docs/NORTH-STAR.md`](docs/NORTH-STAR.md)')) fail('README does not point completed Orange accounting to the North Star doc');
+if (!northStar.includes('## Current v8.8 baseline') || !northStar.includes('canonical: 127 / 127 implemented')) fail('North Star doc must preserve v8.8 as the completed Orange baseline');
+if (readme.includes('<!-- OBOL-BUILD-NEXT:START -->')) fail('README must not restore the retired Orange Build Next block');
 
 const dashboard = read('product-hardening.html');
 for (const ref of [

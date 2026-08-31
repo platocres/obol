@@ -1,6 +1,6 @@
 # Obol North Star Contract
 
-This document owns the detailed project-progress and source-accounting contract. `README.md` keeps the permanent North Star requirements visible at the project entry point; this file explains how those requirements are measured.
+This document owns the detailed project-progress and source-accounting contract. `README.md` points future agents here instead of carrying the completed Orange accounting and historical Build Next queue inline.
 
 ## Pinned upstream
 
@@ -79,7 +79,7 @@ The current state is derived from repository models and exposed through the stab
 
 Beginning with v6.6, project status has one current projection boundary. v6.8 added the stable non-versioned pointer `C.currentProjectModel(...)` so current consumers do not need to hard-code the newest versioned adapter.
 
-Dashboard and README may present or summarize that output, but they must not maintain independent current counts or competing Build Next calculations. The underlying domain models remain the owners of canonical, delivery, and source-fidelity semantics; the project model provides a stable current view over them.
+Dashboard may present or summarize that output, but product hardening has become the active dashboard layer. The historical methodology/source accounting is baseline context, not the current product queue. The underlying domain models remain the owners of canonical, delivery, and source-fidelity semantics; the project model provides a stable current view over them.
 
 ## Completion language
 

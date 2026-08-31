@@ -112,18 +112,19 @@ test('dashboard exposes v5.8 gap reduction and release contract',()=>{
   assert(d.milestones.some(x=>x.release==='v5.7'&&x.implemented===72));
 });
 
-test('README generator remains live and future-safe',()=>{
+test('historical README generator remains structurally future-safe',()=>{
   const out=cp.execFileSync(process.execPath,[path.join(root,'tools','sync-readme-build-next.js'),'--print'],{encoding:'utf8'});
   assert(out.includes('OBOL-BUILD-NEXT:START'));
   assert(/Canonical methodology:\*\* \d+\/127 fully implemented \(\d+%\)/.test(out));
-  assert(out.includes('North Star Dashboard → Build Next'));
+  assert(out.includes('**Current live queue:**'));
+  assert(out.includes('**Highest-priority live items:**'));
 });
 
 test('release PR validator rejects missing descriptions and accepts the current required contract',()=>{
   const tool=path.join(root,'tools','validate-release-pr.js');
   const eventPath=path.join(os.tmpdir(),'obol-release-pr-event.json');
   const readme=fs.readFileSync(path.join(root,'README.md'),'utf8');
-  const current=readme.match(/Current release: \*\*v(\d+\.\d+)\*\*/);
+  const current=readme.match(/Current release: \*\*v(\d+\.\d+(?:\.\d+)?)\*\*/);
   assert(current,'current release marker');
   const version=current[1];
   const goodBody='## Summary\n'+('Release summary. '.repeat(50))+
@@ -156,7 +157,8 @@ test('v5.8 release wiring is complete',()=>{
   const readme=fs.readFileSync(path.join(root,'README.md'),'utf8');
   const changelog=fs.readFileSync(path.join(root,'CHANGELOG.md'),'utf8');
   for(const x of ['methodology-v5.8.js','dashboard-v5.8.js','core-v5.8.js','intake-v5.8.js','app-v5.8.js','obol-v5.8.css'])assert(idx.includes(x),x);
-  assert(/Current release: \*\*v\d+\.\d+\*\*/.test(readme));
+  assert(/Current release: \*\*v\d+\.\d+(?:\.\d+)?\*\*/.test(readme));
+  assert(readme.includes('BUILDING.md'));
   assert(changelog.includes('## v5.8'));
   assert(fs.existsSync(path.join(root,'docs','v5.8.md')));
   assert(fs.existsSync(path.join(root,'tools','validate-release-pr.js')));

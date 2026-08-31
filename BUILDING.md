@@ -1,6 +1,6 @@
 # Obol Build and Release Workflow
 
-This file is a mandatory companion to `README.md`, `CHANGELOG.md`, `docs/ARCHITECTURE.md`, `docs/NORTH-STAR.md`, `docs/PROOF-CONTRACT.md`, and `docs/ORANGE-SOURCE-DEPTH.md` for future Obol build work. Read the relevant owner before changing release architecture, methodology, Evidence behavior, reporting, CI, project metrics, source-depth/source-fidelity accounting, or product-hardening queue state.
+This file is a mandatory companion to `README.md` for future Obol build work. Read `docs/PRODUCT-HARDENING.md` for the active v9 engineering contract, then consult the owner docs relevant to the change: `docs/ARCHITECTURE.md`, `docs/NORTH-STAR.md`, `docs/PROOF-CONTRACT.md`, `docs/NOTES-INTEGRATION.md`, `docs/UX-QUALITY.md`, and `docs/ORANGE-SOURCE-DEPTH.md`.
 
 ## Incremental release policy
 
@@ -8,7 +8,7 @@ This file is a mandatory companion to `README.md`, `CHANGELOG.md`, `docs/ARCHITE
 
 The intended release flow is:
 
-- create exactly one `release/obol-vX.Y` branch from current `main`;
+- create exactly one `release/obol-vX.Y` or `release/obol-vX.Y.Z` branch from current `main`;
 - open exactly one draft PR for that release immediately;
 - before opening any release, product-hardening, dashboard, queue, Definition of Done, or burn-down PR, search open PRs and continue the active one if it exists;
 - keep exactly one open release/product-hardening PR at a time;
@@ -16,13 +16,14 @@ The intended release flow is:
 - ordinary release commits run `node tools/release-smoke.js`;
 - use `[preflight]` when a coherent current-release snapshot is ready;
 - do not create a second build/release/product-hardening PR to work around a failed check;
-- regenerate the README Build Next block and validate repository wiring before finalization;
+- regenerate the active Product Build Next block with `node tools/sync-product-build-next.js --write` whenever queue state changes;
+- validate the retired Orange methodology/source projection with `node tools/sync-readme-build-next.js --check`; while that queue remains complete, the historical block is intentionally absent from README;
 - require `implemented-quality = 0` and `mapped-delivery = 0` before methodology expansion is merge-ready;
-- preserve canonical, frozen-baseline, file-level, and atomic denominators as historical milestones;
+- preserve canonical, frozen-baseline, file-level, and atomic denominators as historical milestones without forcing their detailed accounting into the current README;
 - audited source units must end as explicitly `modeled`, `superseded`, or `rejected` with rationale and required review dimensions accounted for;
 - product-hardening queue items may not move to `modeled`, `complete`, `superseded`, or `rejected` unless `data/product-hardening/item-test-contracts.js` names acceptance criteria, validation commands, and proof files for that item;
 - make the exact final release commit with `[release-final]` only after code, tests, docs, README, changelog or dedicated release documentation, and PR description form one coherent snapshot;
-- require smoke, preflight, historical-test future safety, the complete historical regression chain, release-quality gate, release-contract validation, open-PR uniqueness validation, and README synchronization on that exact head;
+- require smoke, preflight, historical-test future safety, the complete historical regression chain, release-quality gate, release-contract validation, open-PR uniqueness validation, and generated Product Build Next synchronization on that exact head;
 - mark the PR Ready for review only after that exact final head is green;
 - treat any later commit as a new head that must be validated again.
 
@@ -31,10 +32,10 @@ The intended release flow is:
 The three validation tiers are:
 
 1. **Smoke** - every release-branch push; JavaScript syntax plus local index asset-reference sanity.
-2. **Preflight** - `[preflight]` and `[release-final]`; current-release wiring, historical-test future safety, release contract, quality debt, current release regressions, and README synchronization.
+2. **Preflight** - `[preflight]` and `[release-final]`; current-release wiring, historical-test future safety, release contract, quality debt, current release regressions, and generated queue synchronization.
 3. **Final historical validation** - `[release-final]`, ready-for-review pull requests, and `main`; complete historical regressions plus the permanent quality and synchronization gates.
 
-`tools/validate-historical-tests.js` prevents historical suites from hard-coding mutable current-release README or queue values. Historical suites should test historical model invariants and structural live-output contracts.
+`tools/validate-historical-tests.js` prevents historical suites from hard-coding mutable current-release values or stale README contracts. Historical suites should test the historical model/behavior they own and stable structural contracts, not force old Orange-era README sections back into the active handoff.
 
 Release-PR metadata enforcement applies only to release-intent pull requests. Normal documentation, maintenance, and CI-fix PRs are not required to impersonate a release.
 
@@ -48,27 +49,31 @@ Every Product Build Next item must carry its own proof once it leaves `queued` s
 
 A product-hardening PR that burns down a queue item must therefore include the implementation, the queue/status update when applicable, the item-test contract, item-specific tests or validators, README/dashboard sync when totals or generated blocks change, and a green exact-head Actions run.
 
+No queue item may be marked complete merely because a broad historical test suite still passes. The item-specific contract must prove the behavior added or changed by that queue item.
+
 ## Delta-based release surfaces
 
 Beginning with v6.6, release scaffolding is **delta-based**. A new version number is not a reason to create empty compatibility files.
 
-Every release must provide the current release/project metadata, current state/version adapter, current regression suite, release documentation, README update, and whatever UI/runtime wiring the release actually changes. Type-specific overlays such as methodology, Dashboard metadata, Intake/Evidence, reporting, or tool data are added only when that release genuinely changes that ownership area.
+Every release must provide the current release/project metadata, current regression suite, release documentation, README update, and whatever UI/runtime wiring the release actually changes. Type-specific overlays such as methodology, Dashboard metadata, Intake/Evidence, reporting, or tool data are added only when that release genuinely changes that ownership area.
 
-Do not create no-op `methodology-vX.Y.js`, `dashboard-vX.Y.js`, `intake-vX.Y.js`, or similar shims solely for naming symmetry. `tools/validate-release-pr.js` enforces the minimal release contract; release-specific tests should explicitly verify any additional behavior-specific surfaces that the release requires.
+Do not create no-op `methodology-vX.Y.js`, `dashboard-vX.Y.js`, `intake-vX.Y.js`, `app-vX.Y.js`, `core-vX.Y.js`, or similar shims solely for naming symmetry. `tools/validate-release-pr.js` is phase-aware and should validate the release shape that actually belongs to the work.
+
+For v9 product hardening, prefer stable non-versioned owners for queue data, builder schemas, storage, workers, dashboard data, and validation. Versioned release docs/tests are fine; versioned runtime sediment is not the default implementation pattern.
 
 ## Consolidated current-state rule
 
-v6.6 established the boundary between domain models and current project-status presentation. v6.8 added a stable non-versioned pointer, and v8.8 continues through that boundary. v9 product-hardening work adds a separate queue/dashboard source of truth without reopening the completed Orange methodology/source queue.
+v6.6 established the boundary between domain models and current project-status presentation. v6.8 added a stable non-versioned pointer, and v8.8 closed the Orange source-fidelity phase through that boundary. v9 product-hardening work adds a separate queue/dashboard source of truth without reopening the completed Orange methodology/source queue.
 
-- `C.currentProjectModel(...)` is the preferred current projection boundary for canonical progress, source-fidelity progress, quality debt, Build Next, recent progress, and the next priority. In v8.8 it points to `C.projectModel88(...)`.
-- Versioned project adapters remain available as historical regression boundaries. Current tooling and documentation should not require edits merely to discover the newest adapter name when the stable pointer is available.
-- Dashboard, README synchronization, release-quality checks, and other current-status consumers use the consolidated current model instead of parsing README text or independently recalculating current counts.
-- Current release/project metadata has one owner. Do not create competing project-wide count tables in UI or release-specific metadata.
+- `C.currentProjectModel(...)` is the preferred current projection boundary for historical canonical progress, source-fidelity progress, quality debt, and Orange accounting.
+- Versioned project adapters remain available as historical regression boundaries. Current tooling and documentation should not require edits merely to discover the newest historical adapter name when a stable pointer is available.
+- Product-hardening status comes from `data/product-hardening/product-hardening-queue.js`; README Product Build Next and the Product Hardening Dashboard consume that same source.
+- Current release/version identity should have one owner. The `cc-version-authority` queue item exists to finish that consolidation across UI, reports, exports, README, and dashboard.
 - New UI overlays should express genuine behavior changes. Do not append another project-health panel merely because the version changed.
-- The default product dashboard should show Product Build Next first. The completed Orange dashboard is a baseline summary, not the active product queue.
-- The README is an entry point and current snapshot. Durable architecture, proof, source-accounting, and history belong in their dedicated documents.
+- The default product dashboard should show Product Build Next first. The completed Orange dashboard is historical baseline context, not the active product queue.
+- The README is an entry point and future-agent handoff. Durable architecture, proof, source accounting, product vision, and history belong in their owned documents.
 
-`tools/current-runtime.js` owns the Node-side current data/core load order. Extend that loader when the current runtime changes instead of copying long load arrays into every tool or test.
+`tools/current-runtime.js` owns the Node-side current data/core load order until runtime-consolidation queue work replaces that boundary with a smaller current owner. Do not copy long load arrays into every tool or test.
 
 ## Historical runtime compaction
 
@@ -78,11 +83,13 @@ For each ownership area selected for compaction:
 
 1. identify the historical layers that jointly own the behavior;
 2. implement a consolidated replacement with the same observable contracts;
-3. prove current and historical regression equivalence;
+3. prove current behavior and required historical invariants through regression-equivalent tests;
 4. preserve state migration for existing browser-local workspaces;
 5. remove only the layers genuinely superseded by the consolidated owner.
 
 A smaller file count is not a win if it changes Evidence semantics, command behavior, recommendation logic, report lineage, or workspace compatibility.
+
+Historical tests are allowed to evolve when their old assertion was about obsolete delivery shape rather than historical behavior. For example, an Orange-era test should preserve its v8.8 source-fidelity facts and v8.8 runtime artifacts, but it should not require the current README to display an old Orange status sentence forever.
 
 ## Quality-debt and methodology ordering
 
@@ -95,9 +102,7 @@ The methodology/source Build Next model preserves this priority order whenever w
 5. source-depth inventory/decomposition for any remaining frozen v6.2 baseline rows;
 6. whole-file source inventory for methodology-bearing Orange files that are not yet fully atomized.
 
-v8.0 completed all 34 frozen v6.2 baseline rows. v8.1 completed `low_access.md`; v8.2 `crack_hash.md`; v8.3 `low_hanging.md`; v8.4 `persistence.md`; v8.5 `dom_admin.md`; v8.6 `know_vuln_auth.md`; v8.7 `trusts.md`; and v8.8 completes `valid_user.md`.
-
-The pinned Orange 2025.03 milestones now stand at 127/127 canonical sections, 34/34 frozen baselines, 17/17 methodology-bearing files, and 334/334 inventoried atomic units fidelity-complete. The live methodology/source queue is therefore correctly empty.
+v8.8 completed the pinned Orange 2025.03 methodology/source accounting at 127/127 canonical sections, 34/34 frozen baselines, 17/17 methodology-bearing files, and 334/334 inventoried atomic units fidelity-complete. The live methodology/source queue is therefore correctly empty.
 
 Do not invent source debt merely to keep Build Next populated. A new methodology/source queue should appear only when a real quality defect is found or the pinned upstream snapshot is deliberately changed.
 

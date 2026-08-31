@@ -46,16 +46,28 @@ function headOf(pr) {
   return (pr.head && pr.head.ref) || pr.head_ref || '';
 }
 
+async function requestOpenPulls(url, headers) {
+  const res = await fetch(url, { headers });
+  if (!res.ok) return { ok: false, status: res.status, pulls: [] };
+  return { ok: true, status: res.status, pulls: await res.json() };
+}
+
 async function fetchOpenPulls(repo) {
-  const headers = {
+  const baseHeaders = {
     'Accept': 'application/vnd.github+json',
     'User-Agent': 'obol-open-pr-uniqueness-validator'
   };
-  if (process.env.GITHUB_TOKEN) headers.Authorization = `Bearer ${process.env.GITHUB_TOKEN}`;
   const url = `https://api.github.com/repos/${repo}/pulls?state=open&per_page=100`;
-  const res = await fetch(url, { headers });
-  if (!res.ok) throw new Error(`Unable to fetch open PRs from GitHub: HTTP ${res.status}`);
-  return res.json();
+  const authedHeaders = { ...baseHeaders };
+  if (process.env.GITHUB_TOKEN) authedHeaders.Authorization = `Bearer ${process.env.GITHUB_TOKEN}`;
+
+  let result = await requestOpenPulls(url, authedHeaders);
+  if (!result.ok && result.status === 403 && authedHeaders.Authorization) {
+    console.warn('Authenticated open-PR lookup returned HTTP 403; retrying public lookup without the limited CI token.');
+    result = await requestOpenPulls(url, baseHeaders);
+  }
+  if (!result.ok) throw new Error(`Unable to fetch open PRs from GitHub: HTTP ${result.status}`);
+  return result.pulls;
 }
 
 async function main() {
