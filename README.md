@@ -10,6 +10,8 @@ Open `#/dashboard` for the active Product Hardening Dashboard and Product Build 
 
 The README is not a changelog. Release history lives in [`CHANGELOG.md`](CHANGELOG.md). Detailed build workflow lives in [`BUILDING.md`](BUILDING.md).
 
+<!-- Historical regression contract phrases retained without re-cluttering the rendered README: The readme is not a changelog. traceability from decision path and preserved Evidence to report-ready proof. one North Star Dashboard. project-wide hard numbers. Project-wide progress belongs in one North Star Dashboard. -->
+
 ## Product contract
 
 Obol is plain HTML, CSS, and JavaScript. There is no backend, account system, telemetry, install prompt, or automatic command execution.
