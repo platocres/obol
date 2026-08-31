@@ -1,87 +1,82 @@
 # Orange source-depth completion plan
 
-## The problem
+## Why this exists
 
-Obol's 127-section Orange 2025.03 denominator is a normalized structural inventory. It answers whether a canonical Orange section is represented and how completely Obol currently owns that section. It does **not** prove that every useful subordinate Orange branch, command variant, prerequisite, decision edge, failure condition, tool choice, artifact transition, cleanup obligation, Evidence signature, Next Steps transition, GUI control, or reporting implication beneath that section has been mined.
+Obol's 127-section Orange 2025.03 denominator is a normalized structural inventory. It answers whether a canonical section is represented. It does not, by itself, prove that every useful subordinate branch, prerequisite, tool variant, decision edge, Evidence boundary, Next Steps transition, cleanup obligation, or reporting implication has been reviewed.
 
-At the v6.2 boundary, 34 canonical sections remained partial. Those 34 sections were frozen as the initial **source-depth audit baseline** so later parent-status changes could not make unresolved subordinate work disappear.
+At the v6.2 boundary, 34 partial canonical sections were frozen as a persistent source-depth baseline so later parent-status changes could not make unresolved source work disappear.
 
-## Current progress
+## Completed state in v8.8
 
-As of v8.7, all 34 frozen v6.2 partial baselines are decomposed and fidelity-complete. The project is also 127/127 canonically implemented with zero quality debt and zero canonical gaps.
+The pinned Orange 2025.03 source-depth program is complete under the current North Star audit contract:
 
-Sixteen of the 17 methodology-bearing source files are fully atomized at the file level: `adcs.md`, `delegation.md`, `acl.md`, `mitm.md`, `authenticated.md`, `sccm.md`, `admin.md`, `no_creds.md`, `lat_move.md`, `low_access.md`, `crack_hash.md`, `low_hanging.md`, `persistence.md`, `dom_admin.md`, `know_vuln_auth.md`, and `trusts.md`.
+- canonical methodology: 127/127 implemented;
+- frozen v6.2 partial baseline: 34/34 decomposed;
+- methodology-bearing source files: 17/17 atomized;
+- inventoried atomic units: 334/334 fidelity-complete;
+- live methodology/source Build Next queue: 0;
+- implemented-quality and mapped-delivery debt: 0.
 
-The only file still requiring complete whole-file inventory is:
+All methodology-bearing files are now fully inventoried: `adcs.md`, `delegation.md`, `acl.md`, `mitm.md`, `authenticated.md`, `sccm.md`, `admin.md`, `no_creds.md`, `lat_move.md`, `low_access.md`, `crack_hash.md`, `low_hanging.md`, `persistence.md`, `dom_admin.md`, `know_vuln_auth.md`, `trusts.md`, and `valid_user.md`.
 
-- `valid_user.md`
+## Final v8.8 wave
 
-All 316 currently inventoried atomic units are fidelity-complete. That denominator must expand once more when the final file is atomized.
+v8.8 atomizes `valid_user.md`, the final outstanding file, into eighteen terminal source units spanning password-policy review, fine-grained policy variants, user-equals-password validation, common-password spraying, AS-REP roastable-user discovery, AS-REP roasting, blind-Kerberoast source variants, and the pinned CVE-2022-33679 branch.
 
-## v8.7 trusts.md whole-file wave
+Nine units map directly to mature preferred Obol owners. Nine redundant, specialized, or brittle source variants are explicitly superseded with rationale. Supersession is deliberate source accounting, not silent omission.
 
-v8.7 completes the seventh whole-file inventory after the frozen v6.2 baseline by finishing `trusts.md` end to end. Thirty-four source units receive terminal dispositions and complete North Star dimension review. Thirty-three are modeled through mature trust-enumeration, child/parent, external/forest, BloodHound, DCSync, Golden Ticket, delegation, AD CS, lateral-movement, and MSSQL owners. The legacy MSSQL `trustlink` / `sp_linkedservers` spelling is explicitly superseded rather than silently omitted or duplicated.
-
-The wave reviews upstream command quality rather than copying lines blindly. The pinned concatenated `lookupsid.py` command is split into one current Impacket call per reviewed domain/DC. The child-to-parent Golden Ticket SID field is corrected to use the child domain SID. External-trust Impacket ticket paths keep the source domain SID distinct from the DNS domain and use the reviewed trusted-domain `krbtgt` SPN. One-way trust direction constraints remain explicit.
-
-Trust state remains conservative. Trust relationships, domain SIDs, recovered trust/krbtgt material, forged tickets, foreign membership, credential reuse, delegation/coercion context, SQL links, certificate paths, cross-domain authentication, service access, execution, administrator/SYSTEM context, Enterprise Admin membership, privilege, and cleanup remain distinct Evidence stages.
-
-The source wave advances the file-level denominator from 15/17 to 16/17 and the current atomic ledger from 282/282 to 316/316 complete. Canonical breadth remains 127/127 and the historical frozen baseline remains 34/34.
+The final wave advances file-level inventory from 16/17 to 17/17 and atomic fidelity from 316/316 to 334/334. Canonical breadth remains 127/127 and the historical frozen baseline remains 34/34.
 
 ## Accounting model
 
-North Star keeps three denominators visible at the same time:
+North Star preserves three separate progress layers:
 
 1. **Canonical breadth** — the stable 127 normalized Orange sections.
-2. **Source inventory depth** — whether methodology-bearing Orange source files and, historically, the frozen partial sections have been decomposed into meaningful subordinate source units.
-3. **Atomic source fidelity** — whether each inventoried unit has been carried through the complete Obol operator contract and given an explicit terminal disposition.
+2. **Source inventory depth** — whole-file atomization plus the historical frozen 34-row baseline.
+3. **Atomic source fidelity** — whether each inventoried unit has completed the full review contract and has a terminal disposition.
 
-A broad owner mapping remains useful context, but it is **not** source-fidelity completion.
+A broad card mapping remains useful context, but it is not source-fidelity completion.
 
-## What an atomic source unit records
+## Atomic source-unit requirements
 
-Every source unit preserves enough upstream structure to answer what the source says and what Obol must do with it: source file/hash, canonical parent, source node path, prerequisites, tools, transitions, owner mappings, cleanup obligations, explicit audit state, rationale, and the full North Star review matrix.
+Every source unit preserves enough upstream structure to explain what was reviewed and how Obol handles it: source file/hash, canonical parent, source path, prerequisites, tool inventory, transitions, owner mappings, cleanup obligations where applicable, explicit audit state, rationale, and the North Star review matrix.
 
-The required review dimensions cover source structure, decision edges, tools, owner mapping, tool suitability, Run controls, execution context, Evidence/proof boundaries, Next Steps, reporting/lineage, cleanup, and terminal disposition.
+The required review dimensions cover source structure, decision edges, tools, owner mapping, tool suitability, Run controls or explicit supersession rationale, execution context, Evidence/proof boundaries, Next Steps, reporting/lineage, cleanup, and terminal disposition.
 
 ## Audit states
 
-Every atomic source unit must eventually end in one of these explicit states:
+Every atomic unit ends as one of:
 
-- **modeled** — useful Orange depth is represented end to end in Obol;
-- **superseded** — Orange is accounted for, but Obol intentionally uses a safer, clearer, more current, or more practical workflow;
-- **rejected** — the source detail was reviewed and intentionally not incorporated, with a recorded reason;
-- **needs-audit** — the default state until the deeper review is complete.
+- **modeled** — useful source depth is represented through an Obol owner;
+- **superseded** — the source is accounted for, but Obol intentionally uses a clearer, more current, less duplicative, or more practical workflow;
+- **rejected** — the detail was reviewed and intentionally not incorporated, with rationale;
+- **needs-audit** — temporary state before review is complete.
 
-A terminal status alone is not enough. A source unit is fidelity-complete only when its required North Star dimensions are also complete.
+A terminal label alone is not enough. Required review dimensions must also be complete.
 
 ## Priority order
 
-The permanent release ordering is:
+The permanent methodology/source ordering remains:
 
-1. implemented-quality repairs
-2. mapped-delivery repairs
-3. canonical gaps
-4. atomic source-fidelity audits for already inventoried source units
-5. frozen v6.2 baseline decomposition while frozen rows remain
-6. whole-file source inventory for remaining methodology-bearing files
+1. implemented-quality repairs;
+2. mapped-delivery repairs;
+3. canonical gaps;
+4. atomic source-fidelity audits for inventoried units;
+5. frozen v6.2 baseline decomposition;
+6. whole-file source inventory.
 
-v8.0 exhausted priority 5. v8.1 completed `low_access.md`, v8.2 completed `crack_hash.md`, v8.3 completed `low_hanging.md`, v8.4 completed `persistence.md`, v8.5 completed `dom_admin.md`, v8.6 completed `know_vuln_auth.md`, and v8.7 completes `trusts.md` in priority 6.
-
-## Whole-file inventory phase
-
-`low_access.md`, `crack_hash.md`, `low_hanging.md`, `persistence.md`, `dom_admin.md`, `know_vuln_auth.md`, and `trusts.md` are now fully atomized and protected as completed file-level denominators. Build Next proceeds to the final file, `valid_user.md`.
-
-The final file must be decomposed completely enough that useful source nodes are either modeled, superseded, or rejected with rationale. Completing only a previously frozen parent is not sufficient for file-level credit.
+v8.8 has zero rows in all six categories. Build Next being empty is now correct.
 
 ## Dashboard and Build Next contract
 
-North Star Dashboard remains authoritative. The Dashboard separately shows canonical accounting, source files atomized, the historical frozen-baseline milestone, atomic units inventoried, broad owner coverage, completed review dimensions, terminal dispositions, and the live queue. The README Build Next block remains a compact CI-enforced snapshot generated from the same current project model.
+North Star Dashboard remains authoritative for project-wide hard numbers. README contains a compact CI-enforced projection generated from the same current project model.
 
-Build Next must not become empty while `valid_user.md` remains unatomized. It stays on an explicit `source-file-inventory` row so unfinished file-level source work remains visible.
+Completed denominators must remain visible and regression-protected. Future work must not manufacture source debt merely to keep a queue non-empty.
 
-## Completion target
+A methodology/source queue may legitimately reappear if a real quality defect is discovered or the upstream Orange snapshot is deliberately repinned. In that case the new denominator and provenance must be explicit.
 
-The Orange phase is genuinely complete only when canonical gaps and quality debt are zero, every methodology-bearing Orange source file has an atomic source inventory, every useful atomic unit has a terminal reviewed disposition, and command controls, Evidence, Next Steps, execution context, cleanup, artifacts, and reporting are wired end to end.
+## Completion statement
 
-Only then can Obol reasonably claim that the pinned Orange 2025.03 methodology has been exhausted of useful ideas rather than merely represented structurally or reconciled against the frozen v6.2 baseline.
+The pinned Orange 2025.03 methodology-bearing source set is fully inventoried and all 334 inventoried units are fidelity-complete under Obol's current audit contract. This is the point at which the project may reasonably describe that pinned snapshot as exhausted of useful ideas, subject to explicit modeled/superseded/rejected rationales and continued regression protection.
+
+This statement does not claim future Orange releases, new security research, or newly discovered Obol defects are permanently exhausted.

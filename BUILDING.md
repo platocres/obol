@@ -16,9 +16,7 @@ The intended release flow is:
 - do not create a second build/release PR to work around a failed check;
 - regenerate the README Build Next block and validate repository wiring before finalization;
 - require `implemented-quality = 0` and `mapped-delivery = 0` before methodology expansion is merge-ready;
-- when canonical gaps are zero, continue through source-fidelity accounting rather than declaring the source complete;
-- preserve the frozen v6.2 partial baseline and existing atomic units as historical denominators;
-- after the frozen baseline is complete, continue through whole-file source inventory until every methodology-bearing Orange file is atomized;
+- preserve canonical, frozen-baseline, file-level, and atomic denominators as historical milestones;
 - audited source units must end as explicitly `modeled`, `superseded`, or `rejected` with rationale and required review dimensions accounted for;
 - make the exact final release commit with `[release-final]` only after code, tests, docs, README, changelog or dedicated release documentation, and PR description form one coherent snapshot;
 - require smoke, preflight, historical-test future safety, the complete historical regression chain, release-quality gate, release-contract validation, and README synchronization on that exact head;
@@ -45,9 +43,9 @@ Do not create no-op `methodology-vX.Y.js`, `dashboard-vX.Y.js`, `intake-vX.Y.js`
 
 ## Consolidated current-state rule
 
-v6.6 established the boundary between domain models and current project-status presentation. v6.8 added a stable non-versioned pointer, and v8.7 continues through that boundary.
+v6.6 established the boundary between domain models and current project-status presentation. v6.8 added a stable non-versioned pointer, and v8.8 continues through that boundary.
 
-- `C.currentProjectModel(...)` is the preferred current projection boundary for canonical progress, source-fidelity progress, quality debt, Build Next, recent progress, and the next priority. In v8.7 it points to `C.projectModel87(...)`.
+- `C.currentProjectModel(...)` is the preferred current projection boundary for canonical progress, source-fidelity progress, quality debt, Build Next, recent progress, and the next priority. In v8.8 it points to `C.projectModel88(...)`.
 - Versioned project adapters remain available as historical regression boundaries. Current tooling and documentation should not require edits merely to discover the newest adapter name when the stable pointer is available.
 - Dashboard, README synchronization, release-quality checks, and other current-status consumers use the consolidated current model instead of parsing README text or independently recalculating current counts.
 - Current release/project metadata has one owner. Do not create competing project-wide count tables in UI or release-specific metadata.
@@ -59,7 +57,7 @@ v6.6 established the boundary between domain models and current project-status p
 
 ## Historical runtime compaction
 
-The historical browser load chain is acknowledged technical debt. Reduce it incrementally, not by deleting old version files for aesthetic reasons.
+The historical browser load chain is acknowledged technical debt. With the pinned Orange 2025.03 methodology/source queue complete in v8.8, regression-equivalent compaction is now a primary engineering direction rather than secondary cleanup.
 
 For each ownership area selected for compaction:
 
@@ -73,7 +71,7 @@ A smaller file count is not a win if it changes Evidence semantics, command beha
 
 ## Quality-debt and methodology ordering
 
-The current Build Next model preserves this priority order:
+The methodology/source Build Next model preserves this priority order whenever work exists:
 
 1. implemented-quality repairs;
 2. mapped-delivery repairs;
@@ -82,13 +80,13 @@ The current Build Next model preserves this priority order:
 5. source-depth inventory/decomposition for any remaining frozen v6.2 baseline rows;
 6. whole-file source inventory for methodology-bearing Orange files that are not yet fully atomized.
 
-A methodology-expansion release must not skip priority 1 or 2 debt. Canonical gaps outrank source-fidelity work while gaps remain. Already-inventoried atomic units outrank new inventory because their missing requirements are known precisely. Frozen v6.2 baseline rows historically outrank whole-file cleanup so their original denominator cannot disappear.
+v8.0 completed all 34 frozen v6.2 baseline rows. v8.1 completed `low_access.md`; v8.2 `crack_hash.md`; v8.3 `low_hanging.md`; v8.4 `persistence.md`; v8.5 `dom_admin.md`; v8.6 `know_vuln_auth.md`; v8.7 `trusts.md`; and v8.8 completes `valid_user.md`.
 
-v8.0 completed all 34 frozen v6.2 baseline rows. v8.1 completed whole-file inventory for `low_access.md`. v8.2 completed `crack_hash.md`. v8.3 completed `low_hanging.md`. v8.4 completed `persistence.md`. v8.5 completed `dom_admin.md`. v8.6 completed `know_vuln_auth.md`. v8.7 completes `trusts.md`, taking file-level atomization to 16/17 and moving the live queue to the final remaining file: `valid_user.md`.
+The pinned Orange 2025.03 milestones now stand at 127/127 canonical sections, 34/34 frozen baselines, 17/17 methodology-bearing files, and 334/334 inventoried atomic units fidelity-complete. The live methodology/source queue is therefore correctly empty.
 
-The 127-section canonical denominator measures structural representation. The frozen v6.2 source-depth denominator remains the historical 34 then-partial canonical sections. The atomic source-fidelity ledger measures meaningful subordinate branches and the requirements needed to translate them into Obol's Run -> Evidence -> Next Steps -> Report loop. The file-level denominator remains 17 methodology-bearing source files.
+Do not invent source debt merely to keep Build Next populated. A new methodology/source queue should appear only when a real quality defect is found or the pinned upstream snapshot is deliberately changed.
 
-Never equate 100% represented, 100% canonical implementation, 34/34 frozen-baseline completion, a broad card mapping, or a terminal audit label by itself with source exhaustion. See `docs/ORANGE-SOURCE-DEPTH.md` and `docs/NORTH-STAR.md`.
+Never equate one denominator by itself with source exhaustion. The completion claim depends on all required denominators, terminal dispositions, and audit dimensions remaining intact. See `docs/ORANGE-SOURCE-DEPTH.md` and `docs/NORTH-STAR.md`.
 
 ## Merge-readiness rule
 
