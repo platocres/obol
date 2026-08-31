@@ -34,6 +34,14 @@ The active queue exists to make Obol feel like a coherent product rather than an
 
 Do not implement these goals by adding a new versioned product-hardening runtime file for every release. The queue data should evolve while stable owners remain stable.
 
+## Current release authority
+
+v9.2 completes `cc-version-authority`. `data/current-release.js` is now the stable owner for the current product release label and phase identity used by live presentation and generated product metadata.
+
+The header, browser title, settings identity, report release metadata/footer, export release metadata, README current release, in-app Product Hardening Dashboard, and standalone Product Hardening Dashboard consume this authority. README projection is enforced by `tools/sync-current-release.js`; the authority boundary is checked by `tools/validate-current-release.js` and `tests/run-v9.2-tests.js`.
+
+This does **not** make the product release and workspace schema the same concept. `C.VERSION` remains the v8.8 browser workspace/runtime schema compatibility identity until a deliberate storage/runtime migration changes it. Future product releases should update `data/current-release.js` rather than inventing a new current-version constant or a fake v9 runtime overlay.
+
 ## Single dashboard rule
 
 Product hardening must have one quantified dashboard surface. The dashboard top should make overall progress obvious through figures, progress bars, and Build Next. Detailed ledgers belong below the high-level summary.
@@ -91,9 +99,10 @@ Historical regression suites are preservation boundaries, not README-layout lock
 7. Build the item without adding unnecessary compatibility shims or release-only ownership layers.
 8. Update the product-hardening queue data when the item disposition changes.
 9. Add or update that item's acceptance criteria, validation commands, proof files, and item-specific tests.
-10. Sync Product Build Next and any dashboard/readme projections sourced from the queue.
-11. Run the required validation from `BUILDING.md`.
-12. Push one coherent release PR and do not merge until the exact final head is green.
+10. When the product release changes, update `data/current-release.js` and synchronize README with `node tools/sync-current-release.js --write`.
+11. Sync Product Build Next and any dashboard/readme projections sourced from the queue.
+12. Run the required validation from `BUILDING.md`.
+13. Push one coherent release PR and do not merge until the exact final head is green.
 
 ## Notes source boundary
 
@@ -108,12 +117,15 @@ Use `BUILDING.md` as the source of truth for the full release gate. Product-hard
 ```bash
 node tools/validate-historical-tests.js
 node tools/validate-product-hardening-queue.js
+node tools/validate-current-release.js
 node tools/validate-asset-references.js
+node tools/sync-current-release.js --check
 node tools/sync-product-build-next.js --check
 node tools/validate-open-pr-uniqueness.js
 node tests/run-v9.0-tests.js
 node tests/run-v9.1-tests.js
 node tests/run-v9.1.1-tests.js
+node tests/run-v9.2-tests.js
 ```
 
 These checks do not replace smoke, preflight, release-contract validation, or the complete historical chain. They add the phase-specific governance needed for v9 product hardening.
