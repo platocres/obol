@@ -60,6 +60,20 @@ Final report output is normalized at the current-release boundary rather than by
 
 Historical report files may continue to contain their own historical implementation labels where those files are regression fixtures. Current product-facing output must not surface those labels as the current release identity.
 
+## Contrast and focus quality
+
+v9.5 completes `cc-link-contrast`, `ux-keyboard-focus`, and `qa-contrast-test` as the **Contrast and Focus Quality Pass** package.
+
+`assets/accessibility.css` is the stable current workspace owner for link, hover, focus-visible, forced-colors, and reduced-motion accessibility treatment after the historical stylesheet chain. Link and hover tokens are required to meet at least WCAG AA `4.5:1` contrast against supported dark page/panel surfaces. Focus indicators must exceed `3:1` against those surfaces and remain visible inside clipped components.
+
+`assets/accessibility.js` progressively enhances existing non-native clickable workspace surfaces without rewriting historical UI layers. Card headers, state cards, phase/toggle chips, facts, progress/timer controls, lane tabs, and the banner dismiss control become keyboard reachable and activate with Enter or Space when they are not already native controls. Open modals receive dialog semantics, initial focus, contained Tab/Shift+Tab traversal, and focus restoration to the invoking control on close.
+
+The live `assets/app-v8.8.js` bridge loads these stable non-versioned owners because the workspace/runtime schema remains v8.8. The standalone Product Hardening Dashboard keeps its link/focus contract in `assets/product-hardening-dashboard.css`, which is also used by the in-app dashboard.
+
+`tools/validate-accessibility-contract.js` permanently calculates dark-surface contrast ratios and checks focus-visible, forced-colors, keyboard activation, modal focus management, live asset wiring, and the screenshot-assisted QA contract. `docs/visual-qa/contrast-focus.md` defines the representative routes, viewports, and focus/link states that visual review should inspect. Numerical contrast remains deterministic; screenshots supplement it by catching composition/clipping problems static analysis cannot see.
+
+Future UI/runtime work should preserve or strengthen this stable accessibility boundary rather than inventing local focus colors or bypassing the current owner.
+
 ## Single dashboard rule
 
 Product hardening must have one quantified dashboard surface. The dashboard top should make overall progress obvious through figures, progress bars, the recommended coherent work package, and the broader Build Next queue. Detailed ledgers belong below the high-level summary.
@@ -160,6 +174,7 @@ node tools/validate-historical-tests.js
 node tools/validate-product-hardening-queue.js
 node tools/validate-current-release.js
 node tools/validate-version-identity.js
+node tools/validate-accessibility-contract.js
 node tools/validate-asset-references.js
 node tools/sync-current-release.js --check
 node tools/sync-product-build-next.js --check
@@ -170,6 +185,7 @@ node tests/run-v9.1.1-tests.js
 node tests/run-v9.2-tests.js
 node tests/run-v9.3-tests.js
 node tests/run-v9.4-tests.js
+node tests/run-v9.5-tests.js
 ```
 
 These checks do not replace smoke, preflight, release-contract validation, or the complete historical chain. They add the phase-specific governance needed for v9 product hardening.
