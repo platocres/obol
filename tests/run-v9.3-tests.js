@@ -15,9 +15,10 @@ const assetValidator=require(path.join(root,'tools','validate-asset-references.j
 const sandbox={window:{},globalThis:null};sandbox.globalThis=sandbox.window;vm.createContext(sandbox);
 vm.runInContext(read('data/current-release.js'),sandbox,{filename:'data/current-release.js'});
 vm.runInContext(read('data/product-hardening/product-hardening-queue.js'),sandbox,{filename:'data/product-hardening/product-hardening-queue.js'});
+vm.runInContext(read('data/product-hardening/work-packages.js'),sandbox,{filename:'data/product-hardening/work-packages.js'});
 vm.runInContext(read('data/product-hardening/item-test-contracts.js'),sandbox,{filename:'data/product-hardening/item-test-contracts.js'});
-const release=sandbox.window.OBOL_CURRENT_RELEASE,q=sandbox.window.OBOL_PRODUCT_HARDENING,contracts=sandbox.window.OBOL_PRODUCT_HARDENING_TEST_CONTRACTS;
-assert(release&&q&&contracts,'v9.3 release, queue, and contracts load');
+const release=sandbox.window.OBOL_CURRENT_RELEASE,q=sandbox.window.OBOL_PRODUCT_HARDENING,workPackages=sandbox.window.OBOL_PRODUCT_HARDENING_WORK_PACKAGES,contracts=sandbox.window.OBOL_PRODUCT_HARDENING_TEST_CONTRACTS;
+assert(release&&q&&workPackages&&contracts,'v9.3 release, queue, work packages, and contracts load');
 assert.deepStrictEqual([release.version,release.label,release.phase,release.orangeBaseline],['9.3.0','v9.3','product-hardening','v8.8']);
 
 const item=q.items.find(i=>i.id==='cc-asset-validation');
@@ -29,12 +30,31 @@ const itemContract=contracts.contracts['cc-asset-validation'];
 assert(itemContract&&itemContract.acceptance.length&&itemContract.validationCommands.length&&itemContract.proofFiles.length,'asset validation has item-specific Definition of Done');
 for(const rel of itemContract.proofFiles)assert(fs.existsSync(path.join(root,rel)),'asset validation proof file exists: '+rel);
 
+assert.deepStrictEqual(workPackages.validate(q),[],'coherent work-package schema validates against the atomic queue');
+const rec=workPackages.recommend(q);
+assert(rec&&rec.entryItem&&rec.entryItem.id==='cc-report-version','recommended package begins at the highest-priority queued item');
+assert.strictEqual(rec.id,'version-trust','report version identity enters the Version Trust Surfaces package');
+assert(rec.liveItems.some(i=>i.id==='qa-version-test'),'recommended package includes adjacent version regression coverage');
+assert(rec.itemIds.length>1&&rec.recommendedBatch===true,'recommended package explicitly encourages multi-item burn-down');
+assert.strictEqual(rec.ownershipArea,'release-identity/reporting','package declares a coherent ownership area');
+
+const readme=read('README.md'),building=read('BUILDING.md'),hardening=read('docs/PRODUCT-HARDENING.md'),dashboardRenderer=read('assets/product-hardening-dashboard.js'),dashboardHtml=read('product-hardening.html'),appBridge=read('assets/app-v8.8.js');
+assert(readme.includes('Treat it as the entry point into the recommended coherent work package, not as a one-item limit.'),'README tells future agents not to stop at one queue item');
+assert(readme.includes('Every item advanced or closed still needs its own acceptance criteria'),'README preserves atomic proof while batching work');
+assert(readme.includes('**Recommended work package:** **Version Trust Surfaces**'),'generated README exposes the current recommended package');
+assert(building.includes('## Coherent work-package burn-down')&&building.includes('one PR -> one coherent engineering area -> potentially many queue items'),'BUILDING defines the multi-item release model');
+assert(hardening.includes('## Coherent work packages')&&hardening.includes('Work-package batching does not weaken this contract'),'product-hardening docs preserve item-level accountability');
+assert(dashboardHtml.includes('data/product-hardening/work-packages.js'),'standalone dashboard loads work-package metadata');
+assert(appBridge.includes("addScript88('data/product-hardening/work-packages.js')"),'in-app dashboard loads work-package metadata');
+assert(dashboardRenderer.includes('Recommended work package')&&dashboardRenderer.includes('wp.recommend(q)'),'dashboard displays recommended coherent package');
+
 const repoResult=assetValidator.validateRepository(root);
 assert.deepStrictEqual(repoResult.failures,[],'all repository HTML asset references resolve');
 assert(repoResult.entrypoints.includes('index.html'),'index.html is discovered as an entrypoint');
 assert(repoResult.entrypoints.includes('product-hardening.html'),'product-hardening.html is discovered as an entrypoint');
 assert(repoResult.references.length>50,'validator traverses a meaningful local asset graph');
 assert(repoResult.references.some(r=>r.resolved==='data/product-hardening/product-hardening-queue.js'),'dynamic product-hardening queue load is validated');
+assert(repoResult.references.some(r=>r.resolved==='data/product-hardening/work-packages.js'),'dynamic work-package metadata load is validated');
 assert(repoResult.references.some(r=>r.resolved==='assets/product-hardening-dashboard.js'),'dynamic product-hardening renderer load is validated');
 
 const fixture=fs.mkdtempSync(path.join(os.tmpdir(),'obol-assets-'));
@@ -86,4 +106,4 @@ for(const command of [
   assert.strictEqual(result.status,0,(result.stderr||result.stdout||'').trim());
 }
 
-console.log('v9.3 complete local asset-graph validation and phase-aware release-gate tests passed.');
+console.log('v9.3 asset-graph validation plus coherent multi-item work-package governance tests passed.');
