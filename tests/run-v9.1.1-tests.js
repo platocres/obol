@@ -48,17 +48,18 @@ assert(releaseDoc.includes('historical regression'), 'v9.1.1 release notes expla
 
 assert(syncReadme.includes('historicalBlockMayBeOmitted'), 'historical Build Next sync tool supports intentional README omission');
 assert(syncReadme.includes('docs/NORTH-STAR.md'), 'sync tool points completed Orange accounting to North Star doc');
-assert(releaseValidator.includes('(?:\\.\\d+)?'), 'release validator accepts patch releases');
 assert(!releaseValidator.includes("README Build Next markers are missing'),"), 'release validator no longer requires historical README Build Next markers');
 assert(historicalValidator.includes('stale README contract'), 'historical test validator rejects stale README contracts');
+
+const patchReleaseValidation = run(['tools/validate-release-pr.js', '--repo-only', '--release-version=9.1.1']);
+assert.strictEqual(patchReleaseValidation.status, 0, (patchReleaseValidation.stderr || patchReleaseValidation.stdout || '').trim());
 
 for (const command of [
   ['tools/validate-historical-tests.js'],
   ['tools/validate-product-hardening-queue.js'],
   ['tools/validate-asset-references.js'],
   ['tools/sync-product-build-next.js', '--check'],
-  ['tools/sync-readme-build-next.js', '--check'],
-  ['tools/validate-release-pr.js', '--repo-only', '--release-version=9.1.1']
+  ['tools/sync-readme-build-next.js', '--check']
 ]) {
   const result = run(command);
   assert.strictEqual(result.status, 0, (result.stderr || result.stdout || '').trim());
