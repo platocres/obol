@@ -75,6 +75,7 @@ for (const command of [
   ['tools/validate-product-hardening-queue.js'],
   ['tools/validate-asset-references.js'],
   ['tools/sync-product-build-next.js', '--check'],
+  ['tools/validate-open-pr-uniqueness.js'],
   ['tools/validate-release-pr.js', '--repo-only', '--release-version=9.1']
 ]) {
   const result = cp.spawnSync(process.execPath, command.map((part, idx) => idx === 0 ? path.join(root, part) : part), { cwd: root, encoding: 'utf8' });
