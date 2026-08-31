@@ -18,6 +18,7 @@ The intended release flow is:
 - require `implemented-quality = 0` and `mapped-delivery = 0` before methodology expansion is merge-ready;
 - preserve canonical, frozen-baseline, file-level, and atomic denominators as historical milestones;
 - audited source units must end as explicitly `modeled`, `superseded`, or `rejected` with rationale and required review dimensions accounted for;
+- for product-hardening work, every queue item moved beyond `queued` must carry acceptance criteria, validation commands, required tests, proof files, risk notes, and status notes in the queue data;
 - make the exact final release commit with `[release-final]` only after code, tests, docs, README, changelog or dedicated release documentation, and PR description form one coherent snapshot;
 - require smoke, preflight, historical-test future safety, the complete historical regression chain, release-quality gate, release-contract validation, and README synchronization on that exact head;
 - mark the PR Ready for review only after that exact final head is green;
@@ -40,6 +41,29 @@ Beginning with v6.6, release scaffolding is **delta-based**. A new version numbe
 Every release must provide the current release/project metadata, current state/version adapter, current regression suite, release documentation, README update, and whatever UI/runtime wiring the release actually changes. Type-specific overlays such as methodology, Dashboard metadata, Intake/Evidence, reporting, or tool data are added only when that release genuinely changes that ownership area.
 
 Do not create no-op `methodology-vX.Y.js`, `dashboard-vX.Y.js`, `intake-vX.Y.js`, or similar shims solely for naming symmetry. `tools/validate-release-pr.js` enforces the minimal release contract; release-specific tests should explicitly verify any additional behavior-specific surfaces that the release requires.
+
+## Product-hardening burn-down rule
+
+Product-hardening releases must treat the queue as an executable contract, not a wishlist. A PR that burns down a product-hardening item must include:
+
+1. the implementation;
+2. the queue status update;
+3. item-specific acceptance criteria;
+4. item-specific test or validator coverage;
+5. README/dashboard synchronization when totals change;
+6. exact-head Actions pass.
+
+No product-hardening item may move from `queued` to `modeled`, `implemented`, `tested`, `complete`, `superseded`, or `rejected` unless the evaluated queue item carries these fields:
+
+- `acceptance`
+- `test_plan`
+- `validation_commands`
+- `required_tests`
+- `proof_files`
+- `risk`
+- `status_notes`
+
+Items marked `implemented`, `tested`, or `complete` must name at least one concrete test or validator in `required_tests`. `tools/validate-product-hardening-queue.js` owns this gate so future agents cannot silently mark queue work as done without proof.
 
 ## Consolidated current-state rule
 
