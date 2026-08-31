@@ -61,10 +61,13 @@ for(const name of fs.readdirSync(path.join(root,'tests')).filter(x=>/^run-v\d+\.
       if(/[0-9]+\s+mapped-delivery repairs/.test(literal))add(name,'hard-codes the live mapped-delivery count');
     }
   }
+
+  const directCssOwner=/\b(?:m|manifest)\s*\.\s*styles\s*\.\s*includes\s*\(\s*['"]assets\/obol(?:-v[0-9.]+)?\.css['"]\s*\)/g;
+  if(directCssOwner.test(text))add(name,'asserts a historical CSS fragment is still a direct current manifest style owner; use compatibility.historicalStyles (falling back to styles for old manifests) to preserve the historical cascade invariant instead');
 }
 
 if(failures.length){
-  console.error('Historical test future-safety validation failed. Historical suites must test historical models and structural live-output contracts, not mutable current-release values or stale README contracts.');
+  console.error('Historical test future-safety validation failed. Historical suites must test historical models and structural live-output contracts, not mutable current-release values, stale README contracts, or superseded direct runtime ownership shapes.');
   for(const item of failures)console.error(`- ${item}`);
   process.exit(1);
 }
@@ -72,3 +75,4 @@ if(failures.length){
 console.log(`Historical test future-safety validation passed for all suites older than v${currentVersion}.`);
 
 // v9.6 keeps legacy index-observation assertions working through a generated, inert manifest projection. The runtime-manifest validator owns that projection and prevents it from becoming a second load-order source of truth.
+// v9.7 moves executable CSS ownership to one generated current stylesheet; historical suites may inspect compatibility.historicalStyles but must not require historical fragments to remain direct current owners.
