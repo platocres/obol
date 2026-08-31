@@ -2,7 +2,7 @@
 'use strict';
 (function(){
 const RELEASE_SOURCE='data/current-release.js';
-let releaseLoading=null,productAssetsLoading=null,releaseContractsInstalled=false;
+let releaseLoading=null,productAssetsLoading=null,accessibilityLoading=null,releaseContractsInstalled=false;
 function active88(){return typeof C!=='undefined'&&C.VERSION==='8.8.0';}
 function page88(){return (location.hash||'#/home').replace(/^#\/?/,'').split('/').filter(Boolean)[0]||'home';}
 function model88(){try{return C.currentProjectModel(state,LANES,typeof ctx==='function'?ctx():undefined);}catch(e){return null;}}
@@ -11,6 +11,7 @@ function release88(){return window.OBOL_CURRENT_RELEASE||null;}
 function identity88(){return window.OBOL_RELEASE_IDENTITY||null;}
 function addStyle88(href){if(document.querySelector('link[data-obol-product-hardening="'+href+'"]')||document.querySelector('link[href="'+href+'"]'))return;const link=document.createElement('link');link.rel='stylesheet';link.href=href;link.dataset.obolProductHardening=href;document.head.appendChild(link);}
 function addScript88(src){if(document.querySelector('script[data-obol-product-hardening="'+src+'"]')||document.querySelector('script[src="'+src+'"]'))return Promise.resolve();return new Promise((resolve,reject)=>{const s=document.createElement('script');s.src=src;s.dataset.obolProductHardening=src;s.onload=resolve;s.onerror=()=>reject(new Error('failed to load '+src));document.head.appendChild(s);});}
+function ensureAccessibility88(){addStyle88('assets/accessibility.css');if(accessibilityLoading)return accessibilityLoading;accessibilityLoading=addScript88('assets/accessibility.js');return accessibilityLoading;}
 function stampReleaseState88(){const i=identity88();if(!i||typeof i.stampState!=='function'||typeof state==='undefined'||!state)return;i.stampState(state);}
 function versionReport88(md){const i=identity88();return i&&typeof i.normalizeReportMarkdown==='function'?i.normalizeReportMarkdown(md):String(md||'');}
 function installReleaseContracts88(){if(releaseContractsInstalled||!release88()||!identity88())return;releaseContractsInstalled=true;stampReleaseState88();if(C&&typeof C.sanitizedCopy==='function'&&!C.sanitizedCopy.__obolReleaseAuthority){const old=C.sanitizedCopy;const wrapped=function(s){const safe=old(s),i=identity88();return i&&typeof i.stampState==='function'?i.stampState(safe):safe;};wrapped.__obolReleaseAuthority=true;C.sanitizedCopy=wrapped;}const R=window.OBOL_REPORT_V2;if(R&&typeof R.generate==='function'&&!R.generate.__obolReleaseAuthority){const oldGenerate=R.generate;const generate=function(){return versionReport88(oldGenerate.apply(R,arguments));};generate.__obolReleaseAuthority=true;window.OBOL_REPORT_V2={...R,generate};}}
@@ -25,5 +26,5 @@ function decorateHome88(){if(page88()!=='home')return;const v=document.querySele
 function decorate88(){if(!active88())return;ensureRelease88().then(()=>{setVisibleVersion88();if(page88()==='dashboard')renderProductDashboardNow88();else if(page88()==='home')decorateHome88();});}
 const oldRoute88=route;route=function(){if(active88()&&page88()==='dashboard'){renderProductDashboard88();return;}oldRoute88();for(const t of [0,40,180,520,1200,2600,4200])setTimeout(decorate88,t);};
 window.addEventListener('hashchange',()=>{for(const t of [20,120,420,900,1800,3000])setTimeout(decorate88,t);});
-ensureRelease88().catch(()=>{});for(const t of [50,350,760,1300,2200,3600,5200])setTimeout(decorate88,t);
+ensureAccessibility88().catch(()=>{});ensureRelease88().catch(()=>{});for(const t of [50,350,760,1300,2200,3600,5200])setTimeout(decorate88,t);
 })();
