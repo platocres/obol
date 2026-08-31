@@ -36,10 +36,19 @@ function walk(dir, out = []) {
   return out;
 }
 
+function nonEmptyString(value) {
+  return typeof value === 'string' && value.trim().length > 0;
+}
+
+function nonEmptyArray(value) {
+  return Array.isArray(value) && value.length > 0 && value.every(nonEmptyString);
+}
+
 if (!q) fail('queue object missing');
 
 if (q) {
   if (q.version !== '9.0.0') fail('unexpected queue version ' + q.version);
+  if (q.contractVersion !== '9.0.1') fail('unexpected product-hardening contract version ' + q.contractVersion);
 
   const requiredTracks = [
     'critical-correctness',
@@ -67,10 +76,51 @@ if (q) {
     if (!t.id || !t.label || !Number.isFinite(t.total)) fail('invalid track ' + JSON.stringify(t));
   }
 
+  const allowedStatuses = ['queued', 'modeled', 'implemented', 'tested', 'complete', 'superseded', 'rejected'];
+  const proofStatuses = ['modeled', 'implemented', 'tested', 'complete', 'superseded', 'rejected'];
+  const testBearingStatuses = ['implemented', 'tested', 'complete'];
+  const dod = q.definitionOfDone || {};
+  const requiredProofFields = dod.requiredFields || [
+    'acceptance',
+    'test_plan',
+    'validation_commands',
+    'required_tests',
+    'proof_files',
+    'risk',
+    'status_notes'
+  ];
+
+  for (const field of ['acceptance', 'test_plan', 'validation_commands', 'required_tests', 'proof_files', 'risk', 'status_notes']) {
+    if (!requiredProofFields.includes(field)) fail('Definition of Done required field missing from schema: ' + field);
+  }
+
+  if (!nonEmptyString(dod.advanceRule || '')) fail('Definition of Done advance rule is missing');
+  if (!Array.isArray(dod.advancedStatuses) || !proofStatuses.every(s => dod.advancedStatuses.includes(s))) fail('Definition of Done advanced status list is incomplete');
+  if (!Array.isArray(dod.testBearingStatuses) || !testBearingStatuses.every(s => dod.testBearingStatuses.includes(s))) fail('Definition of Done test-bearing status list is incomplete');
+
   for (const item of q.items || []) {
     if (!item.id || !item.track || !item.label || !item.status) fail('invalid item ' + JSON.stringify(item));
     if (!trackIds.has(item.track)) fail('unknown item track ' + item.track);
-    if (!['queued', 'modeled', 'complete', 'superseded', 'rejected'].includes(item.status)) fail('bad status ' + item.status + ' for ' + item.id);
+    if (!allowedStatuses.includes(item.status)) fail('bad status ' + item.status + ' for ' + item.id);
+
+    if (proofStatuses.includes(item.status)) {
+      for (const field of requiredProofFields) {
+        if (!(field in item)) fail(item.id + ' is ' + item.status + ' but lacks Definition of Done field: ' + field);
+      }
+      if (!nonEmptyArray(item.acceptance)) fail(item.id + ' lacks non-empty acceptance criteria');
+      if (!nonEmptyString(item.test_plan)) fail(item.id + ' lacks a test plan');
+      if (!nonEmptyArray(item.validation_commands)) fail(item.id + ' lacks validation commands');
+      if (!nonEmptyArray(item.required_tests)) fail(item.id + ' lacks required tests');
+      if (!nonEmptyArray(item.proof_files)) fail(item.id + ' lacks proof files');
+      if (!nonEmptyString(item.risk)) fail(item.id + ' lacks risk notes');
+      if (!nonEmptyString(item.status_notes)) fail(item.id + ' lacks status notes');
+    }
+
+    if (testBearingStatuses.includes(item.status)) {
+      if (!item.required_tests || !item.required_tests.some(f => /^tests\//.test(f) || /^tools\/validate/.test(f) || /^tools\/sync/.test(f))) {
+        fail(item.id + ' is ' + item.status + ' but does not name an item-specific test or validator');
+      }
+    }
   }
 
   const requiredItems = [
@@ -158,4 +208,4 @@ if (failures.length) {
   process.exit(1);
 }
 
-console.log('Product hardening guardrails valid:', q.items.length, 'items across', q.tracks.length, 'tracks;', q.totals().notes, 'notes and', q.totals().resources, 'resources accounted.');
+console.log('Product hardening guardrails valid:', q.items.length, 'items across', q.tracks.length, 'tracks;', q.totals().notes, 'notes and', q.totals().resources, 'resources accounted; contract', q.contractVersion, 'enforces item-specific proof.');
