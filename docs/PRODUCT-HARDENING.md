@@ -78,13 +78,23 @@ Future UI/runtime work should preserve or strengthen this stable accessibility b
 
 v9.6 completes `runtime-current-entry`, `runtime-data-manifest`, and `runtime-historical-equivalence` inside the **Runtime Consolidation Foundation** package without deleting historical behavior layers.
 
-`data/runtime-manifest.js` is the stable owner for the exact current browser stylesheet/script order and the Node current-runtime data/core subsets. `index.html` now loads `data/runtime-manifest.js` and `assets/runtime-current.js` instead of hand-maintaining hundreds of versioned asset tags. `tools/current-runtime.js` consumes the same manifest rather than duplicating historical DATA/CORE arrays.
+`data/runtime-manifest.js` is the stable owner for the current browser runtime and the Node current-runtime data/core subsets. `index.html` loads `data/runtime-manifest.js` and `assets/runtime-current.js` instead of hand-maintaining hundreds of versioned asset tags. `tools/current-runtime.js` consumes the same manifest rather than duplicating historical DATA/CORE arrays.
 
-This is an ownership and validation foundation, not the final runtime compaction. `assets/runtime-current.js` preserves parser-blocking order for the existing browser chain. The v9.5 load shape is frozen in `tests/fixtures/runtime-v9.5-load-order.json`, and `tools/validate-runtime-manifest.js` checks exact counts and SHA-256 order fingerprints, manifest path existence, browser/Node projection agreement, and manifest-backed v8.8 runtime initialization. Product Hardening preflight permanently runs this equivalence gate before historical runtime files may be removed.
+The v9.5 load shape is frozen in `tests/fixtures/runtime-v9.5-load-order.json`, and `tools/validate-runtime-manifest.js` keeps the historical script order and stylesheet cascade observable while proving manifest-backed v8.8 runtime initialization. Product Hardening preflight permanently runs this equivalence gate before historical runtime files may be removed.
 
 `tools/validate-asset-references.js` also traverses manifest-owned current and lazy assets, so moving load-order ownership out of `index.html` does not weaken missing-asset detection.
 
-The rest of the package remains real work. `runtime-css-consolidation`, `runtime-lazy-load-plan`, and `perf-bundle-budget` remain queued because they require separate replacement/migration and performance reasoning. v9.6 does not mark them complete for package-count optics. Historical CSS/core/app/intake/report/data layers remain in place until later regression-equivalent consolidation can safely remove them.
+## CSS ownership consolidation
+
+v9.7 completes `runtime-css-consolidation` without claiming the separate `perf-bundle-budget` work.
+
+The executable workspace runtime now has one stable non-versioned stylesheet owner: `assets/obol-current.css`. `data/runtime-manifest.js` exposes only that file in `styles`, while the frozen v9.5 stylesheet sequence remains explicit under `compatibility.historicalStyles`.
+
+`tools/sync-current-styles.js` generates `assets/obol-current.css` as a pure ordered `@import` projection of that manifest-owned compatibility list. It adds no style rules of its own. `tools/validate-runtime-manifest.js` verifies that every historical fragment appears exactly once, in the original order, and that the v9.5 stylesheet SHA-256 order fingerprint still matches the frozen fixture. Product Hardening preflight runs `node tools/sync-current-styles.js --check` before runtime equivalence.
+
+This gives styling one boring current owner while preserving historical cascade behavior and source-observation regressions. It intentionally does **not** reduce the number of CSS network requests yet; physical bundling/minification/request-budget work remains queued under `perf-bundle-budget`.
+
+With this item complete, Architecture / runtime is 4/10. The next highest-priority item is `runtime-dashboard-owner`, which moves execution into the **Dashboard and User Workflow Rebalance** ownership area. Per the coherent-package stop rule, v9.7 does not skip that priority boundary just to consume more items from the runtime package.
 
 ## Single dashboard rule
 
@@ -97,6 +107,8 @@ The dashboard and README Product Build Next block must consume the same atomic q
 ## Single open PR rule
 
 Product-hardening work must not scatter across duplicate PRs. There must be only one open release/product-hardening PR at a time.
+
+Release PRs are opened as normal, non-draft PRs as early as GitHub permits. Required checks and exact-head validation are the merge gate. Draft status is not part of the release workflow, and a healthy release PR must not be closed/recreated merely to move between Draft and Ready states. Failed checks are development state on the same PR, not a reason to replace it.
 
 Before opening a release, product-hardening, dashboard, queue, Definition of Done, or burn-down PR, agents must check the repository's open PRs. If an active release/product-hardening PR already exists, continue that PR or explicitly close the stale one as superseded before opening another.
 
@@ -160,16 +172,17 @@ Historical regression suites are preservation boundaries, not README-layout lock
 2. Read `BUILDING.md` for the exact release workflow, validation tiers, coherent package rules, and exact-head merge rule.
 3. Review this document and `docs/ARCHITECTURE.md` before changing runtime ownership or queue architecture.
 4. Check open PRs and continue the active release/product-hardening PR if one exists.
-5. Review Product Build Next in `#/dashboard` or inspect `data/product-hardening/product-hardening-queue.js` plus `data/product-hardening/work-packages.js`.
-6. Start with the highest-priority live queue item unless the user explicitly directs otherwise. Treat it as the entry point into the recommended work package rather than a one-item limit.
-7. Inspect live package items, dependencies, and related items. Complete as many as safely fit the same ownership area and blast radius without adding unnecessary compatibility shims or release-only ownership layers.
-8. Update each product-hardening queue item independently when its disposition changes.
-9. Add or update each changed item's acceptance criteria, validation commands, proof files, and item-specific tests.
-10. Stop package expansion when the next item materially changes architectural context, migration risk, ownership, or test strategy. Do not batch unrelated work for item-count optics.
-11. When the product release changes, update `data/current-release.js` and synchronize README with `node tools/sync-current-release.js --write`.
-12. Sync Product Build Next and the work-package projection with `node tools/sync-product-build-next.js --write`.
-13. Run the required validation from `BUILDING.md`.
-14. Keep the coherent package in the one active release PR and do not merge until the exact final head is green.
+5. If no release PR exists, create the release branch and open one normal non-draft PR as early as GitHub permits. Keep that same PR through development and failed checks.
+6. Review Product Build Next in `#/dashboard` or inspect `data/product-hardening/product-hardening-queue.js` plus `data/product-hardening/work-packages.js`.
+7. Start with the highest-priority live queue item unless the user explicitly directs otherwise. Treat it as the entry point into the recommended work package rather than a one-item limit.
+8. Inspect live package items, dependencies, and related items. Complete as many as safely fit the same ownership area and blast radius without adding unnecessary compatibility shims or release-only ownership layers.
+9. Update each product-hardening queue item independently when its disposition changes.
+10. Add or update each changed item's acceptance criteria, validation commands, proof files, and item-specific tests.
+11. Stop package expansion when the next item materially changes architectural context, migration risk, ownership, or test strategy. Do not batch unrelated work for item-count optics.
+12. When the product release changes, update `data/current-release.js` and synchronize README with `node tools/sync-current-release.js --write`.
+13. Sync Product Build Next and the work-package projection with `node tools/sync-product-build-next.js --write`.
+14. Run the required validation from `BUILDING.md`.
+15. Keep the coherent package in the one active release PR and do not merge until the exact final head and PR required checks are green.
 
 ## Notes source boundary
 
@@ -187,6 +200,7 @@ node tools/validate-product-hardening-queue.js
 node tools/validate-current-release.js
 node tools/validate-version-identity.js
 node tools/validate-accessibility-contract.js
+node tools/sync-current-styles.js --check
 node tools/validate-runtime-manifest.js
 node tools/validate-asset-references.js
 node tools/sync-current-release.js --check
@@ -200,6 +214,7 @@ node tests/run-v9.3-tests.js
 node tests/run-v9.4-tests.js
 node tests/run-v9.5-tests.js
 node tests/run-v9.6-tests.js
+node tests/run-v9.7-tests.js
 ```
 
 These checks do not replace smoke, preflight, release-contract validation, or the complete historical chain. They add the phase-specific governance needed for v9 product hardening.
