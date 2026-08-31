@@ -1,6 +1,6 @@
 # Obol Build and Release Workflow
 
-This file is a mandatory companion to `README.md`, `CHANGELOG.md`, `docs/ARCHITECTURE.md`, `docs/NORTH-STAR.md`, `docs/PROOF-CONTRACT.md`, and `docs/ORANGE-SOURCE-DEPTH.md` for future Obol build work. Read the relevant owner before changing release architecture, methodology, Evidence behavior, reporting, CI, project metrics, or source-depth/source-fidelity accounting.
+This file is a mandatory companion to `README.md`, `CHANGELOG.md`, `docs/ARCHITECTURE.md`, `docs/NORTH-STAR.md`, `docs/PROOF-CONTRACT.md`, and `docs/ORANGE-SOURCE-DEPTH.md` for future Obol build work. Read the relevant owner before changing release architecture, methodology, Evidence behavior, reporting, CI, project metrics, source-depth/source-fidelity accounting, or product-hardening queue state.
 
 ## Incremental release policy
 
@@ -10,18 +10,23 @@ The intended release flow is:
 
 - create exactly one `release/obol-vX.Y` branch from current `main`;
 - open exactly one draft PR for that release immediately;
+- before opening any release, product-hardening, dashboard, queue, Definition of Done, or burn-down PR, search open PRs and continue the active one if it exists;
+- keep exactly one open release/product-hardening PR at a time;
 - push incremental, coherent commits to that same PR;
 - ordinary release commits run `node tools/release-smoke.js`;
 - use `[preflight]` when a coherent current-release snapshot is ready;
-- do not create a second build/release PR to work around a failed check;
+- do not create a second build/release/product-hardening PR to work around a failed check;
 - regenerate the README Build Next block and validate repository wiring before finalization;
 - require `implemented-quality = 0` and `mapped-delivery = 0` before methodology expansion is merge-ready;
 - preserve canonical, frozen-baseline, file-level, and atomic denominators as historical milestones;
 - audited source units must end as explicitly `modeled`, `superseded`, or `rejected` with rationale and required review dimensions accounted for;
+- product-hardening queue items may not move to `modeled`, `complete`, `superseded`, or `rejected` unless `data/product-hardening/item-test-contracts.js` names acceptance criteria, validation commands, and proof files for that item;
 - make the exact final release commit with `[release-final]` only after code, tests, docs, README, changelog or dedicated release documentation, and PR description form one coherent snapshot;
-- require smoke, preflight, historical-test future safety, the complete historical regression chain, release-quality gate, release-contract validation, and README synchronization on that exact head;
+- require smoke, preflight, historical-test future safety, the complete historical regression chain, release-quality gate, release-contract validation, open-PR uniqueness validation, and README synchronization on that exact head;
 - mark the PR Ready for review only after that exact final head is green;
 - treat any later commit as a new head that must be validated again.
+
+`tools/validate-open-pr-uniqueness.js` enforces the one-open-release/product-hardening-PR rule. It is invoked by `tools/validate-release-pr.js` for release-intent pull requests and rejects duplicate open release/product-hardening PRs.
 
 The three validation tiers are:
 
@@ -33,6 +38,16 @@ The three validation tiers are:
 
 Release-PR metadata enforcement applies only to release-intent pull requests. Normal documentation, maintenance, and CI-fix PRs are not required to impersonate a release.
 
+## Product-hardening item Definition of Done
+
+Every Product Build Next item must carry its own proof once it leaves `queued` status. The proof lives in `data/product-hardening/item-test-contracts.js`, and `tools/validate-product-hardening-queue.js` fails if a status-bearing item lacks all three of these:
+
+- acceptance criteria describing the behavior or governance guarantee;
+- validation commands proving the item-specific work;
+- proof files where the implementation, docs, or tests live.
+
+A product-hardening PR that burns down a queue item must therefore include the implementation, the queue/status update when applicable, the item-test contract, item-specific tests or validators, README/dashboard sync when totals or generated blocks change, and a green exact-head Actions run.
+
 ## Delta-based release surfaces
 
 Beginning with v6.6, release scaffolding is **delta-based**. A new version number is not a reason to create empty compatibility files.
@@ -43,14 +58,14 @@ Do not create no-op `methodology-vX.Y.js`, `dashboard-vX.Y.js`, `intake-vX.Y.js`
 
 ## Consolidated current-state rule
 
-v6.6 established the boundary between domain models and current project-status presentation. v6.8 added a stable non-versioned pointer, and v8.8 continues through that boundary.
+v6.6 established the boundary between domain models and current project-status presentation. v6.8 added a stable non-versioned pointer, and v8.8 continues through that boundary. v9 product-hardening work adds a separate queue/dashboard source of truth without reopening the completed Orange methodology/source queue.
 
 - `C.currentProjectModel(...)` is the preferred current projection boundary for canonical progress, source-fidelity progress, quality debt, Build Next, recent progress, and the next priority. In v8.8 it points to `C.projectModel88(...)`.
 - Versioned project adapters remain available as historical regression boundaries. Current tooling and documentation should not require edits merely to discover the newest adapter name when the stable pointer is available.
 - Dashboard, README synchronization, release-quality checks, and other current-status consumers use the consolidated current model instead of parsing README text or independently recalculating current counts.
 - Current release/project metadata has one owner. Do not create competing project-wide count tables in UI or release-specific metadata.
 - New UI overlays should express genuine behavior changes. Do not append another project-health panel merely because the version changed.
-- The default North Star Dashboard is an overview. Matrices, ledgers, complete queues, and diagnostics belong behind deliberate drill-downs.
+- The default product dashboard should show Product Build Next first. The completed Orange dashboard is a baseline summary, not the active product queue.
 - The README is an entry point and current snapshot. Durable architecture, proof, source-accounting, and history belong in their dedicated documents.
 
 `tools/current-runtime.js` owns the Node-side current data/core load order. Extend that loader when the current runtime changes instead of copying long load arrays into every tool or test.

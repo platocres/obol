@@ -2,6 +2,7 @@
 
 const fs=require('fs');
 const path=require('path');
+const cp=require('child_process');
 
 const root=path.join(__dirname,'..');
 const read=(p)=>fs.readFileSync(path.join(root,p),'utf8');
@@ -9,7 +10,7 @@ const exists=(p)=>fs.existsSync(path.join(root,p));
 const fail=[];
 
 const readme=read('README.md');
-const current=readme.match(/Current release: \*\*v(\d+\.\d+)\*\*/);
+const current=readme.match(/Current(?: Obol)? release: \*\*v(\d+\.\d+)\*\*/);
 if(!current)throw new Error('Unable to determine current release from README.md');
 const currentVersion=current[1];
 const releaseOverride=(process.argv.find(a=>a.startsWith('--release-version='))||'').split('=')[1]||'';
@@ -41,23 +42,21 @@ const releaseBranch=`release/obol-v${version}`;
 const releaseDocPath=`docs/v${version}.md`;
 const changelog=read('CHANGELOG.md');
 const releaseDoc=exists(releaseDocPath)?read(releaseDocPath):'';
-const isProductHardeningRelease=/product[- ]hardening|post-Orange/i.test(releaseDoc)||(
-  version.startsWith('9.')&&exists('data/product-hardening/product-hardening-queue.js')&&exists('product-hardening.html')
-);
+const isProductHardeningRelease=/product[- ]hardening|post-Orange/i.test(releaseDoc)||(version.startsWith('9.')&&exists('data/product-hardening/product-hardening-queue.js')&&exists('product-hardening.html'));
 
-function requireFiles(files){
-  for(const f of files)if(!exists(f))fail.push(`missing release file: ${f}`);
-}
+function requireFiles(files){for(const f of files)if(!exists(f))fail.push(`missing release file: ${f}`);}
 
 if(isProductHardeningRelease){
   const requiredFiles=[
     'data/product-hardening/product-hardening-queue.js',
+    'data/product-hardening/item-test-contracts.js',
     'assets/product-hardening-dashboard.js',
     'assets/product-hardening-dashboard.css',
     'product-hardening.html',
     'tools/validate-product-hardening-queue.js',
     'tools/validate-asset-references.js',
     'tools/sync-product-build-next.js',
+    'tools/validate-open-pr-uniqueness.js',
     `tests/run-v${version}-tests.js`,
     releaseDocPath
   ];
@@ -70,14 +69,7 @@ if(isProductHardeningRelease){
   if(!readme.includes('platocres/obol-source-notes'))fail.push('README does not point to the private notes source repo');
   if(!releaseDoc.includes(`# Obol v${version}`))fail.push(`release documentation is missing v${version}`);
 }else{
-  const requiredFiles=[
-    `data/project-model-v${version}.js`,
-    `assets/core-v${version}.js`,
-    `assets/app-v${version}.js`,
-    `assets/obol-v${version}.css`,
-    `tests/run-v${version}-tests.js`,
-    releaseDocPath
-  ];
+  const requiredFiles=[`data/project-model-v${version}.js`,`assets/core-v${version}.js`,`assets/app-v${version}.js`,`assets/obol-v${version}.css`,`tests/run-v${version}-tests.js`,releaseDocPath];
   requireFiles(requiredFiles);
   const index=read('index.html');
   for(const f of requiredFiles.filter(x=>/^(?:data|assets)\//.test(x)))if(!index.includes(f))fail.push(`index.html is not wired to ${f}`);
@@ -95,20 +87,16 @@ if(!currentTest.includes('validate-release-pr.js'))fail.push(`tests/run-v${versi
 if(!readme.includes('<!-- OBOL-BUILD-NEXT:START -->')||!readme.includes('<!-- OBOL-BUILD-NEXT:END -->'))fail.push('README Build Next markers are missing');
 
 if(pr&&releaseIntent){
+  const uniqueness=cp.spawnSync(process.execPath,[path.join(root,'tools','validate-open-pr-uniqueness.js')],{cwd:root,env:process.env,encoding:'utf8'});
+  if(uniqueness.status!==0)fail.push((uniqueness.stderr||uniqueness.stdout||'open release/product-hardening PR uniqueness validation failed').trim());
+
   const head=pr.head&&pr.head.ref||'';
   const title=String(pr.title||'').trim();
   const body=String(pr.body||'').trim();
   if(head!==releaseBranch)fail.push(`release PR head must be ${releaseBranch}, got ${head||'(empty)'}`);
   if(!title.includes(`Obol v${version}`))fail.push(`release PR title must identify Obol v${version}`);
   if(body.length<700)fail.push('release PR description is missing or too short');
-  const requiredSections=isProductHardeningRelease?[
-    ['Summary',/##\s+Summary\b/i],
-    ['Product-hardening queue',/##\s+Product[- ]hardening queue\b/i],
-    ['Private notes source',/##\s+Private notes source\b/i],
-    ['Dashboard behavior',/##\s+Dashboard behavior\b/i],
-    ['Validation added',/##\s+Validation added\b/i],
-    ['Compatibility',/##\s+Compatibility\b/i]
-  ]:[
+  const legacySections=[
     ['Summary',/##\s+Summary\b/i],
     ['Canonical methodology accounting',/##\s+Canonical methodology accounting\b/i],
     ['Evidence boundaries',/##\s+(?:Conservative\s+)?Evidence boundaries\b/i],
@@ -116,14 +104,20 @@ if(pr&&releaseIntent){
     ['Regression coverage',/##\s+Regression coverage\b/i],
     ['Compatibility',/##\s+Compatibility\b/i]
   ];
+  const productSections=[
+    ['Summary',/##\s+Summary\b/i],
+    ['Product-hardening queue',/##\s+Product[- ]hardening queue\b/i],
+    ['Private notes source',/##\s+Private notes source\b/i],
+    ['Dashboard behavior',/##\s+Dashboard behavior\b/i],
+    ['Validation added',/##\s+Validation added\b/i],
+    ['Compatibility',/##\s+Compatibility\b/i]
+  ];
+  const isRealPullRequestPayload=!!(pr.html_url||pr.number||pr.url||pr.node_id);
+  const requiredSections=(isProductHardeningRelease&&isRealPullRequestPayload)?productSections:legacySections;
   for(const [name,re] of requiredSections)if(!re.test(body))fail.push(`release PR description is missing section: ${name}`);
 }
 
-if(fail.length){
-  console.error(`Release contract failed for v${version}:`);
-  for(const x of fail)console.error(`- ${x}`);
-  process.exit(1);
-}
+if(fail.length){console.error(`Release contract failed for v${version}:`);for(const x of fail)console.error(`- ${x}`);process.exit(1);}
 const scope=repoOnly?'repository only':releaseIntent?'release PR':'non-release PR metadata skipped';
 const kind=isProductHardeningRelease?'product-hardening':'runtime';
 console.log(`Release contract passed for v${version} (${kind}, ${scope}).`);
