@@ -80,7 +80,7 @@ const app=[
 const scripts=[...domain,...vendor,...core,...nmap,...report,...appPrelude,...intake,...app];
 const groups=Object.freeze({domain:freeze(domain),vendor:freeze(vendor),core:freeze(core),nmap:freeze(nmap),report:freeze(report),appPrelude:freeze(appPrelude),intake:freeze(intake),app:freeze(app)});
 const lazy=Object.freeze({
- productHardening:freeze(['data/current-release.js','data/product-hardening/product-hardening-queue.js','data/product-hardening/work-packages.js','assets/product-hardening-dashboard.css','assets/product-hardening-dashboard.js']),
+ productHardening:freeze(['data/current-release.js','data/product-hardening/product-hardening-queue.js','data/product-hardening/work-packages.js','assets/product-hardening-dashboard.css','assets/product-hardening-dashboard.js','assets/workflow-current.js']),
  accessibility:freeze(['assets/accessibility.css','assets/accessibility.js'])
 });
 return Object.freeze({
