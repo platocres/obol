@@ -50,6 +50,16 @@ v9.3 completes `cc-asset-validation`. `tools/validate-asset-references.js` owns 
 
 Future asset-manifest work may replace hand-maintained load order, but it must preserve or strengthen this invariant: every asset reachable from an Obol entrypoint is resolvable before a release can merge.
 
+## Version trust surfaces
+
+v9.4 completes `cc-report-version` and `qa-version-test`. The stable `data/current-release.js` authority now also exposes shared identity helpers used by the live v8.8 browser bridge to normalize current product metadata without changing the v8.8 workspace/runtime schema identity.
+
+Final report output is normalized at the current-release boundary rather than by rewriting historical report overlays. Report-owned `**Obol:** vX.Y` metadata and generated-footer version labels are replaced with the current product release, while `**Workspace schema:** 8.8.0` remains distinct and operator-provided Evidence/code-block content is left untouched. Sanitized exports receive the same current `obolRelease` and `obolReleaseLabel` metadata through the shared helper.
+
+`tools/validate-version-identity.js` is the permanent regression gate for this contract. It verifies the browser tagline/title/settings presentation, README and dashboard release identity, final report metadata/footer normalization, export metadata, idempotence, Evidence preservation, and workspace-schema separation. `tools/release-preflight.js` runs it for every Product Hardening preflight/final release.
+
+Historical report files may continue to contain their own historical implementation labels where those files are regression fixtures. Current product-facing output must not surface those labels as the current release identity.
+
 ## Single dashboard rule
 
 Product hardening must have one quantified dashboard surface. The dashboard top should make overall progress obvious through figures, progress bars, the recommended coherent work package, and the broader Build Next queue. Detailed ledgers belong below the high-level summary.
@@ -149,6 +159,7 @@ Use `BUILDING.md` as the source of truth for the full release gate. Product-hard
 node tools/validate-historical-tests.js
 node tools/validate-product-hardening-queue.js
 node tools/validate-current-release.js
+node tools/validate-version-identity.js
 node tools/validate-asset-references.js
 node tools/sync-current-release.js --check
 node tools/sync-product-build-next.js --check
@@ -158,6 +169,7 @@ node tests/run-v9.1-tests.js
 node tests/run-v9.1.1-tests.js
 node tests/run-v9.2-tests.js
 node tests/run-v9.3-tests.js
+node tests/run-v9.4-tests.js
 ```
 
 These checks do not replace smoke, preflight, release-contract validation, or the complete historical chain. They add the phase-specific governance needed for v9 product hardening.

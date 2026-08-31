@@ -18,30 +18,33 @@ vm.runInContext(read('data/product-hardening/product-hardening-queue.js'),sandbo
 vm.runInContext(read('data/product-hardening/work-packages.js'),sandbox,{filename:'data/product-hardening/work-packages.js'});
 vm.runInContext(read('data/product-hardening/item-test-contracts.js'),sandbox,{filename:'data/product-hardening/item-test-contracts.js'});
 const release=sandbox.window.OBOL_CURRENT_RELEASE,q=sandbox.window.OBOL_PRODUCT_HARDENING,workPackages=sandbox.window.OBOL_PRODUCT_HARDENING_WORK_PACKAGES,contracts=sandbox.window.OBOL_PRODUCT_HARDENING_TEST_CONTRACTS;
-assert(release&&q&&workPackages&&contracts,'v9.3 release, queue, work packages, and contracts load');
-assert.deepStrictEqual([release.version,release.label,release.phase,release.orangeBaseline],['9.3.0','v9.3','product-hardening','v8.8']);
+assert(release&&q&&workPackages&&contracts,'current product-hardening release, queue, work packages, and contracts load');
+assert.strictEqual(release.phase,'product-hardening');
+assert.strictEqual(release.orangeBaseline,'v8.8');
+assert(/^9\.\d+\.\d+$/.test(release.version),'current product release remains in v9 product hardening');
 
 const item=q.items.find(i=>i.id==='cc-asset-validation');
 assert(item,'asset validation item remains in durable queue');
 assert.strictEqual(item.status,'complete','asset validation item is complete');
-assert.strictEqual(q.tracks.find(t=>t.id==='critical-correctness').complete,2,'critical correctness advances to two completed items');
-assert.strictEqual(q.buildNext(1)[0].id,'cc-report-version','next Product Build Next item advances to report version identity');
+assert(q.tracks.find(t=>t.id==='critical-correctness').complete>=2,'critical correctness preserves the v9.3 two-item completion milestone');
 const itemContract=contracts.contracts['cc-asset-validation'];
 assert(itemContract&&itemContract.acceptance.length&&itemContract.validationCommands.length&&itemContract.proofFiles.length,'asset validation has item-specific Definition of Done');
 for(const rel of itemContract.proofFiles)assert(fs.existsSync(path.join(root,rel)),'asset validation proof file exists: '+rel);
 
 assert.strictEqual(workPackages.validate(q).length,0,'coherent work-package schema validates against the atomic queue');
-const rec=workPackages.recommend(q);
-assert(rec&&rec.entryItem&&rec.entryItem.id==='cc-report-version','recommended package begins at the highest-priority queued item');
-assert.strictEqual(rec.id,'version-trust','report version identity enters the Version Trust Surfaces package');
-assert(rec.liveItems.some(i=>i.id==='qa-version-test'),'recommended package includes adjacent version regression coverage');
-assert(rec.itemIds.length>1&&rec.recommendedBatch===true,'recommended package explicitly encourages multi-item burn-down');
-assert.strictEqual(rec.ownershipArea,'release-identity/reporting','package declares a coherent ownership area');
+const assetPackage=workPackages.packageForItem('cc-asset-validation');
+assert(assetPackage&&assetPackage.id==='asset-integrity-browser-smoke','asset validation remains assigned to its historical coherent work package');
+const versionPackage=workPackages.packageForItem('cc-report-version');
+assert(versionPackage&&versionPackage.id==='version-trust','Version Trust Surfaces package remains durable');
+assert(versionPackage.itemIds.includes('qa-version-test'),'Version Trust package keeps adjacent version regression coverage');
+assert.strictEqual(versionPackage.ownershipArea,'release-identity/reporting','Version Trust package preserves its ownership area');
+const rec=workPackages.recommend(q),top=q.buildNext(1)[0];
+if(top)assert(rec&&rec.entryItem&&rec.entryItem.id===top.id,'current package recommendation begins at the current highest-priority queued item');
 
 const readme=read('README.md'),building=read('BUILDING.md'),hardening=read('docs/PRODUCT-HARDENING.md'),dashboardRenderer=read('assets/product-hardening-dashboard.js'),dashboardHtml=read('product-hardening.html'),appBridge=read('assets/app-v8.8.js');
 assert(readme.includes('Treat it as the entry point into the recommended coherent work package, not as a one-item limit.'),'README tells future agents not to stop at one queue item');
 assert(readme.includes('Every item advanced or closed still needs its own acceptance criteria'),'README preserves atomic proof while batching work');
-assert(readme.includes('**Recommended work package:** **Version Trust Surfaces**'),'generated README exposes the current recommended package');
+assert(readme.includes('**Recommended work package:** **'),'generated README exposes the current recommended package without freezing v9.3 queue state');
 assert(building.includes('## Coherent work-package burn-down')&&building.includes('one PR -> one coherent engineering area -> potentially many queue items'),'BUILDING defines the multi-item release model');
 assert(hardening.includes('## Coherent work packages')&&hardening.includes('Work-package batching does not weaken this contract'),'product-hardening docs preserve item-level accountability');
 assert(dashboardHtml.includes('data/product-hardening/work-packages.js'),'standalone dashboard loads work-package metadata');
@@ -91,7 +94,7 @@ const smoke=read('tools/release-smoke.js'),preflight=read('tools/release-preflig
 assert(smoke.includes("require('./validate-asset-references')")&&smoke.includes('validateRepository(root)'),'release smoke consumes the full asset validator');
 assert(preflight.includes("release.phase==='product-hardening'")&&preflight.includes('asset reference graph'),'preflight is product-hardening aware and runs asset validation');
 assert(!preflight.includes('for(const required of [`project-model-v${version}.js`,`core-v${version}.js`]){\n    if(!runtimeText.includes(required))throw new Error')||preflight.includes('if(!isProductHardening)'),'v9 preflight does not require fake current runtime layers');
-assert(releaseDoc.includes('# Obol v9.3')&&releaseDoc.includes('cc-asset-validation'),'release doc records the active queue item');
+assert(releaseDoc.includes('# Obol v9.3')&&releaseDoc.includes('cc-asset-validation'),'release doc records the v9.3 asset validation milestone');
 for(const forbidden of ['data/project-model-v9.3.js','assets/core-v9.3.js','assets/app-v9.3.js','assets/obol-v9.3.css'])assert(!fs.existsSync(path.join(root,forbidden)),'no fake v9.3 runtime overlay: '+forbidden);
 
 for(const command of [
