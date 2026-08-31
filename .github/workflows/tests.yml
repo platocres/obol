@@ -4,7 +4,6 @@ on:
   push:
     branches:
       - main
-      - 'release/**'
   pull_request:
     types: [opened, synchronize, reopened, ready_for_review]
 
@@ -16,34 +15,8 @@ permissions:
   contents: read
 
 jobs:
-  smoke:
-    if: github.event_name == 'push' && startsWith(github.ref, 'refs/heads/release/')
-    runs-on: ubuntu-latest
-    steps:
-      - name: Checkout
-        uses: actions/checkout@v4
-      - name: Set up Node
-        uses: actions/setup-node@v4
-        with:
-          node-version: '20'
-      - name: Run lightweight release smoke validation
-        run: node tools/release-smoke.js
-
-  preflight:
-    if: github.event_name == 'push' && startsWith(github.ref, 'refs/heads/release/') && (contains(github.event.head_commit.message, '[preflight]') || contains(github.event.head_commit.message, '[release-final]'))
-    runs-on: ubuntu-latest
-    steps:
-      - name: Checkout
-        uses: actions/checkout@v4
-      - name: Set up Node
-        uses: actions/setup-node@v4
-        with:
-          node-version: '20'
-      - name: Run release preflight
-        run: node tools/release-preflight.js
-
   test:
-    if: github.ref == 'refs/heads/main' || (github.event_name == 'pull_request' && github.event.pull_request.draft == false) || (github.event_name == 'push' && startsWith(github.ref, 'refs/heads/release/') && contains(github.event.head_commit.message, '[release-final]'))
+    if: github.event_name == 'push' || github.event.pull_request.draft == false
     runs-on: ubuntu-latest
     steps:
       - name: Checkout
@@ -51,7 +24,7 @@ jobs:
       - name: Set up Node
         uses: actions/setup-node@v4
         with:
-          node-version: '20'
+          node-version: '24'
       - name: Validate all JavaScript syntax
         run: find assets data tools tests -type f -name '*.js' -print0 | sort -z | xargs -0 -n1 node --check
       - name: Validate historical test future safety
@@ -69,11 +42,12 @@ jobs:
         run: node tools/validate-release-quality.js
       - name: Check README Build Next synchronization
         run: node tools/sync-readme-build-next.js --check
+      - name: Check Product Build Next synchronization
+        run: node tools/sync-product-build-next.js --check
 
-# Tiered release validation keeps incremental development visible without turning every
-# work-in-progress commit into a full regression event. Ordinary release pushes run smoke;
-# [preflight] runs the current-release gate; [release-final] runs preflight plus the complete
-# historical chain. Ready-for-review PRs and main retain the complete protected test job.
+# PR and main validation own only the protected full regression gate. Release-branch
+# smoke, preflight, and release-final validation live in release-validation.yml so pull
+# requests do not show skipped release-only jobs as noisy check rows.
 # Historical CI contract markers retained for release-specific tests.
 # The live workflow above is intentionally generic so future releases do not require CI-step duplication.
 # Run v2 regression suite | node tests/run-tests.js
@@ -142,3 +116,4 @@ jobs:
 # Validate v5.5 JavaScript syntax | node --check data/methodology-v5.5.js && node --check data/dashboard-v5.5.js && node --check assets/core-v5.5.js && node --check assets/intake-v5.5.js && node --check assets/app-v5.5.js && node --check tools/sync-readme-build-next.js
 # Run v5.5 regression suite | node tests/run-v5.5-tests.js
 # Check README Build Next synchronization | node tools/sync-readme-build-next.js --check
+# Check Product Build Next synchronization | node tools/sync-product-build-next.js --check
