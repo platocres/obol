@@ -55,6 +55,8 @@ The active queue is Product Build Next, backed by `data/product-hardening/produc
 
 The completed Orange methodology/source queue is historical baseline material now. Its detailed 127/127 canonical, 17/17 source-file, 34/34 frozen-baseline, and 334/334 atomic-fidelity accounting belongs in `docs/NORTH-STAR.md` and `docs/ORANGE-SOURCE-DEPTH.md`, not in this README.
 
+Pinned Orange provenance remains: https://orange-cyberdefense.github.io/ocd-mindmaps/img/mindmap_ad_dark_classic_2025.03.excalidraw.svg and https://github.com/Orange-Cyberdefense/ocd-mindmaps/tree/main.
+
 ### Product Build Next
 
 <!-- OBOL-PRODUCT-BUILD-NEXT:START -->
