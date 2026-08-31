@@ -88,6 +88,22 @@ Do not invent source debt merely to keep Build Next populated. A new methodology
 
 Never equate one denominator by itself with source exhaustion. The completion claim depends on all required denominators, terminal dispositions, and audit dimensions remaining intact. See `docs/ORANGE-SOURCE-DEPTH.md` and `docs/NORTH-STAR.md`.
 
+## Product-hardening burn-down rule
+
+Post-Orange product-hardening work uses `data/product-hardening/product-hardening-queue.js` for queue state and `data/product-hardening/product-hardening-dod.js` for item-specific Definition of Done proof.
+
+A product-hardening PR that moves any item beyond `queued` must include:
+
+1. the implementation;
+2. the queue status update;
+3. item-specific test or validator coverage;
+4. a DoD ledger entry naming acceptance criteria, test plan, validation commands, required tests, proof files, risk, and status notes;
+5. README/dashboard sync when totals or Build Next change;
+6. no new versioned product-hardening or runtime overlay files unless the item explicitly changes that ownership area;
+7. an exact-head green Actions run.
+
+`tools/validate-product-hardening-queue.js` enforces the DoD ledger. Future agents should not mark an item `modeled`, `implemented`, `tested`, `complete`, `superseded`, or `rejected` unless that state has named proof.
+
 ## Merge-readiness rule
 
 A release is merge-ready only when the exact final head is green. Earlier failed or cancelled runs are development history and do not block a later green head, but earlier green runs do not authorize a newer untested head.
