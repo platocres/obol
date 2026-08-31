@@ -45,7 +45,8 @@ for (const id of ['dash-product-foundation','readme-product-build-next','runtime
 for (const command of [
   ['tools/validate-product-hardening-queue.js'],
   ['tools/validate-asset-references.js'],
-  ['tools/sync-product-build-next.js', '--check']
+  ['tools/sync-product-build-next.js', '--check'],
+  ['tools/validate-release-pr.js', '--repo-only', '--release-version=9.1']
 ]) {
   const result = cp.spawnSync(process.execPath, command.map((part, idx) => idx === 0 ? path.join(root, part) : part), { cwd: root, encoding: 'utf8' });
   assert.strictEqual(result.status, 0, (result.stderr || result.stdout || '').trim());
