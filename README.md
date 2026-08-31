@@ -50,6 +50,8 @@ There must be only one open release/product-hardening PR at a time. If one exist
 - [`docs/NORTH-STAR.md`](docs/NORTH-STAR.md) and [`docs/ORANGE-SOURCE-DEPTH.md`](docs/ORANGE-SOURCE-DEPTH.md) - completed Orange methodology/source accounting and historical regression baseline.
 - [`CHANGELOG.md`](CHANGELOG.md) - release history.
 
+Pinned Orange Cyber Defense mind map provenance remains `https://orange-cyberdefense.github.io/ocd-mindmaps/img/mindmap_ad_dark_classic_2025.03.excalidraw.svg`; detailed source provenance and the upstream repository pointer live in `docs/NORTH-STAR.md`.
+
 ## Active product queue
 
 Product Build Next is the only active development queue. Its source of truth is `data/product-hardening/product-hardening-queue.js`, and the same data feeds the README and Product Hardening Dashboard.
