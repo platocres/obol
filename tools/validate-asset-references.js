@@ -14,41 +14,27 @@ function walkHtml(dir,out=[]){
  }
  return out;
 }
-
-function decodeHtml(value){
- return String(value||'')
-  .replace(/&amp;/gi,'&')
-  .replace(/&quot;/gi,'"')
-  .replace(/&#39;|&apos;/gi,"'");
-}
-
+function decodeHtml(value){return String(value||'').replace(/&amp;/gi,'&').replace(/&quot;/gi,'"').replace(/&#39;|&apos;/gi,"'");}
 function attrValue(attrs,name){
  const re=new RegExp(`(?:^|\\s)${name}\\s*=\\s*(?:"([^"]*)"|'([^']*)'|([^\\s"'=<>]+))`,'i');
  const m=re.exec(attrs||'');
  return m?decodeHtml(m[1]!==undefined?m[1]:m[2]!==undefined?m[2]:m[3]):'';
 }
-
 function srcsetValues(value){
  value=String(value||'').trim();
  if(!value||/^data:/i.test(value))return[];
  return value.split(',').map(part=>part.trim().split(/\s+/)[0]).filter(Boolean);
 }
-
 function cssReferences(text){
- const refs=[];
- let m;
+ const refs=[];let m;
  const urlRe=/url\(\s*(?:"([^"]+)"|'([^']+)'|([^)'"\s]+))\s*\)/gi;
  while((m=urlRe.exec(text||'')))refs.push(m[1]||m[2]||m[3]);
  const importRe=/@import\s+(?:url\(\s*)?(?:"([^"]+)"|'([^']+)'|([^\s;)'"\s]+))/gi;
  while((m=importRe.exec(text||'')))refs.push(m[1]||m[2]||m[3]);
  return refs.filter(Boolean);
 }
-
 function jsDynamicReferences(text){
- text=String(text||'');
- const refs=[];
- const constants=new Map();
- let m;
+ text=String(text||'');const refs=[];const constants=new Map();let m;
  const constRe=/\bconst\s+([A-Za-z_$][\w$]*)\s*=\s*(["'])([^"']+)\2\s*;/g;
  while((m=constRe.exec(text)))constants.set(m[1],m[3]);
  const callPatterns=[
@@ -57,25 +43,18 @@ function jsDynamicReferences(text){
   /\bserviceWorker\.register\s*\(\s*(?:(["'])([^"']+)\1|([A-Za-z_$][\w$]*))/g,
   /\bimport\s*\(\s*(?:(["'])([^"']+)\1|([A-Za-z_$][\w$]*))/g
  ];
- for(const re of callPatterns){
-  while((m=re.exec(text))){
-   const literal=m[2];
-   const identifier=m[3];
-   const ref=literal||(identifier&&constants.get(identifier));
-   if(ref)refs.push(ref);
-  }
+ for(const re of callPatterns)while((m=re.exec(text))){
+  const ref=m[2]||(m[3]&&constants.get(m[3]));
+  if(ref)refs.push(ref);
  }
  return refs;
 }
-
 function normalizeLocal(root,baseDir,raw){
  let ref=decodeHtml(raw).trim();
  if(!ref||ref.startsWith('#')||SKIP_SCHEME.test(ref))return null;
  ref=ref.split('#')[0].split('?')[0].trim();
  if(!ref)return null;
- let resolved;
- if(ref.startsWith('/'))resolved=path.resolve(root,'.'+ref);
- else resolved=path.resolve(baseDir,ref);
+ const resolved=ref.startsWith('/')?path.resolve(root,'.'+ref):path.resolve(baseDir,ref);
  const rel=path.relative(root,resolved);
  if(rel.startsWith('..')||path.isAbsolute(rel))return{outside:true,raw,abs:resolved,rel};
  return{outside:false,raw,abs:resolved,rel:rel.replace(/\\/g,'/')};
@@ -83,10 +62,7 @@ function normalizeLocal(root,baseDir,raw){
 
 function validateRepository(root=DEFAULT_ROOT){
  root=path.resolve(root);
- const failures=[];
- const references=[];
- const visited=new Set();
- const entrypoints=walkHtml(root).sort();
+ const failures=[],references=[],visited=new Set(),entrypoints=walkHtml(root).sort();
 
  function addReference(owner,raw,kind,baseDir){
   const local=normalizeLocal(root,baseDir,raw);
@@ -99,44 +75,43 @@ function validateRepository(root=DEFAULT_ROOT){
   if(ext==='.css')scanCss(local.abs);
   else if(ext==='.js'||ext==='.mjs')scanJs(local.abs);
  }
-
  function scanCss(file){
   const key='css:'+file;if(visited.has(key))return;visited.add(key);
-  const text=fs.readFileSync(file,'utf8');
-  for(const ref of cssReferences(text))addReference(file,ref,'CSS',path.dirname(file));
+  for(const ref of cssReferences(fs.readFileSync(file,'utf8')))addReference(file,ref,'CSS',path.dirname(file));
  }
-
  function scanJs(file){
   const key='js:'+file;if(visited.has(key))return;visited.add(key);
-  const text=fs.readFileSync(file,'utf8');
-  for(const ref of jsDynamicReferences(text))addReference(file,ref,'dynamic',root);
+  for(const ref of jsDynamicReferences(fs.readFileSync(file,'utf8')))addReference(file,ref,'dynamic',root);
  }
-
  function scanHtml(file){
-  const html=fs.readFileSync(file,'utf8');
-  const baseDir=path.dirname(file);
-  let m;
+  const html=fs.readFileSync(file,'utf8'),baseDir=path.dirname(file);let m;
   const tagRe=/<([a-z][\w:-]*)\b([^>]*)>/gi;
   while((m=tagRe.exec(html))){
    const attrs=m[2]||'';
-   for(const name of ['src','href','poster','data']){
-    const value=attrValue(attrs,name);
-    if(value)addReference(file,value,'HTML '+name,baseDir);
-   }
-   const srcset=attrValue(attrs,'srcset');
-   for(const value of srcsetValues(srcset))addReference(file,value,'HTML srcset',baseDir);
-   const style=attrValue(attrs,'style');
-   for(const value of cssReferences(style))addReference(file,value,'inline CSS',baseDir);
+   for(const name of ['src','href','poster','data']){const value=attrValue(attrs,name);if(value)addReference(file,value,'HTML '+name,baseDir);}
+   for(const value of srcsetValues(attrValue(attrs,'srcset')))addReference(file,value,'HTML srcset',baseDir);
+   for(const value of cssReferences(attrValue(attrs,'style')))addReference(file,value,'inline CSS',baseDir);
   }
   const styleRe=/<style\b[^>]*>([\s\S]*?)<\/style>/gi;
   while((m=styleRe.exec(html)))for(const value of cssReferences(m[1]))addReference(file,value,'inline CSS',baseDir);
  }
+ function scanRuntimeManifest(){
+  const file=path.join(root,'data','runtime-manifest.js');
+  if(!fs.existsSync(file))return;
+  try{
+   delete require.cache[require.resolve(file)];
+   const manifest=require(file);
+   const refs=[...(manifest.styles||[]),...(manifest.scripts||[])];
+   for(const group of Object.values(manifest.lazy||{}))if(Array.isArray(group))refs.push(...group);
+   for(const ref of refs)addReference(file,ref,'runtime manifest',root);
+  }catch(err){failures.push('data/runtime-manifest.js could not be evaluated: '+err.message);}
+ }
 
  if(!entrypoints.length)failures.push('No HTML entrypoints found');
  for(const file of entrypoints)scanHtml(file);
+ scanRuntimeManifest();
  return{root,entrypoints:entrypoints.map(f=>path.relative(root,f).replace(/\\/g,'/')),references,failures};
 }
-
 function main(){
  const rootArg=process.argv.find(a=>a.startsWith('--root='));
  const root=rootArg?path.resolve(rootArg.slice('--root='.length)):DEFAULT_ROOT;
@@ -148,6 +123,5 @@ function main(){
  }
  console.log('Asset references valid: '+result.entrypoints.length+' HTML entrypoint(s), '+result.references.length+' local reference(s) resolved.');
 }
-
 module.exports={validateRepository,walkHtml,cssReferences,jsDynamicReferences,srcsetValues,normalizeLocal};
 if(require.main===module)main();
