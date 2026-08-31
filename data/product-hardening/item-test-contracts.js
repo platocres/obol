@@ -11,6 +11,11 @@ const contracts={
   validationCommands:['node tools/validate-asset-references.js','node tools/release-smoke.js','node tests/run-v9.3-tests.js'],
   proofFiles:['tools/validate-asset-references.js','tools/release-smoke.js','tools/release-preflight.js','tests/run-v9.3-tests.js','docs/v9.3.md']
  },
+ 'cc-report-version':{
+  acceptance:['Final generated report metadata and footer use the current product release from data/current-release.js, stale report-owned historical version labels are removed, workspace schema identity remains separate, and operator-provided evidence text is not rewritten.'],
+  validationCommands:['node tools/validate-version-identity.js','node tools/validate-current-release.js','node tests/run-v9.4-tests.js'],
+  proofFiles:['data/current-release.js','assets/app-v8.8.js','tools/validate-version-identity.js','tests/run-v9.4-tests.js','docs/v9.4.md']
+ },
  'dash-product-foundation':{
   acceptance:['Product Hardening Dashboard renders quantified totals, Build Next, track ledger, full seeded work ledger, and private notes source status from queue data.'],
   validationCommands:['node tools/validate-product-hardening-queue.js','node tests/run-v9.0-tests.js'],
@@ -41,6 +46,11 @@ const contracts={
   validationCommands:['node tools/validate-product-hardening-queue.js','node tests/run-v9.0-tests.js'],
   proofFiles:['data/product-hardening/product-hardening-queue.js','tools/validate-product-hardening-queue.js','tests/run-v9.0-tests.js']
  },
+ 'qa-version-test':{
+  acceptance:['A permanent deterministic version-identity gate proves browser title/header/settings, report metadata/footer normalization, README/dashboard release presentation, and sanitized export metadata consume the same current product release while preserving the v8.8 workspace schema identity.'],
+  validationCommands:['node tools/validate-version-identity.js','node tools/validate-current-release.js','node tests/run-v9.4-tests.js'],
+  proofFiles:['tools/validate-version-identity.js','tools/validate-current-release.js','tools/release-preflight.js','tests/run-v9.4-tests.js','data/current-release.js','assets/app-v8.8.js']
+ },
  'qa-dashboard-sync':{
   acceptance:['Dashboard renderer consumes queue totals, track summary, Build Next, and notes repo data from one queue source.'],
   validationCommands:['node tests/run-v9.0-tests.js'],
@@ -58,5 +68,5 @@ const contracts={
  }
 };
 const requiredForStatuses=['modeled','complete','superseded','rejected'];
-root.OBOL_PRODUCT_HARDENING_TEST_CONTRACTS={version:'9.3.0',requiredForStatuses,contracts};
+root.OBOL_PRODUCT_HARDENING_TEST_CONTRACTS={version:'9.4.0',requiredForStatuses,contracts};
 })(typeof window!=='undefined'?window:globalThis);
