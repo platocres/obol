@@ -4,7 +4,7 @@ Obol is a static, browser-local workspace for OSCP-style labs, Active Directory 
 
 Live site: `https://platocres.github.io/obol/`
 
-Current release: **v9.6**
+Current release: **v9.7**
 
 Open `#/dashboard` for the active Product Hardening Dashboard and Product Build Next queue.
 
@@ -31,13 +31,14 @@ Before building:
 3. Read [`docs/PRODUCT-HARDENING.md`](docs/PRODUCT-HARDENING.md) for the v9 product vision, queue rules, coherent work-package model, and Definition of Done.
 4. Open `#/dashboard` or inspect `data/product-hardening/product-hardening-queue.js` plus `data/product-hardening/work-packages.js` for Product Build Next.
 5. Confirm there is no open release/product-hardening PR. If one exists, continue it instead of opening another.
-6. Start with the highest-priority Product Build Next item unless the user directs otherwise. Treat it as the entry point into the recommended coherent work package, not as a one-item limit.
-7. Inspect related, adjacent, and dependency-linked items in the same ownership area. Complete as many as safely fit the same architectural context and blast radius. Do not stop merely because the first item's acceptance criteria are satisfied if closely related work can be completed and fully tested in the same PR.
-8. Keep queue-item accountability atomic. Every item advanced or closed still needs its own acceptance criteria, validation commands, proof files, and item-specific tests.
-9. Do not batch unrelated work. Stop expanding the package when the next item materially changes ownership area, architectural context, migration risk, or test strategy.
-10. Sync generated Product Build Next output, run the required validation, and keep the entire coherent work package in the one active release/product-hardening PR until the exact final head is green.
+6. If no release PR exists, create the release branch and open one normal, **non-draft** release PR as early as GitHub permits. Keep that same PR for the entire build. Required checks, not Draft status, prevent premature merge.
+7. Start with the highest-priority Product Build Next item unless the user directs otherwise. Treat it as the entry point into the recommended coherent work package, not as a one-item limit.
+8. Inspect related, adjacent, and dependency-linked items in the same ownership area. Complete as many as safely fit the same architectural context and blast radius. Do not stop merely because the first item's acceptance criteria are satisfied if closely related work can be completed and fully tested in the same PR.
+9. Keep queue-item accountability atomic. Every item advanced or closed still needs its own acceptance criteria, validation commands, proof files, and item-specific tests.
+10. Do not batch unrelated work. Stop expanding the package when the next item materially changes ownership area, architectural context, migration risk, or test strategy.
+11. Sync generated Product Build Next output, run the required validation, and keep the entire coherent work package in the one active release/product-hardening PR until the exact final head is green.
 
-There must be only one open release/product-hardening PR at a time. If one exists, continue it or close it as superseded before opening another. CI enforces this with `tools/validate-open-pr-uniqueness.js`.
+There must be only one open release/product-hardening PR at a time. If one exists, continue it or close it as superseded before opening another. CI enforces this with `tools/validate-open-pr-uniqueness.js`. Do not use a Draft -> Ready transition as part of the release process and do not replace a healthy PR merely to change review state.
 
 ## Required context map
 
@@ -64,35 +65,37 @@ The completed Orange methodology/source queue is historical, regression-protecte
 This block is generated from `data/product-hardening/product-hardening-queue.js`. Do not edit it manually.
 Recommended work-package metadata comes from `data/product-hardening/work-packages.js`.
 
-**Current product-hardening queue:** 10/632 complete (2%), 64 queued, 9 foundation items modeled.
+**Current product-hardening queue:** 11/632 complete (2%), 63 queued, 9 foundation items modeled.
 **Private notes source:** `platocres/obol-source-notes` — 556 notes and 1326 embedded resources accounted.
 
-**Recommended work package:** **Runtime Consolidation Foundation** — 3 live items / 6 tracked.
-**Work-package entry:** **CSS ownership consolidation**
-**Ownership area:** `runtime/build-loading`
-**Package guidance:** Treat the current entrypoint, active CSS ownership, generated asset manifest, equivalence harness, lazy-load boundary, and request budget as one consolidation area when the same runtime context is already loaded.
+**Recommended work package:** **Dashboard and User Workflow Rebalance** — 5 live items / 5 tracked.
+**Work-package entry:** **Dashboard ownership consolidation**
+**Ownership area:** `dashboard/home/navigation`
+**Package guidance:** Keep project accounting in the dashboard while making Home, navigation, and Path visibly user-first.
 **Package dependencies:** none.
 
 **Live items in this package:**
-- **CSS ownership consolidation** — Collapse active styling into a small current set while preserving regressions for historical behavior.
-- **Lazy-load deep engineering views** — Move heavy dashboard, methodology, tool library, lineage, and historical surfaces behind deliberate loading boundaries.
-- **Bundle and request budget** — Reduce request count and parse cost from the current historical-load chain.
+- **Dashboard ownership consolidation** — Keep one dashboard owner for project/product progress and avoid release-specific competing status panels.
+- **Make Home user-first** — Home should prioritize active target, known facts, queued intent, evidence needing review, best next move, and proof readiness.
+- **Move build metrics out of prime workflow** — Source accounting and product-hardening metrics belong in the dashboard/About surfaces, not the main box workflow.
+- **Expose dashboard clearly in navigation** — Make the master dashboard easy to find from normal site navigation without cluttering the primary operator loop.
+- **Improve Path clarity** — Path should make the best next move, unlocks, queued actions, and blockers obvious.
 
-**Related items to consider, not automatically in scope:** No new layered queue architecture.
+**Related items to consider, not automatically in scope:** Keep Build Next near dashboard top.
 
 **Highest-priority live items:**
-1. **CSS ownership consolidation** — Collapse active styling into a small current set while preserving regressions for historical behavior.
-2. **Dashboard ownership consolidation** — Keep one dashboard owner for project/product progress and avoid release-specific competing status panels.
-3. **Lazy-load deep engineering views** — Move heavy dashboard, methodology, tool library, lineage, and historical surfaces behind deliberate loading boundaries.
-4. **Make Home user-first** — Home should prioritize active target, known facts, queued intent, evidence needing review, best next move, and proof readiness.
-5. **Move build metrics out of prime workflow** — Source accounting and product-hardening metrics belong in the dashboard/About surfaces, not the main box workflow.
-6. **Expose dashboard clearly in navigation** — Make the master dashboard easy to find from normal site navigation without cluttering the primary operator loop.
-7. **Improve Path clarity** — Path should make the best next move, unlocks, queued actions, and blockers obvious.
-8. **Design contextual field-notes disclosure** — Notes should appear as expandable relevant context, not as a dumped notebook.
+1. **Dashboard ownership consolidation** — Keep one dashboard owner for project/product progress and avoid release-specific competing status panels.
+2. **Lazy-load deep engineering views** — Move heavy dashboard, methodology, tool library, lineage, and historical surfaces behind deliberate loading boundaries.
+3. **Make Home user-first** — Home should prioritize active target, known facts, queued intent, evidence needing review, best next move, and proof readiness.
+4. **Move build metrics out of prime workflow** — Source accounting and product-hardening metrics belong in the dashboard/About surfaces, not the main box workflow.
+5. **Expose dashboard clearly in navigation** — Make the master dashboard easy to find from normal site navigation without cluttering the primary operator loop.
+6. **Improve Path clarity** — Path should make the best next move, unlocks, queued actions, and blockers obvious.
+7. **Design contextual field-notes disclosure** — Notes should appear as expandable relevant context, not as a dumped notebook.
+8. **Review responsive density** — Check dashboard and builders on small screens, narrow laptops, and exam-like layouts.
 
 **Track status:**
 - **Critical correctness:** 4/4 complete (100%), 0 modeled.
-- **Architecture / runtime:** 3/10 complete (30%), 3 modeled.
+- **Architecture / runtime:** 4/10 complete (40%), 3 modeled.
 - **UI / UX repair:** 1/8 complete (13%), 1 modeled.
 - **Tool GUI builders:** 0/18 complete (0%), 0 modeled.
 - **Credential modes:** 0/14 complete (0%), 0 modeled.
@@ -122,6 +125,7 @@ node tools/validate-product-hardening-queue.js
 node tools/validate-current-release.js
 node tools/validate-version-identity.js
 node tools/validate-accessibility-contract.js
+node tools/sync-current-styles.js --check
 node tools/validate-runtime-manifest.js
 node tools/validate-asset-references.js
 node tools/sync-current-release.js --check
@@ -135,6 +139,7 @@ node tests/run-v9.3-tests.js
 node tests/run-v9.4-tests.js
 node tests/run-v9.5-tests.js
 node tests/run-v9.6-tests.js
+node tests/run-v9.7-tests.js
 ```
 
 ## GitHub Pages

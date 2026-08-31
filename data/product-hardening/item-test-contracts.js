@@ -36,6 +36,11 @@ const contracts={
   validationCommands:['node tools/validate-runtime-manifest.js','node tests/run-v9.6-tests.js'],
   proofFiles:['index.html','data/runtime-manifest.js','assets/runtime-current.js','tools/current-runtime.js','tools/validate-runtime-manifest.js','tests/run-v9.6-tests.js','docs/v9.6.md']
  },
+ 'runtime-css-consolidation':{
+  acceptance:['The executable workspace runtime loads one stable non-versioned stylesheet owner from data/runtime-manifest.js. That owner is generated from the manifest-owned historical stylesheet list, imports every preserved fragment exactly once in the v9.5 cascade order, adds no competing rules of its own, and remains distinct from later request-count or bundling optimization work.'],
+  validationCommands:['node tools/sync-current-styles.js --check','node tools/validate-runtime-manifest.js','node tools/validate-asset-references.js','node tests/run-v9.7-tests.js'],
+  proofFiles:['data/runtime-manifest.js','assets/obol-current.css','tools/sync-current-styles.js','tools/validate-runtime-manifest.js','tools/release-preflight.js','tests/run-v9.7-tests.js','docs/v9.7.md']
+ },
  'runtime-data-manifest':{
   acceptance:['The historical browser stylesheet/script order and Node current-runtime subsets are generated from one stable runtime manifest; index.html no longer hand-maintains versioned asset chains, and repository asset validation traverses every manifest-owned current and lazy asset.'],
   validationCommands:['node tools/validate-runtime-manifest.js','node tools/validate-asset-references.js','node tests/run-v9.6-tests.js'],
@@ -98,5 +103,5 @@ const contracts={
  }
 };
 const requiredForStatuses=['modeled','complete','superseded','rejected'];
-root.OBOL_PRODUCT_HARDENING_TEST_CONTRACTS={version:'9.6.0',requiredForStatuses,contracts};
+root.OBOL_PRODUCT_HARDENING_TEST_CONTRACTS={version:'9.7.0',requiredForStatuses,contracts};
 })(typeof window!=='undefined'?window:globalThis);

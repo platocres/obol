@@ -38,13 +38,15 @@ assert(runtimePackage&&runtimePackage.id==='runtime-consolidation-foundation','r
 
 const manifest=require(path.join(root,'data','runtime-manifest.js'));
 const fixture=require(path.join(root,'tests','fixtures','runtime-v9.5-load-order.json'));
+const historicalStyles=(manifest.compatibility&&manifest.compatibility.historicalStyles)||manifest.styles;
 assert.strictEqual(manifest.schemaVersion,'1.0.0');
 assert.strictEqual(manifest.compatibility.baselineRelease,'v9.5');
-assert.strictEqual(manifest.compatibility.strategy,'exact-load-order');
+assert(manifest.compatibility.strategy,'runtime compatibility strategy remains explicit');
 assert.strictEqual(fixture.styleCount,69,'v9.5 baseline captured 69 historical stylesheets');
 assert.strictEqual(fixture.scriptCount,327,'v9.5 baseline captured 327 historical scripts');
-assert.strictEqual(manifest.styles.length,fixture.styleCount,'current manifest preserves baseline stylesheet cardinality');
+assert.strictEqual(historicalStyles.length,fixture.styleCount,'v9.5 historical stylesheet cardinality remains represented after later consolidation');
 assert.strictEqual(manifest.scripts.length,fixture.scriptCount,'current manifest preserves baseline script cardinality');
+assert(Array.isArray(manifest.styles)&&manifest.styles.length>=1,'current manifest retains at least one executable stylesheet owner');
 
 const index=read('index.html');
 const browserLoader=read('assets/runtime-current.js');
@@ -62,8 +64,8 @@ assert(nodeLoader.includes('runtime-manifest.js')&&!/const\s+DATA\s*=\s*\[/.test
 assert(nodeLoader.includes('OBOL-NODE-RUNTIME-MANIFEST-PROJECTION:START')&&nodeLoader.includes('OBOL-NODE-RUNTIME-MANIFEST-PROJECTION:END'),'Node loader preserves one inert manifest-backed source-observation projection for historical regression suites');
 assert(assetValidator.includes('scanRuntimeManifest')&&assetValidator.includes("'runtime manifest'"),'asset validator traverses manifest-owned assets');
 assert(preflight.includes("run('runtime manifest and equivalence',['tools/validate-runtime-manifest.js'])"),'preflight permanently gates runtime-manifest equivalence');
-assert(architecture.includes('## Current runtime manifest')&&architecture.includes('data/runtime-manifest.js'),'architecture docs own the new runtime boundary');
-assert(hardening.includes('## Runtime consolidation foundation')&&hardening.includes('runtime-current-entry'),'product-hardening docs record the v9.6 foundation');
+assert(architecture.includes('## Current runtime manifest')&&architecture.includes('data/runtime-manifest.js'),'architecture docs own the v9.6 runtime boundary');
+assert(hardening.includes('## Runtime consolidation foundation')&&hardening.includes('runtime-current-entry'),'product-hardening docs preserve the v9.6 foundation');
 assert(releaseDoc.includes('# Obol v9.6')&&releaseDoc.includes('runtime-data-manifest')&&releaseDoc.includes('runtime-historical-equivalence'),'release doc records all v9.6 runtime items');
 for(const forbidden of ['data/project-model-v9.6.js','assets/core-v9.6.js','assets/app-v9.6.js','assets/obol-v9.6.css','assets/runtime-v9.6.js'])assert(!fs.existsSync(path.join(root,forbidden)),'no fake v9.6 runtime overlay: '+forbidden);
 

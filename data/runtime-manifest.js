@@ -8,7 +8,7 @@ const seq=(a,b)=>Array.from({length:b-a+1},(_,i)=>a+i);
 const vr=(prefix,major,minors,suffix)=>minors.map(m=>prefix+major+'.'+m+suffix);
 const freeze=a=>Object.freeze(a.slice());
 
-const styles=[
+const historicalStyles=[
  'assets/obol.css','assets/obol-v2.css',
  ...vr('assets/obol-v',2,seq(1,9),'.css'),
  ...vr('assets/obol-v',3,seq(0,9),'.css'),
@@ -18,6 +18,7 @@ const styles=[
  ...vr('assets/obol-v',7,seq(0,9),'.css'),
  ...vr('assets/obol-v',8,seq(0,8),'.css')
 ];
+const styles=['assets/obol-current.css'];
 
 const domain=[
  'data/lanes.js','data/methodology-v2.2.js','data/methodology-v2.3.js','data/methodology-v2.5.js','data/tools-v2.2.js',
@@ -91,8 +92,10 @@ return Object.freeze({
  lazy,
  compatibility:Object.freeze({
   baselineRelease:'v9.5',
-  strategy:'exact-load-order',
-  fixture:'tests/fixtures/runtime-v9.5-load-order.json'
+  strategy:'script-exact-load-order+style-import-equivalence',
+  fixture:'tests/fixtures/runtime-v9.5-load-order.json',
+  styleOwner:'assets/obol-current.css',
+  historicalStyles:freeze(historicalStyles)
  })
 });
 });
