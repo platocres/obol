@@ -1,6 +1,6 @@
 # Obol Build and Release Workflow
 
-This file is a mandatory companion to `README.md`, `CHANGELOG.md`, `docs/ARCHITECTURE.md`, `docs/NORTH-STAR.md`, `docs/PROOF-CONTRACT.md`, and `docs/ORANGE-SOURCE-DEPTH.md` for future Obol build work. Read the relevant owner before changing release architecture, methodology, Evidence behavior, reporting, CI, project metrics, or source-depth/source-fidelity accounting.
+This file is a mandatory companion to `README.md`, `CHANGELOG.md`, `docs/ARCHITECTURE.md`, `docs/NORTH-STAR.md`, `docs/PROOF-CONTRACT.md`, and `docs/ORANGE-SOURCE-DEPTH.md` for future Obol build work. Read the relevant owner before changing release architecture, methodology, Evidence behavior, reporting, CI, project metrics, source-depth/source-fidelity accounting, or product-hardening queue state.
 
 ## Incremental release policy
 
@@ -10,19 +10,23 @@ The intended release flow is:
 
 - create exactly one `release/obol-vX.Y` branch from current `main`;
 - open exactly one draft PR for that release immediately;
+- before opening any release, product-hardening, dashboard, queue, Definition of Done, or burn-down PR, search open PRs and continue the active one if it exists;
+- keep exactly one open release/product-hardening PR at a time;
 - push incremental, coherent commits to that same PR;
 - ordinary release commits run `node tools/release-smoke.js`;
 - use `[preflight]` when a coherent current-release snapshot is ready;
-- do not create a second build/release PR to work around a failed check;
+- do not create a second build/release/product-hardening PR to work around a failed check;
 - regenerate the README Build Next block and validate repository wiring before finalization;
 - require `implemented-quality = 0` and `mapped-delivery = 0` before methodology expansion is merge-ready;
 - preserve canonical, frozen-baseline, file-level, and atomic denominators as historical milestones;
 - audited source units must end as explicitly `modeled`, `superseded`, or `rejected` with rationale and required review dimensions accounted for;
 - product-hardening queue items may not move to `modeled`, `complete`, `superseded`, or `rejected` unless `data/product-hardening/item-test-contracts.js` names acceptance criteria, validation commands, and proof files for that item;
 - make the exact final release commit with `[release-final]` only after code, tests, docs, README, changelog or dedicated release documentation, and PR description form one coherent snapshot;
-- require smoke, preflight, historical-test future safety, the complete historical regression chain, release-quality gate, release-contract validation, and README synchronization on that exact head;
+- require smoke, preflight, historical-test future safety, the complete historical regression chain, release-quality gate, release-contract validation, open-PR uniqueness validation, and README synchronization on that exact head;
 - mark the PR Ready for review only after that exact final head is green;
 - treat any later commit as a new head that must be validated again.
+
+`tools/validate-open-pr-uniqueness.js` enforces the one-open-release/product-hardening-PR rule. It is invoked by `tools/validate-release-pr.js` for release-intent pull requests and rejects duplicate open release/product-hardening PRs.
 
 The three validation tiers are:
 
