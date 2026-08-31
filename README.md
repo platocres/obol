@@ -72,7 +72,7 @@ This section is permanent. The pinned source links and product contracts below m
 - Maintain the machine-readable **atomic source-fidelity ledger** and enough upstream structure to preserve prerequisites, branches, variants, transitions, tools, outcomes, cleanup, and reporting implications.
 - Review upstream tool choices instead of copying them blindly. Prefer current, practical, user-friendly tools when they improve the operator workflow.
 - Account explicitly for **operating from Kali or from a Windows host** at each relevant step.
-- Source integration must include **Next Steps**, command generation or an explicit supersession rationale, copy/paste Evidence interpretation, cleanup/restoration where relevant, lineage, and reporting.
+- Source integration must include improving "Next Steps", command generation or an explicit supersession rationale, copy/paste Evidence interpretation, cleanup/restoration where relevant, lineage, and reporting.
 - Meaningful optional command behavior belongs in **proper GUI based toggles** or equivalent semantic controls instead of opaque default one-liners.
 - New methodology must **fit well into the reporting that Obol performs**, with traceability from decision path and preserved Evidence to report-ready proof.
 - Project-wide progress belongs in one North Star Dashboard. Home may summarize it and link to it, but must not create a second competing accounting surface.
