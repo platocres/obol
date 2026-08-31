@@ -4,14 +4,15 @@ This file is a mandatory companion to `README.md` for future Obol build work. Re
 
 ## Incremental release policy
 
-**Use one draft release PR. Ordinary release-branch commits run lightweight smoke validation. `[preflight]` runs the current-release gate. `[release-final]` runs smoke, preflight, and the complete historical chain. A release may not leave Draft or be merged until the exact final head is green.**
+**Use one normal, non-draft release PR from the start. Ordinary release-branch commits run lightweight smoke validation. `[preflight]` runs the current-release gate. `[release-final]` runs smoke, preflight, and the complete historical chain. Required checks and exact-head validation prevent premature merge; Draft status is not part of the Obol release workflow.**
 
 The intended release flow is:
 
 - create exactly one `release/obol-vX.Y` or `release/obol-vX.Y.Z` branch from current `main`;
-- open exactly one draft PR for that release immediately;
+- open exactly one normal, non-draft PR for that release as early as GitHub permits; if GitHub requires a branch difference before PR creation, one minimal release-scaffold or governance commit is acceptable, then open the PR immediately;
 - before opening any release, product-hardening, dashboard, queue, Definition of Done, or burn-down PR, search open PRs and continue the active one if it exists;
 - keep exactly one open release/product-hardening PR at a time;
+- never use Draft status as a release gate, and never close/recreate a healthy release PR merely to transition between Draft and Ready states;
 - push incremental, coherent commits to that same PR;
 - ordinary release commits run `node tools/release-smoke.js`;
 - use `[preflight]` when a coherent current-release snapshot is ready;
@@ -25,7 +26,7 @@ The intended release flow is:
 - product-hardening queue items may not move to `modeled`, `complete`, `superseded`, or `rejected` unless `data/product-hardening/item-test-contracts.js` names acceptance criteria, validation commands, and proof files for that item;
 - make the exact final release commit with `[release-final]` only after code, tests, docs, README, changelog or dedicated release documentation, and PR description form one coherent snapshot;
 - require smoke, preflight, historical-test future safety, the complete historical regression chain, release-quality gate, release-contract validation, open-PR uniqueness validation, current-release synchronization, and generated Product Build Next synchronization on that exact head;
-- mark the PR Ready for review only after that exact final head is green;
+- require the non-draft PR's required checks to pass on that same exact final head before calling the release merge-ready;
 - treat any later commit as a new head that must be validated again.
 
 `tools/validate-open-pr-uniqueness.js` enforces the one-open-release/product-hardening-PR rule. It is invoked by `tools/validate-release-pr.js` for release-intent pull requests and rejects duplicate open release/product-hardening PRs.
@@ -34,7 +35,9 @@ The three validation tiers are:
 
 1. **Smoke** - every release-branch push; JavaScript syntax plus local index asset-reference sanity.
 2. **Preflight** - `[preflight]` and `[release-final]`; current-release wiring, historical-test future safety, release contract, quality debt, current release regressions, and generated queue synchronization.
-3. **Final historical validation** - `[release-final]`, ready-for-review pull requests, and `main`; complete historical regressions plus the permanent quality and synchronization gates.
+3. **Final historical validation** - `[release-final]`, non-draft release pull requests, and `main`; complete historical regressions plus the permanent quality and synchronization gates.
+
+The release PR remains open and non-draft throughout development. A red required check means "keep building on this PR," not "replace the PR." GitHub branch protection and required checks are the merge gate.
 
 `tools/validate-historical-tests.js` prevents historical suites from hard-coding mutable current-release values or stale README contracts. Historical suites should test the historical model/behavior they own and stable structural contracts, not force old Orange-era README sections back into the active handoff.
 
@@ -94,7 +97,7 @@ v6.6 established the boundary between domain models and current project-status p
 - The default product dashboard should show the recommended Product Build Next work package and broader queue near the top. The completed Orange dashboard is historical baseline context, not the active product queue.
 - The README is an entry point and future-agent handoff. Durable architecture, proof, source accounting, product vision, and history belong in their owned documents.
 
-`tools/current-runtime.js` owns the Node-side current data/core load order until runtime-consolidation queue work replaces that boundary with a smaller current owner. Do not copy long load arrays into every tool or test.
+`data/runtime-manifest.js` is the stable current browser/Node load-order authority established in v9.6. `tools/current-runtime.js` consumes that authority for Node-side current loading. Do not recreate duplicate hand-maintained runtime arrays in tools, tests, or HTML.
 
 ## Historical runtime compaction
 
@@ -131,4 +134,4 @@ Never equate one denominator by itself with source exhaustion. The completion cl
 
 ## Merge-readiness rule
 
-A release is merge-ready only when the exact final head is green. Earlier failed or cancelled runs are development history and do not block a later green head, but earlier green runs do not authorize a newer untested head.
+A release is merge-ready only when the exact final head is green. Earlier failed or cancelled runs are development history and do not block a later green head, but earlier green runs do not authorize a newer untested head. The PR being non-draft does not imply merge readiness; required checks on the exact final head are authoritative.
