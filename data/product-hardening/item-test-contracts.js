@@ -7,7 +7,7 @@ const contracts={
   proofFiles:['data/current-release.js','assets/app-v8.8.js','assets/product-hardening-dashboard.js','product-hardening.html','README.md','tools/sync-current-release.js','tools/validate-current-release.js','tests/run-v9.2-tests.js']
  },
  'cc-asset-validation':{
-  acceptance:['Every local asset reachable from Obol HTML entrypoints through src, href, srcset, poster, object data, inline or linked CSS, and supported dynamic script/style/worker loaders resolves inside the repository; missing or repository-escaping references fail validation and release smoke CI.'],
+  acceptance:['Every local asset reachable from Obol HTML entrypoints, the current runtime manifest, supported dynamic browser loaders, and CSS references resolves inside the repository; missing or repository-escaping references fail validation and release smoke CI.'],
   validationCommands:['node tools/validate-asset-references.js','node tools/release-smoke.js','node tests/run-v9.3-tests.js'],
   proofFiles:['tools/validate-asset-references.js','tools/release-smoke.js','tools/release-preflight.js','tests/run-v9.3-tests.js','docs/v9.3.md']
  },
@@ -31,6 +31,21 @@ const contracts={
   validationCommands:['node tools/sync-product-build-next.js --check','node tests/run-v9.0-tests.js'],
   proofFiles:['README.md','tools/sync-product-build-next.js','tests/run-v9.0-tests.js']
  },
+ 'runtime-current-entry':{
+  acceptance:['index.html has one stable current browser runtime entrypoint that projects ordered styles and scripts from data/runtime-manifest.js, while tools/current-runtime.js consumes the same manifest for Node data/core loading instead of owning duplicate arrays.'],
+  validationCommands:['node tools/validate-runtime-manifest.js','node tests/run-v9.6-tests.js'],
+  proofFiles:['index.html','data/runtime-manifest.js','assets/runtime-current.js','tools/current-runtime.js','tools/validate-runtime-manifest.js','tests/run-v9.6-tests.js','docs/v9.6.md']
+ },
+ 'runtime-data-manifest':{
+  acceptance:['The historical browser stylesheet/script order and Node current-runtime subsets are generated from one stable runtime manifest; index.html no longer hand-maintains versioned asset chains, and repository asset validation traverses every manifest-owned current and lazy asset.'],
+  validationCommands:['node tools/validate-runtime-manifest.js','node tools/validate-asset-references.js','node tests/run-v9.6-tests.js'],
+  proofFiles:['data/runtime-manifest.js','index.html','assets/runtime-current.js','tools/current-runtime.js','tools/validate-asset-references.js','tools/validate-runtime-manifest.js','tests/run-v9.6-tests.js']
+ },
+ 'runtime-historical-equivalence':{
+  acceptance:['A deterministic runtime equivalence gate snapshots the v9.5 ordered load contract, verifies current manifest counts and SHA-256 order fingerprints, proves manifest-backed Node initialization retains workspace schema v8.8, and runs permanently in Product Hardening preflight before historical owners may be removed.'],
+  validationCommands:['node tools/validate-runtime-manifest.js','node tests/run-v9.6-tests.js'],
+  proofFiles:['tests/fixtures/runtime-v9.5-load-order.json','data/runtime-manifest.js','tools/validate-runtime-manifest.js','tools/release-preflight.js','tests/run-v9.6-tests.js','docs/v9.6.md']
+ },
  'runtime-no-layer-rule':{
   acceptance:['Product-hardening releases do not create fake v9 runtime overlay files just to satisfy historical release shape assumptions.'],
   validationCommands:['node tools/validate-product-hardening-queue.js','node tools/validate-release-pr.js --repo-only --release-version=9.0'],
@@ -47,7 +62,7 @@ const contracts={
   proofFiles:['assets/accessibility.css','assets/accessibility.js','assets/app-v8.8.js','tools/validate-accessibility-contract.js','tests/run-v9.5-tests.js','docs/visual-qa/contrast-focus.md','docs/v9.5.md']
  },
  'notes-private-source-pointer':{
-  acceptance:['Public Obol points agents to platocres/obol-source-notes and preserves the private raw-note boundary.'],
+  acceptance:['Public Obol points future agents to platocres/obol-source-notes and preserves the private raw-note boundary.'],
   validationCommands:['node tools/validate-product-hardening-queue.js','node tests/run-v9.0-tests.js'],
   proofFiles:['README.md','docs/NOTES-INTEGRATION.md','data/product-hardening/product-hardening-queue.js']
  },
@@ -83,5 +98,5 @@ const contracts={
  }
 };
 const requiredForStatuses=['modeled','complete','superseded','rejected'];
-root.OBOL_PRODUCT_HARDENING_TEST_CONTRACTS={version:'9.5.0',requiredForStatuses,contracts};
+root.OBOL_PRODUCT_HARDENING_TEST_CONTRACTS={version:'9.6.0',requiredForStatuses,contracts};
 })(typeof window!=='undefined'?window:globalThis);
