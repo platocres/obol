@@ -56,6 +56,7 @@ const hardening=read('docs/PRODUCT-HARDENING.md');
 const releaseDoc=read('docs/v9.6.md');
 assert(index.includes('data/runtime-manifest.js')&&index.includes('assets/runtime-current.js'),'index uses stable current runtime owners');
 assert(index.includes('OBOL_RUNTIME_LOADER.writeStyles()')&&index.includes('OBOL_RUNTIME_LOADER.writeScripts()'),'index projects both asset classes through the current loader');
+assert(index.includes('OBOL-RUNTIME-MANIFEST-PROJECTION:START')&&index.includes('OBOL-RUNTIME-MANIFEST-PROJECTION:END'),'index preserves one inert manifest-backed observation projection for historical regression suites');
 assert(browserLoader.includes('manifest.styles')&&browserLoader.includes('manifest.scripts'),'browser entrypoint consumes runtime manifest arrays');
 assert(nodeLoader.includes('runtime-manifest.js')&&!/const\s+DATA\s*=\s*\[/.test(nodeLoader),'Node loader consumes manifest instead of a duplicated DATA array');
 assert(assetValidator.includes('scanRuntimeManifest')&&assetValidator.includes("'runtime manifest'"),'asset validator traverses manifest-owned assets');
