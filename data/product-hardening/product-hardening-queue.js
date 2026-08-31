@@ -1,7 +1,7 @@
 'use strict';
 (function(root){
 const tracks=[
- {id:'critical-correctness',label:'Critical correctness',goal:'Fix defects that undermine trust in the app or generated reports.',complete:2,total:4},
+ {id:'critical-correctness',label:'Critical correctness',goal:'Fix defects that undermine trust in the app or generated reports.',complete:3,total:4},
  {id:'architecture-runtime',label:'Architecture / runtime',goal:'Compact the sedimentary runtime without breaking historical behavior.',complete:0,total:10},
  {id:'ui-ux',label:'UI / UX repair',goal:'Make the primary workflow user-first and keep build metrics in dashboard surfaces.',complete:0,total:8},
  {id:'tool-builders',label:'Tool GUI builders',goal:'Every runnable tool/action gets a schema-driven GUI builder or explicit supersession.',complete:0,total:18},
@@ -9,12 +9,12 @@ const tracks=[
  {id:'manual-outcomes',label:'Manual outcomes',goal:'Every executable action can be marked successful, failed, blocked, or skipped without corrupting proof.',complete:0,total:8},
  {id:'notes-integration',label:'Notes integration',goal:'Atomize Brandon\'s HTB and OffSec source notes into normalized Obol guidance.',complete:0,total:556},
  {id:'offline-performance',label:'Offline / performance',goal:'Use browser-native caching, storage, and worker features without install prompts.',complete:0,total:6},
- {id:'testing-qa',label:'Testing / visual QA',goal:'Make broken assets, version drift, route failures, and contrast regressions hard to ship.',complete:0,total:8}
+ {id:'testing-qa',label:'Testing / visual QA',goal:'Make broken assets, version drift, route failures, and contrast regressions hard to ship.',complete:1,total:8}
 ];
 const items=[
  {id:'cc-version-authority',track:'critical-correctness',status:'complete',priority:1,label:'Create one version authority',detail:'Header, title, settings, report preview, report footer, export metadata, README, and dashboard must consume one current-version source.'},
  {id:'cc-asset-validation',track:'critical-correctness',status:'complete',priority:2,label:'Validate every referenced asset',detail:'Parse HTML entrypoints and fail CI when any script, stylesheet, or static asset reference is missing.'},
- {id:'cc-report-version',track:'critical-correctness',status:'queued',priority:3,label:'Normalize report version identity',detail:'Generated report text and footers must not retain stale historical version strings.'},
+ {id:'cc-report-version',track:'critical-correctness',status:'complete',priority:3,label:'Normalize report version identity',detail:'Generated report text and footers must not retain stale historical version strings.'},
  {id:'cc-link-contrast',track:'critical-correctness',status:'queued',priority:4,label:'Fix dark-theme link contrast',detail:'Dark-blue links on dark panels need readable contrast, hover, and focus states.'},
  {id:'dash-product-foundation',track:'architecture-runtime',status:'modeled',priority:5,label:'Product Hardening Dashboard foundation',detail:'v9.0 creates the single quantified dashboard and queue model for the product-hardening phase.'},
  {id:'readme-product-build-next',track:'architecture-runtime',status:'modeled',priority:6,label:'Generated README Product Build Next',detail:'README contains a generated product-hardening block fed from the same queue data as the dashboard.'},
@@ -88,7 +88,7 @@ const items=[
  {id:'perf-update-notice',track:'offline-performance',status:'queued',priority:94,label:'Non-intrusive update notice',detail:'When cached app updates are available, notify users without install nagging.'},
  {id:'perf-storage-migration',track:'offline-performance',status:'queued',priority:95,label:'Workspace storage migration safety',detail:'Any storage refactor must preserve existing browser-local workspaces and sanitized exports.'},
  {id:'qa-playwright-smoke',track:'testing-qa',status:'queued',priority:100,label:'Playwright browser smoke tests',detail:'Open core routes, fail on console errors, and capture screenshots for Home, Targets, Evidence, Next Steps, Report, and Dashboard.'},
- {id:'qa-version-test',track:'testing-qa',status:'queued',priority:101,label:'Version identity test',detail:'Assert title, header, settings, report preview, report footer, and export metadata agree.'},
+ {id:'qa-version-test',track:'testing-qa',status:'complete',priority:101,label:'Version identity test',detail:'Assert title, header, settings, report preview, report footer, and export metadata agree.'},
  {id:'qa-contrast-test',track:'testing-qa',status:'queued',priority:102,label:'Contrast and focus checks',detail:'Automated and screenshot-assisted checks should catch invisible links and weak focus states.'},
  {id:'qa-dashboard-sync',track:'testing-qa',status:'modeled',priority:103,label:'Dashboard and README sync validation',detail:'v9.0 adds validation that README Product Build Next and dashboard totals come from the same queue data.'},
  {id:'qa-asset-test',track:'testing-qa',status:'modeled',priority:104,label:'Asset reference validation',detail:'v9.0 adds an asset reference checker to stop dead script/style tags from shipping.'},
