@@ -67,6 +67,7 @@ This section is permanent. The pinned source links and product contracts below m
 - Preserve completed and unfinished denominators rather than making work disappear from percentages.
 - Maintain the machine-readable atomic source-fidelity ledger and enough upstream structure to preserve prerequisites, branches, variants, transitions, tools, outcomes, cleanup, and reporting implications.
 - Review upstream tool choices instead of copying them blindly. Prefer current, practical, user-friendly tools when they improve the operator workflow.
+- Account explicitly for **operating from Kali or from a Windows host** at each relevant step.
 - Project-wide progress belongs in one dashboard. Home may summarize it and link to it, but must not create a second competing accounting surface.
 - Facts, artifacts, credentials, access, privilege, execution, and compromise remain separate proof boundaries. Project/source accounting metadata never creates engagement facts.
 
