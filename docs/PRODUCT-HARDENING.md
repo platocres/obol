@@ -22,6 +22,14 @@ The in-app `#/dashboard` route is the active Product Hardening Dashboard. `produ
 
 The dashboard and README Product Build Next block must consume the same queue data from `data/product-hardening/product-hardening-queue.js`.
 
+## Single open PR rule
+
+Product-hardening work must not scatter across duplicate PRs. There must be only one open release/product-hardening PR at a time.
+
+Before opening a release, product-hardening, dashboard, queue, Definition of Done, or burn-down PR, agents must check the repository's open PRs. If an active release/product-hardening PR already exists, continue that PR or explicitly close the stale one as superseded before opening another.
+
+`tools/validate-open-pr-uniqueness.js` enforces this for release/product-hardening PRs and is invoked by the release contract validator.
+
 ## Queue tracks
 
 The current tracks are:
@@ -53,16 +61,17 @@ That contract must name:
 ## Future-agent workflow
 
 1. Read `README.md`.
-2. Review Product Build Next.
-3. Open `#/dashboard` for the Product Hardening Dashboard.
-4. Pick the highest-priority live queue item unless the user explicitly directs otherwise.
-5. Build the item without adding unnecessary compatibility shims.
-6. Update the product-hardening queue data when the item disposition changes.
-7. Add or update that item's test contract.
-8. Add or update item-specific tests or validators.
-9. Run validation.
-10. Update the README Product Build Next block.
-11. Push one coherent release PR.
+2. Check open PRs and continue the active release/product-hardening PR if one exists.
+3. Review Product Build Next.
+4. Open `#/dashboard` for the Product Hardening Dashboard.
+5. Pick the highest-priority live queue item unless the user explicitly directs otherwise.
+6. Build the item without adding unnecessary compatibility shims.
+7. Update the product-hardening queue data when the item disposition changes.
+8. Add or update that item's test contract.
+9. Add or update item-specific tests or validators.
+10. Run validation.
+11. Update the README Product Build Next block.
+12. Push one coherent release PR.
 
 ## Validation
 
@@ -72,6 +81,7 @@ Use:
 node tools/validate-product-hardening-queue.js
 node tools/validate-asset-references.js
 node tools/sync-product-build-next.js --check
+node tools/validate-open-pr-uniqueness.js
 node tests/run-v9.0-tests.js
 node tests/run-v9.1-tests.js
 ```
