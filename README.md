@@ -10,14 +10,9 @@ Open `#/dashboard` for the active Product Hardening Dashboard and Product Build 
 
 The README is not a changelog. Release history lives in [`CHANGELOG.md`](CHANGELOG.md). Detailed build workflow lives in [`BUILDING.md`](BUILDING.md).
 
-<!-- Historical regression contract phrases retained without re-cluttering the rendered README: Current release: **v9.1**. The readme is not a changelog. traceability from decision path and preserved Evidence to report-ready proof. one North Star Dashboard. project-wide hard numbers. Project-wide progress belongs in one North Star Dashboard. Do not confuse normalized canonical representation with exhausting useful source depth. inventoried atomic units fidelity-complete. source files atomized. partial baselines decomposed. atomic source-fidelity ledger. Orange source fidelity. -->
-<!-- OBOL-BUILD-NEXT:START -->
-<!-- Retired historical methodology/source Build Next block. Completed Orange accounting now lives in docs/NORTH-STAR.md; the active queue is the Product Build Next block below. -->
-<!-- OBOL-BUILD-NEXT:END -->
-
 ## Product contract
 
-Obol is plain HTML, CSS, and JavaScript. There is no backend, account system, telemetry, install prompt, or automatic command execution.
+Obol remains a website the user can simply visit and use. There is no backend, account system, telemetry, install prompt, or automatic command execution.
 
 **Human-run commands only.** Obol builds and explains commands, but the operator runs them externally in an authorized environment and returns output for Evidence review.
 
@@ -27,42 +22,39 @@ The normal loop is:
 
 Command recognition is not success. Durable facts come only from explicit supported Evidence. Manual outcome advancement is workflow state, not report-ready proof, unless Evidence is supplied.
 
-Durable operator expectations remain compact but active: support operating from Kali or from a Windows host, keep improving "Next Steps", expose proper GUI based toggles, make generated work fit well into the reporting that Obol performs, and keep product/project health in a single in-app location. The UI and UX should always be reviewed as part of product-hardening work. The historical North Star Dashboard is baseline context now; the active surface is the Product Hardening Dashboard.
-
 ## Future-agent quickstart
 
 Before building:
 
 1. Read this README.
 2. Read [`BUILDING.md`](BUILDING.md) for release workflow, exact-head validation, and merge-readiness rules.
-3. Read [`docs/PRODUCT-HARDENING.md`](docs/PRODUCT-HARDENING.md) for the v9 queue contract.
+3. Read [`docs/PRODUCT-HARDENING.md`](docs/PRODUCT-HARDENING.md) for the v9 product vision, queue rules, and Definition of Done.
 4. Open `#/dashboard` or inspect `data/product-hardening/product-hardening-queue.js` for Product Build Next.
 5. Confirm there is no open release/product-hardening PR.
 6. Pick the highest-priority Product Build Next item unless the user directs otherwise.
-7. Add or update item-specific acceptance criteria, validation commands, proof files, and tests.
-8. Sync generated queue output.
-9. Push one coherent release/product-hardening PR.
+7. Implement it without adding unnecessary versioned compatibility layers.
+8. Add or update item-specific acceptance criteria, validation commands, proof files, and tests.
+9. Sync generated Product Build Next output and run the required validation.
+10. Push one coherent release/product-hardening PR and require the exact final head to be green before merge.
 
-Do not create duplicate release/product-hardening PRs. If one exists, continue it or close it as superseded before opening another. CI enforces this with `tools/validate-open-pr-uniqueness.js`.
+There must be only one open release/product-hardening PR at a time. If one exists, continue it or close it as superseded before opening another. CI enforces this with `tools/validate-open-pr-uniqueness.js`.
 
 ## Required context map
 
 - [`BUILDING.md`](BUILDING.md) - exact release flow, validation tiers, one-open-PR rule, and merge-readiness contract.
-- [`docs/PRODUCT-HARDENING.md`](docs/PRODUCT-HARDENING.md) - v9 tracks, queue rules, and item Definition of Done.
+- [`docs/PRODUCT-HARDENING.md`](docs/PRODUCT-HARDENING.md) - active v9 product vision, tracks, queue rules, and item Definition of Done.
 - [`docs/ARCHITECTURE.md`](docs/ARCHITECTURE.md) - runtime ownership, compaction strategy, and legacy-layer boundaries.
-- [`docs/NORTH-STAR.md`](docs/NORTH-STAR.md) - completed Orange methodology/source accounting and historical denominator rules.
-- [`docs/PROOF-CONTRACT.md`](docs/PROOF-CONTRACT.md) - Evidence, proof boundaries, and report readiness.
-- [`docs/NOTES-INTEGRATION.md`](docs/NOTES-INTEGRATION.md) - private notes source and normalized public-output workflow.
+- [`docs/PROOF-CONTRACT.md`](docs/PROOF-CONTRACT.md) - Evidence, proof boundaries, manual outcomes, and report readiness.
+- [`docs/NOTES-INTEGRATION.md`](docs/NOTES-INTEGRATION.md) - private source repo `platocres/obol-source-notes` and normalized public-output workflow.
 - [`docs/UX-QUALITY.md`](docs/UX-QUALITY.md) - UI/UX quality goals and seeded product defects.
+- [`docs/NORTH-STAR.md`](docs/NORTH-STAR.md) and [`docs/ORANGE-SOURCE-DEPTH.md`](docs/ORANGE-SOURCE-DEPTH.md) - completed Orange methodology/source accounting and historical regression baseline.
 - [`CHANGELOG.md`](CHANGELOG.md) - release history.
 
 ## Active product queue
 
-The active queue is Product Build Next, backed by `data/product-hardening/product-hardening-queue.js` and surfaced in `#/dashboard` plus `product-hardening.html`.
+Product Build Next is the only active development queue. Its source of truth is `data/product-hardening/product-hardening-queue.js`, and the same data feeds the README and Product Hardening Dashboard.
 
-The completed Orange methodology/source queue is historical baseline material now. Its detailed 127 canonical sections, 17/17 source-file, 34/34 frozen-baseline, and 334/334 atomic-fidelity accounting belongs in `docs/NORTH-STAR.md` and `docs/ORANGE-SOURCE-DEPTH.md`, not in this README. The atomic source-fidelity ledger is retained in durable docs and data files rather than expanded here.
-
-Pinned Orange Cyber Defense mind map/source provenance remains: https://orange-cyberdefense.github.io/ocd-mindmaps/img/mindmap_ad_dark_classic_2025.03.excalidraw.svg and https://github.com/Orange-Cyberdefense/ocd-mindmaps/tree/main.
+The completed Orange methodology/source queue is historical, regression-protected baseline material. Do not reopen it unless a real defect is found or the pinned upstream source is deliberately repinned. Detailed Orange accounting belongs in the North Star/source-depth docs above, not in this README.
 
 ### Product Build Next
 
@@ -100,27 +92,24 @@ Generated by `node tools/sync-product-build-next.js --write`. Verify with `node 
 
 Open `index.html` in a browser. No server or package install is required.
 
-Use `#/dashboard` for the active Product Hardening Dashboard or `product-hardening.html` for the standalone dashboard entrypoint.
+Use `#/dashboard` for the active Product Hardening Dashboard or `product-hardening.html` for its standalone entrypoint.
 
 ## Validation
 
+The exact required release flow is owned by [`BUILDING.md`](BUILDING.md). The core repository checks are:
+
 ```bash
-node tools/release-smoke.js
-node tools/release-preflight.js
 node tools/validate-historical-tests.js
 node tools/validate-release-pr.js
 node tools/validate-release-quality.js
 node tools/validate-product-hardening-queue.js
 node tools/validate-asset-references.js
 node tools/sync-product-build-next.js --check
-node tools/sync-readme-build-next.js --check
 node tools/validate-open-pr-uniqueness.js
 node tests/run-v9.0-tests.js
 node tests/run-v9.1-tests.js
 node tests/run-v9.1.1-tests.js
 ```
-
-The exact merge-readiness rules are owned by [`BUILDING.md`](BUILDING.md).
 
 ## GitHub Pages
 
