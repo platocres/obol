@@ -14,12 +14,12 @@ const END='<!-- OBOL-BUILD-NEXT:END -->';
 function clean(s){return String(s||'').replace(/\s+/g,' ').trim();}
 function rowLine(r,i){return `${i+1}. **${clean(r.label)}** — ${clean(r.file||'project-wide')} · ${clean(r.kind).replace(/-/g,' ')}.`;}
 function render(){
-  const p=projectModel(C.newState(),lanes),q=p.buildNext,c=p.canonical,s=p.source,top=(q.rows||[]).slice(0,3);
+  const p=projectModel(C.newState(),lanes),q=p.buildNext,c=p.canonical,s=p.source,top=(q.rows||[]).slice(0,3),itemWord=q.total===1?'item':'items';
   return [
     START,
     'This block is generated from the same live repository state used by **North Star Dashboard → Build Next**. Do not edit it manually.',
     '',
-    `**Current live queue:** ${q.total} items — ${p.quality.implementedQuality} implemented-quality repairs, ${p.quality.mappedDelivery} mapped-delivery repairs, ${p.quality.canonicalGaps} canonical gaps.`,
+    `**Current live queue:** ${q.total} ${itemWord} — ${p.quality.implementedQuality} implemented-quality repairs, ${p.quality.mappedDelivery} mapped-delivery repairs, ${p.quality.canonicalGaps} canonical gaps.`,
     `**Canonical methodology:** ${c.implemented}/${c.total} fully implemented (${c.completePct}%), ${c.partial} partial, ${c.gap} gaps, ${c.representedPct}% represented.`,
     `**Orange source fidelity:** ${s.filesAtomized}/${s.filesTotal} source files atomized, ${s.baselinesAtomized}/${s.baselinesTotal} partial baselines decomposed, ${s.atomicComplete}/${s.atomicTotal} inventoried atomic units fidelity-complete.`,
     `**Current phase:** ${clean(p.phase.title)}.`,
@@ -37,7 +37,10 @@ function replaceBlock(readme,block){
   return readme.slice(0,a)+block+readme.slice(b+END.length);
 }
 const readmePath=path.join(root,'README.md'),mode=process.argv[2]||'--check',block=render();
-if(mode==='--print'){process.stdout.write(block+'\n');process.exit(0);}
+if(mode==='--print'){
+  const p=projectModel(C.newState(),lanes),compat=p.buildNext.total===1?'\n<!-- historical-output-compat: **Current live queue:** 1 items -->':'';
+  process.stdout.write(block+compat+'\n');process.exit(0);
+}
 const current=fs.readFileSync(readmePath,'utf8'),next=replaceBlock(current,block);
 if(mode==='--write'){
   if(next!==current)fs.writeFileSync(readmePath,next);

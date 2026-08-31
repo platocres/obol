@@ -4,7 +4,7 @@ Obol is a static, offline-capable browser workspace for OSCP-style labs, Active 
 
 Live site: `https://platocres.github.io/obol/`
 
-Current release: **v8.6**
+Current release: **v8.7**
 
 Release history lives in [`CHANGELOG.md`](CHANGELOG.md). Architecture, source-accounting, Evidence, and release contracts live in dedicated engineering documents instead of being duplicated here. **The readme is not a changelog.**
 
@@ -32,13 +32,13 @@ Primary navigation stays intentionally small:
 
 The **More** menu contains North Star Dashboard, Engagement Map, Methodology, Tool Library, Planned Work, Workspace Search, Evidence Lineage, Guide, and Workspace Data.
 
-The **North Star Dashboard** is the single in-app location for project-wide hard numbers. v8.6 completes the whole-file inventory for `know_vuln_auth.md`, advances file-level source inventory to 15/17, expands the fidelity ledger to 282/282 complete atomic units, and moves the live Build Next queue to the final two methodology-bearing Orange files.
+The **North Star Dashboard** is the single in-app location for project-wide hard numbers. v8.7 completes the whole-file inventory for `trusts.md`, advances file-level source inventory to 16/17, expands the fidelity ledger to 316/316 complete atomic units, and moves the live Build Next queue to the final methodology-bearing Orange file.
 
 ## Project status
 
 Obol keeps methodology breadth and source-depth/source-fidelity accounting separate. A broad methodology section can be fully implemented while subordinate source material still needs decomposition or end-to-end review.
 
-Current v8.6 baseline:
+Current v8.7 baseline:
 
 - **127 / 127** canonical sections fully implemented
 - **0** partial
@@ -46,16 +46,16 @@ Current v8.6 baseline:
 - **0** stale mappings
 - **100%** fully implemented
 - **100%** represented
-- **15 / 17** methodology source files atomized
+- **16 / 17** methodology source files atomized
 - **34 / 34** frozen partial baselines decomposed
-- **282 / 282** currently inventoried atomic units fidelity-complete
-- **2** items in the live Build Next queue
+- **316 / 316** currently inventoried atomic units fidelity-complete
+- **1** item in the live Build Next queue
 - **0** implemented-quality repairs
 - **0** mapped-delivery repairs
 
-The **127 canonical** section denominator measures structural breadth. v8.0 closed canonical breadth and the frozen 34-row v6.2 source-depth baseline. v8.1 fully atomized `low_access.md`; v8.2 fully atomized `crack_hash.md`; v8.3 fully atomized `low_hanging.md`; v8.4 fully atomized `persistence.md`; v8.5 fully atomized `dom_admin.md`; v8.6 fully atomizes `know_vuln_auth.md`. Two methodology-bearing source files are still not fully atomized, so new atomic denominators will continue to appear as those files are mined end to end.
+The **127 canonical** section denominator measures structural breadth. v8.0 closed canonical breadth and the frozen 34-row v6.2 source-depth baseline. v8.1 fully atomized `low_access.md`; v8.2 fully atomized `crack_hash.md`; v8.3 fully atomized `low_hanging.md`; v8.4 fully atomized `persistence.md`; v8.5 fully atomized `dom_admin.md`; v8.6 fully atomized `know_vuln_auth.md`; v8.7 fully atomizes `trusts.md`. One methodology-bearing source file is still not fully atomized, so the atomic denominator will expand once more when `valid_user.md` is mined end to end.
 
-v8.6 reviews sixteen `know_vuln_auth.md` source units across MS14-068, GPP MS14-025, PrivExchange, noPac, PrintNightmare, Certifried, and ProxyNotShell. Fourteen are modeled through mature owners and the redundant Metasploit MS14-068/GPP routes are explicitly superseded. The release normalizes current Impacket command names, keeps GPP recovery explicit, preserves detection-first behavior for noPac and PrintNightmare, avoids making the pinned add-user DLL a default validation action, and keeps all vulnerability, credential, ticket/certificate, coercion, execution, privilege, and cleanup proof boundaries separate.
+v8.7 reviews thirty-four `trusts.md` source units across trust enumeration, domain-SID discovery, child-to-parent and parent-to-child paths, external/forest trust direction, foreign membership, SIDHistory/extra-SID routes, delegation, AD CS routing, credential reuse, and MSSQL linked servers. Thirty-three are modeled through mature owners and the obsolete MSSQL `trustlink` / `sp_linkedservers` spelling is explicitly superseded. The release corrects ambiguous SID/SPN source text, preserves one-way trust constraints, expands trust enumeration coverage, and keeps trust context, key/hash/ticket material, cross-domain authentication, service access, execution, privilege, and cleanup as separate proof boundaries.
 
 The detailed definitions, pinned provenance, denominators, completion language, and audit requirements live in [`docs/NORTH-STAR.md`](docs/NORTH-STAR.md). The source-depth work plan is in [`docs/ORANGE-SOURCE-DEPTH.md`](docs/ORANGE-SOURCE-DEPTH.md).
 
@@ -101,7 +101,7 @@ Obol generates commands for humans to review and run elsewhere. It does not sile
 
 ## Architecture direction
 
-Obol grew through additive release overlays while the product model was still changing. Those historical layers remain where they still encode behavior protected by regression tests. v6.6 established the consolidation boundary, v6.8 added stable current-project pointers, and v8.6 keeps all current status consumers on those stable boundaries:
+Obol grew through additive release overlays while the product model was still changing. Those historical layers remain where they still encode behavior protected by regression tests. v6.6 established the consolidation boundary, v6.8 added stable current-project pointers, and v8.7 keeps all current status consumers on those stable boundaries:
 
 - project status has one current projection model exposed through `C.currentProjectModel(...)`;
 - Dashboard and README consume that model instead of recalculating progress independently;
@@ -117,18 +117,18 @@ This is intentionally not a rewrite. The goal is a smaller set of explicit owner
 ### North Star objectives
 
 - Consume the live Build Next queue in quality-first order.
-- Atomize the final two methodology-bearing source files completely before claiming Orange source inventory is complete.
-- Continue through `trusts.md` and `valid_user.md`.
-- Preserve the completed 34/34 frozen-baseline milestone as a historical denominator while whole-file inventories create new atomic units.
-- Preserve completed source-family atomic ledgers as regression-protected denominators while new source families are inventoried.
+- Atomize the final methodology-bearing source file completely before claiming Orange source inventory is complete.
+- Finish `valid_user.md`.
+- Preserve the completed 34/34 frozen-baseline milestone as a historical denominator while the final whole-file inventory creates new atomic units.
+- Preserve completed source-family atomic ledgers as regression-protected denominators while the final source family is inventoried.
 - Compact historical runtime ownership one stable area at a time behind regression-equivalent replacements.
 - Keep Dashboard, README, release tooling, and future status consumers on the stable consolidated current project model.
 
 ### Recent changes
 
+- **v8.7** - completed whole-file source inventory for `trusts.md`, reviewed thirty-four source units, preserved thirty-three modeled variants plus one explicitly superseded MSSQL legacy route, corrected ambiguous SID/SPN source text, advanced file-level inventory to 16/17, expanded the atomic ledger to 316/316, and moved Build Next to `valid_user.md`.
 - **v8.6** - completed whole-file source inventory for `know_vuln_auth.md`, reviewed sixteen source units, preserved fourteen modeled variants plus two explicitly superseded Metasploit routes, normalized current command spellings, advanced file-level inventory to 15/17, expanded the atomic ledger to 282/282, and moved Build Next to `trusts.md`.
 - **v8.5** - completed whole-file source inventory for `dom_admin.md`, reviewed eight source units, preserved seven modeled variants plus one explicitly superseded Metasploit route, corrected source command issues, advanced file-level inventory to 14/17, expanded the atomic ledger to 266/266, and moved Build Next to `know_vuln_auth.md`.
-- **v8.4** - completed whole-file source inventory for `persistence.md`, reviewed fifteen new source units plus the inherited Add Domain Admin atom, corrected incomplete ticket spellings, advanced file-level inventory to 13/17, expanded the atomic ledger to 258/258, and moved Build Next to `dom_admin.md`.
 
 For older releases, see [`CHANGELOG.md`](CHANGELOG.md) and the versioned documents under `docs/`.
 
@@ -139,14 +139,13 @@ The block below is generated from the same current project model used by the Nor
 <!-- OBOL-BUILD-NEXT:START -->
 This block is generated from the same live repository state used by **North Star Dashboard → Build Next**. Do not edit it manually.
 
-**Current live queue:** 2 items — 0 implemented-quality repairs, 0 mapped-delivery repairs, 0 canonical gaps.
+**Current live queue:** 1 item — 0 implemented-quality repairs, 0 mapped-delivery repairs, 0 canonical gaps.
 **Canonical methodology:** 127/127 fully implemented (100%), 0 partial, 0 gaps, 100% represented.
-**Orange source fidelity:** 15/17 source files atomized, 34/34 partial baselines decomposed, 282/282 inventoried atomic units fidelity-complete.
+**Orange source fidelity:** 16/17 source files atomized, 34/34 partial baselines decomposed, 316/316 inventoried atomic units fidelity-complete.
 **Current phase:** Orange whole-file source inventory.
 
 **Highest-priority live items:**
-1. **Trusts source inventory** — trusts.md · source file inventory.
-2. **Valid user / no password source inventory** — valid_user.md · source file inventory.
+1. **Valid user / no password source inventory** — valid_user.md · source file inventory.
 
 Generated by `node tools/sync-readme-build-next.js --write`. Verify with `node tools/sync-readme-build-next.js --check`.
 <!-- OBOL-BUILD-NEXT:END -->
@@ -159,7 +158,7 @@ Open `index.html` in a browser. No server or package install is required.
 
 ```bash
 node tools/release-smoke.js
-node tests/run-v8.6-tests.js
+node tests/run-v8.7-tests.js
 node tools/release-preflight.js
 node tools/sync-readme-build-next.js --check
 node tools/validate-release-quality.js
