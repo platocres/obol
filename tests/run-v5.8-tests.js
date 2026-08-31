@@ -119,13 +119,10 @@ test('README generator remains live and future-safe',()=>{
   assert(out.includes('North Star Dashboard → Build Next'));
 });
 
-test('release PR validator rejects missing descriptions and accepts the required contract',()=>{
+test('release PR validator rejects missing descriptions and accepts the v5.8 historical contract',()=>{
   const tool=path.join(root,'tools','validate-release-pr.js');
   const eventPath=path.join(os.tmpdir(),'obol-release-pr-event.json');
-  const readme=fs.readFileSync(path.join(root,'README.md'),'utf8');
-  const current=readme.match(/Current release: \*\*v(\d+\.\d+)\*\*/);
-  assert(current,'current release marker');
-  const version=current[1];
+  const version='5.8';
   const goodBody='## Summary\n'+('Release summary. '.repeat(50))+'\n## Canonical methodology accounting\nCurrent accounting retained.\n## Conservative Evidence boundaries\nProof stays bounded.\n## Release wiring\nWired.\n## Regression coverage\nCovered.\n## Compatibility\nCompatible.';
   fs.writeFileSync(eventPath,JSON.stringify({pull_request:{head:{ref:`release/obol-v${version}`},title:`Obol v${version} — release contract fixture`,body:goodBody}}));
   let r=cp.spawnSync(process.execPath,[tool],{cwd:root,env:{...process.env,GITHUB_EVENT_NAME:'pull_request',GITHUB_EVENT_PATH:eventPath},encoding:'utf8'});
