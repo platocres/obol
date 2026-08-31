@@ -49,7 +49,10 @@ requireContrast('dashboard focus indicator',dashboardFocus,['#071019','#0d1b2a',
 for(const token of [':focus-visible','outline:3px solid var(--obol-focus)','@media (forced-colors:active)','main a:not(.btn)','[data-obol-keyboard-button="true"]'])assert(css.includes(token),'workspace accessibility CSS missing '+token);
 for(const token of ['.ph-link:hover','.ph-link:focus-visible','outline:3px solid var(--obol-focus)','@media(forced-colors:active)'])assert(dashboardCss.includes(token),'dashboard accessibility CSS missing '+token);
 
-for(const token of ['.card-head','.state-card','.phase-chip','.variant-pill','.fact','.progress-pill','.timer','.lane-tab','#banner-x',"event.key==='Enter'","event.key===' '","event.key==='Tab'","aria-modal","lastDialogFocus","role','button","tabIndex=0","aria-live'])assert(keyboard.includes(token),'keyboard/focus owner missing '+token);
+for(const token of [
+ '.card-head','.state-card','.phase-chip','.variant-pill','.fact','.progress-pill','.timer','.lane-tab','#banner-x',
+ "event.key==='Enter'","event.key===' '","event.key==='Tab'",'aria-modal','lastDialogFocus',"role','button",'tabIndex=0','aria-live'
+])assert(keyboard.includes(token),'keyboard/focus owner missing '+token);
 assert(keyboard.includes("observer.observe(document.documentElement,{subtree:true,childList:true,attributes:true,attributeFilter:['class']})"),'dynamic UI mutations are not accessibility-enhanced');
 assert(app.includes("addStyle88('assets/accessibility.css')")&&app.includes("addScript88('assets/accessibility.js')"),'live browser bridge does not load stable accessibility owners');
 
