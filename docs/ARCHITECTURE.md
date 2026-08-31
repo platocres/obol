@@ -46,6 +46,18 @@ This deliberately separates **ownership consolidation** from **performance conso
 
 Historical data, core, report, intake, app, and CSS fragment files therefore remain available where they still encode behavior. Future compaction may physically bundle or remove superseded fragments only after equivalent observable behavior is proven.
 
+### Current dashboard and workflow ownership
+
+v9.8 establishes `assets/workflow-current.js` as the stable non-versioned owner for the current Home, secondary dashboard navigation, in-app Product Hardening Dashboard handoff, and the current Next Steps decision brief. The v8.8 bridge remains responsible for release identity/report-export compatibility and lazy loading, but it no longer owns a release-specific Product Hardening Home panel or competing dashboard renderer.
+
+`assets/product-hardening-dashboard.js` is the single current project/product progress renderer. The standalone `product-hardening.html` entrypoint and the in-app `#/dashboard` route use that same renderer. The embedded form returns to the Obol workspace instead of linking back to itself.
+
+Prime workflow screens are engagement-first. Home derives active context, Evidence counts, queued operator intent, latest Evidence attention, recommendation state, blockers, recent activity, and report proof readiness from existing core models. It does not derive Orange source-accounting totals or Product Hardening build totals. Next Steps continues using `C.nextStepsOverview34(...)`; the stable owner adds a compact decision brief for best move, unlocks, queued intent, and blockers without replacing the ranking model.
+
+The master Product Dashboard is exposed in secondary navigation so it is easy to find without changing the five-item primary operator loop: Home, Targets, Evidence, Next Steps, Report.
+
+`tools/validate-current-workflow.js` is the permanent ownership gate for this boundary and runs during Product Hardening preflight.
+
 ## Ownership rules
 
 ### Project status
@@ -75,15 +87,14 @@ The browser-local state model remains authoritative for target context, facts, e
 
 ### Dashboard
 
-The North Star Dashboard owns project-wide hard numbers. Its default view should answer, at a glance:
+The Product Hardening Dashboard owns current project/product hard numbers. Its default view should answer, at a glance:
 
 - Where are we?
 - What remains?
 - Is there quality debt?
-- What changed recently?
 - What should be built next?
 
-Engineering detail remains available through drill-downs rather than being placed in the primary scan path.
+Completed Orange accounting remains regression-protected historical context rather than a competing live dashboard owner. Engineering detail remains available through dashboard drill-downs rather than being placed in the primary operator scan path.
 
 ### Documentation
 
