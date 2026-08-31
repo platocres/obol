@@ -53,6 +53,7 @@ assert.deepStrictEqual(repoResult.failures,[],'all repository HTML asset referen
 assert(repoResult.entrypoints.includes('index.html'),'index.html is discovered as an entrypoint');
 assert(repoResult.entrypoints.includes('product-hardening.html'),'product-hardening.html is discovered as an entrypoint');
 assert(repoResult.references.length>50,'validator traverses a meaningful local asset graph');
+assert(repoResult.references.some(r=>r.resolved==='data/current-release.js'),'constant-backed current-release dynamic load is validated');
 assert(repoResult.references.some(r=>r.resolved==='data/product-hardening/product-hardening-queue.js'),'dynamic product-hardening queue load is validated');
 assert(repoResult.references.some(r=>r.resolved==='data/product-hardening/work-packages.js'),'dynamic work-package metadata load is validated');
 assert(repoResult.references.some(r=>r.resolved==='assets/product-hardening-dashboard.js'),'dynamic product-hardening renderer load is validated');
@@ -68,13 +69,13 @@ try{
 <a href="#/home">Home</a><a href="https://example.test/remote.css">Remote</a>`);
   fs.writeFileSync(path.join(fixture,'assets','site.css'),`@import './extra.css'; .hero{background:url('../img/bg.svg#shape')}`);
   fs.writeFileSync(path.join(fixture,'assets','extra.css'),`@font-face{src:url('../fonts/test.woff2')}`);
-  fs.writeFileSync(path.join(fixture,'assets','app.js'),`addScript88('assets/lazy.js');addStyle88("assets/lazy.css");new Worker('workers/parse.js');navigator.serviceWorker.register('sw.js');`);
-  for(const rel of ['img/a.png','img/b.png','img/c.png','img/bg.svg','fonts/test.woff2','docs/help.svg','assets/lazy.js','assets/lazy.css','workers/parse.js','sw.js']){
+  fs.writeFileSync(path.join(fixture,'assets','app.js'),`const LAZY='assets/lazy.js';addScript88(LAZY);addStyle88("assets/lazy.css");new Worker('workers/parse.js');navigator.serviceWorker.register('sw.js');import('assets/module.mjs');`);
+  for(const rel of ['img/a.png','img/b.png','img/c.png','img/bg.svg','fonts/test.woff2','docs/help.svg','assets/lazy.js','assets/lazy.css','assets/module.mjs','workers/parse.js','sw.js']){
     fs.writeFileSync(path.join(fixture,rel),'fixture');
   }
   let result=assetValidator.validateRepository(fixture);
-  assert.deepStrictEqual(result.failures,[],'single-quoted, unquoted, srcset, CSS, and dynamic loader fixture resolves');
-  for(const expected of ['assets/site.css','assets/app.js','img/b.png','img/bg.svg','fonts/test.woff2','assets/lazy.js','assets/lazy.css','workers/parse.js','sw.js']){
+  assert.deepStrictEqual(result.failures,[],'single-quoted, unquoted, srcset, CSS, constant-backed, and dynamic loader fixture resolves');
+  for(const expected of ['assets/site.css','assets/app.js','img/b.png','img/bg.svg','fonts/test.woff2','assets/lazy.js','assets/lazy.css','assets/module.mjs','workers/parse.js','sw.js']){
     assert(result.references.some(r=>r.resolved===expected),'fixture graph includes '+expected);
   }
   fs.unlinkSync(path.join(fixture,'fonts','test.woff2'));
