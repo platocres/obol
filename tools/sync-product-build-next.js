@@ -13,6 +13,7 @@ vm.createContext(sandbox);
 vm.runInContext(fs.readFileSync(queueFile, 'utf8'), sandbox, { filename: queueFile });
 
 const q = sandbox.window.OBOL_PRODUCT_HARDENING;
+if (!q) throw new Error('Product-hardening queue not exposed');
 
 function block() {
   const totals = q.totals();
@@ -36,6 +37,13 @@ function block() {
   ].join('\n');
 }
 
+function normalize(content) {
+  return content
+    .replace(/\r\n/g, '\n')
+    .replace(/[ \t]+\n/g, '\n')
+    .replace(/\s*$/, '\n');
+}
+
 function replace(content) {
   const normalized = content.replace(/\r\n/g, '\n');
   const re = /<!-- OBOL-PRODUCT-BUILD-NEXT:START -->[\s\S]*?<!-- OBOL-PRODUCT-BUILD-NEXT:END -->/;
@@ -43,23 +51,33 @@ function replace(content) {
   return normalized.trimEnd() + '\n\n## Product Build Next\n\n' + block() + '\n';
 }
 
-function canonical(content) {
-  return content
-    .replace(/\r\n/g, '\n')
-    .replace(/[ \t]+\n/g, '\n')
-    .replace(/\s*$/, '\n');
+function currentReadmeBlock(content) {
+  const m = normalize(content).match(/<!-- OBOL-PRODUCT-BUILD-NEXT:START -->[\s\S]*?<!-- OBOL-PRODUCT-BUILD-NEXT:END -->/);
+  return m ? m[0] : '';
+}
+
+function checkCurrentBlock(content) {
+  const found = currentReadmeBlock(content);
+  if (!found) return ['README Product Build Next markers are missing'];
+  const expectedLines = block().split('\n').filter(Boolean);
+  return expectedLines
+    .filter(line => !found.includes(line))
+    .map(line => 'missing generated line: ' + line);
 }
 
 const mode = process.argv.includes('--write') ? 'write' : 'check';
 const current = fs.readFileSync(readmeFile, 'utf8');
-const next = canonical(replace(current));
+const next = normalize(replace(current));
 
 if (mode === 'write') {
   fs.writeFileSync(readmeFile, next);
   console.log('README Product Build Next synchronized.');
-} else if (canonical(current) !== next) {
-  console.error('README Product Build Next is out of sync. Run node tools/sync-product-build-next.js --write');
-  process.exit(1);
 } else {
+  const failures = checkCurrentBlock(current);
+  if (failures.length) {
+    console.error('README Product Build Next is out of sync. Run node tools/sync-product-build-next.js --write');
+    for (const failure of failures) console.error('- ' + failure);
+    process.exit(1);
+  }
   console.log('README Product Build Next is synchronized.');
 }
