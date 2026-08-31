@@ -4,8 +4,7 @@ on:
   push:
     branches:
       - main
-  pull_request:
-    types: [opened, synchronize, reopened, ready_for_review]
+      - 'release/**'
 
 concurrency:
   group: obol-ci-${{ github.workflow }}-${{ github.ref }}
@@ -15,8 +14,34 @@ permissions:
   contents: read
 
 jobs:
+  smoke:
+    if: github.event_name == 'push' && startsWith(github.ref, 'refs/heads/release/')
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+      - name: Set up Node
+        uses: actions/setup-node@v4
+        with:
+          node-version: '24'
+      - name: Run lightweight release smoke validation
+        run: node tools/release-smoke.js
+
+  preflight:
+    if: github.event_name == 'push' && startsWith(github.ref, 'refs/heads/release/') && (contains(github.event.head_commit.message, '[preflight]') || contains(github.event.head_commit.message, '[release-final]'))
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+      - name: Set up Node
+        uses: actions/setup-node@v4
+        with:
+          node-version: '24'
+      - name: Run release preflight
+        run: node tools/release-preflight.js
+
   test:
-    if: github.event_name == 'push' || github.event.pull_request.draft == false
+    if: github.ref == 'refs/heads/main' || (github.event_name == 'push' && startsWith(github.ref, 'refs/heads/release/') && contains(github.event.head_commit.message, '[release-final]'))
     runs-on: ubuntu-latest
     steps:
       - name: Checkout
@@ -45,9 +70,11 @@ jobs:
       - name: Check Product Build Next synchronization
         run: node tools/sync-product-build-next.js --check
 
-# PR and main validation own only the protected full regression gate. Release-branch
-# smoke, preflight, and release-final validation live in release-validation.yml so pull
-# requests do not show skipped release-only jobs as noisy check rows.
+# Tiered release validation keeps incremental development visible without turning every
+# work-in-progress commit into a full regression event. Ordinary release pushes run smoke;
+# [preflight] runs the current-release gate; [release-final] runs preflight plus the complete
+# historical chain. Ready-for-review PRs are handled by pr-required.yml so pull requests do
+# not show skipped release-only jobs. Main retains the complete protected test job here.
 # Historical CI contract markers retained for release-specific tests.
 # The live workflow above is intentionally generic so future releases do not require CI-step duplication.
 # Run v2 regression suite | node tests/run-tests.js
