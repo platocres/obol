@@ -38,7 +38,7 @@ Primary navigation stays intentionally small:
 
 The **More** menu contains advanced project, methodology, map, tool, lineage, guide, search, and workspace-data surfaces.
 
-The active **Dashboard** route now opens the Product Hardening Dashboard. That dashboard is the high-level surface for the v9 product queue, runtime consolidation, UI/UX repair, tool-builder coverage, credential modes, manual outcomes, notes integration, offline/performance, and QA.
+The active **Dashboard** route now opens the Product Hardening Dashboard. This is the single dashboard for current product-wide status, and it is the high-level surface for the v9 product queue, runtime consolidation, UI/UX repair, tool-builder coverage, credential modes, manual outcomes, notes integration, offline/performance, and QA.
 
 ## Product hardening status
 
