@@ -57,8 +57,6 @@ Current v8.8 baseline:
 
 The **127 canonical** denominator measures structural breadth. The historical **34-row** denominator preserves the sections that were partial at the v6.2 boundary. The **17-file** denominator measures whole-file source inventory. The **334-unit** ledger measures atomic source fidelity. These remain separate measures even now that all four are complete.
 
-v8.8 reviews the final `valid_user.md` source family across password-policy review, lockout-aware password spraying, user-equals-password validation, AS-REP roastable-user discovery, AS-REP roasting, blind-Kerberoast source variants, and the pinned CVE-2022-33679 branch. Nine source units are represented by mature preferred owner surfaces and nine redundant, specialized, or brittle source variants are explicitly superseded with rationale rather than silently omitted.
-
 Under the pinned Orange 2025.03 snapshot and Obol's current audit contract, whole-file source inventory and atomic source fidelity are now complete. Future methodology changes require a deliberate upstream repin or a newly identified quality defect rather than silently reopening completed denominators.
 
 The detailed definitions, pinned provenance, denominators, completion language, and audit requirements live in [`docs/NORTH-STAR.md`](docs/NORTH-STAR.md). The completed source-depth plan is in [`docs/ORANGE-SOURCE-DEPTH.md`](docs/ORANGE-SOURCE-DEPTH.md).
@@ -92,53 +90,13 @@ The permanent command rule is:
 
 Obol generates commands for humans to review and run elsewhere. It does not silently execute them, infer that tool startup means success, or treat credential material as privilege.
 
-## Engineering docs
-
-- [`docs/ARCHITECTURE.md`](docs/ARCHITECTURE.md) - architecture ownership, consolidation boundary, and legacy-layer compaction strategy.
-- [`docs/NORTH-STAR.md`](docs/NORTH-STAR.md) - methodology, source-depth, source-fidelity, denominators, and Build Next accounting.
-- [`docs/PROOF-CONTRACT.md`](docs/PROOF-CONTRACT.md) - durable Evidence and proof-boundary rules.
-- [`docs/ORANGE-SOURCE-DEPTH.md`](docs/ORANGE-SOURCE-DEPTH.md) - source-depth audit plan and completion record.
-- [`docs/PRODUCT-HARDENING.md`](docs/PRODUCT-HARDENING.md) - v9 product-hardening tracks and queue rules.
-- [`docs/TOOL-BUILDER-COVERAGE.md`](docs/TOOL-BUILDER-COVERAGE.md) - GUI command-builder coverage contract.
-- [`docs/NOTES-INTEGRATION.md`](docs/NOTES-INTEGRATION.md) - private notes source and normalized guidance workflow.
-- [`docs/UX-QUALITY.md`](docs/UX-QUALITY.md) - UI/UX quality goals and seeded defects.
-- [`BUILDING.md`](BUILDING.md) - release workflow, validation tiers, and exact-head merge-readiness contract.
-- [`CHANGELOG.md`](CHANGELOG.md) - release history.
-
-## Architecture direction
-
-Obol grew through additive release overlays while the product model was still changing. Those historical layers remain where they still encode behavior protected by regression tests. v6.6 established the consolidation boundary, v6.8 added stable current-project pointers, and v8.8 keeps current status consumers on those stable boundaries:
-
-- project status has one current projection model exposed through `C.currentProjectModel(...)`;
-- Dashboard and README consume that model instead of recalculating progress independently;
-- Node-side tooling shares one current runtime loader;
-- release scaffolding is delta-based, so a release does not create empty methodology, Dashboard, or Evidence shims merely for version symmetry;
-- historical UI overlays must become inactive when a later release owns the same version surface;
-- future runtime compaction should replace one stable ownership area at a time, prove regression equivalence, then remove only the layers genuinely superseded.
-
-With the pinned Orange source queue complete, regression-equivalent runtime compaction and UX refinement become the natural next engineering work unless the upstream methodology is deliberately repinned.
-
 ## v9 product-hardening foundation
 
-v9.0 begins the product-hardening phase. This is separate from the completed Orange source queue. It tracks the engineering work needed to make Obol faster, cleaner, easier to extend, easier for future agents to continue, and more useful as a web app.
+v9.0 adds a separate product-hardening queue and dashboard without reopening the completed Orange source queue. Use `product-hardening.html` for the quantified dashboard and `data/product-hardening/product-hardening-queue.js` as the source of truth.
 
-The product-hardening queue source of truth is `data/product-hardening/product-hardening-queue.js`. The standalone quantified dashboard is `product-hardening.html`. Future work should integrate that surface into the current app after runtime consolidation rather than adding another brittle monkey-patch layer to the existing dashboard route.
+Future agents should read this README, open the product-hardening dashboard, pick the highest-priority Product Build Next item, update the queue data, sync the README, validate, and push one coherent PR. Do not add another product-hardening data/runtime file per release unless there is a real ownership change.
 
-Raw notes are staged in the private source repository `platocres/obol-source-notes`. That repo contains the raw ENEX exports through Git LFS plus metadata indexes and verification scripts. Public Obol must not commit raw course notes, copied walkthrough text, screenshots, flags, or proprietary source material. Agents should use the private repo as source material and commit only normalized, derived Obol guidance and implementation changes here.
-
-For normal continued development:
-
-1. Read this README.
-2. Open `product-hardening.html` for the quantified dashboard.
-3. Review Product Build Next below.
-4. Pick the highest-priority live queue item unless Brandon explicitly directs otherwise.
-5. Build the item without creating new version-layer mess.
-6. Update `data/product-hardening/product-hardening-queue.js`.
-7. Run validation.
-8. Sync this README.
-9. Push one coherent PR with a description.
-
-Do not add another product-hardening data/runtime file per release unless there is a real ownership change. The queue data should change; the architecture should not accrete layers for every queue item.
+Raw notes are staged privately in `platocres/obol-source-notes`. Public Obol must receive only normalized, derived guidance and implementation changes, not raw course notes or notebook dumps.
 
 ### Product Build Next
 
@@ -172,6 +130,23 @@ This block is generated from `data/product-hardening/product-hardening-queue.js`
 Generated by `node tools/sync-product-build-next.js --write`. Verify with `node tools/sync-product-build-next.js --check`.
 <!-- OBOL-PRODUCT-BUILD-NEXT:END -->
 
+## Engineering docs
+
+- [`docs/ARCHITECTURE.md`](docs/ARCHITECTURE.md) - architecture ownership, consolidation boundary, and legacy-layer compaction strategy.
+- [`docs/NORTH-STAR.md`](docs/NORTH-STAR.md) - methodology, source-depth, source-fidelity, denominators, and Build Next accounting.
+- [`docs/PROOF-CONTRACT.md`](docs/PROOF-CONTRACT.md) - durable Evidence and proof-boundary rules.
+- [`docs/ORANGE-SOURCE-DEPTH.md`](docs/ORANGE-SOURCE-DEPTH.md) - source-depth audit plan and completion record.
+- [`docs/PRODUCT-HARDENING.md`](docs/PRODUCT-HARDENING.md) - v9 product-hardening tracks and queue rules.
+- [`docs/TOOL-BUILDER-COVERAGE.md`](docs/TOOL-BUILDER-COVERAGE.md) - GUI command-builder coverage contract.
+- [`docs/NOTES-INTEGRATION.md`](docs/NOTES-INTEGRATION.md) - private notes source and normalized guidance workflow.
+- [`docs/UX-QUALITY.md`](docs/UX-QUALITY.md) - UI/UX quality goals and seeded defects.
+- [`BUILDING.md`](BUILDING.md) - release workflow, validation tiers, and exact-head merge-readiness contract.
+- [`CHANGELOG.md`](CHANGELOG.md) - release history.
+
+## Architecture direction
+
+Runtime compaction should replace one stable ownership area at a time, prove regression equivalence, then remove only genuinely superseded historical layers. See [`docs/ARCHITECTURE.md`](docs/ARCHITECTURE.md).
+
 ## To-do
 
 ### North Star objectives
@@ -182,21 +157,12 @@ Generated by `node tools/sync-product-build-next.js --write`. Verify with `node 
 - Improve navigation, progressive disclosure, terminology, and operator flow without creating competing project-status surfaces.
 - Keep Dashboard, README, release tooling, and future status consumers on the stable consolidated current project model.
 
-### Product hardening objectives
-
-- Preserve one quantified product-hardening dashboard with high-level figures, progress bars, Build Next, and detailed ledgers.
-- Make every runnable tool/action eventually have a GUI command builder or explicit supersession.
-- Add credential-mode coverage for passwords, hashes, tickets, certificates, keys, cookies, and tokens.
-- Add manual outcome flow so users can mark success, failure, blocked, or skipped without manufacturing report-ready proof.
-- Integrate Brandon's private HTB and OffSec notes as normalized, derived Obol guidance through a complete notes ledger.
-- Improve performance through browser-native static-site capabilities without requiring users to install anything.
-
 ### Recent changes
 
 - **v9.0 foundation** - added the product-hardening queue, standalone dashboard, generated Product Build Next block, private notes source pointer, and validation/docs needed for future agents to continue without reopening the Orange queue.
-- **v8.8** - completed whole-file source inventory for `valid_user.md`, reviewed eighteen final source units, advanced file-level inventory to 17/17, expanded the atomic ledger to 334/334, closed the live methodology/source queue, and preserved explicit proof and supersession boundaries.
-- **v8.7** - completed whole-file source inventory for `trusts.md`, reviewed thirty-four source units, advanced file-level inventory to 16/17, and expanded the atomic ledger to 316/316.
-- **v8.6** - completed whole-file source inventory for `know_vuln_auth.md`, reviewed sixteen source units, advanced file-level inventory to 15/17, and expanded the atomic ledger to 282/282.
+- **v8.8** - completed whole-file source inventory for `valid_user.md`, advanced file-level inventory to 17/17, expanded the atomic ledger to 334/334, closed the live methodology/source queue, and preserved explicit proof and supersession boundaries.
+- **v8.7** - completed whole-file source inventory for `trusts.md`, advanced file-level inventory to 16/17, and expanded the atomic ledger to 316/316.
+- **v8.6** - completed whole-file source inventory for `know_vuln_auth.md`, advanced file-level inventory to 15/17, and expanded the atomic ledger to 282/282.
 
 For older releases, see [`CHANGELOG.md`](CHANGELOG.md) and the versioned documents under `docs/`.
 
