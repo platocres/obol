@@ -112,11 +112,12 @@ test('dashboard exposes v5.8 gap reduction and release contract',()=>{
   assert(d.milestones.some(x=>x.release==='v5.7'&&x.implemented===72));
 });
 
-test('README generator remains live and future-safe',()=>{
+test('historical README generator remains structurally future-safe',()=>{
   const out=cp.execFileSync(process.execPath,[path.join(root,'tools','sync-readme-build-next.js'),'--print'],{encoding:'utf8'});
   assert(out.includes('OBOL-BUILD-NEXT:START'));
   assert(/Canonical methodology:\*\* \d+\/127 fully implemented \(\d+%\)/.test(out));
-  assert(out.includes('North Star Dashboard → Build Next'));
+  assert(out.includes('**Current live queue:**'));
+  assert(out.includes('**Highest-priority live items:**'));
 });
 
 test('release PR validator rejects missing descriptions and accepts the current required contract',()=>{
