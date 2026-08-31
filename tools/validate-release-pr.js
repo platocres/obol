@@ -2,6 +2,7 @@
 
 const fs=require('fs');
 const path=require('path');
+const cp=require('child_process');
 
 const root=path.join(__dirname,'..');
 const read=(p)=>fs.readFileSync(path.join(root,p),'utf8');
@@ -55,6 +56,7 @@ if(isProductHardeningRelease){
     'tools/validate-product-hardening-queue.js',
     'tools/validate-asset-references.js',
     'tools/sync-product-build-next.js',
+    'tools/validate-open-pr-uniqueness.js',
     `tests/run-v${version}-tests.js`,
     releaseDocPath
   ];
@@ -85,6 +87,9 @@ if(!currentTest.includes('validate-release-pr.js'))fail.push(`tests/run-v${versi
 if(!readme.includes('<!-- OBOL-BUILD-NEXT:START -->')||!readme.includes('<!-- OBOL-BUILD-NEXT:END -->'))fail.push('README Build Next markers are missing');
 
 if(pr&&releaseIntent){
+  const uniqueness=cp.spawnSync(process.execPath,[path.join(root,'tools','validate-open-pr-uniqueness.js')],{cwd:root,env:process.env,encoding:'utf8'});
+  if(uniqueness.status!==0)fail.push((uniqueness.stderr||uniqueness.stdout||'open release/product-hardening PR uniqueness validation failed').trim());
+
   const head=pr.head&&pr.head.ref||'';
   const title=String(pr.title||'').trim();
   const body=String(pr.body||'').trim();
