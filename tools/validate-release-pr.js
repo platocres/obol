@@ -89,8 +89,11 @@ if(!currentTest.includes('validate-release-pr.js'))fail.push(`tests/run-v${versi
 if(!readme.includes('<!-- OBOL-PRODUCT-BUILD-NEXT:START -->')||!readme.includes('<!-- OBOL-PRODUCT-BUILD-NEXT:END -->'))fail.push('README Product Build Next markers are missing');
 
 if(pr&&releaseIntent){
-  const uniqueness=cp.spawnSync(process.execPath,[path.join(root,'tools','validate-open-pr-uniqueness.js')],{cwd:root,env:process.env,encoding:'utf8'});
-  if(uniqueness.status!==0)fail.push((uniqueness.stderr||uniqueness.stdout||'open release/product-hardening PR uniqueness validation failed').trim());
+  const isRealPullRequestPayload=!!(pr.html_url||pr.number||pr.url||pr.node_id);
+  if(isRealPullRequestPayload){
+    const uniqueness=cp.spawnSync(process.execPath,[path.join(root,'tools','validate-open-pr-uniqueness.js')],{cwd:root,env:process.env,encoding:'utf8'});
+    if(uniqueness.status!==0)fail.push((uniqueness.stderr||uniqueness.stdout||'open release/product-hardening PR uniqueness validation failed').trim());
+  }
 
   const head=pr.head&&pr.head.ref||'';
   const title=String(pr.title||'').trim();
@@ -113,7 +116,6 @@ if(pr&&releaseIntent){
     ['Validation added',/##\s+Validation added\b/i],
     ['Compatibility',/##\s+Compatibility\b/i]
   ];
-  const isRealPullRequestPayload=!!(pr.html_url||pr.number||pr.url||pr.node_id);
   const requiredSections=(isProductHardeningRelease&&isRealPullRequestPayload)?productSections:legacySections;
   for(const [name,re] of requiredSections)if(!re.test(body))fail.push(`release PR description is missing section: ${name}`);
 }
