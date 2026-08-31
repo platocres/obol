@@ -3,6 +3,7 @@
 const fs=require('fs');
 const path=require('path');
 const cp=require('child_process');
+const {validateRepository}=require('./validate-asset-references');
 
 const root=path.join(__dirname,'..');
 const failures=[];
@@ -29,6 +30,9 @@ for(const rel of ['index.html','README.md','BUILDING.md','CHANGELOG.md']){
   if(!exists(rel))fail(`Missing required repository file: ${rel}`);
 }
 
+const assetResult=validateRepository(root);
+for(const message of assetResult.failures)fail(message);
+
 if(exists('index.html')){
   const index=fs.readFileSync(path.join(root,'index.html'),'utf8');
   const refs=[];
@@ -51,4 +55,4 @@ if(failures.length){
   process.exit(1);
 }
 
-console.log(`Release smoke validation passed: ${js.length} JavaScript files parsed and index asset references resolved.`);
+console.log(`Release smoke validation passed: ${js.length} JavaScript files parsed, ${assetResult.entrypoints.length} HTML entrypoints scanned, and ${assetResult.references.length} local asset references resolved.`);

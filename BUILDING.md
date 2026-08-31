@@ -17,7 +17,7 @@ The intended release flow is:
 - use `[preflight]` when a coherent current-release snapshot is ready;
 - do not create a second build/release/product-hardening PR to work around a failed check;
 - when the product release changes, update `data/current-release.js`, synchronize README with `node tools/sync-current-release.js --write`, and validate the authority with `node tools/validate-current-release.js`;
-- regenerate the active Product Build Next block with `node tools/sync-product-build-next.js --write` whenever queue state changes;
+- regenerate the active Product Build Next block with `node tools/sync-product-build-next.js --write` whenever queue state changes or work-package metadata changes;
 - validate the retired Orange methodology/source projection with `node tools/sync-readme-build-next.js --check`; while that queue remains complete, the historical block is intentionally absent from README;
 - require `implemented-quality = 0` and `mapped-delivery = 0` before methodology expansion is merge-ready;
 - preserve canonical, frozen-baseline, file-level, and atomic denominators as historical milestones without forcing their detailed accounting into the current README;
@@ -48,9 +48,29 @@ Every Product Build Next item must carry its own proof once it leaves `queued` s
 - validation commands proving the item-specific work;
 - proof files where the implementation, docs, or tests live.
 
-A product-hardening PR that burns down a queue item must therefore include the implementation, the queue/status update when applicable, the item-test contract, item-specific tests or validators, README/dashboard sync when totals or generated blocks change, and a green exact-head Actions run.
+A product-hardening PR that burns down one or more queue items must therefore include the implementation, each applicable queue/status update, each item's test contract, item-specific tests or validators, README/dashboard sync when totals or generated blocks change, and a green exact-head Actions run.
 
 No queue item may be marked complete merely because a broad historical test suite still passes. The item-specific contract must prove the behavior added or changed by that queue item.
+
+## Coherent work-package burn-down
+
+Product Build Next is atomic for accountability, but a release PR is **not** limited to one queue item. The highest-priority queued item is the entry point into the next engineering context, not an instruction to stop after one checkbox.
+
+`data/product-hardening/work-packages.js` groups queue items that share an ownership area, architectural context, dependencies, and test surface. The README and Product Hardening Dashboard project its recommended package alongside the flat priority queue.
+
+When burning down Product Build Next:
+
+1. Start from the highest-priority unblocked queued item unless the user explicitly directs otherwise.
+2. Inspect its recommended work package plus related and dependency-linked items.
+3. Complete as many queued items as safely fit the same ownership area, architectural context, migration boundary, and test strategy while that context is already loaded.
+4. Do not stop merely because the entry item's acceptance criteria have been satisfied if additional package items can be implemented and fully proven without materially increasing blast radius.
+5. Keep every queue item atomic for status and proof. Each item advanced or closed still requires its own acceptance criteria, validation commands, proof files, and item-specific tests.
+6. Do not batch unrelated work just to increase item count. Stop expanding the package when the next item changes ownership area, requires a different architectural context, introduces a distinct migration risk, or would make the PR harder to reason about and roll back.
+7. Package dependencies guide sequencing; `relatedItems` are suggestions for consideration, not automatic scope. `parallelSafe` is descriptive metadata, not permission to violate the one-open-release-PR rule.
+8. Keep the coherent package in the existing active release/product-hardening PR. Do not open one PR per item and do not split closely coupled package items across avoidable release layers.
+9. Sync Product Build Next after queue or package metadata changes and require the exact final package head to pass all item-specific and repository-wide gates.
+
+The desired release shape is therefore: **one PR -> one coherent engineering area -> potentially many queue items -> atomic proof for every item closed**.
 
 ## Delta-based release surfaces
 
@@ -60,7 +80,7 @@ Every release must provide the current release/project metadata, current regress
 
 Do not create no-op `methodology-vX.Y.js`, `dashboard-vX.Y.js`, `intake-vX.Y.js`, `app-vX.Y.js`, `core-vX.Y.js`, or similar shims solely for naming symmetry. `tools/validate-release-pr.js` is phase-aware and should validate the release shape that actually belongs to the work.
 
-For v9 product hardening, prefer stable non-versioned owners for queue data, builder schemas, storage, workers, dashboard data, release identity, and validation. Versioned release docs/tests are fine; versioned runtime sediment is not the default implementation pattern.
+For v9 product hardening, prefer stable non-versioned owners for queue data, work-package metadata, builder schemas, storage, workers, dashboard data, release identity, and validation. Versioned release docs/tests are fine; versioned runtime sediment is not the default implementation pattern.
 
 ## Consolidated current-state rule
 
@@ -68,10 +88,10 @@ v6.6 established the boundary between domain models and current project-status p
 
 - `C.currentProjectModel(...)` is the preferred current projection boundary for historical canonical progress, source-fidelity progress, quality debt, and Orange accounting.
 - Versioned project adapters remain available as historical regression boundaries. Current tooling and documentation should not require edits merely to discover the newest historical adapter name when a stable pointer is available.
-- Product-hardening status comes from `data/product-hardening/product-hardening-queue.js`; README Product Build Next and the Product Hardening Dashboard consume that same source.
+- Product-hardening status comes from `data/product-hardening/product-hardening-queue.js`; coherent package recommendations come from `data/product-hardening/work-packages.js`; README Product Build Next and the Product Hardening Dashboard consume both.
 - Current product release identity comes from `data/current-release.js`. Header/title, settings, report release metadata/footer, export release metadata, README current release, and dashboard presentation consume that source. `C.VERSION` remains the workspace/runtime schema compatibility identity until an intentional runtime/storage migration changes it.
 - New UI overlays should express genuine behavior changes. Do not append another project-health panel merely because the version changed.
-- The default product dashboard should show Product Build Next first. The completed Orange dashboard is historical baseline context, not the active product queue.
+- The default product dashboard should show the recommended Product Build Next work package and broader queue near the top. The completed Orange dashboard is historical baseline context, not the active product queue.
 - The README is an entry point and future-agent handoff. Durable architecture, proof, source accounting, product vision, and history belong in their owned documents.
 
 `tools/current-runtime.js` owns the Node-side current data/core load order until runtime-consolidation queue work replaces that boundary with a smaller current owner. Do not copy long load arrays into every tool or test.
