@@ -19,10 +19,9 @@ assert(readme.includes('[`BUILDING.md`](BUILDING.md)'), 'README sends agents to 
 
 const app = read('assets/app-v8.8.js');
 for (const token of [
-  "const PRODUCT_RELEASE='v9.1'",
-  "const ORANGE_BASELINE='v8.8'",
+  "RELEASE_SOURCE='data/current-release.js'",
+  'window.OBOL_CURRENT_RELEASE',
   'Offensive Box Operations Ledger · ',
-  'product hardening',
   'renderProductDashboard88',
   'ensureProductAssets88',
   'data/product-hardening/product-hardening-queue.js',
@@ -31,9 +30,10 @@ for (const token of [
   'Completed Orange baseline',
   'Open product dashboard'
 ]) {
-  assert(app.includes(token), 'v9.1 app bridge contains token: ' + token);
+  assert(app.includes(token), 'v9.1 product-hardening bridge remains present through current ownership: ' + token);
 }
-assert(!app.includes('MutationObserver'), 'v9.1 version bridge must not rely on a broad MutationObserver loop');
+assert(!app.includes('MutationObserver'), 'product-hardening bridge must not rely on a broad MutationObserver loop');
+assert(!/const PRODUCT_RELEASE=/.test(app), 'current product release is no longer duplicated in the historical app bridge');
 
 const css = read('assets/product-hardening-dashboard.css');
 assert(css.includes('.app-phase-badge88'), 'in-app product phase badge is styled');

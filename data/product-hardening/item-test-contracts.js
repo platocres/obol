@@ -1,6 +1,11 @@
 'use strict';
 (function(root){
 const contracts={
+ 'cc-version-authority':{
+  acceptance:['One stable current-release authority drives the live header, browser title, settings identity, report preview/footer metadata, export metadata, README current release, and Product Hardening Dashboard without changing the v8.8 workspace schema version.'],
+  validationCommands:['node tools/validate-current-release.js','node tools/sync-current-release.js --check','node tests/run-v9.2-tests.js'],
+  proofFiles:['data/current-release.js','assets/app-v8.8.js','assets/product-hardening-dashboard.js','product-hardening.html','README.md','tools/sync-current-release.js','tools/validate-current-release.js','tests/run-v9.2-tests.js']
+ },
  'dash-product-foundation':{
   acceptance:['Product Hardening Dashboard renders quantified totals, Build Next, track ledger, full seeded work ledger, and private notes source status from queue data.'],
   validationCommands:['node tools/validate-product-hardening-queue.js','node tests/run-v9.0-tests.js'],
@@ -48,5 +53,5 @@ const contracts={
  }
 };
 const requiredForStatuses=['modeled','complete','superseded','rejected'];
-root.OBOL_PRODUCT_HARDENING_TEST_CONTRACTS={version:'9.1.0',requiredForStatuses,contracts};
+root.OBOL_PRODUCT_HARDENING_TEST_CONTRACTS={version:'9.2.0',requiredForStatuses,contracts};
 })(typeof window!=='undefined'?window:globalThis);

@@ -16,6 +16,7 @@ The intended release flow is:
 - ordinary release commits run `node tools/release-smoke.js`;
 - use `[preflight]` when a coherent current-release snapshot is ready;
 - do not create a second build/release/product-hardening PR to work around a failed check;
+- when the product release changes, update `data/current-release.js`, synchronize README with `node tools/sync-current-release.js --write`, and validate the authority with `node tools/validate-current-release.js`;
 - regenerate the active Product Build Next block with `node tools/sync-product-build-next.js --write` whenever queue state changes;
 - validate the retired Orange methodology/source projection with `node tools/sync-readme-build-next.js --check`; while that queue remains complete, the historical block is intentionally absent from README;
 - require `implemented-quality = 0` and `mapped-delivery = 0` before methodology expansion is merge-ready;
@@ -23,7 +24,7 @@ The intended release flow is:
 - audited source units must end as explicitly `modeled`, `superseded`, or `rejected` with rationale and required review dimensions accounted for;
 - product-hardening queue items may not move to `modeled`, `complete`, `superseded`, or `rejected` unless `data/product-hardening/item-test-contracts.js` names acceptance criteria, validation commands, and proof files for that item;
 - make the exact final release commit with `[release-final]` only after code, tests, docs, README, changelog or dedicated release documentation, and PR description form one coherent snapshot;
-- require smoke, preflight, historical-test future safety, the complete historical regression chain, release-quality gate, release-contract validation, open-PR uniqueness validation, and generated Product Build Next synchronization on that exact head;
+- require smoke, preflight, historical-test future safety, the complete historical regression chain, release-quality gate, release-contract validation, open-PR uniqueness validation, current-release synchronization, and generated Product Build Next synchronization on that exact head;
 - mark the PR Ready for review only after that exact final head is green;
 - treat any later commit as a new head that must be validated again.
 
@@ -59,7 +60,7 @@ Every release must provide the current release/project metadata, current regress
 
 Do not create no-op `methodology-vX.Y.js`, `dashboard-vX.Y.js`, `intake-vX.Y.js`, `app-vX.Y.js`, `core-vX.Y.js`, or similar shims solely for naming symmetry. `tools/validate-release-pr.js` is phase-aware and should validate the release shape that actually belongs to the work.
 
-For v9 product hardening, prefer stable non-versioned owners for queue data, builder schemas, storage, workers, dashboard data, and validation. Versioned release docs/tests are fine; versioned runtime sediment is not the default implementation pattern.
+For v9 product hardening, prefer stable non-versioned owners for queue data, builder schemas, storage, workers, dashboard data, release identity, and validation. Versioned release docs/tests are fine; versioned runtime sediment is not the default implementation pattern.
 
 ## Consolidated current-state rule
 
@@ -68,7 +69,7 @@ v6.6 established the boundary between domain models and current project-status p
 - `C.currentProjectModel(...)` is the preferred current projection boundary for historical canonical progress, source-fidelity progress, quality debt, and Orange accounting.
 - Versioned project adapters remain available as historical regression boundaries. Current tooling and documentation should not require edits merely to discover the newest historical adapter name when a stable pointer is available.
 - Product-hardening status comes from `data/product-hardening/product-hardening-queue.js`; README Product Build Next and the Product Hardening Dashboard consume that same source.
-- Current release/version identity should have one owner. The `cc-version-authority` queue item exists to finish that consolidation across UI, reports, exports, README, and dashboard.
+- Current product release identity comes from `data/current-release.js`. Header/title, settings, report release metadata/footer, export release metadata, README current release, and dashboard presentation consume that source. `C.VERSION` remains the workspace/runtime schema compatibility identity until an intentional runtime/storage migration changes it.
 - New UI overlays should express genuine behavior changes. Do not append another project-health panel merely because the version changed.
 - The default product dashboard should show Product Build Next first. The completed Orange dashboard is historical baseline context, not the active product queue.
 - The README is an entry point and future-agent handoff. Durable architecture, proof, source accounting, product vision, and history belong in their owned documents.
