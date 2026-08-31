@@ -13,8 +13,9 @@ const START='<!-- OBOL-BUILD-NEXT:START -->';
 const END='<!-- OBOL-BUILD-NEXT:END -->';
 function clean(s){return String(s||'').replace(/\s+/g,' ').trim();}
 function rowLine(r,i){return `${i+1}. **${clean(r.label)}** — ${clean(r.file||'project-wide')} · ${clean(r.kind).replace(/-/g,' ')}.`;}
+function currentProject(){return projectModel(C.newState(),lanes);}
 function render(){
-  const p=projectModel(C.newState(),lanes),q=p.buildNext,c=p.canonical,s=p.source,top=(q.rows||[]).slice(0,3),itemWord=q.total===1?'item':'items';
+  const p=currentProject(),q=p.buildNext,c=p.canonical,s=p.source,top=(q.rows||[]).slice(0,3),itemWord=q.total===1?'item':'items';
   return [
     START,
     'This block is generated from the same live repository state used by **North Star Dashboard → Build Next**. Do not edit it manually.',
@@ -31,17 +32,34 @@ function render(){
     END
   ].join('\n');
 }
+function hasCompleteBlock(readme){const a=readme.indexOf(START),b=readme.indexOf(END);return a>=0&&b>a;}
+function hasPartialBlock(readme){return readme.includes(START)||readme.includes(END);}
+function historicalBlockMayBeOmitted(){
+  const p=currentProject();
+  return p&&p.buildNext&&p.buildNext.total===0&&p.quality&&p.quality.implementedQuality===0&&p.quality.mappedDelivery===0&&p.quality.canonicalGaps===0;
+}
 function replaceBlock(readme,block){
   const a=readme.indexOf(START),b=readme.indexOf(END);
-  if(a<0||b<a)throw new Error('README Build Next markers are missing or malformed');
+  if(a<0&&b<0){
+    if(historicalBlockMayBeOmitted())return readme;
+    throw new Error('README Build Next markers are missing while methodology/source Build Next still has live work');
+  }
+  if(a<0||b<a)throw new Error('README Build Next markers are malformed');
   return readme.slice(0,a)+block+readme.slice(b+END.length);
 }
 const readmePath=path.join(root,'README.md'),mode=process.argv[2]||'--check',block=render();
 if(mode==='--print'){
-  const p=projectModel(C.newState(),lanes),compat=p.buildNext.total===1?'\n<!-- historical-output-compat: **Current live queue:** 1 items -->':'';
+  const p=currentProject(),compat=p.buildNext.total===1?'\n<!-- historical-output-compat: **Current live queue:** 1 items -->':'';
   process.stdout.write(block+compat+'\n');process.exit(0);
 }
-const current=fs.readFileSync(readmePath,'utf8'),next=replaceBlock(current,block);
+const current=fs.readFileSync(readmePath,'utf8');
+if(!hasCompleteBlock(current)&&!hasPartialBlock(current)&&historicalBlockMayBeOmitted()){
+  if(mode==='--write'||mode==='--check'){
+    console.log('README historical methodology/source Build Next block intentionally omitted; completed Orange accounting lives in docs/NORTH-STAR.md.');
+    process.exit(0);
+  }
+}
+const next=replaceBlock(current,block);
 if(mode==='--write'){
   if(next!==current)fs.writeFileSync(readmePath,next);
   console.log(next===current?'README Build Next snapshot already synchronized.':'README Build Next snapshot synchronized.');
