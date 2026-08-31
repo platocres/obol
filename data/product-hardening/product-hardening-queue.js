@@ -1,7 +1,7 @@
 'use strict';
 (function(root){
 const tracks=[
- {id:'critical-correctness',label:'Critical correctness',goal:'Fix defects that undermine trust in the app or generated reports.',complete:1,total:4},
+ {id:'critical-correctness',label:'Critical correctness',goal:'Fix defects that undermine trust in the app or generated reports.',complete:2,total:4},
  {id:'architecture-runtime',label:'Architecture / runtime',goal:'Compact the sedimentary runtime without breaking historical behavior.',complete:0,total:10},
  {id:'ui-ux',label:'UI / UX repair',goal:'Make the primary workflow user-first and keep build metrics in dashboard surfaces.',complete:0,total:8},
  {id:'tool-builders',label:'Tool GUI builders',goal:'Every runnable tool/action gets a schema-driven GUI builder or explicit supersession.',complete:0,total:18},
@@ -13,7 +13,7 @@ const tracks=[
 ];
 const items=[
  {id:'cc-version-authority',track:'critical-correctness',status:'complete',priority:1,label:'Create one version authority',detail:'Header, title, settings, report preview, report footer, export metadata, README, and dashboard must consume one current-version source.'},
- {id:'cc-asset-validation',track:'critical-correctness',status:'queued',priority:2,label:'Validate every referenced asset',detail:'Parse HTML entrypoints and fail CI when any script, stylesheet, or static asset reference is missing.'},
+ {id:'cc-asset-validation',track:'critical-correctness',status:'complete',priority:2,label:'Validate every referenced asset',detail:'Parse HTML entrypoints and fail CI when any script, stylesheet, or static asset reference is missing.'},
  {id:'cc-report-version',track:'critical-correctness',status:'queued',priority:3,label:'Normalize report version identity',detail:'Generated report text and footers must not retain stale historical version strings.'},
  {id:'cc-link-contrast',track:'critical-correctness',status:'queued',priority:4,label:'Fix dark-theme link contrast',detail:'Dark-blue links on dark panels need readable contrast, hover, and focus states.'},
  {id:'dash-product-foundation',track:'architecture-runtime',status:'modeled',priority:5,label:'Product Hardening Dashboard foundation',detail:'v9.0 creates the single quantified dashboard and queue model for the product-hardening phase.'},
