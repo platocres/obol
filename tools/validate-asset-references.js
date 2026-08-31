@@ -23,7 +23,7 @@ function decodeHtml(value){
 }
 
 function attrValue(attrs,name){
- const re=new RegExp('(?:^|\\s)'+name+'\\s*=\\s*(?:"([^"]*)"|\'([^\']*)\'|([^\\s"\'=<>`]+))','i');
+ const re=new RegExp(`(?:^|\\s)${name}\\s*=\\s*(?:"([^"]*)"|'([^']*)'|([^\\s"'=<>]+))`,'i');
  const m=re.exec(attrs||'');
  return m?decodeHtml(m[1]!==undefined?m[1]:m[2]!==undefined?m[2]:m[3]):'';
 }
