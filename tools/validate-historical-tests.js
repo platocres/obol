@@ -77,3 +77,5 @@ if(failures.length){
 }
 
 console.log(`Historical test future-safety validation passed for all suites older than v${currentVersion}.`);
+
+// v9.6 makes retired direct index wiring an explicit future-safety failure rather than discovering it one historical suite at a time.
