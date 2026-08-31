@@ -6,12 +6,15 @@ const vm = require('vm');
 
 const root = path.join(__dirname, '..');
 const queueFile = path.join(root, 'data', 'product-hardening', 'product-hardening-queue.js');
+const contractsFile = path.join(root, 'data', 'product-hardening', 'item-test-contracts.js');
 const sandbox = { window: {}, globalThis: null };
 sandbox.globalThis = sandbox.window;
 vm.createContext(sandbox);
 vm.runInContext(fs.readFileSync(queueFile, 'utf8'), sandbox, { filename: queueFile });
+if (fs.existsSync(contractsFile)) vm.runInContext(fs.readFileSync(contractsFile, 'utf8'), sandbox, { filename: contractsFile });
 
 const q = sandbox.window.OBOL_PRODUCT_HARDENING;
+const testContracts = sandbox.window.OBOL_PRODUCT_HARDENING_TEST_CONTRACTS;
 const failures = [];
 
 function fail(message) {
@@ -34,6 +37,35 @@ function walk(dir, out = []) {
     else out.push(path.relative(root, full).replace(/\\/g, '/'));
   }
   return out;
+}
+
+function validateItemTestContracts() {
+  if (!testContracts) {
+    fail('product-hardening item test contracts missing');
+    return;
+  }
+  if (!Array.isArray(testContracts.requiredForStatuses) || !testContracts.requiredForStatuses.includes('complete')) fail('item test contracts do not gate completed work');
+  if (!testContracts.requiredForStatuses.includes('modeled')) fail('item test contracts do not gate modeled foundation items');
+  const contracts = testContracts.contracts || {};
+  const items = q.items || [];
+  const itemIds = new Set(items.map(i => i.id));
+  for (const id of Object.keys(contracts)) {
+    if (!itemIds.has(id)) fail('test contract references unknown queue item: ' + id);
+  }
+  for (const item of items) {
+    if (!testContracts.requiredForStatuses.includes(item.status)) continue;
+    const contract = contracts[item.id];
+    if (!contract) {
+      fail('queue item has status ' + item.status + ' but no item-specific test contract: ' + item.id);
+      continue;
+    }
+    if (!Array.isArray(contract.acceptance) || contract.acceptance.length === 0) fail('test contract lacks acceptance criteria: ' + item.id);
+    if (!Array.isArray(contract.validationCommands) || contract.validationCommands.length === 0) fail('test contract lacks validation commands: ' + item.id);
+    if (!Array.isArray(contract.proofFiles) || contract.proofFiles.length === 0) fail('test contract lacks proof files: ' + item.id);
+    for (const rel of contract.proofFiles || []) {
+      if (!exists(rel)) fail('test contract proof file is missing for ' + item.id + ': ' + rel);
+    }
+  }
 }
 
 if (!q) fail('queue object missing');
@@ -114,6 +146,8 @@ if (q) {
   if (totals.notes !== 556) fail('totals lost note count');
   if (totals.resources !== 1326) fail('totals lost embedded resource count');
   if (!q.buildNext(5).some(i => i.id === 'cc-version-authority')) fail('version-authority item is no longer near top of Build Next');
+
+  validateItemTestContracts();
 }
 
 const readme = read('README.md');
@@ -125,6 +159,8 @@ if (!readme.includes('platocres/obol-source-notes')) fail('README does not point
 if (!readme.includes('Public Obol must receive only normalized, derived guidance')) fail('README does not preserve the public/private notes boundary');
 if (!readme.includes('<!-- OBOL-PRODUCT-BUILD-NEXT:START -->') || !readme.includes('<!-- OBOL-PRODUCT-BUILD-NEXT:END -->')) fail('README Product Build Next markers are missing');
 if (!readme.includes('This block is generated from `data/product-hardening/product-hardening-queue.js`. Do not edit it manually.')) fail('README Product Build Next block is not marked generated');
+if (!readme.includes('Current Obol release: **v9.1**')) fail('README must expose the current product-hardening release without calling v8.8 current');
+if (!readme.includes('Completed Orange methodology/source baseline: **v8.8**')) fail('README must label v8.8 as the completed Orange baseline');
 
 const dashboard = read('product-hardening.html');
 for (const ref of [
@@ -133,6 +169,18 @@ for (const ref of [
   'assets/product-hardening-dashboard.css'
 ]) {
   if (!dashboard.includes(ref)) fail('product-hardening.html is not wired to ' + ref);
+}
+
+const app = read('assets/app-v8.8.js');
+for (const token of [
+  'PRODUCT_RELEASE=\'v9.1\'',
+  'ensureProductAssets88',
+  'renderProductDashboard88',
+  'data/product-hardening/product-hardening-queue.js',
+  'assets/product-hardening-dashboard.js',
+  'active product-hardening queue surface'
+]) {
+  if (!app.includes(token)) fail('app dashboard bridge missing token: ' + token);
 }
 
 const renderer = read('assets/product-hardening-dashboard.js');
@@ -144,7 +192,11 @@ for (const forbidden of [
   'data/project-model-v9.0.js',
   'assets/core-v9.0.js',
   'assets/app-v9.0.js',
-  'assets/obol-v9.0.css'
+  'assets/obol-v9.0.css',
+  'data/project-model-v9.1.js',
+  'assets/core-v9.1.js',
+  'assets/app-v9.1.js',
+  'assets/obol-v9.1.css'
 ]) {
   if (exists(forbidden)) fail('product-hardening release created forbidden fake runtime overlay: ' + forbidden);
 }
