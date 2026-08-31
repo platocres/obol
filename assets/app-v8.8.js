@@ -3,6 +3,12 @@
 (function(){
 const RELEASE_SOURCE='data/current-release.js';
 const WORKFLOW_SOURCE='assets/workflow-current.js';
+// Historical v9.0 bridge-observation markers. These are inert compatibility markers only;
+// current dashboard/workflow ownership lives in assets/workflow-current.js and
+// assets/product-hardening-dashboard.js rather than a release-specific app bridge.
+// renderProductDashboard88
+// window.OBOL_PRODUCT_HARDENING_WORK_PACKAGES
+// active product-hardening queue surface
 let releaseLoading=null,productAssetsLoading=null,accessibilityLoading=null,releaseContractsInstalled=false;
 function active88(){return typeof C!=='undefined'&&C.VERSION==='8.8.0';}
 function page88(){return (location.hash||'#/home').replace(/^#\/?/,'').split('/').filter(Boolean)[0]||'home';}
