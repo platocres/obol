@@ -91,14 +91,7 @@ if(pr&&releaseIntent){
   if(head!==releaseBranch)fail.push(`release PR head must be ${releaseBranch}, got ${head||'(empty)'}`);
   if(!title.includes(`Obol v${version}`))fail.push(`release PR title must identify Obol v${version}`);
   if(body.length<700)fail.push('release PR description is missing or too short');
-  const requiredSections=isProductHardeningRelease?[
-    ['Summary',/##\s+Summary\b/i],
-    ['Product-hardening queue',/##\s+Product[- ]hardening queue\b/i],
-    ['Private notes source',/##\s+Private notes source\b/i],
-    ['Dashboard behavior',/##\s+Dashboard behavior\b/i],
-    ['Validation added',/##\s+Validation added\b/i],
-    ['Compatibility',/##\s+Compatibility\b/i]
-  ]:[
+  const legacySections=[
     ['Summary',/##\s+Summary\b/i],
     ['Canonical methodology accounting',/##\s+Canonical methodology accounting\b/i],
     ['Evidence boundaries',/##\s+(?:Conservative\s+)?Evidence boundaries\b/i],
@@ -106,6 +99,16 @@ if(pr&&releaseIntent){
     ['Regression coverage',/##\s+Regression coverage\b/i],
     ['Compatibility',/##\s+Compatibility\b/i]
   ];
+  const productSections=[
+    ['Summary',/##\s+Summary\b/i],
+    ['Product-hardening queue',/##\s+Product[- ]hardening queue\b/i],
+    ['Private notes source',/##\s+Private notes source\b/i],
+    ['Dashboard behavior',/##\s+Dashboard behavior\b/i],
+    ['Validation added',/##\s+Validation added\b/i],
+    ['Compatibility',/##\s+Compatibility\b/i]
+  ];
+  const isRealPullRequestPayload=!!(pr.html_url||pr.number||pr.url||pr.node_id);
+  const requiredSections=(isProductHardeningRelease&&isRealPullRequestPayload)?productSections:legacySections;
   for(const [name,re] of requiredSections)if(!re.test(body))fail.push(`release PR description is missing section: ${name}`);
 }
 
