@@ -9,7 +9,7 @@ const exists=(p)=>fs.existsSync(path.join(root,p));
 const fail=[];
 
 const readme=read('README.md');
-const current=readme.match(/Current release: \*\*v(\d+\.\d+)\*\*/);
+const current=readme.match(/Current(?: Obol)? release: \*\*v(\d+\.\d+)\*\*/);
 if(!current)throw new Error('Unable to determine current release from README.md');
 const currentVersion=current[1];
 const releaseOverride=(process.argv.find(a=>a.startsWith('--release-version='))||'').split('=')[1]||'';
@@ -41,17 +41,14 @@ const releaseBranch=`release/obol-v${version}`;
 const releaseDocPath=`docs/v${version}.md`;
 const changelog=read('CHANGELOG.md');
 const releaseDoc=exists(releaseDocPath)?read(releaseDocPath):'';
-const isProductHardeningRelease=/product[- ]hardening|post-Orange/i.test(releaseDoc)||(
-  version.startsWith('9.')&&exists('data/product-hardening/product-hardening-queue.js')&&exists('product-hardening.html')
-);
+const isProductHardeningRelease=/product[- ]hardening|post-Orange/i.test(releaseDoc)||(version.startsWith('9.')&&exists('data/product-hardening/product-hardening-queue.js')&&exists('product-hardening.html'));
 
-function requireFiles(files){
-  for(const f of files)if(!exists(f))fail.push(`missing release file: ${f}`);
-}
+function requireFiles(files){for(const f of files)if(!exists(f))fail.push(`missing release file: ${f}`);}
 
 if(isProductHardeningRelease){
   const requiredFiles=[
     'data/product-hardening/product-hardening-queue.js',
+    'data/product-hardening/item-test-contracts.js',
     'assets/product-hardening-dashboard.js',
     'assets/product-hardening-dashboard.css',
     'product-hardening.html',
@@ -70,14 +67,7 @@ if(isProductHardeningRelease){
   if(!readme.includes('platocres/obol-source-notes'))fail.push('README does not point to the private notes source repo');
   if(!releaseDoc.includes(`# Obol v${version}`))fail.push(`release documentation is missing v${version}`);
 }else{
-  const requiredFiles=[
-    `data/project-model-v${version}.js`,
-    `assets/core-v${version}.js`,
-    `assets/app-v${version}.js`,
-    `assets/obol-v${version}.css`,
-    `tests/run-v${version}-tests.js`,
-    releaseDocPath
-  ];
+  const requiredFiles=[`data/project-model-v${version}.js`,`assets/core-v${version}.js`,`assets/app-v${version}.js`,`assets/obol-v${version}.css`,`tests/run-v${version}-tests.js`,releaseDocPath];
   requireFiles(requiredFiles);
   const index=read('index.html');
   for(const f of requiredFiles.filter(x=>/^(?:data|assets)\//.test(x)))if(!index.includes(f))fail.push(`index.html is not wired to ${f}`);
@@ -119,11 +109,7 @@ if(pr&&releaseIntent){
   for(const [name,re] of requiredSections)if(!re.test(body))fail.push(`release PR description is missing section: ${name}`);
 }
 
-if(fail.length){
-  console.error(`Release contract failed for v${version}:`);
-  for(const x of fail)console.error(`- ${x}`);
-  process.exit(1);
-}
+if(fail.length){console.error(`Release contract failed for v${version}:`);for(const x of fail)console.error(`- ${x}`);process.exit(1);}
 const scope=repoOnly?'repository only':releaseIntent?'release PR':'non-release PR metadata skipped';
 const kind=isProductHardeningRelease?'product-hardening':'runtime';
 console.log(`Release contract passed for v${version} (${kind}, ${scope}).`);
