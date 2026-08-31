@@ -14,7 +14,7 @@ The README is not a changelog. Release history lives in [`CHANGELOG.md`](CHANGEL
 
 Obol remains a website the user can simply visit and use. There is no backend, account system, telemetry, install prompt, or automatic command execution.
 
-**Human-run commands only.** Obol builds and explains commands, but the operator runs them externally in an authorized environment and returns output for Evidence review.
+**Human-run commands only.** Obol builds and explains commands, but the operator runs them externally in an authorized environment and returns output for Evidence review. Command planning can account for operating from Kali or from a Windows host while preserving target-local and platform-neutral implementations.
 
 The normal loop is:
 
