@@ -94,7 +94,7 @@ Obol generates commands for humans to review and run elsewhere. It does not sile
 
 v9.0 adds a separate product-hardening queue and dashboard without reopening the completed Orange source queue. Use `product-hardening.html` for the quantified dashboard and `data/product-hardening/product-hardening-queue.js` as the source of truth.
 
-Future agents should read this README, open the product-hardening dashboard, pick the highest-priority Product Build Next item, update the queue data, sync the README, validate, and push one coherent PR. Do not add another product-hardening data/runtime file per release unless there is a real ownership change.
+Future agents should read this README, open the product-hardening dashboard, pick the highest-priority Product Build Next item, update the queue data, sync the README, validate, and push one coherent PR. Do not add another product-hardening data/runtime file per release unless there is a real ownership change. Any item moved beyond `queued` must include item-specific test or validation coverage in the product-hardening DoD ledger.
 
 Raw notes are staged privately in `platocres/obol-source-notes`. Public Obol must receive only normalized, derived guidance and implementation changes, not raw course notes or notebook dumps.
 
