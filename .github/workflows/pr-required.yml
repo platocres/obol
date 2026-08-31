@@ -1,0 +1,46 @@
+name: Obol regression tests
+
+on:
+  pull_request:
+    types: [opened, synchronize, reopened, ready_for_review]
+
+concurrency:
+  group: obol-pr-${{ github.ref }}
+  cancel-in-progress: true
+
+permissions:
+  contents: read
+
+jobs:
+  test:
+    if: github.event.pull_request.draft == false
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+      - name: Set up Node
+        uses: actions/setup-node@v4
+        with:
+          node-version: '24'
+      - name: Validate all JavaScript syntax
+        run: find assets data tools tests -type f -name '*.js' -print0 | sort -z | xargs -0 -n1 node --check
+      - name: Validate historical test future safety
+        run: node tools/validate-historical-tests.js
+      - name: Validate release contract
+        run: node tools/validate-release-pr.js
+      - name: Run complete historical regression chain
+        run: |
+          set -euo pipefail
+          node tests/run-tests.js
+          while IFS= read -r file; do
+            node "$file"
+          done < <(find tests -maxdepth 1 -type f -name 'run-v*-tests.js' -print | sort -V)
+      - name: Check release quality debt
+        run: node tools/validate-release-quality.js
+      - name: Check README Build Next synchronization
+        run: node tools/sync-readme-build-next.js --check
+      - name: Check Product Build Next synchronization
+        run: node tools/sync-product-build-next.js --check
+
+# PRs intentionally get one visible required job. Release-branch smoke, preflight,
+# and release-final jobs stay in tests.yml and are never instantiated on pull requests.
