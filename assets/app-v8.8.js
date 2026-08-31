@@ -1,4 +1,4 @@
-// Obol v8.8 UI delta — surface pinned Orange source-inventory completion and v9 product hardening entrypoint.
+// Obol v8.8 UI delta — surface pinned Orange source-inventory completion and visible v9 product hardening entrypoint.
 'use strict';
 (function(){
 function active88(){return typeof C!=='undefined'&&C.VERSION==='8.8.0';}
