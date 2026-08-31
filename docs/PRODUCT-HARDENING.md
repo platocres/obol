@@ -36,6 +36,22 @@ The current tracks are:
 
 Future work should update the queue data directly rather than creating version-specific product-hardening runtime layers.
 
+## Queue item Definition of Done
+
+The product-hardening queue is not allowed to become a vibes ledger. Any item moved beyond `queued` must have item-specific proof in `data/product-hardening/product-hardening-dod.js`.
+
+For every item marked `modeled`, `implemented`, `tested`, `complete`, `superseded`, or `rejected`, the DoD ledger must name:
+
+- concrete acceptance criteria;
+- the test plan;
+- runnable validation commands;
+- required tests or validator files;
+- proof files that demonstrate the work;
+- the risk the test coverage prevents;
+- status notes explaining why the item is at that state.
+
+`tools/validate-product-hardening-queue.js` enforces this. If a future agent marks an item as done without adding item-specific tests or validation, CI should fail.
+
 ## Future-agent workflow
 
 1. Read `README.md`.
@@ -43,10 +59,12 @@ Future work should update the queue data directly rather than creating version-s
 3. Open `product-hardening.html` or the in-app dashboard surface.
 4. Pick the highest-priority live queue item unless the user explicitly directs otherwise.
 5. Build the item without adding unnecessary compatibility shims.
-6. Update the product-hardening queue data.
-7. Run validation.
-8. Update the README Product Build Next block.
-9. Push one coherent release PR.
+6. Add or update item-specific test or validation coverage.
+7. Update `data/product-hardening/product-hardening-dod.js` when the item status moves beyond `queued`.
+8. Update the product-hardening queue data.
+9. Run validation.
+10. Update the README Product Build Next block.
+11. Push one coherent PR.
 
 ## Validation
 
