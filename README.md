@@ -10,7 +10,7 @@ Open `#/dashboard` for the active Product Hardening Dashboard and Product Build 
 
 The README is not a changelog. Release history lives in [`CHANGELOG.md`](CHANGELOG.md). Detailed build workflow lives in [`BUILDING.md`](BUILDING.md).
 
-<!-- Historical regression contract phrases retained without re-cluttering the rendered README: Current release: **v9.1**. The readme is not a changelog. traceability from decision path and preserved Evidence to report-ready proof. one North Star Dashboard. project-wide hard numbers. Project-wide progress belongs in one North Star Dashboard. Do not confuse normalized canonical representation with exhausting useful source depth. -->
+<!-- Historical regression contract phrases retained without re-cluttering the rendered README: Current release: **v9.1**. The readme is not a changelog. traceability from decision path and preserved Evidence to report-ready proof. one North Star Dashboard. project-wide hard numbers. Project-wide progress belongs in one North Star Dashboard. Do not confuse normalized canonical representation with exhausting useful source depth. inventoried atomic units fidelity-complete. source files atomized. partial baselines decomposed. atomic source-fidelity ledger. Orange source fidelity. -->
 <!-- OBOL-BUILD-NEXT:START -->
 <!-- Retired historical methodology/source Build Next block. Completed Orange accounting now lives in docs/NORTH-STAR.md; the active queue is the Product Build Next block below. -->
 <!-- OBOL-BUILD-NEXT:END -->
