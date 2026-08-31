@@ -6,14 +6,17 @@ const vm = require('vm');
 
 const root = path.join(__dirname, '..');
 const queueFile = path.join(root, 'data', 'product-hardening', 'product-hardening-queue.js');
+const workPackagesFile = path.join(root, 'data', 'product-hardening', 'work-packages.js');
 const contractsFile = path.join(root, 'data', 'product-hardening', 'item-test-contracts.js');
 const sandbox = { window: {}, globalThis: null };
 sandbox.globalThis = sandbox.window;
 vm.createContext(sandbox);
 vm.runInContext(fs.readFileSync(queueFile, 'utf8'), sandbox, { filename: queueFile });
+if (fs.existsSync(workPackagesFile)) vm.runInContext(fs.readFileSync(workPackagesFile, 'utf8'), sandbox, { filename: workPackagesFile });
 if (fs.existsSync(contractsFile)) vm.runInContext(fs.readFileSync(contractsFile, 'utf8'), sandbox, { filename: contractsFile });
 
 const q = sandbox.window.OBOL_PRODUCT_HARDENING;
+const workPackages = sandbox.window.OBOL_PRODUCT_HARDENING_WORK_PACKAGES;
 const testContracts = sandbox.window.OBOL_PRODUCT_HARDENING_TEST_CONTRACTS;
 const failures = [];
 
@@ -39,6 +42,18 @@ function validateItemTestContracts() {
     if (!Array.isArray(contract.proofFiles) || contract.proofFiles.length === 0) fail('test contract lacks proof files: ' + item.id);
     for (const rel of contract.proofFiles || []) if (!exists(rel)) fail('test contract proof file is missing for ' + item.id + ': ' + rel);
   }
+}
+
+function validateWorkPackages() {
+  if (!workPackages) { fail('product-hardening work-package metadata missing'); return; }
+  if (workPackages.schemaVersion !== '1.0.0') fail('unexpected work-package schema version ' + workPackages.schemaVersion);
+  if (!Array.isArray(workPackages.packages) || workPackages.packages.length < 8) fail('expected durable seeded work-package ledger');
+  if (typeof workPackages.validate !== 'function' || typeof workPackages.recommend !== 'function') { fail('work-package helpers missing'); return; }
+  for (const message of workPackages.validate(q)) fail(message);
+  const top = q && typeof q.buildNext === 'function' ? q.buildNext(1)[0] : null;
+  const rec = workPackages.recommend(q);
+  if (top && (!rec || !rec.entryItem || rec.entryItem.id !== top.id)) fail('recommended work package must begin with the highest-priority queued item');
+  if (rec && rec.recommendedBatch && (!Array.isArray(rec.liveItems) || rec.liveItems.length < 1)) fail('recommended batch has no live queue items');
 }
 
 if (!q) fail('queue object missing');
@@ -75,21 +90,32 @@ if (q) {
   if (totals.resources !== 1326) fail('totals lost embedded resource count');
   const queued=(q.items||[]).filter(i=>i.status==='queued').sort((a,b)=>a.priority-b.priority),live=q.buildNext(8);
   if (queued.length && (!live.length || live[0].id!==queued[0].id)) fail('Build Next does not begin with the highest-priority queued item');
+  validateWorkPackages();
   validateItemTestContracts();
 }
 
 const readme = read('README.md');
 const northStar = read('docs/NORTH-STAR.md');
 const notesIntegration = read('docs/NOTES-INTEGRATION.md');
+const hardeningDoc = read('docs/PRODUCT-HARDENING.md');
+const buildingDoc = read('BUILDING.md');
 if (!readme.includes('## Future-agent quickstart')) fail('README future-agent handoff is missing');
 if (!readme.includes('Open `#/dashboard` for the active Product Hardening Dashboard') && !readme.includes('Use `#/dashboard` for the active Product Hardening Dashboard')) fail('README does not direct agents to the product-hardening dashboard');
-if (!/Pick the highest-priority Product Build Next item/i.test(readme)) fail('README does not direct agents to the highest-priority Product Build Next item');
+if (!/Start with the highest-priority Product Build Next item/i.test(readme)) fail('README does not preserve highest-priority Product Build Next as the entry point');
+if (!/recommended coherent work package/i.test(readme)) fail('README does not encourage coherent multi-item work packages');
+if (!/same ownership area/i.test(readme)) fail('README does not constrain batching to the same ownership area');
+if (!/Every item advanced or closed still needs its own acceptance criteria/i.test(readme)) fail('README does not preserve atomic item-specific proof inside work packages');
 if (!readme.includes('data/product-hardening/product-hardening-queue.js')) fail('README does not name the product-hardening queue source of truth');
+if (!readme.includes('data/product-hardening/work-packages.js')) fail('README does not name the work-package source of truth');
+if (!buildingDoc.includes('## Coherent work-package burn-down') || !buildingDoc.includes('one PR -> one coherent engineering area -> potentially many queue items')) fail('BUILDING.md does not define multi-item work-package burn-down');
+if (!hardeningDoc.includes('## Coherent work packages') || !hardeningDoc.includes('Work-package batching does not weaken this contract')) fail('product-hardening doc does not preserve package efficiency plus atomic proof');
 if (!readme.includes('platocres/obol-source-notes')) fail('README does not point to the private notes source repo');
 if (!readme.includes('[`docs/NOTES-INTEGRATION.md`](docs/NOTES-INTEGRATION.md)')) fail('README does not point agents to the notes-integration boundary');
 if (!/normalized|derived/i.test(notesIntegration)) fail('notes integration doc does not preserve the normalized public-output boundary');
 if (!readme.includes('<!-- OBOL-PRODUCT-BUILD-NEXT:START -->') || !readme.includes('<!-- OBOL-PRODUCT-BUILD-NEXT:END -->')) fail('README Product Build Next markers are missing');
 if (!readme.includes('This block is generated from `data/product-hardening/product-hardening-queue.js`. Do not edit it manually.')) fail('README Product Build Next block is not marked generated');
+if (!readme.includes('Recommended work-package metadata comes from `data/product-hardening/work-packages.js`.')) fail('README generated block omits work-package source');
+if (!readme.includes('**Recommended work package:**')) fail('README generated block omits recommended work package');
 const currentRelease = readme.match(/Current release:\s*\*\*v(\d+\.\d+(?:\.\d+)?)\*\*/);
 if (!currentRelease || !/^9\./.test(currentRelease[1])) fail('README must expose the current v9 product-hardening release without calling v8.8 current');
 if (readme.includes('Current release: **v8.8**')) fail('README must not call v8.8 the current release');
@@ -98,17 +124,18 @@ if (!northStar.includes('## Current v8.8 baseline') || !northStar.includes('cano
 if (readme.includes('<!-- OBOL-BUILD-NEXT:START -->')) fail('README must not restore the retired Orange Build Next block');
 
 const dashboard = read('product-hardening.html');
-for (const ref of ['data/current-release.js','data/product-hardening/product-hardening-queue.js','assets/product-hardening-dashboard.js','assets/product-hardening-dashboard.css']) if (!dashboard.includes(ref)) fail('product-hardening.html is not wired to ' + ref);
+for (const ref of ['data/current-release.js','data/product-hardening/product-hardening-queue.js','data/product-hardening/work-packages.js','assets/product-hardening-dashboard.js','assets/product-hardening-dashboard.css']) if (!dashboard.includes(ref)) fail('product-hardening.html is not wired to ' + ref);
 
 const app = read('assets/app-v8.8.js');
-for (const token of ["RELEASE_SOURCE='data/current-release.js'",'window.OBOL_CURRENT_RELEASE','ensureProductAssets88','renderProductDashboard88','data/product-hardening/product-hardening-queue.js','assets/product-hardening-dashboard.js','active product-hardening queue surface']) if (!app.includes(token)) fail('app dashboard bridge missing token: ' + token);
+for (const token of ["RELEASE_SOURCE='data/current-release.js'",'window.OBOL_CURRENT_RELEASE','ensureProductAssets88','renderProductDashboard88','data/product-hardening/product-hardening-queue.js','data/product-hardening/work-packages.js','window.OBOL_PRODUCT_HARDENING_WORK_PACKAGES','assets/product-hardening-dashboard.js','active product-hardening queue surface']) if (!app.includes(token)) fail('app dashboard bridge missing token: ' + token);
 if (/const PRODUCT_RELEASE=/.test(app)) fail('app dashboard bridge retains competing hard-coded current release');
 
 const renderer = read('assets/product-hardening-dashboard.js');
-for (const token of ['window.OBOL_CURRENT_RELEASE','q.totals()', 'q.trackSummary()', 'q.buildNext(8)', 'q.notes.privateRepo']) if (!renderer.includes(token)) fail('dashboard renderer no longer consumes ' + token);
+for (const token of ['window.OBOL_CURRENT_RELEASE','window.OBOL_PRODUCT_HARDENING_WORK_PACKAGES','wp.recommend(q)','q.totals()', 'q.trackSummary()', 'q.buildNext(8)', 'q.notes.privateRepo','Recommended work package']) if (!renderer.includes(token)) fail('dashboard renderer no longer consumes ' + token);
 
 for (const forbidden of ['data/project-model-v9.0.js','assets/core-v9.0.js','assets/app-v9.0.js','assets/obol-v9.0.css','data/project-model-v9.1.js','assets/core-v9.1.js','assets/app-v9.1.js','assets/obol-v9.1.css','data/project-model-v9.2.js','assets/core-v9.2.js','assets/app-v9.2.js','assets/obol-v9.2.css']) if (exists(forbidden)) fail('product-hardening release created forbidden fake runtime overlay: ' + forbidden);
 const rawNoteFiles = walk(root).filter(f => /\.enex$/i.test(f));
 if (rawNoteFiles.length) fail('raw ENEX files must not be committed to public Obol: ' + rawNoteFiles.join(', '));
 if (failures.length) { console.error('product-hardening validation failed:'); for (const message of failures) console.error('- ' + message); process.exit(1); }
-console.log('Product hardening guardrails valid:', q.items.length, 'items across', q.tracks.length, 'tracks;', q.totals().notes, 'notes and', q.totals().resources, 'resources accounted.');
+const rec = workPackages && workPackages.recommend(q);
+console.log('Product hardening guardrails valid:', q.items.length, 'items across', q.tracks.length, 'tracks;', q.totals().notes, 'notes and', q.totals().resources, 'resources accounted; recommended package:', rec ? rec.title : 'none');
