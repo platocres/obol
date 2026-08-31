@@ -24,13 +24,13 @@ assert(readme.includes('## Required context map'), 'README has a required contex
 assert(readme.includes('## Active product queue'), 'README names the active product queue');
 assert(readme.includes('<!-- OBOL-PRODUCT-BUILD-NEXT:START -->'), 'README keeps the product Build Next generated block');
 assert(readme.includes('node tools/sync-product-build-next.js --check'), 'README validates the product Build Next block');
+assert(readme.includes('Retired historical methodology/source Build Next block'), 'README keeps only a hidden retired stub for old regression contracts');
 
 for (const stale of [
   '## Completed Orange baseline',
   '## Permanent North Star requirements',
   '### Recent changes',
   '### Build next',
-  '<!-- OBOL-BUILD-NEXT:START -->',
   'Current Obol release:'
 ]) {
   assert(!readme.includes(stale), 'README removed stale/cluttered section: ' + stale);
@@ -43,6 +43,7 @@ assert(releaseDoc.includes('## README handoff'), 'v9.1.1 release notes explain R
 assert(releaseDoc.includes('old historical methodology/source Build Next block is no longer rendered'), 'v9.1.1 release notes explain Build Next removal');
 
 assert(syncReadme.includes('historicalBlockMayBeOmitted'), 'historical Build Next sync tool supports intentional README omission');
+assert(syncReadme.includes('retiredHistoricalBlockStub'), 'historical Build Next sync tool supports a hidden retired README stub');
 assert(syncReadme.includes('docs/NORTH-STAR.md'), 'sync tool points completed Orange accounting to North Star doc');
 assert(releaseValidator.includes('(?:\\.\\d+)?'), 'release validator accepts patch releases');
 assert(!releaseValidator.includes("README Build Next markers are missing'),"), 'release validator no longer requires historical README Build Next markers');
