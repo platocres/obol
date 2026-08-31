@@ -11,6 +11,7 @@ if(!C||!projectModel)throw new Error('Current project model unavailable');
 
 const START='<!-- OBOL-BUILD-NEXT:START -->';
 const END='<!-- OBOL-BUILD-NEXT:END -->';
+const RETIRED_STUB='Retired historical methodology/source Build Next block';
 function clean(s){return String(s||'').replace(/\s+/g,' ').trim();}
 function rowLine(r,i){return `${i+1}. **${clean(r.label)}** — ${clean(r.file||'project-wide')} · ${clean(r.kind).replace(/-/g,' ')}.`;}
 function currentProject(){return projectModel(C.newState(),lanes);}
@@ -34,6 +35,11 @@ function render(){
 }
 function hasCompleteBlock(readme){const a=readme.indexOf(START),b=readme.indexOf(END);return a>=0&&b>a;}
 function hasPartialBlock(readme){return readme.includes(START)||readme.includes(END);}
+function retiredHistoricalBlockStub(readme){
+  const a=readme.indexOf(START),b=readme.indexOf(END);
+  if(a<0||b<a)return false;
+  return readme.slice(a,b+END.length).includes(RETIRED_STUB);
+}
 function historicalBlockMayBeOmitted(){
   const p=currentProject();
   return p&&p.buildNext&&p.buildNext.total===0&&p.quality&&p.quality.implementedQuality===0&&p.quality.mappedDelivery===0&&p.quality.canonicalGaps===0;
@@ -45,6 +51,7 @@ function replaceBlock(readme,block){
     throw new Error('README Build Next markers are missing while methodology/source Build Next still has live work');
   }
   if(a<0||b<a)throw new Error('README Build Next markers are malformed');
+  if(retiredHistoricalBlockStub(readme)&&historicalBlockMayBeOmitted())return readme;
   return readme.slice(0,a)+block+readme.slice(b+END.length);
 }
 const readmePath=path.join(root,'README.md'),mode=process.argv[2]||'--check',block=render();
