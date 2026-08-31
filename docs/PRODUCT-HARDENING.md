@@ -32,7 +32,7 @@ The active queue exists to make Obol feel like a coherent product rather than an
 - quiet browser-side performance improvements that preserve the "visit the site and use it" experience;
 - browser/visual QA strong enough to catch broken assets, route errors, stale version text, contrast problems, and obvious UI regressions.
 
-Do not implement these goals by adding a new versioned product-hardening runtime file for every release. The queue data should evolve while stable owners remain stable.
+Do not implement these goals by adding a new versioned product-hardening runtime file for every release. The queue data and stable work-package metadata should evolve while stable owners remain stable.
 
 ## Current release authority
 
@@ -52,11 +52,11 @@ Future asset-manifest work may replace hand-maintained load order, but it must p
 
 ## Single dashboard rule
 
-Product hardening must have one quantified dashboard surface. The dashboard top should make overall progress obvious through figures, progress bars, and Build Next. Detailed ledgers belong below the high-level summary.
+Product hardening must have one quantified dashboard surface. The dashboard top should make overall progress obvious through figures, progress bars, the recommended coherent work package, and the broader Build Next queue. Detailed ledgers belong below the high-level summary.
 
 The in-app `#/dashboard` route is the active Product Hardening Dashboard. `product-hardening.html` remains a standalone entrypoint for the same queue data. The completed v8.8 Orange methodology/source dashboard is a baseline summary, not the active product queue.
 
-The dashboard and README Product Build Next block must consume the same queue data from `data/product-hardening/product-hardening-queue.js`.
+The dashboard and README Product Build Next block must consume the same atomic queue data from `data/product-hardening/product-hardening-queue.js` and the same package metadata from `data/product-hardening/work-packages.js`.
 
 ## Single open PR rule
 
@@ -82,6 +82,26 @@ The current tracks are:
 
 Future work should update the queue data directly rather than creating version-specific product-hardening runtime layers.
 
+## Coherent work packages
+
+The Product Build Next queue remains atomic, but the unit of engineering execution can be larger than one item. `data/product-hardening/work-packages.js` groups related queue items into coherent work packages so agents can make meaningful progress while they already have the relevant ownership area and tests loaded into context.
+
+Each package records:
+
+- `ownershipArea` - the architectural/product surface that binds the work together;
+- `itemIds` - atomic queue items that are reasonable to implement together;
+- `dependencies` - package-level sequencing dependencies;
+- `relatedItems` - nearby work worth considering without automatically expanding scope;
+- `parallelSafe` - whether the package's internal work is naturally separable; this does not override the one-open-PR rule;
+- `recommendedBatch` - whether the package should normally be treated as a multi-item burn-down;
+- `guidance` - a concise description of why the items belong together.
+
+The highest-priority queued item remains authoritative for where work begins. The work-package layer does not reorder the queue or hide priority. It takes that entry item and tells the agent which adjacent/dependency-linked items can reasonably be completed in the same architectural pass.
+
+Agents should complete as many live package items as safely fit the same ownership area, architectural context, migration boundary, and test strategy. They should not stop after one item merely because its acceptance criteria pass when additional same-package work can be completed and fully proven without materially increasing blast radius.
+
+The opposite rule matters just as much: do not use work packages as an excuse to bundle unrelated changes. Stop expanding the package when the next item changes ownership area, requires substantially different reasoning or migration work, or makes the PR harder to review, validate, and roll back.
+
 ## Item-specific Definition of Done
 
 Product-hardening queue items are not allowed to drift into vibes. Any item that leaves `queued` status must have an item-specific test contract in `data/product-hardening/item-test-contracts.js`.
@@ -94,23 +114,26 @@ That contract must name:
 
 `tools/validate-product-hardening-queue.js` fails when a `modeled`, `complete`, `superseded`, or `rejected` item lacks that proof. This protects future builds from marking queue work done without tests.
 
+Work-package batching does not weaken this contract. If one PR closes five queue items, all five items need their own status/proof/test coverage. Package-level coherence is for development efficiency; item-level proof remains the accountability boundary.
+
 Historical regression suites are preservation boundaries, not README-layout locks. They should prove the historical model/behavior they own and durable current structural contracts where truly necessary. They must not force retired Orange-era README wording, historical Build Next blocks, or mutable current-release values back into the active handoff.
 
 ## Future-agent workflow
 
 1. Read `README.md`.
-2. Read `BUILDING.md` for the exact release workflow, validation tiers, and exact-head merge rule.
+2. Read `BUILDING.md` for the exact release workflow, validation tiers, coherent package rules, and exact-head merge rule.
 3. Review this document and `docs/ARCHITECTURE.md` before changing runtime ownership or queue architecture.
 4. Check open PRs and continue the active release/product-hardening PR if one exists.
-5. Review Product Build Next in `#/dashboard` or `data/product-hardening/product-hardening-queue.js`.
-6. Pick the highest-priority live queue item unless the user explicitly directs otherwise.
-7. Build the item without adding unnecessary compatibility shims or release-only ownership layers.
-8. Update the product-hardening queue data when the item disposition changes.
-9. Add or update that item's acceptance criteria, validation commands, proof files, and item-specific tests.
-10. When the product release changes, update `data/current-release.js` and synchronize README with `node tools/sync-current-release.js --write`.
-11. Sync Product Build Next and any dashboard/readme projections sourced from the queue.
-12. Run the required validation from `BUILDING.md`.
-13. Push one coherent release PR and do not merge until the exact final head is green.
+5. Review Product Build Next in `#/dashboard` or inspect `data/product-hardening/product-hardening-queue.js` plus `data/product-hardening/work-packages.js`.
+6. Start with the highest-priority live queue item unless the user explicitly directs otherwise. Treat it as the entry point into the recommended work package rather than a one-item limit.
+7. Inspect live package items, dependencies, and related items. Complete as many as safely fit the same ownership area and blast radius without adding unnecessary compatibility shims or release-only ownership layers.
+8. Update each product-hardening queue item independently when its disposition changes.
+9. Add or update each changed item's acceptance criteria, validation commands, proof files, and item-specific tests.
+10. Stop package expansion when the next item materially changes architectural context, migration risk, ownership, or test strategy. Do not batch unrelated work for item-count optics.
+11. When the product release changes, update `data/current-release.js` and synchronize README with `node tools/sync-current-release.js --write`.
+12. Sync Product Build Next and the work-package projection with `node tools/sync-product-build-next.js --write`.
+13. Run the required validation from `BUILDING.md`.
+14. Keep the coherent package in the one active release PR and do not merge until the exact final head is green.
 
 ## Notes source boundary
 
