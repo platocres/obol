@@ -6,14 +6,44 @@ const vm = require('vm');
 
 const root = path.join(__dirname, '..');
 const queueFile = path.join(root, 'data', 'product-hardening', 'product-hardening-queue.js');
+const workPackagesFile = path.join(root, 'data', 'product-hardening', 'work-packages.js');
 const readmeFile = path.join(root, 'README.md');
 const sandbox = { window: {}, globalThis: null };
 sandbox.globalThis = sandbox.window;
 vm.createContext(sandbox);
 vm.runInContext(fs.readFileSync(queueFile, 'utf8'), sandbox, { filename: queueFile });
+vm.runInContext(fs.readFileSync(workPackagesFile, 'utf8'), sandbox, { filename: workPackagesFile });
 
 const q = sandbox.window.OBOL_PRODUCT_HARDENING;
+const workPackages = sandbox.window.OBOL_PRODUCT_HARDENING_WORK_PACKAGES;
 if (!q) throw new Error('Product-hardening queue not exposed');
+if (!workPackages) throw new Error('Product-hardening work-package metadata not exposed');
+const packageFailures = workPackages.validate(q);
+if (packageFailures.length) throw new Error('Invalid product-hardening work packages:\n- ' + packageFailures.join('\n- '));
+
+function packageLines() {
+  const rec = workPackages.recommend(q);
+  if (!rec || !rec.entryItem) return [];
+  const itemMap = new Map(q.items.map(item => [item.id, item]));
+  const live = rec.liveItems || [];
+  const tracked = rec.itemIds || [];
+  const dependencies = (rec.dependencies || []).map(id => {
+    const pkg = workPackages.packages.find(candidate => candidate.id === id);
+    return pkg ? pkg.title : id;
+  });
+  const related = (rec.relatedItems || []).map(id => itemMap.get(id)).filter(Boolean);
+  return [
+    '**Recommended work package:** **' + rec.title + '** — ' + live.length + ' live item' + (live.length === 1 ? '' : 's') + ' / ' + tracked.length + ' tracked.',
+    '**Work-package entry:** **' + rec.entryItem.label + '**',
+    '**Ownership area:** `' + rec.ownershipArea + '`',
+    '**Package guidance:** ' + rec.guidance,
+    dependencies.length ? '**Package dependencies:** ' + dependencies.join(', ') : '**Package dependencies:** none.',
+    '',
+    '**Live items in this package:**',
+    ...(live.length ? live.map(item => '- **' + item.label + '** — ' + item.detail) : ['- No queued items remain in this package.']),
+    ...(related.length ? ['', '**Related items to consider, not automatically in scope:** ' + related.map(item => item.label).join('; ') + '.'] : [])
+  ];
+}
 
 function block() {
   const totals = q.totals();
@@ -22,9 +52,12 @@ function block() {
   return [
     '<!-- OBOL-PRODUCT-BUILD-NEXT:START -->',
     'This block is generated from `data/product-hardening/product-hardening-queue.js`. Do not edit it manually.',
+    'Recommended work-package metadata comes from `data/product-hardening/work-packages.js`.',
     '',
     '**Current product-hardening queue:** ' + totals.complete + '/' + totals.total + ' complete (' + totals.pct + '%), ' + totals.queued + ' queued, ' + totals.modeled + ' foundation items modeled.',
     '**Private notes source:** `' + q.notes.privateRepo + '` — ' + totals.notes + ' notes and ' + totals.resources + ' embedded resources accounted.',
+    '',
+    ...packageLines(),
     '',
     '**Highest-priority live items:**',
     ...next.map((i, idx) => (idx + 1) + '. **' + i.label + '** — ' + i.detail),
