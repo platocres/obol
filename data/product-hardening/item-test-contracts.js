@@ -16,6 +16,11 @@ const contracts={
   validationCommands:['node tools/validate-version-identity.js','node tools/validate-current-release.js','node tests/run-v9.4-tests.js'],
   proofFiles:['data/current-release.js','assets/app-v8.8.js','tools/validate-version-identity.js','tests/run-v9.4-tests.js','docs/v9.4.md']
  },
+ 'cc-link-contrast':{
+  acceptance:['Current workspace and Product Hardening Dashboard links use stable dark-theme link and hover colors that meet at least WCAG AA 4.5:1 contrast against supported dark panel/background surfaces, with visible focus treatment that is not conveyed by color alone.'],
+  validationCommands:['node tools/validate-accessibility-contract.js','node tests/run-v9.5-tests.js'],
+  proofFiles:['assets/accessibility.css','assets/product-hardening-dashboard.css','tools/validate-accessibility-contract.js','tests/run-v9.5-tests.js','docs/visual-qa/contrast-focus.md','docs/v9.5.md']
+ },
  'dash-product-foundation':{
   acceptance:['Product Hardening Dashboard renders quantified totals, Build Next, track ledger, full seeded work ledger, and private notes source status from queue data.'],
   validationCommands:['node tools/validate-product-hardening-queue.js','node tests/run-v9.0-tests.js'],
@@ -36,6 +41,11 @@ const contracts={
   validationCommands:['node tests/run-v9.0-tests.js'],
   proofFiles:['assets/product-hardening-dashboard.js','product-hardening.html']
  },
+ 'ux-keyboard-focus':{
+  acceptance:['Native controls and existing non-native interactive workspace surfaces expose a clearly visible focus-visible ring; card headers, state cards, phase/toggle chips, facts, progress/timer controls, and lane tabs are keyboard reachable and activate with Enter or Space; open modals receive dialog semantics, initial focus, contained Tab order, and focus restoration on close.'],
+  validationCommands:['node tools/validate-accessibility-contract.js','node tests/run-v9.5-tests.js'],
+  proofFiles:['assets/accessibility.css','assets/accessibility.js','assets/app-v8.8.js','tools/validate-accessibility-contract.js','tests/run-v9.5-tests.js','docs/visual-qa/contrast-focus.md','docs/v9.5.md']
+ },
  'notes-private-source-pointer':{
   acceptance:['Public Obol points agents to platocres/obol-source-notes and preserves the private raw-note boundary.'],
   validationCommands:['node tools/validate-product-hardening-queue.js','node tests/run-v9.0-tests.js'],
@@ -50,6 +60,11 @@ const contracts={
   acceptance:['A permanent deterministic version-identity gate proves browser title/header/settings, report metadata/footer normalization, README/dashboard release presentation, and sanitized export metadata consume the same current product release while preserving the v8.8 workspace schema identity.'],
   validationCommands:['node tools/validate-version-identity.js','node tools/validate-current-release.js','node tests/run-v9.4-tests.js'],
   proofFiles:['tools/validate-version-identity.js','tools/validate-current-release.js','tools/release-preflight.js','tests/run-v9.4-tests.js','data/current-release.js','assets/app-v8.8.js']
+ },
+ 'qa-contrast-test':{
+  acceptance:['A permanent deterministic accessibility validator calculates link/hover contrast against supported dark surfaces, verifies focus-visible and forced-colors contracts, verifies keyboard activation/modal focus management, and requires a screenshot-assisted visual QA checklist covering representative routes and viewport sizes.'],
+  validationCommands:['node tools/validate-accessibility-contract.js','node tests/run-v9.5-tests.js'],
+  proofFiles:['tools/validate-accessibility-contract.js','assets/accessibility.css','assets/accessibility.js','assets/product-hardening-dashboard.css','docs/visual-qa/contrast-focus.md','tests/run-v9.5-tests.js']
  },
  'qa-dashboard-sync':{
   acceptance:['Dashboard renderer consumes queue totals, track summary, Build Next, and notes repo data from one queue source.'],
@@ -68,5 +83,5 @@ const contracts={
  }
 };
 const requiredForStatuses=['modeled','complete','superseded','rejected'];
-root.OBOL_PRODUCT_HARDENING_TEST_CONTRACTS={version:'9.4.0',requiredForStatuses,contracts};
+root.OBOL_PRODUCT_HARDENING_TEST_CONTRACTS={version:'9.5.0',requiredForStatuses,contracts};
 })(typeof window!=='undefined'?window:globalThis);

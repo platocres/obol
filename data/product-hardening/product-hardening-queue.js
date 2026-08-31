@@ -1,21 +1,21 @@
 'use strict';
 (function(root){
 const tracks=[
- {id:'critical-correctness',label:'Critical correctness',goal:'Fix defects that undermine trust in the app or generated reports.',complete:3,total:4},
+ {id:'critical-correctness',label:'Critical correctness',goal:'Fix defects that undermine trust in the app or generated reports.',complete:4,total:4},
  {id:'architecture-runtime',label:'Architecture / runtime',goal:'Compact the sedimentary runtime without breaking historical behavior.',complete:0,total:10},
- {id:'ui-ux',label:'UI / UX repair',goal:'Make the primary workflow user-first and keep build metrics in dashboard surfaces.',complete:0,total:8},
+ {id:'ui-ux',label:'UI / UX repair',goal:'Make the primary workflow user-first and keep build metrics in dashboard surfaces.',complete:1,total:8},
  {id:'tool-builders',label:'Tool GUI builders',goal:'Every runnable tool/action gets a schema-driven GUI builder or explicit supersession.',complete:0,total:18},
  {id:'credential-modes',label:'Credential modes',goal:'Credential-heavy builders expose clear password/hash/ticket/cert/key mode selection.',complete:0,total:14},
  {id:'manual-outcomes',label:'Manual outcomes',goal:'Every executable action can be marked successful, failed, blocked, or skipped without corrupting proof.',complete:0,total:8},
  {id:'notes-integration',label:'Notes integration',goal:'Atomize Brandon\'s HTB and OffSec source notes into normalized Obol guidance.',complete:0,total:556},
  {id:'offline-performance',label:'Offline / performance',goal:'Use browser-native caching, storage, and worker features without install prompts.',complete:0,total:6},
- {id:'testing-qa',label:'Testing / visual QA',goal:'Make broken assets, version drift, route failures, and contrast regressions hard to ship.',complete:1,total:8}
+ {id:'testing-qa',label:'Testing / visual QA',goal:'Make broken assets, version drift, route failures, and contrast regressions hard to ship.',complete:2,total:8}
 ];
 const items=[
  {id:'cc-version-authority',track:'critical-correctness',status:'complete',priority:1,label:'Create one version authority',detail:'Header, title, settings, report preview, report footer, export metadata, README, and dashboard must consume one current-version source.'},
  {id:'cc-asset-validation',track:'critical-correctness',status:'complete',priority:2,label:'Validate every referenced asset',detail:'Parse HTML entrypoints and fail CI when any script, stylesheet, or static asset reference is missing.'},
  {id:'cc-report-version',track:'critical-correctness',status:'complete',priority:3,label:'Normalize report version identity',detail:'Generated report text and footers must not retain stale historical version strings.'},
- {id:'cc-link-contrast',track:'critical-correctness',status:'queued',priority:4,label:'Fix dark-theme link contrast',detail:'Dark-blue links on dark panels need readable contrast, hover, and focus states.'},
+ {id:'cc-link-contrast',track:'critical-correctness',status:'complete',priority:4,label:'Fix dark-theme link contrast',detail:'Dark-blue links on dark panels need readable contrast, hover, and focus states.'},
  {id:'dash-product-foundation',track:'architecture-runtime',status:'modeled',priority:5,label:'Product Hardening Dashboard foundation',detail:'v9.0 creates the single quantified dashboard and queue model for the product-hardening phase.'},
  {id:'readme-product-build-next',track:'architecture-runtime',status:'modeled',priority:6,label:'Generated README Product Build Next',detail:'README contains a generated product-hardening block fed from the same queue data as the dashboard.'},
  {id:'runtime-current-entry',track:'architecture-runtime',status:'queued',priority:7,label:'Current runtime entrypoint',detail:'Move toward one current browser entrypoint and one current Node loader boundary instead of expanding historical load arrays forever.'},
@@ -32,7 +32,7 @@ const items=[
  {id:'ux-path-clarity',track:'ui-ux',status:'queued',priority:24,label:'Improve Path clarity',detail:'Path should make the best next move, unlocks, queued actions, and blockers obvious.'},
  {id:'ux-progressive-notes',track:'ui-ux',status:'queued',priority:25,label:'Design contextual field-notes disclosure',detail:'Notes should appear as expandable relevant context, not as a dumped notebook.'},
  {id:'ux-mobile-density',track:'ui-ux',status:'queued',priority:26,label:'Review responsive density',detail:'Check dashboard and builders on small screens, narrow laptops, and exam-like layouts.'},
- {id:'ux-keyboard-focus',track:'ui-ux',status:'queued',priority:27,label:'Keyboard and focus pass',detail:'Command builders, toggles, outcome controls, modals, and dashboard drilldowns need clear focus behavior.'},
+ {id:'ux-keyboard-focus',track:'ui-ux',status:'complete',priority:27,label:'Keyboard and focus pass',detail:'Command builders, toggles, outcome controls, modals, and dashboard drilldowns need clear focus behavior.'},
  {id:'tb-schema',track:'tool-builders',status:'queued',priority:30,label:'Define Tool Builder schema',detail:'A data-driven schema must describe inputs, toggles, target autofill, credential modes, output options, evidence expectations, and report lineage.'},
  {id:'tb-renderer',track:'tool-builders',status:'queued',priority:31,label:'Build generic Tool Builder renderer',detail:'One renderer should power tool GUIs instead of custom JavaScript per tool.'},
  {id:'tb-nmap',track:'tool-builders',status:'queued',priority:32,label:'Nmap GUI builder',detail:'Targets view gets a canonical Nmap launchpad with toggles for ports, scripts, timing, output files, discovery, and canonical scan profiles.'},
@@ -89,7 +89,7 @@ const items=[
  {id:'perf-storage-migration',track:'offline-performance',status:'queued',priority:95,label:'Workspace storage migration safety',detail:'Any storage refactor must preserve existing browser-local workspaces and sanitized exports.'},
  {id:'qa-playwright-smoke',track:'testing-qa',status:'queued',priority:100,label:'Playwright browser smoke tests',detail:'Open core routes, fail on console errors, and capture screenshots for Home, Targets, Evidence, Next Steps, Report, and Dashboard.'},
  {id:'qa-version-test',track:'testing-qa',status:'complete',priority:101,label:'Version identity test',detail:'Assert title, header, settings, report preview, report footer, and export metadata agree.'},
- {id:'qa-contrast-test',track:'testing-qa',status:'queued',priority:102,label:'Contrast and focus checks',detail:'Automated and screenshot-assisted checks should catch invisible links and weak focus states.'},
+ {id:'qa-contrast-test',track:'testing-qa',status:'complete',priority:102,label:'Contrast and focus checks',detail:'Automated and screenshot-assisted checks should catch invisible links and weak focus states.'},
  {id:'qa-dashboard-sync',track:'testing-qa',status:'modeled',priority:103,label:'Dashboard and README sync validation',detail:'v9.0 adds validation that README Product Build Next and dashboard totals come from the same queue data.'},
  {id:'qa-asset-test',track:'testing-qa',status:'modeled',priority:104,label:'Asset reference validation',detail:'v9.0 adds an asset reference checker to stop dead script/style tags from shipping.'},
  {id:'qa-builder-contract-test',track:'testing-qa',status:'queued',priority:105,label:'Tool builder contract tests',detail:'Every implemented builder must satisfy schema, rendering, command, evidence, manual outcome, and report-lineage checks.'},
