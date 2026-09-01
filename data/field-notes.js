@@ -14,9 +14,10 @@ function normalizedEntries(list){return Object.freeze((Array.isArray(list)?list:
 function matches(entry,context){
  context=context||{};
  const cardId=String(context.cardId||''),toolId=String(context.toolId||''),pathId=String(context.pathId||'');
+ const toolIds=new Set(cleanTags(context.toolIds).concat(toolId?[toolId]:[]).map(x=>x.toLowerCase()));
  const tags=new Set(cleanTags(context.tags).map(x=>x.toLowerCase()));
  if(cardId&&entry.cardIds.includes(cardId))return true;
- if(toolId&&entry.toolIds.includes(toolId))return true;
+ if(toolIds.size&&entry.toolIds.some(t=>toolIds.has(String(t).toLowerCase())))return true;
  if(pathId&&entry.pathIds.includes(pathId))return true;
  if(tags.size&&entry.tags.some(t=>tags.has(String(t).toLowerCase())))return true;
  return false;
