@@ -8,9 +8,9 @@ function cardContext(rootEl){
  const cardEl=rootEl&&rootEl.closest?rootEl.closest('[data-cardroot]'):null;
  const cardId=cardEl&&cardEl.dataset?cardEl.dataset.cardroot:'';
  let card=null;try{card=cardId&&typeof CARDS!=='undefined'?CARDS[cardId]:null;}catch(err){}
- const tags=[];
- if(card){if(card.tool)tags.push(card.tool);for(const cmd of card.commands||[])if(cmd.tool)tags.push(cmd.tool);}
- return{cardId,tags};
+ const toolIds=[],tags=[];
+ if(card){if(card.tool){toolIds.push(card.tool);tags.push(card.tool);}for(const cmd of card.commands||[])if(cmd.tool){toolIds.push(cmd.tool);tags.push(cmd.tool);}}
+ return{cardId,toolIds:[...new Set(toolIds)],tags:[...new Set(tags)]};
 }
 function notesFor(context){const api=root.OBOL_FIELD_NOTES;return api&&typeof api.relevant==='function'?api.relevant(context):[];}
 function html(rows){
@@ -33,7 +33,7 @@ function decoratePath(){
  const wrap=document.createElement('div');wrap.dataset.fieldNotesPath='1';wrap.innerHTML=html(rows);shell.appendChild(wrap);
 }
 function decorate(){ensureStyle();decorateCards();decoratePath();}
-root.OBOL_FIELD_NOTES_UI=Object.freeze({version:'1.0.0',decorate,notesFor,html});
+root.OBOL_FIELD_NOTES_UI=Object.freeze({version:'1.0.0',decorate,notesFor,html,cardContext});
 for(const t of [0,80,240,700,1600])setTimeout(decorate,t);
 window.addEventListener('hashchange',()=>{for(const t of [20,120,420])setTimeout(decorate,t);});
 })(typeof window!=='undefined'?window:globalThis);
