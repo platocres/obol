@@ -127,6 +127,43 @@ The Path guidance also branches on downstream consumers such as browser renderin
 
 Report guidance now emphasizes positive server-side validation, non-executable controlled storage, server-owned randomized naming, authorized download mediation, parser isolation, least-privilege processing, resource limits, safe errors, and malware inspection where appropriate. Client-side checks and extension blacklists remain defense-in-depth rather than the primary security boundary.
 
+## v9.28 disposition review wave 3
+
+v9.28 layers `data/note-integration-reviews.js` over the stable base owner, advances the current public-safe projection to schema 1.3.0, and reviews another fourteen HTB notes. The cumulative ledger becomes:
+
+```text
+v9.28 wave 3
+reviewed: 55
+modeled: 43
+private-reference-only: 12
+superseded: 0
+rejected: 0
+pending-review: 501
+total: 556
+```
+
+The burn-down item remains queued. Wave 3 adds eleven modeled decisions and three private-reference-only decisions while the public projection grows from eighteen to twenty-four Field Notes.
+
+### Upload acceptance versus demonstrated impact
+
+Obol now makes the upload proof boundary explicit even when validation is absent. File acceptance, stored filename and location, reachability, server serving or processing behavior, executable interpretation, and downstream effect are separate states. An accepted upload alone is not evidence of execution or meaningful impact.
+
+### File-inclusion scanning and interpretation
+
+File-inclusion automation begins from one reproducible file-read response and widens parameters, traversal depth, encoding, wrappers, and wordlists one dimension at a time. A controllable include target can yield a plain file read, transformed source disclosure, failed resolution, remote retrieval, or executable interpretation; the workspace records the behavior actually observed rather than assuming all inclusion primitives imply execution.
+
+### Cross-source inclusion chains
+
+Upload-assisted and remote-file inclusion are modeled as multi-boundary chains. Attacker control of a source, source location or URL, target-side retrieval/inclusion, runtime interpretation, and command effect all require their own reviewed Evidence. Operator-hosted content or successful storage does not prove the later stages.
+
+### File-inclusion and XSS remediation
+
+File-inclusion remediation favors fixed server-side mappings or strict allowlists, canonicalization before authorization, constrained readable paths, and least-privilege processes rather than string-filter-only controls. XSS remediation emphasizes context-aware output encoding, safe DOM APIs, Content Security Policy as defense in depth, and hardened session cookies.
+
+### Current progress projection
+
+`data/product-hardening/note-progress-current.js` now derives the live Notes Integration completion count from the current note ledger. README generation and both Product Hardening Dashboard entrypoints therefore consume actual reviewed-note progress rather than a hard-coded release threshold.
+
 ## Dispositions
 
 Each note must eventually end in one of these terminal states:
@@ -160,7 +197,7 @@ A modeled source note is product-development lineage only. It does not establish
 - exact 556-note / 1,326-resource source accounting;
 - explicit terminal rows and rationale for every reviewed note;
 - current disposition reconciliation;
-- immutable historical v9.25 and v9.26 milestones;
+- immutable historical v9.25, v9.26, and v9.27 milestones plus the current v9.28 milestone;
 - reciprocal modeled-source-to-public-output lineage;
 - no output from non-modeled dispositions;
 - contextual Tool and Path bindings;

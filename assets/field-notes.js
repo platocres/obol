@@ -1,13 +1,15 @@
 'use strict';
 (function(root){
-const STYLE='assets/field-notes.css',INTEGRATION='data/note-integration.js';
+const STYLE='assets/field-notes.css',INTEGRATION='data/note-integration.js',REVIEWS='data/note-integration-reviews.js';
 let integrationLoading=null;
 function e(v){return String(v==null?'':v).replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));}
 function ensureStyle(){if(document.querySelector('link[data-obol-field-notes]')||document.querySelector('link[href="'+STYLE+'"]'))return;const l=document.createElement('link');l.rel='stylesheet';l.href=STYLE;l.dataset.obolFieldNotes='1';document.head.appendChild(l);}
+function addScript(src,marker){if(document.querySelector('script[src="'+src+'"]'))return Promise.resolve();return new Promise((resolve,reject)=>{const s=document.createElement('script');s.src=src;s.async=false;s.dataset[marker]='1';s.onload=resolve;s.onerror=()=>reject(new Error('Failed to load '+src));(document.head||document.documentElement).appendChild(s);});}
 function ensureIntegration(){
- if(root.OBOL_NOTE_INTEGRATION)return Promise.resolve(root.OBOL_NOTE_INTEGRATION);
+ if(root.OBOL_NOTE_INTEGRATION&&root.OBOL_NOTE_INTEGRATION.schemaVersion==='1.3.0')return Promise.resolve(root.OBOL_NOTE_INTEGRATION);
  if(integrationLoading)return integrationLoading;
- integrationLoading=new Promise((resolve,reject)=>{const existing=document.querySelector('script[src="'+INTEGRATION+'"]');if(existing){const wait=()=>root.OBOL_NOTE_INTEGRATION?resolve(root.OBOL_NOTE_INTEGRATION):setTimeout(wait,20);wait();return;}const s=document.createElement('script');s.src=INTEGRATION;s.async=false;s.dataset.obolFieldNotesIntegration='1';s.onload=()=>resolve(root.OBOL_NOTE_INTEGRATION||null);s.onerror=()=>reject(new Error('Failed to load '+INTEGRATION));(document.head||document.documentElement).appendChild(s);}).finally(()=>{if(!root.OBOL_NOTE_INTEGRATION)integrationLoading=null;});
+ const loadBase=root.OBOL_NOTE_INTEGRATION?Promise.resolve():addScript(INTEGRATION,'obolFieldNotesIntegration');
+ integrationLoading=loadBase.then(()=>addScript(REVIEWS,'obolFieldNotesReviews')).then(()=>root.OBOL_NOTE_INTEGRATION||null).finally(()=>{if(!root.OBOL_NOTE_INTEGRATION)integrationLoading=null;});
  return integrationLoading;
 }
 function parts(){return (location.hash||'#/home').replace(/^#\/?/,'').split('/').filter(Boolean);}
@@ -49,7 +51,7 @@ function decoratePath(){
 }
 function decorateNow(){ensureStyle();decorateCards();decorateTools();decoratePath();}
 function decorate(){ensureIntegration().then(decorateNow).catch(()=>{});}
-root.OBOL_FIELD_NOTES_UI=Object.freeze({version:'1.1.0',decorate,notesFor,html,cardContext,toolContext,ensureIntegration});
+root.OBOL_FIELD_NOTES_UI=Object.freeze({version:'1.2.0',decorate,notesFor,html,cardContext,toolContext,ensureIntegration});
 for(const t of [0,80,240,700,1600])setTimeout(decorate,t);
 window.addEventListener('hashchange',()=>{for(const t of [20,120,420])setTimeout(decorate,t);});
 })(typeof window!=='undefined'?window:globalThis);
