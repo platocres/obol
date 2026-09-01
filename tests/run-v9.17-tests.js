@@ -24,25 +24,21 @@ assert(q&&packages&&contracts&&schema&&inventory&&renderer&&builders,'v9.17 dura
 
 for(const id of ['tb-getnpusers','tb-getuserspns','tb-evilwinrm']){
  const item=q.items.find(entry=>entry.id===id);
- assert(item&&item.status==='complete','v9.17 completes '+id);
+ assert(item&&item.status==='complete','v9.17 milestone remains complete: '+id);
  assert(!q.buildNext(1000).some(entry=>entry.id===id),'completed v9.17 item stays out of Product Build Next: '+id);
  const contract=contracts.contracts[id];
- assert(contract&&contract.acceptance.length,id+' owns an item-specific Definition of Done');
- assert(contract.validationCommands.includes('node tests/run-v9.17-tests.js'),id+' contract names the v9.17 regression suite');
+ assert(contract&&contract.acceptance.length,id+' retains an item-specific Definition of Done');
+ assert(contract.validationCommands.includes('node tests/run-v9.17-tests.js'),id+' contract retains the v9.17 regression suite');
  for(const rel of contract.proofFiles)assert(exists(rel),'v9.17 proof file exists for '+id+': '+rel);
 }
-assert.strictEqual(contracts.version,'9.17.0','Product Hardening test-contract version advances to v9.17');
-assert.strictEqual(q.tracks.find(track=>track.id==='tool-builders').complete,13,'Tool Builder track advances to 13/18');
-assert.strictEqual(q.totals().complete,34,'overall Product Hardening completion advances to 34');
-assert.strictEqual(q.totals().queued,40,'three Tool Builder items leave the queued set');
-assert(q.buildNext(1)[0]&&q.buildNext(1)[0].id==='tb-certipy','Product Build Next advances to Certipy');
+assert(q.tracks.find(track=>track.id==='tool-builders').complete>=13,'Tool Builder track never regresses below the v9.17 milestone of 13/18');
+assert(q.totals().complete>=34,'overall Product Hardening completion never regresses below the v9.17 milestone of 34');
+assert(q.totals().queued<=40,'queued Product Hardening work does not exceed the v9.17 milestone of 40');
 const kerberosPackage=packages.packageForItem('tb-getnpusers');
-assert(kerberosPackage&&kerberosPackage.id==='kerberos-roast-builders','v9.17 models the Impacket Kerberos roasting pair explicitly');
+assert(kerberosPackage&&kerberosPackage.id==='kerberos-roast-builders','v9.17 keeps the Impacket Kerberos roasting pair explicitly modeled');
 assert.deepStrictEqual(Array.from(kerberosPackage.itemIds),['tb-getnpusers','tb-getuserspns'],'Kerberos roasting package contains only the two Impacket roasting builders');
 assert.strictEqual(packages.packageForItem('tb-evilwinrm'),null,'Evil-WinRM remains an independent remote-access builder rather than being classified as Kerberos roasting');
-assert(kerberosPackage.relatedItems.includes('tb-evilwinrm'),'Evil-WinRM may remain related Windows authentication work without being bundled into the Kerberos package');
-const recommendation=packages.recommend(q);
-assert(recommendation&&recommendation.entryItem.id==='tb-certipy','post-v9.17 work-package recommendation follows Certipy');
+assert(kerberosPackage.relatedItems.includes('tb-evilwinrm'),'Evil-WinRM remains related Windows authentication work without being bundled into the Kerberos package');
 
 assert.strictEqual(schema.schemaVersion,'1.0.0','stable Tool Builder schema identity is unchanged');
 assert.strictEqual(renderer.version,'1.0.0','stable Tool Builder renderer identity is unchanged');
@@ -86,9 +82,7 @@ for(const forbidden of ["require('child_process')",'child_process','spawnSync(',
 const bridge=read('assets/app-v8.8.js');
 for(const token of ['decorateCurrentToolBuilders88','builderForTool88','mountBuilder88'])assert(bridge.includes(token),'current browser bridge retains inventory-driven Tool Builder routing: '+token);
 
-const release=read('data/current-release.js');
-assert(release.includes("version:'9.17.0'")&&release.includes("label:'v9.17'"),'current release authority is v9.17');
-assert(exists('docs/v9.17.md'),'v9.17 release documentation exists');
+assert(exists('docs/v9.17.md'),'v9.17 release documentation remains available');
 for(const forbidden of ['assets/obol-v9.17.css','assets/app-v9.17.js','assets/core-v9.17.js','data/project-model-v9.17.js'])assert(!exists(forbidden),'no fake v9.17 runtime overlay: '+forbidden);
 
 for(const command of [
