@@ -4,7 +4,7 @@ Obol is a static, browser-local workspace for OSCP-style labs, Active Directory 
 
 Live site: `https://platocres.github.io/obol/`
 
-Current release: **v9.16**
+Current release: **v9.17**
 
 Open `#/dashboard` for the active Product Hardening Dashboard and Product Build Next queue.
 
@@ -66,35 +66,33 @@ The completed Orange methodology/source queue is historical, regression-protecte
 This block is generated from `data/product-hardening/product-hardening-queue.js`. Do not edit it manually.
 Recommended work-package metadata comes from `data/product-hardening/work-packages.js`.
 
-**Current product-hardening queue:** 31/632 complete (5%), 43 queued, 9 foundation items modeled.
+**Current product-hardening queue:** 34/632 complete (5%), 40 queued, 9 foundation items modeled.
 **Private notes source:** `platocres/obol-source-notes` — 556 notes and 1326 embedded resources accounted.
 
-**Recommended work package:** **GetNPUsers builder** — 1 live item / 1 tracked.
-**Work-package entry:** **GetNPUsers builder**
+**Recommended work package:** **Certipy builder** — 1 live item / 1 tracked.
+**Work-package entry:** **Certipy builder**
 **Ownership area:** `tool-builders`
 **Package guidance:** Complete the highest-priority item. Before stopping, inspect adjacent queue work for a coherent same-ownership package.
 **Package dependencies:** none.
 
 **Live items in this package:**
-- **GetNPUsers builder** — Support username sources, no-pass flow, DC/domain inputs, output file, and AS-REP hash handoff.
-- **GetUserSPNs builder** — Support auth modes, request mode, target domain/DC, output file, and TGS cracking handoff.
-- **Evil-WinRM builder** — Expose password, NT hash, SSL, scripts, uploads/downloads, and target context cleanly.
+- **Certipy builder** — AD CS workflows need mode-specific controls for find, req, auth, relay, shadow, account updates, and cleanup.
 
 **Highest-priority live items:**
-1. **GetNPUsers builder** — Support username sources, no-pass flow, DC/domain inputs, output file, and AS-REP hash handoff.
-2. **GetUserSPNs builder** — Support auth modes, request mode, target domain/DC, output file, and TGS cracking handoff.
-3. **Evil-WinRM builder** — Expose password, NT hash, SSL, scripts, uploads/downloads, and target context cleanly.
-4. **Certipy builder** — AD CS workflows need mode-specific controls for find, req, auth, relay, shadow, account updates, and cleanup.
-5. **sqlmap builder** — Support request files, URL params, cookies, risk/level, DBMS hints, tamper scripts, and safe output handling.
-6. **curl builder** — Headers, cookies, body, proxy, method, auth, uploads, and output options should be explicit toggles/fields.
-7. **chisel builder** — Expose client/server roles, reverse mode, SOCKS, remotes, ports, and cleanup guidance.
-8. **SSH / plink tunnel builders** — Create guided local, remote, and dynamic forwarding builders with Windows/Kali execution context.
+1. **Certipy builder** — AD CS workflows need mode-specific controls for find, req, auth, relay, shadow, account updates, and cleanup.
+2. **sqlmap builder** — Support request files, URL params, cookies, risk/level, DBMS hints, tamper scripts, and safe output handling.
+3. **curl builder** — Headers, cookies, body, proxy, method, auth, uploads, and output options should be explicit toggles/fields.
+4. **chisel builder** — Expose client/server roles, reverse mode, SOCKS, remotes, ports, and cleanup guidance.
+5. **SSH / plink tunnel builders** — Create guided local, remote, and dynamic forwarding builders with Windows/Kali execution context.
+6. **Credential Material schema** — Represent passwords, hashes, tickets, certificates, keys, cookies, and tokens as first-class typed materials.
+7. **Password mode controls** — Standard username/password inputs and escaping rules across all relevant builders.
+8. **NT hash and LM:NT mode controls** — Correct flags for tools that support pass-the-hash or LM:NT pair input.
 
 **Track status:**
 - **Critical correctness:** 4/4 complete (100%), 0 modeled.
 - **Architecture / runtime:** 6/10 complete (60%), 3 modeled.
 - **UI / UX repair:** 7/8 complete (88%), 1 modeled.
-- **Tool GUI builders:** 10/18 complete (56%), 0 modeled.
+- **Tool GUI builders:** 13/18 complete (72%), 0 modeled.
 - **Credential modes:** 0/14 complete (0%), 0 modeled.
 - **Manual outcomes:** 0/8 complete (0%), 0 modeled.
 - **Notes integration:** 0/556 complete (0%), 2 modeled.
@@ -151,6 +149,7 @@ node tests/run-v9.13-tests.js
 node tests/run-v9.14-tests.js
 node tests/run-v9.15-tests.js
 node tests/run-v9.16-tests.js
+node tests/run-v9.17-tests.js
 ```
 
 ## GitHub Pages
