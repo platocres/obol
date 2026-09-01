@@ -5,12 +5,14 @@ const path = require('path');
 const vm = require('vm');
 
 const root = path.join(__dirname, '..');
+const releaseFile = path.join(root, 'data', 'current-release.js');
 const queueFile = path.join(root, 'data', 'product-hardening', 'product-hardening-queue.js');
 const workPackagesFile = path.join(root, 'data', 'product-hardening', 'work-packages.js');
 const readmeFile = path.join(root, 'README.md');
 const sandbox = { window: {}, globalThis: null };
 sandbox.globalThis = sandbox.window;
 vm.createContext(sandbox);
+vm.runInContext(fs.readFileSync(releaseFile, 'utf8'), sandbox, { filename: releaseFile });
 vm.runInContext(fs.readFileSync(queueFile, 'utf8'), sandbox, { filename: queueFile });
 vm.runInContext(fs.readFileSync(workPackagesFile, 'utf8'), sandbox, { filename: workPackagesFile });
 
