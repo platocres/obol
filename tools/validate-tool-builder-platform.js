@@ -36,9 +36,12 @@ for(const tool of Object.keys(registry||{}))observed.add(inventory.key(tool));
 const missing=[...observed].filter(Boolean).filter(tool=>!inventory.get(tool)).sort();
 assert.deepStrictEqual(missing,[],`Tool Builder inventory is missing runnable tool dispositions: ${missing.join(', ')}`);
 
-const queueIds=new Set((queue.items||[]).map(item=>item.id));
-for(const record of inventory.all())if(record.queueItem)assert(queueIds.has(record.queueItem),'inventory references unknown queue item '+record.queueItem+' for '+record.tool);
-for(const record of inventory.all())if(record.status==='implemented'&&record.queueItem)assert(schema.get(record.queueItem),'implemented inventory item is missing schema-driven builder '+record.queueItem+' for '+record.tool);
+const queueById=new Map((queue.items||[]).map(item=>[item.id,item]));
+for(const record of inventory.all())if(record.queueItem)assert(queueById.has(record.queueItem),'inventory references unknown queue item '+record.queueItem+' for '+record.tool);
+for(const record of inventory.all())if(record.status==='implemented'&&record.queueItem){
+ assert(schema.get(record.queueItem),'implemented inventory item is missing schema-driven builder '+record.queueItem+' for '+record.tool);
+ assert.strictEqual(queueById.get(record.queueItem).status,'complete','implemented inventory item must be complete in Product Hardening queue: '+record.queueItem);
+}
 for(const required of ['nmap','netexec','hashcat','john','ffuf','gobuster','feroxbuster','impacket-secretsdump','impacket-getnpusers','impacket-getuserspns','evilwinrm','certipy','sqlmap','curl','chisel','ssh','plink'])assert(inventory.get(required),'representative runnable tool is absent from inventory: '+required);
 
 const fixture={
@@ -64,6 +67,29 @@ for(const token of ['data-tool-builder="fixture-network-scan"','aria-live="polit
 const invalid={...fixture,id:'fixture-auto-run',execute:true};
 assert(schema.validateBuilder(invalid).some(error=>error.includes('forbidden execution field')),'schema must reject automatic execution hooks');
 
+const conditionalFixture={
+ id:'fixture-conditional',tool:'curl',title:'Conditional fixture',summary:'Exercises reusable conditional, repeated, and concatenated command shapes.',executionContext:'kali',credentialModes:['password'],
+ fields:[
+  {id:'mode',label:'Mode',type:'select',default:'password',options:[{value:'password',label:'Password'},{value:'anonymous',label:'Anonymous'}]},
+  {id:'target',label:'Target',type:'text',required:true},
+  {id:'user',label:'User',type:'text',requiredWhen:{field:'mode',equals:'password'},visibleWhen:{field:'mode',equals:'password'}},
+  {id:'password',label:'Password',type:'secret',credentialKind:'password',requiredWhen:{field:'mode',equals:'password'},visibleWhen:{field:'mode',equals:'password'}},
+  {id:'headers',label:'Headers',type:'textarea'}
+ ],
+ command:{executable:'curl',tokens:[
+  {kind:'concat',when:{field:'mode',equals:'password'},parts:[{field:'user'},{literal:':'},{field:'password'}]},
+  {kind:'repeat',field:'headers',flag:'-H',split:'lines'},
+  {kind:'field',field:'target'}
+ ]},
+ evidence:{expectation:'Response returned to Evidence.',proofBoundary:'Generated command remains activity until Evidence is reviewed.'},
+ manualOutcome:{supported:true,boundary:'Manual outcome does not create report proof.'},
+ reportLineage:{activity:true,evidenceRequiredForProof:true,secretFields:['password']}
+};
+assert.deepStrictEqual(Array.from(schema.validateBuilder(conditionalFixture)),[],'conditional/repeat/concat fixture must satisfy stable schema');
+assert.throws(()=>renderer.compile(conditionalFixture,{mode:'password',target:'https://box.local'},{}),/User, Password/,'conditional required fields must be enforced');
+assert.strictEqual(renderer.compile(conditionalFixture,{mode:'password',target:'https://box.local',user:'alice',password:'p a s s',headers:'X-One: 1\nX-Two: two words'},{}),"curl 'alice:p a s s' -H 'X-One: 1' -H 'X-Two: two words' https://box.local",'concat and repeated values must remain shell-safe and deterministic');
+assert(renderer.html(conditionalFixture,{}, {mode:'anonymous',target:'https://box.local'}).includes('data-field-id="password"'),'renderer must retain conditional field rows for live mode switching');
+
 const nmap=schema.get('tb-nmap');
 assert(nmap,'canonical Nmap builder must register');
 assert.strictEqual(inventory.get('nmap').status,'implemented','Nmap inventory disposition must be implemented');
@@ -76,10 +102,29 @@ assert.strictEqual(renderer.compile(nmap,nmapCustom,{}),'nmap -Pn --open -p 80,4
 const nmapService=builders.defaults({profile:'service',target:'10.10.10.10'});
 assert.strictEqual(renderer.compile(nmap,nmapService,{}),'nmap -Pn --open -sC -sV -n -T4 -oA scans/services 10.10.10.10','Nmap service profile must retain default scripts and version detection');
 
+const nxc=schema.get('tb-nxc');
+assert(nxc&&inventory.get('netexec').status==='implemented','NetExec builder must be registered and implemented');
+assert.strictEqual(renderer.compile(nxc,builders.defaultsFor('tb-nxc',{protocol:'smb',target:'10.10.10.10',authMode:'anonymous',action:'shares'}),{}),"nxc smb 10.10.10.10 -u '' -p '' --shares",'NetExec anonymous shares command must remain canonical');
+assert.strictEqual(renderer.compile(nxc,builders.defaultsFor('tb-nxc',{protocol:'ldap',target:'dc01.corp.local',authMode:'password',domain:'CORP',username:'alice',password:'Password1!',action:'bloodhound',dnsServer:'10.10.10.10'}),{}),"nxc ldap dc01.corp.local -d CORP -u alice -p 'Password1!' --bloodhound -c All --dns-server 10.10.10.10",'NetExec credential-aware BloodHound command must compile deterministically');
+
+const hashcat=schema.get('tb-hashcat');
+assert(hashcat&&inventory.get('hashcat').status==='implemented','Hashcat builder must be registered and implemented');
+assert.strictEqual(builders.detectHashcatMode('$krb5asrep$23$user@CORP.LOCAL:deadbeef').mode,'18200','Hashcat detector must route AS-REP hashes to mode 18200');
+assert.strictEqual(renderer.compile(hashcat,builders.defaultsFor('tb-hashcat',{hashOrFile:'hashes.txt',mode:'1000',attack:'mask',mask:'?u?l?l?l?d'}),{}),"hashcat -m 1000 -a 3 hashes.txt '?u?l?l?l?d'",'Hashcat mask command must compile deterministically');
+
+const ffuf=schema.get('tb-ffuf');
+assert(ffuf&&inventory.get('ffuf').status==='implemented','ffuf builder must be registered and implemented');
+assert.strictEqual(renderer.compile(ffuf,builders.defaultsFor('tb-ffuf',{url:'http://10.10.10.10/FUZZ',wordlist:'words.txt',headers:'Host: FUZZ.corp.local\nCookie: session=abc',filterSize:'4242'},{}),{}),"ffuf -u http://10.10.10.10/FUZZ -w words.txt -fs 4242 -H 'Host: FUZZ.corp.local' -H 'Cookie: session=abc'",'ffuf repeated headers must compile deterministically');
+
+const secretsdump=schema.get('tb-secretsdump');
+assert(secretsdump&&inventory.get('impacket-secretsdump').status==='implemented','secretsdump builder must be registered and implemented');
+assert.strictEqual(renderer.compile(secretsdump,builders.defaultsFor('tb-secretsdump',{authMode:'ntlm',target:'dc01.corp.local',domain:'CORP',username:'alice',hash:'8846f7eaee8fb117ad06bdd830b7586c',justDcUser:'administrator'}),{}),'impacket-secretsdump -just-dc-user administrator -hashes :8846f7eaee8fb117ad06bdd830b7586c CORP/alice@dc01.corp.local','secretsdump NT-hash command must compile deterministically');
+assert.strictEqual(renderer.compile(secretsdump,builders.defaultsFor('tb-secretsdump',{authMode:'local-hives',sam:'SAM',system:'SYSTEM'}),{}),'impacket-secretsdump -sam SAM -system SYSTEM LOCAL','secretsdump local-hive command must compile without remote credentials');
+
 const rendererSource=read('assets/tool-builder-current.js');
 for(const forbidden of ["require('child_process')",'child_process','spawnSync(','execSync(','eval(','new Function('])assert(!rendererSource.includes(forbidden),'browser renderer contains forbidden execution primitive '+forbidden);
-for(const required of ['OBOL_TOOL_BUILDER','shellQuote','compile','mount','aria-live','navigator.clipboard'])assert(rendererSource.includes(required),'generic renderer source missing '+required);
+for(const required of ['OBOL_TOOL_BUILDER','shellQuote','conditionMatches','compile','mount','aria-live','navigator.clipboard','data-field-id'])assert(rendererSource.includes(required),'generic renderer source missing '+required);
 const bridge=read('assets/app-v8.8.js');
-for(const required of ['data/tool-builder-schema.js','data/tool-builder-inventory.js','assets/tool-builder-current.js','data/tool-builders.js','decorateNmapBuilder88','currentNmapBuilder88'])assert(bridge.includes(required),'current browser bridge does not load/mount Tool Builder owner: '+required);
+for(const required of ['data/tool-builder-schema.js','data/tool-builder-inventory.js','assets/tool-builder-current.js','data/tool-builders.js','decorateNmapBuilder88','currentNmapBuilder88','decorateCurrentToolBuilders88','builderForTool88','mountBuilder88'])assert(bridge.includes(required),'current browser bridge does not load/mount Tool Builder owner: '+required);
 
-console.log(`Tool Builder Platform valid: ${observed.size} runnable tool identities have explicit dispositions; schema, renderer, implemented builders, command compiler, human-run boundary, queue references, and representative inventory coverage are locked.`);
+console.log(`Tool Builder Platform valid: ${observed.size} runnable tool identities have explicit dispositions; schema, conditional/repeated/concatenated command shapes, renderer, implemented representative builders, human-run boundary, queue references, and route integration are locked.`);
