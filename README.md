@@ -4,7 +4,7 @@ Obol is a static, browser-local workspace for OSCP-style labs, Active Directory 
 
 Live site: `https://platocres.github.io/obol/`
 
-Current release: **v9.23**
+Current release: **v9.24**
 
 Open `#/dashboard` for the active Product Hardening Dashboard and Product Build Next queue.
 
@@ -66,34 +66,34 @@ The completed Orange methodology/source queue is historical, regression-protecte
 This block is generated from `data/product-hardening/product-hardening-queue.js`. Do not edit it manually.
 Recommended work-package metadata comes from `data/product-hardening/work-packages.js`.
 
-**Current product-hardening queue:** 53/632 complete (8%), 21 queued, 9 foundation items modeled.
+**Current product-hardening queue:** 61/632 complete (10%), 13 queued, 9 foundation items modeled.
 **Private notes source:** `platocres/obol-source-notes` — 556 notes and 1326 embedded resources accounted.
 
-**Recommended work package:** **Manual Outcome Platform** — 6 live items / 6 tracked.
-**Work-package entry:** **Manual Outcome schema**
-**Ownership area:** `workflow/outcomes-proof`
-**Package guidance:** Implement manual outcome state, controls, advancement, failure triage, proof handling, and regression coverage as a single workflow capability.
+**Recommended work package:** **Notes Integration Foundation** — 6 live items / 6 tracked.
+**Work-package entry:** **ENEX extraction pipeline**
+**Ownership area:** `notes/ingestion-bindings`
+**Package guidance:** Build extraction, atomization, contextual display, tool/path influence, and ledger proof around the private notes source as one durable ingestion system.
 **Package dependencies:** none.
 
 **Live items in this package:**
-- **Manual Outcome schema** — Define success, failed, blocked, skipped, and tried as workflow states separate from proof states.
-- **Manual Outcome UI controls** — Cards should offer Mark successful, Mark failed, Mark blocked, and Mark skipped beside paste-output review.
-- **Manual success unlocks next steps** — A user-declared success can unlock expected next actions while carrying a needs-evidence-for-report badge.
-- **Manual failure triage** — Failure outcomes should support reasons like auth failed, timeout, no results, syntax issue, blocked, and not vulnerable.
-- **Report proof handling for manual assertions** — Manual assertions must be visible in reports as unproven until supporting Evidence is attached.
-- **Manual outcome regression tests** — Tests must prove manual success advances workflow but does not create report-ready proof.
+- **ENEX extraction pipeline** — Use private source repo scripts to extract note metadata and candidates into normalized Obol-safe records.
+- **Note atomization schema** — Each note must yield candidate lessons, tool bindings, path bindings, troubleshooting, evidence, report guidance, or a terminal rejection.
+- **Contextual field-notes panel** — Add expandable relevant field notes at path/tool points without cluttering the operator workflow.
+- **Notes influence tool builders** — Note-derived command variants and failure lessons should become toggles, modes, or guidance in relevant builders.
+- **Notes influence Path gaps** — If notes reveal realistic actions missing from the path, add modeled path improvements rather than storing passive notes only.
+- **Notes ledger coverage tests** — The note-integration ledger must preserve source counts and terminal dispositions until all 556 notes are resolved.
 
-**Related items to consider, not automatically in scope:** Queue interaction for manual outcomes; Manual outcome coverage for all executable actions.
+**Related items to consider, not automatically in scope:** Burn down all 556 note dispositions; Design contextual field-notes disclosure.
 
 **Highest-priority live items:**
-1. **Manual Outcome schema** — Define success, failed, blocked, skipped, and tried as workflow states separate from proof states.
-2. **Manual Outcome UI controls** — Cards should offer Mark successful, Mark failed, Mark blocked, and Mark skipped beside paste-output review.
-3. **Manual success unlocks next steps** — A user-declared success can unlock expected next actions while carrying a needs-evidence-for-report badge.
-4. **Manual failure triage** — Failure outcomes should support reasons like auth failed, timeout, no results, syntax issue, blocked, and not vulnerable.
-5. **Report proof handling for manual assertions** — Manual assertions must be visible in reports as unproven until supporting Evidence is attached.
-6. **Queue interaction for manual outcomes** — Queued human intent should survive dynamic Path reordering and outcome changes.
-7. **Manual outcome regression tests** — Tests must prove manual success advances workflow but does not create report-ready proof.
-8. **Manual outcome coverage for all executable actions** — Every runnable card must have an outcome disposition or explicit supersession.
+1. **ENEX extraction pipeline** — Use private source repo scripts to extract note metadata and candidates into normalized Obol-safe records.
+2. **Note atomization schema** — Each note must yield candidate lessons, tool bindings, path bindings, troubleshooting, evidence, report guidance, or a terminal rejection.
+3. **Contextual field-notes panel** — Add expandable relevant field notes at path/tool points without cluttering the operator workflow.
+4. **Notes influence tool builders** — Note-derived command variants and failure lessons should become toggles, modes, or guidance in relevant builders.
+5. **Notes influence Path gaps** — If notes reveal realistic actions missing from the path, add modeled path improvements rather than storing passive notes only.
+6. **Burn down all 556 note dispositions** — Every note must end modeled, superseded, rejected, or private-reference-only with rationale.
+7. **Quiet service worker caching** — Improve repeat-load and offline behavior without prompting users to install anything.
+8. **IndexedDB workspace storage** — Support durable larger local workspaces, multiple engagements, and cached indexes while remaining browser-local.
 
 **Track status:**
 - **Critical correctness:** 4/4 complete (100%), 0 modeled.
@@ -101,7 +101,7 @@ Recommended work-package metadata comes from `data/product-hardening/work-packag
 - **UI / UX repair:** 7/8 complete (88%), 1 modeled.
 - **Tool GUI builders:** 18/18 complete (100%), 0 modeled.
 - **Credential modes:** 14/14 complete (100%), 0 modeled.
-- **Manual outcomes:** 0/8 complete (0%), 0 modeled.
+- **Manual outcomes:** 8/8 complete (100%), 0 modeled.
 - **Notes integration:** 0/556 complete (0%), 2 modeled.
 - **Offline / performance:** 1/6 complete (17%), 0 modeled.
 - **Testing / visual QA:** 3/8 complete (38%), 3 modeled.
@@ -163,6 +163,7 @@ node tests/run-v9.20-tests.js
 node tests/run-v9.21-tests.js
 node tests/run-v9.22-tests.js
 node tests/run-v9.23-tests.js
+node tests/run-v9.24-tests.js
 ```
 
 ## GitHub Pages
