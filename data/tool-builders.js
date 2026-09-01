@@ -150,6 +150,43 @@ const hashcat=schema.register({
  reportLineage:{activity:true,evidenceRequiredForProof:true,secretFields:['hashOrFile']}
 });
 
+const johnFormats=Object.freeze([
+ {value:'NT',label:'NT / NTLM'},{value:'raw-md5',label:'Raw MD5'},{value:'raw-sha1',label:'Raw SHA1'},{value:'md5crypt',label:'md5crypt $1$'},{value:'sha512crypt',label:'sha512crypt $6$'},{value:'bcrypt',label:'bcrypt'},{value:'mscash2',label:'DCC2 / MSCache2'},{value:'netntlm',label:'NetNTLMv1'},{value:'netntlmv2',label:'NetNTLMv2'},{value:'krb5asrep',label:'Kerberos AS-REP'},{value:'krb5tgs',label:'Kerberos TGS'}
+]);
+const john=schema.register({
+ id:'tb-john',
+ tool:'john',
+ title:'John the Ripper',
+ summary:'Select a common lab hash format and build a wordlist, incremental, or show command without memorizing John format strings.',
+ executionContext:'kali',
+ credentialModes:['ntlm','netntlm','kerberos'],
+ fields:[
+  {id:'hashFile',label:'Hash file',type:'path',required:true,autofill:'workspace.hashfile',placeholder:'hashes.txt',help:'John works from a file containing one or more hashes in the selected format.'},
+  {id:'format',label:'Hash format',type:'select',default:'NT',options:johnFormats},
+  {id:'mode',label:'Action',type:'select',default:'wordlist',options:[{value:'wordlist',label:'Wordlist attack'},{value:'incremental',label:'Incremental attack'},{value:'show',label:'Show cracked results'}]},
+  {id:'wordlist',label:'Wordlist',type:'path',autofill:'workspace.wordlist',default:'/usr/share/wordlists/rockyou.txt',requiredWhen:{field:'mode',equals:'wordlist'},visibleWhen:{field:'mode',equals:'wordlist'}},
+  {id:'rules',label:'Apply John rules (--rules)',type:'checkbox',visibleWhen:{field:'mode',equals:'wordlist'}},
+  {id:'ruleSet',label:'Named rule set',type:'text',placeholder:'Wordlist',visibleWhen:[{field:'mode',equals:'wordlist'},{field:'rules',truthy:true}],help:'Optional john.conf rule section. Leave blank for the default --rules behavior.'},
+  {id:'fork',label:'Fork workers',type:'number',placeholder:'4',visibleWhen:{field:'mode',notEquals:'show'}},
+  {id:'session',label:'Session name',type:'text',placeholder:'box-crack',visibleWhen:{field:'mode',notEquals:'show'}},
+  {id:'pot',label:'Pot file',type:'path',placeholder:'john.pot'}
+ ],
+ command:{executable:'john',tokens:[
+  {kind:'choice',field:'format',choices:johnFormats.map(item=>({value:item.value,arg:'--format='+item.value}))},
+  {kind:'choice',field:'mode',choices:[{value:'wordlist',arg:''},{value:'incremental',arg:'--incremental'},{value:'show',arg:'--show'}]},
+  {kind:'field',field:'wordlist',prefix:'--wordlist=',when:{field:'mode',equals:'wordlist'}},
+  {kind:'toggle',field:'rules',flag:'--rules',when:[{field:'mode',equals:'wordlist'},{field:'ruleSet',equals:''}]},
+  {kind:'field',field:'ruleSet',prefix:'--rules=',when:[{field:'mode',equals:'wordlist'},{field:'rules',truthy:true}]},
+  {kind:'field',field:'fork',prefix:'--fork=',when:{field:'mode',notEquals:'show'}},
+  {kind:'field',field:'session',prefix:'--session=',when:{field:'mode',notEquals:'show'}},
+  {kind:'field',field:'pot',prefix:'--pot='},
+  {kind:'field',field:'hashFile'}
+ ]},
+ evidence:{expectation:'Return John status or --show output that identifies the recovered hash/account mapping, not only the generated launch command.',proofBoundary:'Selecting a format or generating a John command does not prove the hash was cracked. Recovered material remains candidate credential material until reviewed and independently validated where access is claimed.'},
+ manualOutcome:{supported:true,boundary:'The operator may record cracked, exhausted, failed, blocked, or skipped workflow state, but a manual cracked outcome is not report-ready proof without reviewed cracking Evidence.'},
+ reportLineage:{activity:true,evidenceRequiredForProof:true,secretFields:['hashFile']}
+});
+
 const ffuf=schema.register({
  id:'tb-ffuf',
  tool:'ffuf',
@@ -264,6 +301,7 @@ function defaultsHashcat(values){
  if(out.mode==null||out.mode==='')out.mode='1000';
  return out;
 }
+function defaultsJohn(values){return{format:'NT',mode:'wordlist',wordlist:'/usr/share/wordlists/rockyou.txt',...(values||{})};}
 function defaultsFfuf(values,context){
  const out={wordlist:'/usr/share/seclists/Discovery/Web-Content/raft-small-words.txt',...(values||{})};
  if(!out.url){const target=context&&context.target&&context.target.value||'';if(target)out.url=/^https?:\/\//i.test(target)?target.replace(/\/$/,'')+'/FUZZ':'http://'+target.replace(/\/$/,'')+'/FUZZ';}
@@ -274,6 +312,7 @@ function defaultsFor(id,values,context){
  if(id==='tb-nmap')return defaultsNmap(values);
  if(id==='tb-nxc')return defaultsNxc(values);
  if(id==='tb-hashcat')return defaultsHashcat(values);
+ if(id==='tb-john')return defaultsJohn(values);
  if(id==='tb-ffuf')return defaultsFfuf(values,context);
  if(id==='tb-secretsdump')return defaultsSecretsdump(values);
  return{...(values||{})};
@@ -324,6 +363,6 @@ function enhanceMount(id,mount,context){
  return mount;
 }
 
-const byId=Object.freeze({'tb-nmap':nmap,'tb-nxc':nxc,'tb-hashcat':hashcat,'tb-ffuf':ffuf,'tb-secretsdump':secretsdump});
-root.OBOL_TOOL_BUILDERS=Object.freeze({version:'1.0.0',byId,nmapProfiles,hashcatModes,nmap,nxc,hashcat,ffuf,secretsdump,profile,defaults:defaultsNmap,defaultsFor,detectHashcatMode,enhanceMount});
+const byId=Object.freeze({'tb-nmap':nmap,'tb-nxc':nxc,'tb-hashcat':hashcat,'tb-john':john,'tb-ffuf':ffuf,'tb-secretsdump':secretsdump});
+root.OBOL_TOOL_BUILDERS=Object.freeze({version:'1.0.0',byId,nmapProfiles,hashcatModes,johnFormats,nmap,nxc,hashcat,john,ffuf,secretsdump,profile,defaults:defaultsNmap,defaultsFor,detectHashcatMode,enhanceMount});
 })(typeof window!=='undefined'?window:globalThis);
