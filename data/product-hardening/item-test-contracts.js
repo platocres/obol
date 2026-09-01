@@ -56,6 +56,11 @@ const contracts={
   validationCommands:['node tools/validate-runtime-manifest.js','node tests/run-v9.6-tests.js'],
   proofFiles:['tests/fixtures/runtime-v9.5-load-order.json','data/runtime-manifest.js','tools/validate-runtime-manifest.js','tools/release-preflight.js','tests/run-v9.6-tests.js','docs/v9.6.md']
  },
+ 'runtime-lazy-load-plan':{
+  acceptance:['The stable runtime manifest classifies deep surfaces by loading policy, removes route-local BloodHound/Evidence parser overlays, Nmap parser assets, report overlays, and tool-reference payloads from the default historical startup chain, and exposes route gates that load those assets on demand. Product Dashboard assets are no longer loaded on normal workspace startup. Shared methodology, lineage, and historical compatibility owners remain explicitly eager only where they are cross-route dependencies protected by the equivalence contract.'],
+  validationCommands:['node tools/validate-runtime-loading.js','node tools/validate-runtime-manifest.js','node tools/validate-asset-references.js','node tests/run-v9.9-tests.js'],
+  proofFiles:['data/runtime-manifest.js','assets/runtime-current.js','assets/app-v8.8.js','tools/validate-runtime-loading.js','tools/release-preflight.js','tests/run-v9.9-tests.js','docs/ARCHITECTURE.md','docs/v9.9.md']
+ },
  'runtime-no-layer-rule':{
   acceptance:['Product-hardening releases do not create fake v9 runtime overlay files just to satisfy historical release shape assumptions.'],
   validationCommands:['node tools/validate-product-hardening-queue.js','node tools/validate-release-pr.js --repo-only --release-version=9.0'],
@@ -101,6 +106,11 @@ const contracts={
   validationCommands:['node tools/validate-product-hardening-queue.js','node tests/run-v9.0-tests.js'],
   proofFiles:['data/product-hardening/product-hardening-queue.js','tools/validate-product-hardening-queue.js','tests/run-v9.0-tests.js']
  },
+ 'perf-bundle-budget':{
+  acceptance:['The runtime manifest carries a deterministic startup/deferred request budget tied to the frozen 327-script v9.5 compatibility baseline. Default workspace startup executes no more than 266 historical scripts and defers at least 61 route-local historical scripts; normal startup also avoids Product Dashboard queue/package/renderer assets. The budget is permanently validated so later releases cannot silently move deferred groups back into startup.'],
+  validationCommands:['node tools/validate-runtime-loading.js','node tools/validate-runtime-manifest.js','node tests/run-v9.9-tests.js'],
+  proofFiles:['data/runtime-manifest.js','assets/runtime-current.js','assets/app-v8.8.js','tools/validate-runtime-loading.js','tools/release-preflight.js','tests/run-v9.9-tests.js','docs/PRODUCT-HARDENING.md','docs/v9.9.md']
+ },
  'qa-version-test':{
   acceptance:['A permanent deterministic version-identity gate proves browser title/header/settings, report metadata/footer normalization, README/dashboard release presentation, and sanitized export metadata consume the same current product release while preserving the v8.8 workspace schema identity.'],
   validationCommands:['node tools/validate-version-identity.js','node tools/validate-current-release.js','node tests/run-v9.4-tests.js'],
@@ -128,5 +138,5 @@ const contracts={
  }
 };
 const requiredForStatuses=['modeled','complete','superseded','rejected'];
-root.OBOL_PRODUCT_HARDENING_TEST_CONTRACTS={version:'9.8.0',requiredForStatuses,contracts};
+root.OBOL_PRODUCT_HARDENING_TEST_CONTRACTS={version:'9.9.0',requiredForStatuses,contracts};
 })(typeof window!=='undefined'?window:globalThis);
