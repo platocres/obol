@@ -4,7 +4,7 @@ Obol is a static, browser-local workspace for OSCP-style labs, Active Directory 
 
 Live site: `https://platocres.github.io/obol/`
 
-Current release: **v9.12**
+Current release: **v9.13**
 
 Open `#/dashboard` for the active Product Hardening Dashboard and Product Build Next queue.
 
@@ -66,17 +66,16 @@ The completed Orange methodology/source queue is historical, regression-protecte
 This block is generated from `data/product-hardening/product-hardening-queue.js`. Do not edit it manually.
 Recommended work-package metadata comes from `data/product-hardening/work-packages.js`.
 
-**Current product-hardening queue:** 24/632 complete (4%), 50 queued, 9 foundation items modeled.
+**Current product-hardening queue:** 25/632 complete (4%), 49 queued, 9 foundation items modeled.
 **Private notes source:** `platocres/obol-source-notes` — 556 notes and 1326 embedded resources accounted.
 
-**Recommended work package:** **Representative Tool Builder Set** — 5 live items / 5 tracked.
-**Work-package entry:** **Nmap GUI builder**
+**Recommended work package:** **Representative Tool Builder Set** — 4 live items / 5 tracked.
+**Work-package entry:** **NetExec / nxc builder hardening**
 **Ownership area:** `tool-builder/canonical-implementations`
 **Package guidance:** Use the canonical builder engine to implement several representative tools in one coherent pass, while preserving separate acceptance and regression proof for every builder.
 **Package dependencies:** Tool Builder Platform
 
 **Live items in this package:**
-- **Nmap GUI builder** — Targets view gets a canonical Nmap launchpad with toggles for ports, scripts, timing, output files, discovery, and canonical scan profiles.
 - **NetExec / nxc builder hardening** — Use the existing nxc work as the pattern for credential-aware builders across the app.
 - **Hashcat builder with hash detection** — User can paste a hash, select/confirm type, and generate the correct minimal command plus optional rules/workload toggles.
 - **ffuf builder** — Make URL, wordlist, recursion, extensions, filters, matchers, headers, and output explicit controls.
@@ -85,20 +84,20 @@ Recommended work-package metadata comes from `data/product-hardening/work-packag
 **Related items to consider, not automatically in scope:** Password mode controls; NT hash and LM:NT mode controls; Paste hash and route builder; Manual Outcome UI controls.
 
 **Highest-priority live items:**
-1. **Nmap GUI builder** — Targets view gets a canonical Nmap launchpad with toggles for ports, scripts, timing, output files, discovery, and canonical scan profiles.
-2. **NetExec / nxc builder hardening** — Use the existing nxc work as the pattern for credential-aware builders across the app.
-3. **Hashcat builder with hash detection** — User can paste a hash, select/confirm type, and generate the correct minimal command plus optional rules/workload toggles.
-4. **John builder with format selection** — Support common lab formats and wordlist/rule toggles without requiring users to memorize format strings.
-5. **ffuf builder** — Make URL, wordlist, recursion, extensions, filters, matchers, headers, and output explicit controls.
-6. **gobuster / feroxbuster builders** — Directory/content enumeration builders need mode, extensions, status filters, threads, recursion, and output controls.
-7. **impacket-secretsdump builder** — Expose password/hash/kerberos/local auth modes, target/DC context, output handling, and proof boundaries.
-8. **GetNPUsers builder** — Support username sources, no-pass flow, DC/domain inputs, output file, and AS-REP hash handoff.
+1. **NetExec / nxc builder hardening** — Use the existing nxc work as the pattern for credential-aware builders across the app.
+2. **Hashcat builder with hash detection** — User can paste a hash, select/confirm type, and generate the correct minimal command plus optional rules/workload toggles.
+3. **John builder with format selection** — Support common lab formats and wordlist/rule toggles without requiring users to memorize format strings.
+4. **ffuf builder** — Make URL, wordlist, recursion, extensions, filters, matchers, headers, and output explicit controls.
+5. **gobuster / feroxbuster builders** — Directory/content enumeration builders need mode, extensions, status filters, threads, recursion, and output controls.
+6. **impacket-secretsdump builder** — Expose password/hash/kerberos/local auth modes, target/DC context, output handling, and proof boundaries.
+7. **GetNPUsers builder** — Support username sources, no-pass flow, DC/domain inputs, output file, and AS-REP hash handoff.
+8. **GetUserSPNs builder** — Support auth modes, request mode, target domain/DC, output file, and TGS cracking handoff.
 
 **Track status:**
 - **Critical correctness:** 4/4 complete (100%), 0 modeled.
 - **Architecture / runtime:** 6/10 complete (60%), 3 modeled.
 - **UI / UX repair:** 7/8 complete (88%), 1 modeled.
-- **Tool GUI builders:** 3/18 complete (17%), 0 modeled.
+- **Tool GUI builders:** 4/18 complete (22%), 0 modeled.
 - **Credential modes:** 0/14 complete (0%), 0 modeled.
 - **Manual outcomes:** 0/8 complete (0%), 0 modeled.
 - **Notes integration:** 0/556 complete (0%), 2 modeled.
@@ -151,6 +150,7 @@ node tests/run-v9.9-tests.js
 node tests/run-v9.10-tests.js
 node tests/run-v9.11-tests.js
 node tests/run-v9.12-tests.js
+node tests/run-v9.13-tests.js
 ```
 
 ## GitHub Pages
