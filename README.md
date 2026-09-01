@@ -4,7 +4,7 @@ Obol is a static, browser-local workspace for OSCP-style labs, Active Directory 
 
 Live site: `https://platocres.github.io/obol/`
 
-Current release: **v9.8**
+Current release: **v9.9**
 
 Open `#/dashboard` for the active Product Hardening Dashboard and Product Build Next queue.
 
@@ -65,40 +65,37 @@ The completed Orange methodology/source queue is historical, regression-protecte
 This block is generated from `data/product-hardening/product-hardening-queue.js`. Do not edit it manually.
 Recommended work-package metadata comes from `data/product-hardening/work-packages.js`.
 
-**Current product-hardening queue:** 16/632 complete (3%), 58 queued, 9 foundation items modeled.
+**Current product-hardening queue:** 18/632 complete (3%), 56 queued, 9 foundation items modeled.
 **Private notes source:** `platocres/obol-source-notes` — 556 notes and 1326 embedded resources accounted.
 
-**Recommended work package:** **Runtime Consolidation Foundation** — 2 live items / 6 tracked.
-**Work-package entry:** **Lazy-load deep engineering views**
-**Ownership area:** `runtime/build-loading`
-**Package guidance:** Treat the current entrypoint, active CSS ownership, generated asset manifest, equivalence harness, lazy-load boundary, and request budget as one consolidation area when the same runtime context is already loaded.
+**Recommended work package:** **Design contextual field-notes disclosure** — 1 live item / 1 tracked.
+**Work-package entry:** **Design contextual field-notes disclosure**
+**Ownership area:** `ui-ux`
+**Package guidance:** Complete the highest-priority item. Before stopping, inspect adjacent queue work for a coherent same-ownership package.
 **Package dependencies:** none.
 
 **Live items in this package:**
-- **Lazy-load deep engineering views** — Move heavy dashboard, methodology, tool library, lineage, and historical surfaces behind deliberate loading boundaries.
-- **Bundle and request budget** — Reduce request count and parse cost from the current historical-load chain.
-
-**Related items to consider, not automatically in scope:** No new layered queue architecture.
+- **Design contextual field-notes disclosure** — Notes should appear as expandable relevant context, not as a dumped notebook.
 
 **Highest-priority live items:**
-1. **Lazy-load deep engineering views** — Move heavy dashboard, methodology, tool library, lineage, and historical surfaces behind deliberate loading boundaries.
-2. **Design contextual field-notes disclosure** — Notes should appear as expandable relevant context, not as a dumped notebook.
-3. **Review responsive density** — Check dashboard and builders on small screens, narrow laptops, and exam-like layouts.
-4. **Define Tool Builder schema** — A data-driven schema must describe inputs, toggles, target autofill, credential modes, output options, evidence expectations, and report lineage.
-5. **Build generic Tool Builder renderer** — One renderer should power tool GUIs instead of custom JavaScript per tool.
-6. **Nmap GUI builder** — Targets view gets a canonical Nmap launchpad with toggles for ports, scripts, timing, output files, discovery, and canonical scan profiles.
-7. **NetExec / nxc builder hardening** — Use the existing nxc work as the pattern for credential-aware builders across the app.
-8. **Hashcat builder with hash detection** — User can paste a hash, select/confirm type, and generate the correct minimal command plus optional rules/workload toggles.
+1. **Design contextual field-notes disclosure** — Notes should appear as expandable relevant context, not as a dumped notebook.
+2. **Review responsive density** — Check dashboard and builders on small screens, narrow laptops, and exam-like layouts.
+3. **Define Tool Builder schema** — A data-driven schema must describe inputs, toggles, target autofill, credential modes, output options, evidence expectations, and report lineage.
+4. **Build generic Tool Builder renderer** — One renderer should power tool GUIs instead of custom JavaScript per tool.
+5. **Nmap GUI builder** — Targets view gets a canonical Nmap launchpad with toggles for ports, scripts, timing, output files, discovery, and canonical scan profiles.
+6. **NetExec / nxc builder hardening** — Use the existing nxc work as the pattern for credential-aware builders across the app.
+7. **Hashcat builder with hash detection** — User can paste a hash, select/confirm type, and generate the correct minimal command plus optional rules/workload toggles.
+8. **John builder with format selection** — Support common lab formats and wordlist/rule toggles without requiring users to memorize format strings.
 
 **Track status:**
 - **Critical correctness:** 4/4 complete (100%), 0 modeled.
-- **Architecture / runtime:** 5/10 complete (50%), 3 modeled.
+- **Architecture / runtime:** 6/10 complete (60%), 3 modeled.
 - **UI / UX repair:** 5/8 complete (63%), 1 modeled.
 - **Tool GUI builders:** 0/18 complete (0%), 0 modeled.
 - **Credential modes:** 0/14 complete (0%), 0 modeled.
 - **Manual outcomes:** 0/8 complete (0%), 0 modeled.
 - **Notes integration:** 0/556 complete (0%), 2 modeled.
-- **Offline / performance:** 0/6 complete (0%), 0 modeled.
+- **Offline / performance:** 1/6 complete (17%), 0 modeled.
 - **Testing / visual QA:** 2/8 complete (25%), 3 modeled.
 
 Generated by `node tools/sync-product-build-next.js --write`. Verify with `node tools/sync-product-build-next.js --check`.
@@ -124,6 +121,7 @@ node tools/validate-version-identity.js
 node tools/validate-accessibility-contract.js
 node tools/validate-current-workflow.js
 node tools/sync-current-styles.js --check
+node tools/validate-runtime-loading.js
 node tools/validate-runtime-manifest.js
 node tools/validate-asset-references.js
 node tools/sync-current-release.js --check
@@ -139,6 +137,7 @@ node tests/run-v9.5-tests.js
 node tests/run-v9.6-tests.js
 node tests/run-v9.7-tests.js
 node tests/run-v9.8-tests.js
+node tests/run-v9.9-tests.js
 ```
 
 ## GitHub Pages
