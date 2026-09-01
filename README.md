@@ -4,7 +4,7 @@ Obol is a static, browser-local workspace for OSCP-style labs, Active Directory 
 
 Live site: `https://platocres.github.io/obol/`
 
-Current release: **v9.21**
+Current release: **v9.22**
 
 Open `#/dashboard` for the active Product Hardening Dashboard and Product Build Next queue.
 
@@ -66,40 +66,44 @@ The completed Orange methodology/source queue is historical, regression-protecte
 This block is generated from `data/product-hardening/product-hardening-queue.js`. Do not edit it manually.
 Recommended work-package metadata comes from `data/product-hardening/work-packages.js`.
 
-**Current product-hardening queue:** 39/632 complete (6%), 35 queued, 9 foundation items modeled.
+**Current product-hardening queue:** 44/632 complete (7%), 30 queued, 9 foundation items modeled.
 **Private notes source:** `platocres/obol-source-notes` — 556 notes and 1326 embedded resources accounted.
 
-**Recommended work package:** **Credential Material Platform** — 5 live items / 5 tracked.
-**Work-package entry:** **Credential Material schema**
-**Ownership area:** `credentials/model-routing`
-**Package guidance:** Establish typed credential material, routing, cross-tool handoff, proof boundaries, and redaction as one platform rather than re-solving credential behavior per tool.
-**Package dependencies:** Tool Builder Platform
+**Recommended work package:** **Credential Mode Coverage** — 9 live items / 9 tracked.
+**Work-package entry:** **Password mode controls**
+**Ownership area:** `credentials/tool-modes`
+**Package guidance:** Use the Credential Material Platform to make password, hash, ticket, certificate, key, and token modes consistent across compatible builders without duplicating secret-routing logic per tool.
+**Package dependencies:** Credential Material Platform
 
 **Live items in this package:**
-- **Credential Material schema** — Represent passwords, hashes, tickets, certificates, keys, cookies, and tokens as first-class typed materials.
-- **Paste hash and route builder** — A pasted hash should produce likely type, compatible builders, and minimum command suggestions.
-- **Credential validation proof boundary** — Recovered material remains candidate material until an independent validation action proves access.
-- **Credential report redaction consistency** — Reports and exports must keep secrets redacted unless explicitly included.
-- **Credential handoff between tools** — Cracked or captured material should populate compatible builders without forcing manual re-entry.
+- **Password mode controls** — Standard username/password inputs and escaping rules across all relevant builders.
+- **NT hash and LM:NT mode controls** — Correct flags for tools that support pass-the-hash or LM:NT pair input.
+- **NetNTLMv1/v2 detection** — Pasted challenge-response hashes should route to appropriate cracking builders and modes.
+- **Kerberos TGS / AS-REP detection** — Identify common TGS and AS-REP hash shapes and select correct cracking modes.
+- **MSCache2 mode support** — Support domain cached credential hash workflows.
+- **ccache / kirbi controls** — Ticket-based builders should expose KRB5CCNAME, ticket conversion, and service-use expectations.
+- **PFX / certificate controls** — Certificate auth workflows need PFX/password, cert/key, UPN/domain/DC, and output lineage controls.
+- **SSH key controls** — Support identity file paths, passphrase notes, target user, ports, and tunnel workflows.
+- **Cookie / token controls** — Web tooling should expose cookies, bearer tokens, API keys, headers, and secret-redaction boundaries.
 
-**Related items to consider, not automatically in scope:** Password mode controls; NT hash and LM:NT mode controls; NetNTLMv1/v2 detection; Kerberos TGS / AS-REP detection; PFX / certificate controls; SSH key controls; Cookie / token controls.
+**Related items to consider, not automatically in scope:** NetExec / nxc builder hardening; Hashcat builder with hash detection; John builder with format selection; Certipy builder; SSH / plink tunnel builders; curl builder.
 
 **Highest-priority live items:**
-1. **Credential Material schema** — Represent passwords, hashes, tickets, certificates, keys, cookies, and tokens as first-class typed materials.
-2. **Password mode controls** — Standard username/password inputs and escaping rules across all relevant builders.
-3. **NT hash and LM:NT mode controls** — Correct flags for tools that support pass-the-hash or LM:NT pair input.
-4. **NetNTLMv1/v2 detection** — Pasted challenge-response hashes should route to appropriate cracking builders and modes.
-5. **Kerberos TGS / AS-REP detection** — Identify common TGS and AS-REP hash shapes and select correct cracking modes.
-6. **MSCache2 mode support** — Support domain cached credential hash workflows.
-7. **ccache / kirbi controls** — Ticket-based builders should expose KRB5CCNAME, ticket conversion, and service-use expectations.
-8. **PFX / certificate controls** — Certificate auth workflows need PFX/password, cert/key, UPN/domain/DC, and output lineage controls.
+1. **Password mode controls** — Standard username/password inputs and escaping rules across all relevant builders.
+2. **NT hash and LM:NT mode controls** — Correct flags for tools that support pass-the-hash or LM:NT pair input.
+3. **NetNTLMv1/v2 detection** — Pasted challenge-response hashes should route to appropriate cracking builders and modes.
+4. **Kerberos TGS / AS-REP detection** — Identify common TGS and AS-REP hash shapes and select correct cracking modes.
+5. **MSCache2 mode support** — Support domain cached credential hash workflows.
+6. **ccache / kirbi controls** — Ticket-based builders should expose KRB5CCNAME, ticket conversion, and service-use expectations.
+7. **PFX / certificate controls** — Certificate auth workflows need PFX/password, cert/key, UPN/domain/DC, and output lineage controls.
+8. **SSH key controls** — Support identity file paths, passphrase notes, target user, ports, and tunnel workflows.
 
 **Track status:**
 - **Critical correctness:** 4/4 complete (100%), 0 modeled.
 - **Architecture / runtime:** 6/10 complete (60%), 3 modeled.
 - **UI / UX repair:** 7/8 complete (88%), 1 modeled.
 - **Tool GUI builders:** 18/18 complete (100%), 0 modeled.
-- **Credential modes:** 0/14 complete (0%), 0 modeled.
+- **Credential modes:** 5/14 complete (36%), 0 modeled.
 - **Manual outcomes:** 0/8 complete (0%), 0 modeled.
 - **Notes integration:** 0/556 complete (0%), 2 modeled.
 - **Offline / performance:** 1/6 complete (17%), 0 modeled.
@@ -160,6 +164,7 @@ node tests/run-v9.18-tests.js
 node tests/run-v9.19-tests.js
 node tests/run-v9.20-tests.js
 node tests/run-v9.21-tests.js
+node tests/run-v9.22-tests.js
 ```
 
 ## GitHub Pages
