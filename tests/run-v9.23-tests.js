@@ -77,7 +77,7 @@ assert.strictEqual(modes.prefillForBuilder(cookie,schema.get('tb-sqlmap')).cooki
 assert(modes.compatibleBuilders(cookie).some(row=>row.builderId==='tb-curl'),'cookie material discovers compatible web builders');assert(modes.compatibleBuilders(key).some(row=>row.builderId==='tb-ssh-plink'),'SSH key discovers tunnel builder');
 
 for(const row of [password,ntlm,netv2,asrep,dcc,ccache,pfx,key,cookie,bearer,apiKey])assert.strictEqual(row.status,'candidate','mode handoff does not validate '+row.kind);
-const safe=sandbox.window.OBOL_CORE_V2.sanitizedCopy(state);assert(!JSON.stringify(safe).includes('P@ss word!'),'sanitized export retains v9.22 secret redaction');
+const safe=sandbox.window.OBOL_CORE_V2.sanitizedCopy(state);assert(safe.credentialMaterials.some(row=>row.kind==='password'&&row.value==='[REDACTED PASSWORD]'),'sanitized export retains v9.22 secret redaction');assert(safe.credentialMaterials.some(row=>row.kind==='cookie'&&row.value==='[REDACTED COOKIE / SESSION TOKEN]'),'sanitized export redacts web-session material');
 
 const runtime=read('assets/runtime-current.js');for(const token of ['data/credential-modes.js','OBOL_CREDENTIAL_MODES','credentialModes'])assert(runtime.includes(token),'runtime mode hydration contains '+token);
 const ui=read('assets/credential-material-current.js');for(const token of ['OBOL_CREDENTIAL_MODES','builderValues','builderGuidance','mode-specific handoff guidance'])assert(ui.includes(token),'Credential Material UI consumes stable mode owner: '+token);
