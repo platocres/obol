@@ -8,7 +8,7 @@ Every relevant point on the Path should expose the right tool through a context-
 
 ## Stable platform owners
 
-v9.12 establishes the reusable platform, v9.13 begins concrete migration with Nmap, v9.14 proves the platform across credential-aware, cracking, content-discovery, and credential-dump command shapes, v9.15 extends cracking with John the Ripper, v9.16 proves one canonical schema record can safely represent closely related executables without adding another renderer, and v9.17 extends the same stable platform across a paired Impacket Kerberos-roasting package plus an independent WinRM remote-access builder:
+v9.12 establishes the reusable platform, v9.13 begins concrete migration with Nmap, v9.14 proves the platform across credential-aware, cracking, content-discovery, and credential-dump command shapes, v9.15 extends cracking with John the Ripper, v9.16 proves one canonical schema record can safely represent closely related executables without adding another renderer, v9.17 extends the same stable platform across a paired Impacket Kerberos-roasting package plus an independent WinRM remote-access builder, and v9.18 adds a mode-driven Certipy AD CS surface without changing the stable schema or renderer identity:
 
 - `data/tool-builder-schema.js` owns the stable builder data contract and registry helpers;
 - `assets/tool-builder-current.js` owns generic accessible rendering, context autofill, shell-safe command generation, and copy-only operator handoff;
@@ -72,7 +72,7 @@ The v9 queue seeds representative builders first so the generic schema covers th
 - impacket-GetNPUsers - **implemented in v9.17**
 - impacket-GetUserSPNs - **implemented in v9.17**
 - Evil-WinRM - **implemented in v9.17**
-- Certipy
+- Certipy - **implemented in v9.18**
 - sqlmap
 - curl
 - chisel
@@ -127,9 +127,27 @@ v9.17 completes three builders in the same stable Tool Builder implementation pa
 
 The three implementations rely on the existing conditional fields, shell-safe concatenation, and ordinary field/toggle/choice tokens. v9.17 therefore does not add a new schema version, generic renderer capability, or runtime layer.
 
+### v9.18 Certipy migration boundary
+
+v9.18 completes **Certipy** as one mode-driven schema record rather than six bespoke mini-apps. The builder is aligned to the current `ly4k/Certipy` 5.1.0 parser family and keeps each subcommand's controls distinct while reusing the stable renderer.
+
+**find** covers vulnerable/enabled filtering, DC-only collection, issuance-policy OIDs, administrator-permission hiding, stdout/JSON/text/CSV output modes, and shared target/authentication context.
+
+**req** covers RPC, Web Enrollment, and DCOM request paths; CA/template selection; alternative UPN/DNS/SID/subject values; retrieval IDs; request-agent/renewal PFX input; key archival and CAX certificate controls; PFX output; and Web Enrollment transport settings.
+
+**auth** keeps certificate authentication separate from username/password authentication. It accepts a PFX/P12 file and optional password, username/domain overrides, ticket save/print/Kirbi controls, NT-hash request control, and optional certificate-authenticated LDAP shell settings.
+
+**relay** exposes the target CA endpoint, CA/template/SAN fields, output file, listener interface/port, persistent relay behavior, skip behavior, and template enumeration. It is still only a command plan: Obol never starts the listener or performs a relay.
+
+**shadow** exposes list/add/remove/clear/info/auto Key Credential Link operations. Remove and clear are explicit cleanup choices, and a generated cleanup command does not prove restoration occurred.
+
+**account** exposes read/create/update/delete account actions together with group/container, DNS, UPN, SAM, SPN, and password fields. Delete is explicitly labeled as cleanup and remains subject to the reviewed-Evidence boundary.
+
+Certificate requests, PFX files, tickets, hashes, Shadow Credential changes, account mutations, and cleanup attempts are activity until the returned Certipy output is reviewed. Recovered certificate or credential material remains candidate access material until independently validated.
+
 The existing command cards remain useful readable references. When a card contains an implemented tool, the current bridge adds the canonical builder near that card rather than deleting historical guidance or creating a second proof model. Generated commands still flow through the same human-run boundary and must return to Evidence before report-ready facts exist.
 
-The next highest-priority Tool Builder migration after v9.17 is **Certipy**. It should remain mode-driven and schema-based, with AD CS request/authentication/relay/shadow/account operations separated cleanly enough that cleanup and proof boundaries stay explicit.
+The next highest-priority Tool Builder migration after v9.18 is **sqlmap**. It should remain schema-driven and should expose request-file versus URL input, parameter scope, cookies, risk/level, DBMS hints, tamper selection, and output controls without introducing automatic execution.
 
 ## Architecture rule
 
