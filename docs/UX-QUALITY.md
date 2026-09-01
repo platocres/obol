@@ -75,6 +75,20 @@ This release establishes the UI/data boundary only. It does not claim `notes-ene
 
 `tools/validate-field-notes-ui.js` protects relevance matching, collapsed disclosure, route gating, and the private-source boundary.
 
+## v9.11 responsive-density baseline
+
+v9.11 completes `ux-mobile-density` with a stable current responsive-layout owner rather than another historical stylesheet layer.
+
+`assets/responsive-current.css` loads after the historical cascade from the existing v8.8 bridge. It concentrates current narrow-width fixes for workspace grids, tab strips, cards, command options, credential/form rows, tracker tables, report previews, modals, and action groups. Inherently wide controls use local horizontal scrolling instead of forcing document-level overflow, while the stylesheet explicitly avoids hiding page overflow globally as a substitute for fixing layout defects.
+
+`assets/product-hardening-dashboard.css` now carries dedicated dashboard breakpoints for narrow laptops, tablet widths, and mobile widths. The hero and track grids stack before becoming cramped, queue status pills move below copy when three-column rows no longer fit, and detailed tables keep their own scroll boundary. The same contract applies to the embedded `#/dashboard` route and standalone `product-hardening.html` entrypoint.
+
+The field-notes disclosure also anchors its mobile expand/collapse affordance inside the summary so progressive disclosure remains usable when the summary stacks vertically.
+
+Canonical responsive test sizes live in `tests/fixtures/responsive-v9.11-viewports.json`: 1280x800, 1024x768, 768x1024, and 390x844. `docs/visual-qa/responsive-density.md` defines representative route/composition checks and deliberately hands those same fixtures forward to the still-queued `qa-playwright-smoke` item rather than duplicating viewport policy later.
+
+`tools/validate-responsive-layout.js` permanently protects viewport metadata, stable responsive-owner wiring, local-overflow behavior, dashboard reflow, field-note anchoring, the canonical visual-QA fixture, and the no-fake-v9.11-runtime-layer rule.
+
 ## Visual QA direction
 
-Browser/screenshot QA should catch UI regressions in addition to deterministic repository validation. v9.5 establishes screenshot-assisted contrast/focus review; the separate `qa-playwright-smoke` item remains queued for automated route opening, console-error detection, and captured screenshots across the full core route set.
+Browser/screenshot QA should catch UI regressions in addition to deterministic repository validation. v9.5 establishes screenshot-assisted contrast/focus review; v9.11 adds a canonical responsive viewport/route contract. The separate `qa-playwright-smoke` item remains queued for automated route opening, console-error detection, document-overflow checks, and captured screenshots across the full core route set.
