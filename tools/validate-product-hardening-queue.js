@@ -5,15 +5,19 @@ const path = require('path');
 const vm = require('vm');
 
 const root = path.join(__dirname, '..');
+const releaseFile = path.join(root, 'data', 'current-release.js');
 const queueFile = path.join(root, 'data', 'product-hardening', 'product-hardening-queue.js');
 const workPackagesFile = path.join(root, 'data', 'product-hardening', 'work-packages.js');
 const contractsFile = path.join(root, 'data', 'product-hardening', 'item-test-contracts.js');
+const tunnelContractsFile = path.join(root, 'data', 'product-hardening', 'item-test-contracts-tunnels.js');
 const sandbox = { window: {}, globalThis: null };
 sandbox.globalThis = sandbox.window;
 vm.createContext(sandbox);
+if (fs.existsSync(releaseFile)) vm.runInContext(fs.readFileSync(releaseFile, 'utf8'), sandbox, { filename: releaseFile });
 vm.runInContext(fs.readFileSync(queueFile, 'utf8'), sandbox, { filename: queueFile });
 if (fs.existsSync(workPackagesFile)) vm.runInContext(fs.readFileSync(workPackagesFile, 'utf8'), sandbox, { filename: workPackagesFile });
 if (fs.existsSync(contractsFile)) vm.runInContext(fs.readFileSync(contractsFile, 'utf8'), sandbox, { filename: contractsFile });
+if (fs.existsSync(tunnelContractsFile)) vm.runInContext(fs.readFileSync(tunnelContractsFile, 'utf8'), sandbox, { filename: tunnelContractsFile });
 
 const q = sandbox.window.OBOL_PRODUCT_HARDENING;
 const workPackages = sandbox.window.OBOL_PRODUCT_HARDENING_WORK_PACKAGES;
