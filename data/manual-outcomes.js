@@ -13,7 +13,6 @@ function normalize(input){
  const row=input&&typeof input==='object'?input:{};
  const outcome=outcomeValue(row.outcome||row.result);
  if(!OUTCOMES.includes(outcome))throw new Error('Unsupported Manual Outcome: '+outcome);
- const evidenceIds=unique(row.evidenceIds||row.evidenceId&&[row.evidenceId]);
  const reason=clean(row.reason).toLowerCase();
  return{
   id:clean(row.id)||makeId(),
@@ -21,14 +20,18 @@ function normalize(input){
   cardId:clean(row.cardId),queueIntentId:clean(row.queueIntentId),label:clean(row.label||row.cardId||row.queueIntentId||'Manual action'),
   contextKey:clean(row.contextKey),contextLabel:clean(row.contextLabel),target:clean(row.target),
   outcome,tried:true,reason:reason||(outcome==='blocked'?'blocked':''),note:clean(row.note),at:clean(row.at)||new Date().toISOString(),
-  evidenceIds,needsEvidenceForReport:evidenceIds.length===0,reportState:evidenceIds.length?'supported':'unproven',
+  evidenceIds:[],needsEvidenceForReport:true,reportState:'unproven',
   source:'manual-outcome',activityId:clean(row.activityId)
  };
 }
 function record(state,input){const rows=ensure(state),row=normalize(input);rows.push(row);return row;}
 function get(state,id){return ensure(state).find(row=>row&&row.id===id)||null;}
 function latest(state,actionId,contextKey){const id=clean(actionId),ctx=clean(contextKey);for(let i=ensure(state).length-1;i>=0;i--){const row=state.manualOutcomes[i];if(!row)continue;if(id&&row.actionId!==id&&row.cardId!==id&&row.queueIntentId!==id)continue;if(ctx&&row.contextKey&&row.contextKey!==ctx)continue;return row;}return null;}
-function attachEvidence(state,id,evidenceId){const row=get(state,id),e=clean(evidenceId);if(!row)throw new Error('Unknown Manual Outcome '+id);if(!e)throw new Error('Evidence id is required');row.evidenceIds=unique([...(row.evidenceIds||[]),e]);row.needsEvidenceForReport=false;row.reportState='supported';return row;}
+function reviewedEvidenceRecord(state,evidenceId){
+ const id=clean(evidenceId);if(!id||!state||!Array.isArray(state.facts))return null;
+ return state.facts.find(fact=>{if(!fact||clean(fact.id)!==id||!clean(fact.evidence))return false;const source=clean(fact.source).toLowerCase();return !!source&&!/^(manual(?:$|:)|system(?:$|:)|card:|manual-outcome:|migration:)/.test(source);})||null;
+}
+function attachEvidence(state,id,evidenceId){const row=get(state,id),e=clean(evidenceId);if(!row)throw new Error('Unknown Manual Outcome '+id);if(!e)throw new Error('Evidence fact id is required');if(!reviewedEvidenceRecord(state,e))throw new Error('Evidence fact '+e+' is not a reviewed non-manual Evidence record');row.evidenceIds=unique([...(row.evidenceIds||[]),e]);row.needsEvidenceForReport=false;row.reportState='supported';return row;}
 function detachEvidence(state,id,evidenceId){const row=get(state,id),e=clean(evidenceId);if(!row)return null;row.evidenceIds=(row.evidenceIds||[]).filter(value=>value!==e);row.needsEvidenceForReport=row.evidenceIds.length===0;row.reportState=row.needsEvidenceForReport?'unproven':'supported';return row;}
 function signal(row){const outcome=outcomeValue(row&&row.outcome);if(outcome==='success')return{advance:true,recalculate:true,triage:'continue',needsEvidenceForReport:!!(row&&row.needsEvidenceForReport)};if(outcome==='failed')return{advance:false,recalculate:true,triage:'retry-or-alternate',needsEvidenceForReport:true};if(outcome==='blocked')return{advance:false,recalculate:true,triage:'resolve-blocker',needsEvidenceForReport:true};return{advance:false,recalculate:true,triage:'defer-or-alternate',needsEvidenceForReport:true};}
 function triage(row){const outcome=outcomeValue(row&&row.outcome),reason=clean(row&&row.reason);if(outcome==='success')return'Workflow may advance, but attach reviewed Evidence before treating the result as report-ready proof.';if(outcome==='blocked')return'Resolve the blocker or prerequisite, preserve the queued intent, then retry or choose another applicable route.';if(outcome==='skipped')return'The operator deferred this action. Preserve the intent and choose another applicable Next Step.';return'Capture the returned output in Evidence, review '+(reason||'the failure')+', then retry with corrected assumptions or choose an alternate path.';}
@@ -53,5 +56,5 @@ function reportSection(state){
 function decorateReport(markdown,state){const section=reportSection(state);return section?String(markdown||'').replace(/\s*$/,'')+'\n\n'+section+'\n':String(markdown||'');}
 function coverageForCards(lanes){const rows=[];for(const lane of lanes||[])for(const card of lane.cards||[]){const runnable=Array.isArray(card.commands)&&card.commands.length>0;rows.push({cardId:clean(card.id),runnable,disposition:runnable?'manual-outcome':'not-executable'});}return rows;}
 function validateFailureReason(reason){const r=clean(reason).toLowerCase();return !r||FAILURE_REASONS.includes(r);}
-root.OBOL_MANUAL_OUTCOMES=Object.freeze({version:'1.0.0',OUTCOMES,WORKFLOW_STATES,FAILURE_REASONS,ensure,normalize,record,get,latest,attachEvidence,detachEvidence,signal,triage,applyQueueOutcome,reportRows,projectReportState,reportSection,decorateReport,coverageForCards,validateFailureReason});
+root.OBOL_MANUAL_OUTCOMES=Object.freeze({version:'1.0.0',OUTCOMES,WORKFLOW_STATES,FAILURE_REASONS,ensure,normalize,record,get,latest,reviewedEvidenceRecord,attachEvidence,detachEvidence,signal,triage,applyQueueOutcome,reportRows,projectReportState,reportSection,decorateReport,coverageForCards,validateFailureReason});
 })(typeof window!=='undefined'?window:globalThis);
