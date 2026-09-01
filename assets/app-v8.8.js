@@ -56,14 +56,24 @@ function decorateNmapBuilder88(){
   syncLegacyNmap88(mount.form);
   let lastProfile=mount.form.elements.namedItem('profile')&&mount.form.elements.namedItem('profile').value;
   const sync=()=>syncLegacyNmap88(mount.form);
-  mount.form.addEventListener('input',sync);
+  mount.form.addEventListener('input',event=>{
+   if(event.target&&event.target.name==='ports'&&event.target.value.trim()){
+    const scope=mount.form.elements.namedItem('portScope');if(scope&&scope.value!=='custom'){scope.value='custom';if(mount.refresh)mount.refresh();}
+   }
+   sync();
+  });
   mount.form.addEventListener('change',event=>{
    if(event.target&&event.target.name==='profile'){
-    const next=event.target.value,output=mount.form.elements.namedItem('output'),scripts=mount.form.elements.namedItem('scripts'),version=mount.form.elements.namedItem('version');
+    const next=event.target.value,output=mount.form.elements.namedItem('output'),scope=mount.form.elements.namedItem('portScope'),minRate=mount.form.elements.namedItem('minRate'),scripts=mount.form.elements.namedItem('scripts'),version=mount.form.elements.namedItem('version');
     const oldProfile=window.OBOL_TOOL_BUILDERS.profile(lastProfile),nextProfile=window.OBOL_TOOL_BUILDERS.profile(next);
     if(output&&(!output.value||output.value===oldProfile.defaultOutput))output.value=nextProfile.defaultOutput;
+    if(scope&&(!scope.value||scope.value===oldProfile.portScope))scope.value=nextProfile.portScope;
+    if(minRate&&(!minRate.value||minRate.value===oldProfile.minRate))minRate.value=nextProfile.minRate;
     if(next==='service'){if(scripts)scripts.checked=true;if(version)version.checked=true;}
     lastProfile=next;if(mount.refresh)mount.refresh();
+   }
+   if(event.target&&event.target.name==='portScope'&&event.target.value!=='custom'){
+    const ports=mount.form.elements.namedItem('ports');if(ports&&ports.value){ports.value='';if(mount.refresh)mount.refresh();}
    }
    syncLegacyNmap88(mount.form);
   });
