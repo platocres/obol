@@ -51,7 +51,7 @@ const nmap=schema.register({
   {kind:'toggle',field:'version',flag:'-sV'},
   {kind:'toggle',field:'os',flag:'-O'},
   {kind:'toggle',field:'reason',flag:'--reason'},
-  {kind:'choice',field:'resolveDns',choices:[{value:false,arg:'-n'},{value:true,arg:'-R'}]},
+  {kind:'choice',field:'resolveDns',choices:[{value:false,arg:'-n'},{value:true,arg:''}]},
   {kind:'choice',field:'timing',choices:[{value:'T2',arg:'-T2'},{value:'T3',arg:'-T3'},{value:'T4',arg:'-T4'},{value:'T5',arg:'-T5'}]},
   {kind:'field',field:'minRate',flag:'--min-rate'},
   {kind:'field',field:'maxRetries',flag:'--max-retries'},
