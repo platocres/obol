@@ -9,16 +9,16 @@ const chisel=schema.register({
   {id:'role',label:'Role',type:'select',default:'client',options:[{value:'client',label:'Client / connect to chisel server'},{value:'server',label:'Server / listen for clients'}]},
   {id:'serverHost',label:'Server listen host',type:'text',default:'0.0.0.0',placeholder:'0.0.0.0',visibleWhen:{field:'role',equals:'server'}},
   {id:'serverPort',label:'Server listen port',type:'number',default:'8080',placeholder:'8080',visibleWhen:{field:'role',equals:'server'}},
-  {id:'allowReverse',label:'Allow reverse remotes (--reverse)',type:'checkbox',visibleWhen:{field:'role',equals:'server'}},
-  {id:'allowSocks',label:'Enable server SOCKS5 (--socks5)',type:'checkbox',visibleWhen:{field:'role',equals:'server'}},
+  {id:'allowReverse',label:'Allow reverse remotes (--reverse)',type:'checkbox',visibleWhen:{field:'role',equals:'server'},help:'Required on the server before clients can request R: reverse forwards or reverse SOCKS.'},
+  {id:'allowSocks',label:'Enable server SOCKS5 (--socks5)',type:'checkbox',visibleWhen:{field:'role',equals:'server'},help:'Required on the server before clients can request a normal socks remote.'},
   {id:'serverAuthMode',label:'Server authentication',type:'select',default:'none',options:[{value:'none',label:'No chisel authentication'},{value:'single',label:'Single user/password (--auth)'},{value:'file',label:'Auth file (--authfile)'}],visibleWhen:{field:'role',equals:'server'}},
   {id:'serverAuthUser',label:'Server auth username',type:'text',requiredWhen:[{field:'role',equals:'server'},{field:'serverAuthMode',equals:'single'}],visibleWhen:[{field:'role',equals:'server'},{field:'serverAuthMode',equals:'single'}]},
   {id:'serverAuthPassword',label:'Server auth password',type:'secret',credentialKind:'password',requiredWhen:[{field:'role',equals:'server'},{field:'serverAuthMode',equals:'single'}],visibleWhen:[{field:'role',equals:'server'},{field:'serverAuthMode',equals:'single'}]},
   {id:'serverAuthFile',label:'Server auth file',type:'path',placeholder:'users.json',requiredWhen:[{field:'role',equals:'server'},{field:'serverAuthMode',equals:'file'}],visibleWhen:[{field:'role',equals:'server'},{field:'serverAuthMode',equals:'file'}]},
   {id:'serverKeyFile',label:'Server SSH key file',type:'path',placeholder:'chisel.key',visibleWhen:{field:'role',equals:'server'}},
   {id:'serverBackend',label:'Backend HTTP server (--backend)',type:'text',placeholder:'http://127.0.0.1:8000',visibleWhen:{field:'role',equals:'server'}},
-  {id:'serverTlsKey',label:'TLS private key',type:'path',placeholder:'server.key',visibleWhen:{field:'role',equals:'server'}},
-  {id:'serverTlsCert',label:'TLS certificate',type:'path',placeholder:'server.crt',visibleWhen:{field:'role',equals:'server'}},
+  {id:'serverTlsKey',label:'TLS private key',type:'path',placeholder:'server.key',requiredWhen:[{field:'role',equals:'server'},{field:'serverTlsCert',truthy:true}],visibleWhen:{field:'role',equals:'server'}},
+  {id:'serverTlsCert',label:'TLS certificate',type:'path',placeholder:'server.crt',requiredWhen:[{field:'role',equals:'server'},{field:'serverTlsKey',truthy:true}],visibleWhen:{field:'role',equals:'server'}},
   {id:'serverTlsCa',label:'Client CA bundle / directory',type:'path',placeholder:'ca.pem',visibleWhen:{field:'role',equals:'server'}},
   {id:'serverKeepalive',label:'Server keepalive',type:'text',placeholder:'25s',visibleWhen:{field:'role',equals:'server'}},
   {id:'serverVerbose',label:'Verbose server logging (-v)',type:'checkbox',visibleWhen:{field:'role',equals:'server'}},
@@ -26,7 +26,8 @@ const chisel=schema.register({
   {id:'serverUrl',label:'Chisel server URL',type:'text',autofill:'target.value',placeholder:'http://10.10.10.10:8080',requiredWhen:{field:'role',equals:'client'},visibleWhen:{field:'role',equals:'client'},help:'Use the reachable URL or host:port for the externally running chisel server.'},
   {id:'remoteMode',label:'Remote type',type:'select',default:'socks',options:[{value:'socks',label:'SOCKS5 through server'},{value:'reverse-socks',label:'Reverse SOCKS5 on server'},{value:'forward',label:'Forward TCP/UDP port'},{value:'reverse-forward',label:'Reverse TCP/UDP port'}],visibleWhen:{field:'role',equals:'client'}},
   {id:'socksCustomPort',label:'Choose SOCKS listen port',type:'checkbox',visibleWhen:[{field:'role',equals:'client'},{field:'remoteMode',in:['socks','reverse-socks']}]},
-  {id:'localPort',label:'Listen / local port',type:'number',placeholder:'1080',requiredWhen:[{field:'role',equals:'client'},{field:'remoteMode',in:['forward','reverse-forward']}],visibleWhen:[{field:'role',equals:'client'},{field:'remoteMode',in:['socks','reverse-socks','forward','reverse-forward']}]},
+  {id:'socksPort',label:'SOCKS listen port',type:'number',placeholder:'1080',requiredWhen:{field:'socksCustomPort',truthy:true},visibleWhen:[{field:'role',equals:'client'},{field:'remoteMode',in:['socks','reverse-socks']},{field:'socksCustomPort',truthy:true}]},
+  {id:'localPort',label:'Listen / local port',type:'number',placeholder:'1080',requiredWhen:[{field:'role',equals:'client'},{field:'remoteMode',in:['forward','reverse-forward']}],visibleWhen:[{field:'role',equals:'client'},{field:'remoteMode',in:['forward','reverse-forward']}]},
   {id:'remoteHost',label:'Remote destination host',type:'text',placeholder:'127.0.0.1',requiredWhen:[{field:'role',equals:'client'},{field:'remoteMode',in:['forward','reverse-forward']}],visibleWhen:[{field:'role',equals:'client'},{field:'remoteMode',in:['forward','reverse-forward']}]},
   {id:'remotePort',label:'Remote destination port',type:'number',placeholder:'3389',requiredWhen:[{field:'role',equals:'client'},{field:'remoteMode',in:['forward','reverse-forward']}],visibleWhen:[{field:'role',equals:'client'},{field:'remoteMode',in:['forward','reverse-forward']}]},
   {id:'remoteProtocol',label:'Remote protocol',type:'select',default:'tcp',options:[{value:'tcp',label:'TCP'},{value:'udp',label:'UDP'}],visibleWhen:[{field:'role',equals:'client'},{field:'remoteMode',in:['forward','reverse-forward']}]},
@@ -39,8 +40,13 @@ const chisel=schema.register({
   {id:'clientHostname',label:'Override Host header',type:'text',placeholder:'front.example',visibleWhen:{field:'role',equals:'client'}},
   {id:'clientSni',label:'Override TLS SNI',type:'text',placeholder:'front.example',visibleWhen:{field:'role',equals:'client'}},
   {id:'clientTlsCa',label:'TLS CA bundle',type:'path',placeholder:'ca.pem',visibleWhen:{field:'role',equals:'client'}},
+  {id:'clientTlsKey',label:'Client mTLS private key',type:'path',placeholder:'client.key',requiredWhen:[{field:'role',equals:'client'},{field:'clientTlsCert',truthy:true}],visibleWhen:{field:'role',equals:'client'}},
+  {id:'clientTlsCert',label:'Client mTLS certificate',type:'path',placeholder:'client.crt',requiredWhen:[{field:'role',equals:'client'},{field:'clientTlsKey',truthy:true}],visibleWhen:{field:'role',equals:'client'}},
   {id:'clientTlsSkipVerify',label:'Skip transport TLS verification',type:'checkbox',visibleWhen:{field:'role',equals:'client'}},
   {id:'clientKeepalive',label:'Client keepalive',type:'text',placeholder:'25s',visibleWhen:{field:'role',equals:'client'}},
+  {id:'maxRetryCount',label:'Maximum reconnect attempts',type:'number',placeholder:'5',visibleWhen:{field:'role',equals:'client'}},
+  {id:'minRetryInterval',label:'Minimum retry interval',type:'text',placeholder:'1s',visibleWhen:{field:'role',equals:'client'}},
+  {id:'maxRetryInterval',label:'Maximum retry interval',type:'text',placeholder:'5m',visibleWhen:{field:'role',equals:'client'}},
   {id:'clientVerbose',label:'Verbose client logging (-v)',type:'checkbox',visibleWhen:{field:'role',equals:'client'}}
  ],
  command:{executable:'chisel',tokens:[
@@ -49,9 +55,9 @@ const chisel=schema.register({
   {kind:'literal',value:'--auth',when:[{field:'role',equals:'server'},{field:'serverAuthMode',equals:'single'}]},{kind:'concat',when:[{field:'role',equals:'server'},{field:'serverAuthMode',equals:'single'}],parts:[{field:'serverAuthUser'},{literal:':'},{field:'serverAuthPassword'}]},
   {kind:'field',field:'serverAuthFile',flag:'--authfile',when:[{field:'role',equals:'server'},{field:'serverAuthMode',equals:'file'}]},{kind:'field',field:'serverKeyFile',flag:'--keyfile',when:{field:'role',equals:'server'}},{kind:'field',field:'serverBackend',flag:'--backend',when:{field:'role',equals:'server'}},{kind:'field',field:'serverTlsKey',flag:'--tls-key',when:{field:'role',equals:'server'}},{kind:'field',field:'serverTlsCert',flag:'--tls-cert',when:{field:'role',equals:'server'}},{kind:'field',field:'serverTlsCa',flag:'--tls-ca',when:{field:'role',equals:'server'}},{kind:'field',field:'serverKeepalive',flag:'--keepalive',when:{field:'role',equals:'server'}},{kind:'toggle',field:'serverVerbose',flag:'-v',when:{field:'role',equals:'server'}},
 
-  {kind:'field',field:'fingerprint',flag:'--fingerprint',when:{field:'role',equals:'client'}},{kind:'literal',value:'--auth',when:[{field:'role',equals:'client'},{field:'clientAuth',truthy:true}]},{kind:'concat',when:[{field:'role',equals:'client'},{field:'clientAuth',truthy:true}],parts:[{field:'clientAuthUser'},{literal:':'},{field:'clientAuthPassword'}]},{kind:'repeat',field:'clientHeaders',flag:'--header',split:'lines',when:{field:'role',equals:'client'}},{kind:'field',field:'clientProxy',flag:'--proxy',when:{field:'role',equals:'client'}},{kind:'field',field:'clientHostname',flag:'--hostname',when:{field:'role',equals:'client'}},{kind:'field',field:'clientSni',flag:'--sni',when:{field:'role',equals:'client'}},{kind:'field',field:'clientTlsCa',flag:'--tls-ca',when:{field:'role',equals:'client'}},{kind:'toggle',field:'clientTlsSkipVerify',flag:'--tls-skip-verify',when:{field:'role',equals:'client'}},{kind:'field',field:'clientKeepalive',flag:'--keepalive',when:{field:'role',equals:'client'}},{kind:'toggle',field:'clientVerbose',flag:'-v',when:{field:'role',equals:'client'}},{kind:'field',field:'serverUrl',when:{field:'role',equals:'client'}},
-  {kind:'literal',value:'socks',when:[{field:'role',equals:'client'},{field:'remoteMode',equals:'socks'},{field:'socksCustomPort',truthy:false}]},{kind:'concat',when:[{field:'role',equals:'client'},{field:'remoteMode',equals:'socks'},{field:'socksCustomPort',truthy:true}],parts:[{field:'localPort'},{literal:':socks'}]},
-  {kind:'literal',value:'R:socks',when:[{field:'role',equals:'client'},{field:'remoteMode',equals:'reverse-socks'},{field:'socksCustomPort',truthy:false}]},{kind:'concat',when:[{field:'role',equals:'client'},{field:'remoteMode',equals:'reverse-socks'},{field:'socksCustomPort',truthy:true}],parts:[{literal:'R:'},{field:'localPort'},{literal:':socks'}]},
+  {kind:'field',field:'fingerprint',flag:'--fingerprint',when:{field:'role',equals:'client'}},{kind:'literal',value:'--auth',when:[{field:'role',equals:'client'},{field:'clientAuth',truthy:true}]},{kind:'concat',when:[{field:'role',equals:'client'},{field:'clientAuth',truthy:true}],parts:[{field:'clientAuthUser'},{literal:':'},{field:'clientAuthPassword'}]},{kind:'repeat',field:'clientHeaders',flag:'--header',split:'lines',when:{field:'role',equals:'client'}},{kind:'field',field:'clientProxy',flag:'--proxy',when:{field:'role',equals:'client'}},{kind:'field',field:'clientHostname',flag:'--hostname',when:{field:'role',equals:'client'}},{kind:'field',field:'clientSni',flag:'--sni',when:{field:'role',equals:'client'}},{kind:'field',field:'clientTlsCa',flag:'--tls-ca',when:{field:'role',equals:'client'}},{kind:'field',field:'clientTlsKey',flag:'--tls-key',when:{field:'role',equals:'client'}},{kind:'field',field:'clientTlsCert',flag:'--tls-cert',when:{field:'role',equals:'client'}},{kind:'toggle',field:'clientTlsSkipVerify',flag:'--tls-skip-verify',when:{field:'role',equals:'client'}},{kind:'field',field:'clientKeepalive',flag:'--keepalive',when:{field:'role',equals:'client'}},{kind:'field',field:'maxRetryCount',flag:'--max-retry-count',when:{field:'role',equals:'client'}},{kind:'field',field:'minRetryInterval',flag:'--min-retry-interval',when:{field:'role',equals:'client'}},{kind:'field',field:'maxRetryInterval',flag:'--max-retry-interval',when:{field:'role',equals:'client'}},{kind:'toggle',field:'clientVerbose',flag:'-v',when:{field:'role',equals:'client'}},{kind:'field',field:'serverUrl',when:{field:'role',equals:'client'}},
+  {kind:'literal',value:'socks',when:[{field:'role',equals:'client'},{field:'remoteMode',equals:'socks'},{field:'socksCustomPort',truthy:false}]},{kind:'concat',when:[{field:'role',equals:'client'},{field:'remoteMode',equals:'socks'},{field:'socksCustomPort',truthy:true}],parts:[{field:'socksPort'},{literal:':socks'}]},
+  {kind:'literal',value:'R:socks',when:[{field:'role',equals:'client'},{field:'remoteMode',equals:'reverse-socks'},{field:'socksCustomPort',truthy:false}]},{kind:'concat',when:[{field:'role',equals:'client'},{field:'remoteMode',equals:'reverse-socks'},{field:'socksCustomPort',truthy:true}],parts:[{literal:'R:'},{field:'socksPort'},{literal:':socks'}]},
   {kind:'concat',when:[{field:'role',equals:'client'},{field:'remoteMode',equals:'forward'},{field:'remoteProtocol',equals:'tcp'}],parts:[{field:'localPort'},{literal:':'},{field:'remoteHost'},{literal:':'},{field:'remotePort'}]},{kind:'concat',when:[{field:'role',equals:'client'},{field:'remoteMode',equals:'forward'},{field:'remoteProtocol',equals:'udp'}],parts:[{field:'localPort'},{literal:':'},{field:'remoteHost'},{literal:':'},{field:'remotePort'},{literal:'/udp'}]},
   {kind:'concat',when:[{field:'role',equals:'client'},{field:'remoteMode',equals:'reverse-forward'},{field:'remoteProtocol',equals:'tcp'}],parts:[{literal:'R:'},{field:'localPort'},{literal:':'},{field:'remoteHost'},{literal:':'},{field:'remotePort'}]},{kind:'concat',when:[{field:'role',equals:'client'},{field:'remoteMode',equals:'reverse-forward'},{field:'remoteProtocol',equals:'udp'}],parts:[{literal:'R:'},{field:'localPort'},{literal:':'},{field:'remoteHost'},{literal:':'},{field:'remotePort'},{literal:'/udp'}]}
  ]},
@@ -89,7 +95,7 @@ const sshPlink=schema.register({
   {kind:'field',field:'identityFile',flag:'-i',when:{field:'authMode',equals:'key'}},{kind:'field',field:'password',flag:'-pw',when:[{field:'client',equals:'plink'},{field:'authMode',equals:'password'}]},
   {kind:'toggle',field:'compression',flag:'-C'},{kind:'toggle',field:'noShell',flag:'-N'},{kind:'toggle',field:'exitOnForwardFailure',flag:'-o ExitOnForwardFailure=yes',when:{field:'client',equals:'ssh'}},
   {kind:'choice',field:'strictHostKey',choices:[{value:'default',arg:''},{value:'accept-new',arg:'-o StrictHostKeyChecking=accept-new'},{value:'strict',arg:'-o StrictHostKeyChecking=yes'}],when:{field:'client',equals:'ssh'}},
-  {kind:'literal',value:'-o',when:[{field:'client',equals:'ssh'},{field:'knownHostsFile',notEquals:''}]},{kind:'concat',when:[{field:'client',equals:'ssh'},{field:'knownHostsFile',notEquals:''}],parts:[{literal:'UserKnownHostsFile='},{field:'knownHostsFile'}]},
+  {kind:'field',field:'knownHostsFile',flag:'-o',prefix:'UserKnownHostsFile=',when:{field:'client',equals:'ssh'}},
   {kind:'toggle',field:'plinkBatch',flag:'-batch',when:{field:'client',equals:'plink'}},{kind:'field',field:'plinkHostKey',flag:'-hostkey',when:{field:'client',equals:'plink'}},
   {kind:'choice',field:'forwardMode',choices:[{value:'local',arg:'-L'},{value:'remote',arg:'-R'},{value:'dynamic',arg:'-D'}]},
   {kind:'concat',when:[{field:'forwardMode',in:['local','remote']},{field:'customBind',truthy:false}],parts:[{field:'listenPort'},{literal:':'},{field:'destinationHost'},{literal:':'},{field:'destinationPort'}]},
@@ -102,5 +108,48 @@ const sshPlink=schema.register({
  reportLineage:{activity:true,evidenceRequiredForProof:true,secretFields:['password']}
 });
 
-root.OBOL_TUNNEL_TOOL_BUILDERS=Object.freeze({version:'1.0.0',chisel,sshPlink});
+function installInventoryProjection(){
+ const base=root.OBOL_TOOL_BUILDER_INVENTORY;
+ if(!base)return null;
+ const overrides={
+  chisel:Object.freeze({tool:'chisel',status:'implemented',queueItem:'tb-chisel',rationale:'chisel is implemented through the canonical schema-driven client/server tunnel builder with reverse, SOCKS, remote, transport, authentication, retry, and cleanup guidance.'}),
+  ssh:Object.freeze({tool:'ssh',status:'implemented',queueItem:'tb-ssh-plink',rationale:'OpenSSH forwarding is implemented through the shared SSH / plink tunnel builder with local, remote, dynamic, authentication, host-key, bind, and cleanup controls.'}),
+  plink:Object.freeze({tool:'plink',status:'implemented',queueItem:'tb-ssh-plink',rationale:'PuTTY Plink forwarding is implemented through the shared SSH / plink tunnel builder with local, remote, dynamic, password/key, host-key, batch, bind, and cleanup controls.'})
+ };
+ const dispositions=Object.freeze({...base.dispositions,...overrides});
+ const get=tool=>dispositions[base.key(tool)]||null;
+ const all=()=>Object.values(dispositions);
+ const validate=()=>{const failures=Array.from(base.validate?base.validate():[]);for(const record of Object.values(overrides)){if(record.status!=='implemented'||!record.queueItem||!record.rationale)failures.push('invalid tunnel inventory projection for '+record.tool);}return failures;};
+ const projected=Object.freeze({...base,dispositions,get,all,validate});
+ root.OBOL_TOOL_BUILDER_INVENTORY=projected;
+ return projected;
+}
+
+function activeToolRoute(){
+ const hash=root.location&&root.location.hash||'';
+ const match=hash.match(/^#\/?tools\/([^/?#]+)/i);
+ return match?decodeURIComponent(match[1]).toLowerCase():'';
+}
+function installBuilderProjection(){
+ const base=root.OBOL_TOOL_BUILDERS;
+ if(!base)return null;
+ const oldDefaults=typeof base.defaultsFor==='function'?base.defaultsFor:(id,values)=>({...values});
+ const defaultsFor=(id,values,context)=>{
+  if(id==='tb-chisel')return{role:'client',remoteMode:'socks',socksCustomPort:false,remoteProtocol:'tcp',serverAuthMode:'none',...(values||{})};
+  if(id==='tb-ssh-plink'){
+   const route=activeToolRoute();
+   const client=route==='plink'?'plink':'ssh';
+   return{client,forwardMode:'local',authMode:'agent',customBind:false,noShell:true,exitOnForwardFailure:true,strictHostKey:'default',plinkBatch:true,...(values||{})};
+  }
+  return oldDefaults(id,values,context);
+ };
+ const byId=Object.freeze({...base.byId,'tb-chisel':chisel,'tb-ssh-plink':sshPlink});
+ const projected=Object.freeze({...base,byId,chisel,sshPlink,defaultsFor});
+ root.OBOL_TOOL_BUILDERS=projected;
+ return projected;
+}
+
+installInventoryProjection();
+installBuilderProjection();
+root.OBOL_TUNNEL_TOOL_BUILDERS=Object.freeze({version:'1.0.0',chisel,sshPlink,installInventoryProjection,installBuilderProjection});
 })(typeof window!=='undefined'?window:globalThis);
