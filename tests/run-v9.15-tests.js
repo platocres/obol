@@ -14,33 +14,28 @@ const run=args=>cp.spawnSync(process.execPath,args.map((part,idx)=>idx===0?path.
 const sandbox={window:{},globalThis:null,navigator:{clipboard:{writeText:()=>Promise.resolve()}}};sandbox.globalThis=sandbox.window;vm.createContext(sandbox);
 for(const rel of ['data/product-hardening/product-hardening-queue.js','data/product-hardening/work-packages.js','data/product-hardening/item-test-contracts.js','data/tool-builder-schema.js','data/tool-builder-inventory.js','assets/tool-builder-current.js','data/tool-builders.js'])vm.runInContext(read(rel),sandbox,{filename:rel});
 const q=sandbox.window.OBOL_PRODUCT_HARDENING;
-const packages=sandbox.window.OBOL_PRODUCT_HARDENING_WORK_PACKAGES;
 const contracts=sandbox.window.OBOL_PRODUCT_HARDENING_TEST_CONTRACTS;
 const schema=sandbox.window.OBOL_TOOL_BUILDER_SCHEMA;
 const inventory=sandbox.window.OBOL_TOOL_BUILDER_INVENTORY;
 const renderer=sandbox.window.OBOL_TOOL_BUILDER;
 const builders=sandbox.window.OBOL_TOOL_BUILDERS;
-assert(q&&packages&&contracts&&schema&&inventory&&renderer&&builders,'v9.15 durable owners load');
+assert(q&&contracts&&schema&&inventory&&renderer&&builders,'v9.15 durable owners load');
 
 const johnItem=q.items.find(entry=>entry.id==='tb-john');
-assert(johnItem&&johnItem.status==='complete','v9.15 completes tb-john');
+assert(johnItem&&johnItem.status==='complete','v9.15 milestone keeps tb-john complete');
 assert(!q.buildNext(1000).some(entry=>entry.id==='tb-john'),'completed John item stays out of Product Build Next');
-assert.strictEqual(q.tracks.find(track=>track.id==='tool-builders').complete,9,'Tool Builder track advances to 9/18');
-assert.strictEqual(q.totals().complete,30,'overall Product Hardening completion advances to 30');
-assert.strictEqual(q.totals().queued,44,'John leaves the queued set');
-assert(q.buildNext(1)[0]&&q.buildNext(1)[0].id==='tb-gobuster-ferox','Product Build Next advances to gobuster / feroxbuster');
-const recommendation=packages.recommend(q);
-assert(recommendation&&recommendation.entryItem.id==='tb-gobuster-ferox','work-package recommendation follows the highest-priority gobuster / feroxbuster entry');
+assert(q.tracks.find(track=>track.id==='tool-builders').complete>=9,'Tool Builder track preserves the v9.15 9/18 milestone or advances beyond it');
+assert(q.totals().complete>=30,'Product Hardening completion preserves the v9.15 milestone or advances beyond it');
+assert(q.totals().queued<=44,'queued Product Hardening work does not regress behind the v9.15 milestone');
 
 const contract=contracts.contracts['tb-john'];
 assert(contract&&contract.acceptance.length,'John owns an item-specific Definition of Done');
 assert(contract.validationCommands.includes('node tests/run-v9.15-tests.js'),'John contract names the v9.15 regression suite');
 for(const rel of contract.proofFiles)assert(exists(rel),'v9.15 proof file exists for tb-john: '+rel);
-assert.strictEqual(contracts.version,'9.15.0','Product Hardening test-contract version advances to v9.15');
 
 const john=schema.get('tb-john');
 assert(john,'canonical John builder registers');
-assert.strictEqual(inventory.get('john').status,'implemented','John inventory disposition is implemented');
+assert.strictEqual(inventory.get('john').status,'implemented','John inventory disposition remains implemented');
 assert.strictEqual(inventory.get('john').queueItem,'tb-john','John inventory points at tb-john');
 assert.deepStrictEqual(Array.from(schema.validateBuilder(john)),[],'John satisfies the stable Tool Builder schema');
 for(const id of ['hashFile','format','mode','wordlist','rules','ruleSet','fork','session','pot'])assert(john.fields.some(field=>field.id===id),'John builder exposes '+id);
@@ -63,9 +58,7 @@ for(const token of ['decorateCurrentToolBuilders88','builderForTool88','mountBui
 const rendererSource=read('assets/tool-builder-current.js');
 for(const forbidden of ["require('child_process')",'child_process','spawnSync(','execSync(','eval(','new Function('])assert(!rendererSource.includes(forbidden),'browser Tool Builder contains forbidden execution primitive '+forbidden);
 
-const release=read('data/current-release.js');
-assert(release.includes("version:'9.15.0'")&&release.includes("label:'v9.15'"),'current release authority advances to v9.15');
-assert(exists('docs/v9.15.md'),'v9.15 release documentation exists');
+assert(exists('docs/v9.15.md'),'v9.15 release documentation remains available');
 for(const forbidden of ['assets/obol-v9.15.css','assets/app-v9.15.js','assets/core-v9.15.js','data/project-model-v9.15.js'])assert(!exists(forbidden),'no fake v9.15 runtime overlay: '+forbidden);
 
 for(const command of [
@@ -81,4 +74,4 @@ for(const command of [
  assert.strictEqual(result.status,0,(result.stderr||result.stdout||'').trim());
 }
 
-console.log('v9.15 John Tool Builder regression tests passed.');
+console.log('v9.15 John Tool Builder milestone regression tests passed.');
