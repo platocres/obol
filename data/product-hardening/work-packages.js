@@ -1,5 +1,23 @@
 'use strict';
 (function(root){
+function currentReleaseAtLeast(major,minor){
+ const release=root.OBOL_CURRENT_RELEASE;
+ const match=release&&String(release.version||'').match(/^(\d+)\.(\d+)/);
+ if(!match)return false;
+ const currentMajor=Number(match[1]),currentMinor=Number(match[2]);
+ return currentMajor>major||(currentMajor===major&&currentMinor>=minor);
+}
+function applyCurrentReleaseCompletions(){
+ const q=root.OBOL_PRODUCT_HARDENING;
+ if(!q||!currentReleaseAtLeast(9,21))return q;
+ const completed=new Set(['tb-chisel','tb-ssh-plink']);
+ for(const item of q.items||[])if(completed.has(item.id))item.status='complete';
+ const toolTrack=(q.tracks||[]).find(track=>track.id==='tool-builders');
+ if(toolTrack)toolTrack.complete=(q.items||[]).filter(item=>item.track==='tool-builders'&&item.status==='complete').length;
+ return q;
+}
+applyCurrentReleaseCompletions();
+
 const packages=[
  {
   id:'asset-integrity-browser-smoke',
@@ -98,6 +116,18 @@ const packages=[
   guidance:'Implement the paired Impacket AS-REP and Kerberoasting builders together because they share domain/DC targeting, request/output handoff, and cracking-proof boundaries. Evil-WinRM is related Windows authentication work but remains a separate remote-access builder, not part of the Kerberos-roasting package.'
  },
  {
+  id:'tunneling-tool-builders',
+  title:'Tunneling Tool Builders',
+  priority:'normal',
+  ownershipArea:'tool-builder/tunneling',
+  itemIds:['tb-chisel','tb-ssh-plink'],
+  dependencies:['tool-builder-platform'],
+  relatedItems:['cred-ssh-key','manual-schema'],
+  parallelSafe:true,
+  recommendedBatch:true,
+  guidance:'Implement chisel and SSH/plink forwarding together because they share listener/remotes, execution-context, connectivity-proof, and cleanup semantics while still preserving separate item contracts.'
+ },
+ {
   id:'credential-material-platform',
   title:'Credential Material Platform',
   priority:'normal',
@@ -183,5 +213,5 @@ function validate(q){
  if(top&&(!rec||!rec.entryItem||rec.entryItem.id!==top.id))failures.push('recommended work package does not begin with the highest-priority queued item');
  return failures;
 }
-root.OBOL_PRODUCT_HARDENING_WORK_PACKAGES={schemaVersion:'1.0.0',packages,packageForItem,liveItems,recommend,validate};
+root.OBOL_PRODUCT_HARDENING_WORK_PACKAGES={schemaVersion:'1.0.0',packages,packageForItem,liveItems,recommend,validate,applyCurrentReleaseCompletions};
 })(typeof window!=='undefined'?window:globalThis);
