@@ -20,7 +20,7 @@ const records={
  ldapsearch:['modeled',null,'LDAP query action remains inventoried for later builder coverage.'],
  'bloodhound-python':['modeled',null,'BloodHound collection remains inventoried for later builder coverage.'],
  whatweb:['modeled',null,'Web fingerprinting action remains inventoried for later builder coverage.'],
- curl:['modeled','tb-curl','curl is a representative HTTP builder.'],
+ curl:['implemented','tb-curl','curl is implemented as the canonical HTTP request builder with explicit method, headers, cookies, body, authentication, proxy, upload, transfer, and output controls.'],
  dig:['modeled',null,'DNS query action remains inventoried for later builder coverage.'],
  dnsrecon:['modeled',null,'DNS enumeration remains inventoried for later builder coverage.'],
  onesixtyone:['modeled',null,'SNMP community discovery remains inventoried for later builder coverage.'],

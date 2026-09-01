@@ -16,15 +16,13 @@ assert(q&&contracts&&schema&&inventory&&renderer&&builders,'v9.19 durable owners
 const item=q.items.find(entry=>entry.id==='tb-sqlmap');
 assert(item&&item.status==='complete','v9.19 completes tb-sqlmap');
 assert(!q.buildNext(1000).some(entry=>entry.id==='tb-sqlmap'),'completed sqlmap item stays out of Product Build Next');
-assert.strictEqual(q.tracks.find(track=>track.id==='tool-builders').complete,15,'Tool Builder track advances to 15/18');
-assert.strictEqual(q.totals().complete,36,'overall Product Hardening completion advances to 36');
-assert.strictEqual(q.totals().queued,38,'sqlmap leaves the queued set');
-assert(q.buildNext(1)[0]&&q.buildNext(1)[0].id==='tb-curl','Product Build Next advances to curl');
+assert(q.tracks.find(track=>track.id==='tool-builders').complete>=15,'Tool Builder track preserves at least the v9.19 15/18 milestone');
+assert(q.totals().complete>=36,'overall Product Hardening completion preserves at least the v9.19 milestone');
+assert(q.totals().queued<=38,'queued Product Hardening work does not regress behind v9.19');
 const contract=contracts.contracts['tb-sqlmap'];
 assert(contract&&contract.acceptance.length,'sqlmap owns an item-specific Definition of Done');
 assert(contract.validationCommands.includes('node tests/run-v9.19-tests.js'),'sqlmap contract names the v9.19 regression suite');
 for(const rel of contract.proofFiles)assert(exists(rel),'v9.19 proof file exists for tb-sqlmap: '+rel);
-assert.strictEqual(contracts.version,'9.19.0','Product Hardening test-contract authority advances to v9.19');
 assert.strictEqual(schema.schemaVersion,'1.0.0');assert.strictEqual(renderer.version,'1.0.0');assert.strictEqual(builders.version,'1.0.0');
 const sqlmap=schema.get('tb-sqlmap');
 assert(sqlmap,'canonical sqlmap builder registers');
@@ -44,8 +42,6 @@ assert(sqlmap.reportLineage.evidenceRequiredForProof===true,'sqlmap preserves re
 for(const secret of ['data','cookie','headers'])assert(sqlmap.reportLineage.secretFields.includes(secret),'sqlmap report lineage protects '+secret);
 const rendererSource=read('assets/tool-builder-current.js');
 for(const forbidden of ["require('child_process')",'child_process','spawnSync(','execSync(','eval(','new Function('])assert(!rendererSource.includes(forbidden),'browser Tool Builder contains forbidden execution primitive '+forbidden);
-const release=read('data/current-release.js');
-assert(release.includes("version:'9.19.0'")&&release.includes("label:'v9.19'"),'current release authority advances to v9.19');
 assert(exists('docs/v9.19.md'),'v9.19 release documentation exists');
 for(const forbidden of ['assets/obol-v9.19.css','assets/app-v9.19.js','assets/core-v9.19.js','data/project-model-v9.19.js'])assert(!exists(forbidden),'no fake v9.19 runtime overlay: '+forbidden);
 for(const command of [['tools/validate-tool-builder-platform.js'],['tools/validate-product-hardening-queue.js'],['tools/validate-current-release.js'],['tools/validate-asset-references.js'],['tools/sync-current-release.js','--check'],['tools/sync-product-build-next.js','--check'],['tools/validate-release-pr.js','--repo-only']]){const result=run(command);assert.strictEqual(result.status,0,(result.stderr||result.stdout||'').trim());}
