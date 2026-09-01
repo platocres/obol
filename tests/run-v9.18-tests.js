@@ -24,16 +24,16 @@ assert(q&&contracts&&schema&&inventory&&renderer&&builders,'v9.18 durable owners
 const item=q.items.find(entry=>entry.id==='tb-certipy');
 assert(item&&item.status==='complete','v9.18 completes tb-certipy');
 assert(!q.buildNext(1000).some(entry=>entry.id==='tb-certipy'),'completed Certipy item stays out of Product Build Next');
-assert.strictEqual(q.tracks.find(track=>track.id==='tool-builders').complete,14,'Tool Builder track advances to 14/18');
-assert.strictEqual(q.totals().complete,35,'overall Product Hardening completion advances to 35');
-assert.strictEqual(q.totals().queued,39,'Certipy leaves the queued set');
-assert(q.buildNext(1)[0]&&q.buildNext(1)[0].id==='tb-sqlmap','Product Build Next advances to sqlmap');
+assert(q.tracks.find(track=>track.id==='tool-builders').complete>=14,'Tool Builder track never regresses below the v9.18 14/18 milestone');
+assert(q.totals().complete>=35,'overall Product Hardening completion never regresses below the v9.18 milestone');
+assert(q.totals().queued<=39,'v9.18 completion never restores removed queue debt');
+assert(!q.buildNext(1000).some(entry=>entry.id==='tb-certipy'),'Product Build Next stays past completed Certipy work');
 
 const contract=contracts.contracts['tb-certipy'];
 assert(contract&&contract.acceptance.length,'Certipy owns an item-specific Definition of Done');
 assert(contract.validationCommands.includes('node tests/run-v9.18-tests.js'),'Certipy contract names the v9.18 regression suite');
 for(const rel of contract.proofFiles)assert(exists(rel),'v9.18 proof file exists for tb-certipy: '+rel);
-assert.strictEqual(contracts.version,'9.18.0','Product Hardening test-contract version advances to v9.18');
+assert(/^9\./.test(contracts.version),'Product Hardening test-contract authority remains in the v9 phase');
 
 assert.strictEqual(schema.schemaVersion,'1.0.0','stable Tool Builder schema identity is unchanged');
 assert.strictEqual(renderer.version,'1.0.0','stable Tool Builder renderer identity is unchanged');
@@ -65,7 +65,7 @@ const rendererSource=read('assets/tool-builder-current.js');
 for(const forbidden of ["require('child_process')",'child_process','spawnSync(','execSync(','eval(','new Function('])assert(!rendererSource.includes(forbidden),'browser Tool Builder contains forbidden execution primitive '+forbidden);
 
 const release=read('data/current-release.js');
-assert(release.includes("version:'9.18.0'")&&release.includes("label:'v9.18'"),'current release authority advances to v9.18');
+assert(/version:'9\.\d+\.\d+'/.test(release)&&/label:'v9\.\d+'/.test(release),'current release authority remains a v9 Product Hardening release');
 assert(exists('docs/v9.18.md'),'v9.18 release documentation exists');
 for(const forbidden of ['assets/obol-v9.18.css','assets/app-v9.18.js','assets/core-v9.18.js','data/project-model-v9.18.js'])assert(!exists(forbidden),'no fake v9.18 runtime overlay: '+forbidden);
 

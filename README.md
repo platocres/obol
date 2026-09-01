@@ -4,7 +4,7 @@ Obol is a static, browser-local workspace for OSCP-style labs, Active Directory 
 
 Live site: `https://platocres.github.io/obol/`
 
-Current release: **v9.18**
+Current release: **v9.19**
 
 Open `#/dashboard` for the active Product Hardening Dashboard and Product Build Next queue.
 
@@ -66,33 +66,33 @@ The completed Orange methodology/source queue is historical, regression-protecte
 This block is generated from `data/product-hardening/product-hardening-queue.js`. Do not edit it manually.
 Recommended work-package metadata comes from `data/product-hardening/work-packages.js`.
 
-**Current product-hardening queue:** 35/632 complete (6%), 39 queued, 9 foundation items modeled.
+**Current product-hardening queue:** 36/632 complete (6%), 38 queued, 9 foundation items modeled.
 **Private notes source:** `platocres/obol-source-notes` — 556 notes and 1326 embedded resources accounted.
 
-**Recommended work package:** **sqlmap builder** — 1 live item / 1 tracked.
-**Work-package entry:** **sqlmap builder**
+**Recommended work package:** **curl builder** — 1 live item / 1 tracked.
+**Work-package entry:** **curl builder**
 **Ownership area:** `tool-builders`
 **Package guidance:** Complete the highest-priority item. Before stopping, inspect adjacent queue work for a coherent same-ownership package.
 **Package dependencies:** none.
 
 **Live items in this package:**
-- **sqlmap builder** — Support request files, URL params, cookies, risk/level, DBMS hints, tamper scripts, and safe output handling.
+- **curl builder** — Headers, cookies, body, proxy, method, auth, uploads, and output options should be explicit toggles/fields.
 
 **Highest-priority live items:**
-1. **sqlmap builder** — Support request files, URL params, cookies, risk/level, DBMS hints, tamper scripts, and safe output handling.
-2. **curl builder** — Headers, cookies, body, proxy, method, auth, uploads, and output options should be explicit toggles/fields.
-3. **chisel builder** — Expose client/server roles, reverse mode, SOCKS, remotes, ports, and cleanup guidance.
-4. **SSH / plink tunnel builders** — Create guided local, remote, and dynamic forwarding builders with Windows/Kali execution context.
-5. **Credential Material schema** — Represent passwords, hashes, tickets, certificates, keys, cookies, and tokens as first-class typed materials.
-6. **Password mode controls** — Standard username/password inputs and escaping rules across all relevant builders.
-7. **NT hash and LM:NT mode controls** — Correct flags for tools that support pass-the-hash or LM:NT pair input.
-8. **NetNTLMv1/v2 detection** — Pasted challenge-response hashes should route to appropriate cracking builders and modes.
+1. **curl builder** — Headers, cookies, body, proxy, method, auth, uploads, and output options should be explicit toggles/fields.
+2. **chisel builder** — Expose client/server roles, reverse mode, SOCKS, remotes, ports, and cleanup guidance.
+3. **SSH / plink tunnel builders** — Create guided local, remote, and dynamic forwarding builders with Windows/Kali execution context.
+4. **Credential Material schema** — Represent passwords, hashes, tickets, certificates, keys, cookies, and tokens as first-class typed materials.
+5. **Password mode controls** — Standard username/password inputs and escaping rules across all relevant builders.
+6. **NT hash and LM:NT mode controls** — Correct flags for tools that support pass-the-hash or LM:NT pair input.
+7. **NetNTLMv1/v2 detection** — Pasted challenge-response hashes should route to appropriate cracking builders and modes.
+8. **Kerberos TGS / AS-REP detection** — Identify common TGS and AS-REP hash shapes and select correct cracking modes.
 
 **Track status:**
 - **Critical correctness:** 4/4 complete (100%), 0 modeled.
 - **Architecture / runtime:** 6/10 complete (60%), 3 modeled.
 - **UI / UX repair:** 7/8 complete (88%), 1 modeled.
-- **Tool GUI builders:** 14/18 complete (78%), 0 modeled.
+- **Tool GUI builders:** 15/18 complete (83%), 0 modeled.
 - **Credential modes:** 0/14 complete (0%), 0 modeled.
 - **Manual outcomes:** 0/8 complete (0%), 0 modeled.
 - **Notes integration:** 0/556 complete (0%), 2 modeled.
@@ -151,6 +151,7 @@ node tests/run-v9.15-tests.js
 node tests/run-v9.16-tests.js
 node tests/run-v9.17-tests.js
 node tests/run-v9.18-tests.js
+node tests/run-v9.19-tests.js
 ```
 
 ## GitHub Pages

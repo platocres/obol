@@ -33,7 +33,7 @@ const records={
  ffuf:['implemented','tb-ffuf','ffuf is implemented as the canonical explicit content and virtual-host discovery builder.'],
  nikto:['modeled',null,'Web scanning remains inventoried for later builder coverage.'],
  httpx:['modeled',null,'HTTP probing remains inventoried for later builder coverage.'],
- sqlmap:['modeled','tb-sqlmap','sqlmap is a representative request-driven builder.'],
+ sqlmap:['implemented','tb-sqlmap','sqlmap is implemented as the canonical URL/raw-request SQL injection testing builder with parameter, request-shaping, detection-depth, DBMS, tamper, session, output, and reviewed-Evidence controls.'],
  'impacket-smbserver':['modeled',null,'Impacket SMB server remains inventoried for later builder coverage.'],
  'impacket-getuserspns':['implemented','tb-getuserspns','GetUserSPNs is implemented as the canonical Kerberoasting builder with password, NT-hash, and Kerberos-cache authentication plus request/output controls.'],
  'impacket-getnpusers':['implemented','tb-getnpusers','GetNPUsers is implemented as the canonical AS-REP roasting builder with username-source, no-pass, authenticated, DC, and hash-output controls.'],
