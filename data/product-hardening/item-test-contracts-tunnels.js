@@ -77,5 +77,15 @@ if(currentReleaseAtLeast(9,26)){
  };
  base.version='9.26.0';
 }
+if(currentReleaseAtLeast(9,27)){
+ const dispositionProof=['data/note-integration.js','data/field-notes.js','data/product-hardening/work-packages.js','data/product-hardening/item-test-contracts-tunnels.js','tools/validate-note-integration.js','tests/run-v9.27-tests.js','docs/NOTES-INTEGRATION.md','docs/v9.27.md','README.md'];
+ const validation=['node tests/run-v9.27-tests.js','node tools/validate-note-integration.js','node tools/validate-field-notes-ui.js','node tools/validate-product-hardening-queue.js','node tools/validate-asset-references.js'];
+ base.contracts['notes-disposition-burn-down']={
+  acceptance:['The second disposition review wave extends explicit terminal review to 41/556 source notes with 32 modeled and 9 private-reference-only, preserves the v9.25 and v9.26 milestone snapshots, exposes only rewritten contextual guidance with reciprocal opaque lineage, and leaves the burn-down queue item queued until all 556 notes are terminal. The public projection must exclude raw review text, course flags, lab targets, and recipe-sheet copying.'],
+  validationCommands:validation,
+  proofFiles:dispositionProof
+ };
+ base.version='9.27.0';
+}
 root.OBOL_PRODUCT_HARDENING_TEST_CONTRACTS=base;
 })(typeof window!=='undefined'?window:globalThis);
