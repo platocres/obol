@@ -1,7 +1,7 @@
 'use strict';
 (function(root){
 function schema(){return root.OBOL_TOOL_BUILDER_SCHEMA||null;}
-function esc(v){return String(v==null?'':v).replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));}
+function esc(v){return String(v==null?'':v).replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot',"'":'&#39;'}[c]));}
 function shellQuote(v){
  const value=String(v==null?'':v);
  if(value==='')return "''";
@@ -40,6 +40,17 @@ function choiceArg(token,value){
  const choice=(token.choices||[]).find(c=>String(c.value)===String(value));
  return choice?choice.arg:'';
 }
+function commandExecutable(builder,values){
+ const executable=builder&&builder.command&&builder.command.executable;
+ if(typeof executable==='string')return executable;
+ if(executable&&typeof executable==='object'){
+  const value=(values||{})[executable.field];
+  const choice=(executable.choices||[]).find(entry=>String(entry.value)===String(value));
+  if(choice&&choice.command)return String(choice.command);
+  throw new Error('Select a valid command implementation');
+ }
+ throw new Error('Tool Builder command executable is invalid');
+}
 function valueWithAffixes(token,value){return String(token.prefix||'')+String(value)+String(token.suffix||'');}
 function splitRepeat(value,mode){
  const raw=String(value==null?'':value);
@@ -65,7 +76,7 @@ function compile(builder,values,context){
  const resolved=normalizeValues(builder,values,context);
  const missing=validateRequired(builder,resolved);
  if(missing.length)throw new Error('Missing required fields: '+missing.join(', '));
- const parts=[shellQuote(builder.command.executable)];
+ const parts=[shellQuote(commandExecutable(builder,resolved))];
  for(const token of builder.command.tokens||[]){
   if(!conditionMatches(token.when,resolved))continue;
   if(token.kind==='literal'){parts.push(String(token.value));continue;}
@@ -165,5 +176,5 @@ function mount(container,builder,context,values){
  refresh();
  return{shell,form,refresh,get command(){return code?code.textContent:'';},get values(){return collect(form,builder);}};
 }
-root.OBOL_TOOL_BUILDER=Object.freeze({version:'1.0.0',shellQuote,truthy,conditionMatches,compile,html,mount,collect,normalizeValues});
+root.OBOL_TOOL_BUILDER=Object.freeze({version:'1.0.0',shellQuote,truthy,conditionMatches,commandExecutable,compile,html,mount,collect,normalizeValues});
 })(typeof window!=='undefined'?window:globalThis);
