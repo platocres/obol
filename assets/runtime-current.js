@@ -4,6 +4,7 @@ const manifest=root.OBOL_RUNTIME_MANIFEST;
 if(!manifest)throw new Error('Obol runtime manifest must load before assets/runtime-current.js');
 let stylesWritten=false,scriptsWritten=false;
 const groupLoads=new Map();
+let tunnelBuilderLoad=null;
 const esc=v=>String(v).replace(/&/g,'&amp;').replace(/"/g,'&quot;').replace(/</g,'&lt;');
 
 function canParserWrite(){
@@ -58,7 +59,28 @@ function ensureRoute(page){
 function rerenderAfterLazy(){
  try{if(typeof root.route==='function')root.route();}catch(err){setTimeout(()=>{try{if(typeof root.route==='function')root.route();}catch(e){}},0);}
 }
-function hydrateRoute(){return ensureRoute(routeName()).then(names=>{if(names.length)rerenderAfterLazy();return names;});}
+function toolBuilderBaseReady(){return !!(root.OBOL_TOOL_BUILDER_SCHEMA&&root.OBOL_TOOL_BUILDER_INVENTORY&&root.OBOL_TOOL_BUILDER&&root.OBOL_TOOL_BUILDERS);}
+function loadTunnelBuilders(attempt){
+ if(root.OBOL_TUNNEL_TOOL_BUILDERS)return Promise.resolve(['data/tool-builders-tunnels.js']);
+ if(tunnelBuilderLoad)return tunnelBuilderLoad;
+ const n=Number(attempt||0);
+ if(!toolBuilderBaseReady()){
+  if(n>=100)return Promise.resolve([]);
+  return new Promise(resolve=>setTimeout(resolve,20)).then(()=>loadTunnelBuilders(n+1));
+ }
+ tunnelBuilderLoad=appendScripts(['data/tool-builders-tunnels.js']).then(()=>root.OBOL_TUNNEL_TOOL_BUILDERS?['data/tool-builders-tunnels.js']:[]).finally(()=>{if(!root.OBOL_TUNNEL_TOOL_BUILDERS)tunnelBuilderLoad=null;});
+ return tunnelBuilderLoad;
+}
+function hydrateRoute(){
+ const page=routeName();
+ return ensureRoute(page).then(names=>{
+  const toolBearing=['boxes','card','tools'].includes(page);
+  return (toolBearing?loadTunnelBuilders(0):Promise.resolve([])).then(extra=>{
+   if(names.length||extra.length)rerenderAfterLazy();
+   return names.concat(extra.length?['tunnelToolBuilders']:[]);
+  });
+ });
+}
 function budgetSnapshot(){
  const startup=startupList();
  const deferred=(manifest.deferredScriptGroups||[]).reduce((n,name)=>n+lazyGroup(name).length,0);
@@ -70,6 +92,6 @@ if(typeof window!=='undefined'){
  if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',()=>{hydrateRoute().catch(()=>{});},{once:true});
  else setTimeout(()=>{hydrateRoute().catch(()=>{});},0);
 }
-root.OBOL_RUNTIME_LOADER=Object.freeze({manifest,writeStyles,writeScripts,appendScripts,loadGroup,ensureRoute,routeName,budgetSnapshot});
+root.OBOL_RUNTIME_LOADER=Object.freeze({manifest,writeStyles,writeScripts,appendScripts,loadGroup,ensureRoute,routeName,loadTunnelBuilders,budgetSnapshot});
 root.__OBOL_RUNTIME_ENTRYPOINT__='manifest-v1';
 })(typeof window!=='undefined'?window:globalThis);
