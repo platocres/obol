@@ -32,7 +32,7 @@ Combined: 556 notes, 1,326 embedded resources
 
 ## Public field-note contract
 
-v9.10 establishes `data/field-notes.js` as the stable public owner for normalized field-note records. It is a presentation/integration boundary, not a copy of the private note ledger.
+v9.10 established `data/field-notes.js` as the stable public owner for normalized field-note records. It is a presentation/integration boundary, not a copy of the private note ledger.
 
 A public field-note record must be rewritten as Obol-owned guidance and may contain only the normalized fields needed for contextual delivery, including:
 
@@ -42,11 +42,15 @@ A public field-note record must be rewritten as Obol-owned guidance and may cont
 - explicit card, tool, Path, or tag bindings;
 - optional opaque source references used for private-ledger traceability.
 
-Public source references must not contain raw ENEX paths, course text, flags, screenshots, lab targets, or proprietary notebook content. The public app should be able to render a field note without reading the private repository.
+Public source references must not contain raw ENEX paths, course text, flags, screenshots, lab targets, or proprietary notebook content. The public app must be able to render a Field Note without reading the private repository.
 
 `assets/field-notes.js` selects only records relevant to the active card/tool/Path context and renders them through collapsed progressive disclosure. An empty relevant set renders nothing. This prevents the public app from becoming a notebook dump while giving reviewed source lessons a stable destination.
 
-The v9.10 public field-note ledger was intentionally empty. v9.25 was the first release to populate that presentation contract from reviewed private-source derivation.
+## Review-packet boundary
+
+The private repository owns bounded review packets generated from the Git LFS ENEX sources. Review packets include opaque note IDs plus enough private note substance for a real review decision. They are review inputs only.
+
+Never publish packet `review_text`, code blocks, course flags, lab targets, copied walkthrough prose, screenshots, or raw source paths in public Obol. Public Obol stores only terminal disposition metadata, rationale, opaque lineage, and rewritten product guidance.
 
 ## v9.25 Notes Integration Foundation
 
@@ -54,11 +58,10 @@ The v9.10 public field-note ledger was intentionally empty. v9.25 was the first 
 
 The public projection deliberately does not carry raw ENEX paths or note bodies. `atomizeMetadata(...)` retains only the note/source IDs, a short title hint, tags, resource count, and content digest needed for review bookkeeping.
 
-v9.25 modeled four reviewed seed notes into rewritten guidance covering credential-dump proof boundaries, pass-the-hash material routing, response-driven content discovery, and path-traversal proof sequencing. The stable owner preserves this four-note milestone explicitly even as later review waves advance the current ledger.
-
-The v9.25 historical milestone is:
+v9.25 modeled four reviewed seed notes into rewritten guidance covering credential-dump proof boundaries, pass-the-hash material routing, response-driven content discovery, and path-traversal proof sequencing.
 
 ```text
+v9.25 milestone
 reviewed: 4
 modeled: 4
 private-reference-only: 0
@@ -66,25 +69,14 @@ pending-review: 552
 total: 556
 ```
 
-## v9.26 disposition review waves
+## v9.26 disposition review wave 1
 
-v9.26 advances the note-integration owner to schema 1.1.0 and begins the substantive `notes-disposition-burn-down` review work.
+v9.26 advanced the note-integration owner to schema 1.1.0 and began substantive `notes-disposition-burn-down` review work.
 
-The private source repository now supports bounded review packets generated from the Git LFS ENEX sources. Those private packets expose enough note substance for agents to review lessons instead of deciding from titles alone. They remain private source material and must never be copied into public Obol.
-
-Public Obol stores only explicit `reviewedDispositions` rows. Every reviewed row contains:
-
-- an opaque private-source note ID;
-- a terminal disposition;
-- the review wave that made the decision;
-- a substantive rationale;
-- derived public output IDs when the note is modeled.
-
-Modeled notes must link to at least one rewritten public output. Notes marked `superseded`, `rejected`, or `private-reference-only` must not publish derived output merely to increase coverage numbers. Public Field Notes may cite only source rows that are explicitly modeled, and validation enforces the lineage in both directions.
-
-The v9.26 first review wave advances the ledger to:
+Every reviewed row records an opaque source ID, terminal disposition, review wave, substantive rationale, and derived output IDs where appropriate. Modeled notes must link to at least one rewritten public output. `superseded`, `rejected`, and `private-reference-only` rows must not publish output merely to increase coverage numbers.
 
 ```text
+v9.26 wave 1
 reviewed: 15
 modeled: 11
 private-reference-only: 4
@@ -94,20 +86,46 @@ pending-review: 541
 total: 556
 ```
 
-The `notes-disposition-burn-down` Product Hardening item remains queued. Partial review progress is shown through the 15/556 Notes Integration denominator; the atomic queue item does not become complete until all 556 source notes have terminal dispositions.
+The wave added durable lessons around client-side trust boundaries, transformed-value fuzzing order, file-inclusion proof sequencing, path-filter troubleshooting, HTTP method consistency, and command-injection remediation.
 
-The new modeled guidance adds durable lessons for:
+## v9.27 disposition review wave 2
 
-- treating client-side controls as behavior rather than authorization proof;
-- preserving decode/mutate/re-encode order when fuzzing transformed web values;
-- separating persisted input, readable inclusion, executable interpretation, and command-execution proof in file-inclusion chains;
-- testing path-normalization and filter assumptions incrementally while treating legacy bypasses as runtime-dependent hypotheses;
-- comparing authorization and security-filter behavior across HTTP methods without treating a method change alone as proof;
-- reporting command-injection remediation as a design, allowlisting, least-privilege, and constrained-scope problem rather than blacklist tuning.
+v9.27 advances the stable owner to schema 1.2.0 and reviews another 26 private source notes. The cumulative ledger becomes:
 
-Reviewed records that are primarily navigation indexes, volatile extension catalogs, lab-specific outcome records without a distinct new lesson, or opaque command-obfuscation catalogs may remain `private-reference-only` with rationale. Private-reference-only is a real terminal review decision, not a hidden backlog bucket.
+```text
+v9.27 wave 2
+reviewed: 41
+modeled: 32
+private-reference-only: 9
+superseded: 0
+rejected: 0
+pending-review: 515
+total: 556
+```
 
-`tools/validate-note-integration.js` permanently verifies source totals, explicit disposition reconciliation, terminal rationale, modeled-output lineage, historical v9.25 milestone preservation, public-safe atomization, contextual tool/Path bindings, raw-source exclusion, and the no-execution boundary.
+The Product Hardening item `notes-disposition-burn-down` remains queued. A review wave is measurable progress, not an excuse to mark the one atomic 556-note item complete before every source note is terminal.
+
+Wave 2 finishes the remaining unreviewed records in the first HTB packet and reviews the complete second HTB packet. The public projection grows from ten to eighteen Field Notes while consolidating related source notes into a smaller number of product-owned lessons.
+
+New durable guidance covers four areas.
+
+### Object authorization and enumeration
+
+Direct object references are treated as discovery clues, not vulnerabilities by themselves. Obol now reinforces that backend authorization is the actual boundary and that one unauthorized differential read or action should be proven before broad enumeration is widened. Encoded, hashed, predictable, or client-discovered identifiers do not establish impact on their own.
+
+### Command-injection reasoning
+
+Recipe-heavy command-obfuscation and bypass sheets remain private. Public guidance instead teaches the reusable reasoning model: reduce a blocked request to a known-good baseline, vary one parser or filter assumption at a time, distinguish front-end validation from backend enforcement, and separate command-sink suspicion from reviewed execution proof.
+
+### File-upload validation and proof
+
+Obol now treats upload handling as several independent layers: extension, browser-declared content type, file signature, server classification, stored filename, storage location, serving behavior, downstream parser/consumer behavior, and executable interpretation. An accepted upload is not code-execution proof.
+
+The Path guidance also branches on downstream consumers such as browser rendering, document/XML parsing, media processing, archive handling, storage naming, and other observed processors without copying source-specific attack recipes into the product.
+
+### File-upload remediation
+
+Report guidance now emphasizes positive server-side validation, non-executable controlled storage, server-owned randomized naming, authorized download mediation, parser isolation, least-privilege processing, resource limits, safe errors, and malware inspection where appropriate. Client-side checks and extension blacklists remain defense-in-depth rather than the primary security boundary.
 
 ## Dispositions
 
@@ -129,10 +147,27 @@ Modeled notes should produce one or more normalized Obol artifacts when the revi
 - troubleshooting hint;
 - cleanup/restoration hint;
 - report guidance;
-- contextual field-note panel content.
+- contextual Field Note content.
 
-A modeled source note is product-development lineage only. It does not establish any fact, access, exploitation success, or report proof in an operator workspace.
+A modeled source note is product-development lineage only. It does not establish any fact, access, exploitation success, Manual Outcome success, or report proof in an operator workspace.
+
+`private-reference-only` is a real terminal disposition for material that remains useful for private lookup but should not be frozen into the public product, including navigation indexes, volatile catalogs, lab-specific outcome records, or recipe-heavy cheat sheets whose durable lessons are already normalized elsewhere.
+
+## Permanent validation
+
+`tools/validate-note-integration.js` verifies:
+
+- exact 556-note / 1,326-resource source accounting;
+- explicit terminal rows and rationale for every reviewed note;
+- current disposition reconciliation;
+- immutable historical v9.25 and v9.26 milestones;
+- reciprocal modeled-source-to-public-output lineage;
+- no output from non-modeled dispositions;
+- contextual Tool and Path bindings;
+- public-safe metadata atomization;
+- exclusion of raw source paths, ENEX markup, flags, lab targets, and copied private content;
+- the no-execution boundary.
 
 ## Rule against raw course dumping
 
-Do not copy course text, walkthrough text, screenshots, flags, lab targets, or proprietary notebook content into the public Obol repo. Extract lessons and rewrite them as Obol-owned guidance.
+Do not copy course text, walkthrough text, screenshots, flags, lab targets, proprietary notebook content, or review-packet bodies into the public Obol repo. Extract lessons and rewrite them as Obol-owned guidance.
