@@ -91,6 +91,11 @@ const contracts={
   validationCommands:['node tools/validate-current-workflow.js','node tests/run-v9.8-tests.js'],
   proofFiles:['assets/workflow-current.js','assets/core-v3.4.js','assets/app-v3.4.js','tools/validate-current-workflow.js','tests/run-v9.8-tests.js','docs/UX-QUALITY.md','docs/v9.8.md']
  },
+ 'ux-progressive-notes':{
+  acceptance:['Normalized public field-note records use a stable typed data contract, are matched only to relevant card/tool/path context, render as collapsed expandable Field notes disclosure near the action context, remain absent when no relevant normalized guidance exists, and never require raw private ENEX content in the public repository.'],
+  validationCommands:['node tools/validate-field-notes-ui.js','node tools/validate-asset-references.js','node tests/run-v9.10-tests.js'],
+  proofFiles:['data/field-notes.js','assets/field-notes.js','assets/field-notes.css','assets/app-v8.8.js','tools/validate-field-notes-ui.js','tests/run-v9.10-tests.js','docs/NOTES-INTEGRATION.md','docs/UX-QUALITY.md','docs/v9.10.md']
+ },
  'ux-keyboard-focus':{
   acceptance:['Native controls and existing non-native interactive workspace surfaces expose a clearly visible focus-visible ring; card headers, state cards, phase/toggle chips, facts, progress/timer controls, and lane tabs are keyboard reachable and activate with Enter or Space; open modals receive dialog semantics, initial focus, contained Tab order, and focus restoration on close.'],
   validationCommands:['node tools/validate-accessibility-contract.js','node tests/run-v9.5-tests.js'],
@@ -138,5 +143,5 @@ const contracts={
  }
 };
 const requiredForStatuses=['modeled','complete','superseded','rejected'];
-root.OBOL_PRODUCT_HARDENING_TEST_CONTRACTS={version:'9.9.0',requiredForStatuses,contracts};
+root.OBOL_PRODUCT_HARDENING_TEST_CONTRACTS={version:'9.10.0',requiredForStatuses,contracts};
 })(typeof window!=='undefined'?window:globalThis);
