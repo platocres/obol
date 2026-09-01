@@ -5,7 +5,7 @@ const aliases=Object.freeze({
  'evil-winrm':'evilwinrm','dnstool.py':'dnstool','ouned.py':'ouned','targetedkerberoast.py':'targetedkerberoast','cve-2024-29849.py':'cve-2024-29849'
 });
 const records={
- nmap:['modeled','tb-nmap','Canonical Nmap builder migration is the next representative implementation.'],
+ nmap:['implemented','tb-nmap','Canonical Nmap builder is schema-driven on Targets while the historical parser/intake path remains the compatibility owner for Evidence ingestion.'],
  masscan:['modeled',null,'Runnable scanner remains inventoried for later builder coverage.'],
  rustscan:['modeled',null,'Runnable scanner remains inventoried for later builder coverage.'],
  naabu:['modeled',null,'Runnable scanner remains inventoried for later builder coverage.'],
