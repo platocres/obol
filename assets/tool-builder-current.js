@@ -101,8 +101,8 @@ function compile(builder,values,context){
  }
  return parts.filter(Boolean).join(' ').replace(/\s+/g,' ').trim();
 }
-function fieldControl(field,value){
- const id='tb-'+field.id;
+function fieldControl(builderId,field,value){
+ const id='tb-'+builderId+'-'+field.id;
  const common=' id="'+esc(id)+'" name="'+esc(field.id)+'" data-tool-builder-field="'+esc(field.id)+'"'+(field.required?' required':'')+(field.autofill?' data-autofill="'+esc(field.autofill)+'"':'');
  if(field.type==='checkbox')return '<label class="opt tool-builder-check"><input type="checkbox"'+common+(truthy(value)?' checked':'')+'> <span>'+esc(field.label)+'</span></label>'+(field.help?'<small class="hint">'+esc(field.help)+'</small>':'');
  if(field.type==='select')return '<label for="'+esc(id)+'">'+esc(field.label)+'</label><select'+common+'>'+((field.options||[]).map(o=>'<option value="'+esc(o.value)+'"'+(String(o.value)===String(value)?' selected':'')+'>'+esc(o.label)+'</option>').join(''))+'</select>'+(field.help?'<small class="hint">'+esc(field.help)+'</small>':'');
@@ -117,7 +117,7 @@ function html(builder,context,values){
  if(errors.length)throw new Error(errors.join('; '));
  const resolved=normalizeValues(builder,values,context);
  const creds=(builder.credentialModes||[]).length?'<p class="hint tool-builder-credential-modes">Credential modes: '+builder.credentialModes.map(esc).join(' · ')+'</p>':'';
- const fields=(builder.fields||[]).map(field=>'<div class="param-row tool-builder-field" data-field-id="'+esc(field.id)+'" data-field-type="'+esc(field.type)+'"'+(field.visibleWhen&&!conditionMatches(field.visibleWhen,resolved)?' hidden':'')+'>'+fieldControl(field,resolved[field.id])+'</div>').join('');
+ const fields=(builder.fields||[]).map(field=>'<div class="param-row tool-builder-field" data-field-id="'+esc(field.id)+'" data-field-type="'+esc(field.type)+'"'+(field.visibleWhen&&!conditionMatches(field.visibleWhen,resolved)?' hidden':'')+'>'+fieldControl(builder.id,field,resolved[field.id])+'</div>').join('');
  let preview='';try{preview=compile(builder,resolved,context);}catch(err){preview='Complete required fields to generate a command.';}
  return '<section class="card tool-builder-current" data-tool-builder="'+esc(builder.id)+'" data-tool="'+esc(builder.tool)+'"><div class="card-body">'+
   '<div class="tool-builder-head"><div><span class="eyebrow30">Tool Builder</span><h3>'+esc(builder.title)+'</h3><p class="hint">'+esc(builder.summary)+'</p></div><span class="badge">'+esc(builder.executionContext||'any')+'</span></div>'+creds+
