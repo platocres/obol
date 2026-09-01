@@ -39,7 +39,9 @@ function validateToken(token,index,fieldIds){
  if(['field','toggle','choice'].includes(token.kind)&&!fieldIds.has(token.field))fail(errors,'command token '+index+' references unknown field '+text(token.field));
  if(token.kind==='toggle'&&!text(token.flag).trim())fail(errors,'toggle command token '+index+' requires flag');
  if(token.kind==='choice'&&!Array.isArray(token.choices))fail(errors,'choice command token '+index+' requires choices');
- if(token.kind==='choice')for(const choice of token.choices||[])if(!choice||typeof choice!=='object'||!Object.prototype.hasOwnProperty.call(choice,'value')||!text(choice.arg).trim())fail(errors,'choice command token '+index+' contains an invalid choice');
+ // A choice may intentionally emit an empty argument. This represents a UI mode
+ // such as "no default port scope" without requiring a bespoke renderer branch.
+ if(token.kind==='choice')for(const choice of token.choices||[])if(!choice||typeof choice!=='object'||!Object.prototype.hasOwnProperty.call(choice,'value')||!Object.prototype.hasOwnProperty.call(choice,'arg'))fail(errors,'choice command token '+index+' contains an invalid choice');
  return errors;
 }
 
