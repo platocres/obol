@@ -116,6 +116,11 @@ const contracts={
   validationCommands:['node tools/validate-tool-builder-platform.js','node tests/run-v9.12-tests.js'],
   proofFiles:['assets/tool-builder-current.js','data/tool-builder-schema.js','assets/app-v8.8.js','tools/validate-tool-builder-platform.js','tests/run-v9.12-tests.js','docs/v9.12.md']
  },
+ 'tb-nmap':{
+  acceptance:['Targets renders the canonical schema-driven Nmap launchpad with discovery/quick/full/service/UDP profiles, explicit port scope and custom-port override, timing/rate/retry/script/version/OS/reason/DNS/output controls, deterministic copy-only command generation, and preserved historical Nmap Evidence ingestion without creating a competing proof owner.'],
+  validationCommands:['node tools/validate-tool-builder-platform.js','node tests/run-v9.13-tests.js'],
+  proofFiles:['data/tool-builders.js','data/tool-builder-schema.js','data/tool-builder-inventory.js','assets/tool-builder-current.js','assets/app-v8.8.js','assets/app-v3.1.js','assets/nmap-v3.1.js','tools/validate-tool-builder-platform.js','tests/run-v9.13-tests.js','docs/v9.13.md']
+ },
  'tb-tool-inventory-lock':{
   acceptance:['Every runnable tool identity observed in the current lane/card command corpus and tool registry resolves through one explicit stable inventory disposition. New tool identities fail validation until they are explicitly implemented, modeled, superseded, or rejected with rationale, and aliases normalize to one canonical identity.'],
   validationCommands:['node tools/validate-tool-builder-platform.js','node tests/run-v9.12-tests.js'],
@@ -168,5 +173,5 @@ const contracts={
  }
 };
 const requiredForStatuses=['modeled','complete','superseded','rejected'];
-root.OBOL_PRODUCT_HARDENING_TEST_CONTRACTS={version:'9.12.0',requiredForStatuses,contracts};
+root.OBOL_PRODUCT_HARDENING_TEST_CONTRACTS={version:'9.13.0',requiredForStatuses,contracts};
 })(typeof window!=='undefined'?window:globalThis);
