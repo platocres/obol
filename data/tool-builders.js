@@ -4,11 +4,11 @@ const schema=root.OBOL_TOOL_BUILDER_SCHEMA;
 if(!schema)throw new Error('Tool Builder schema is required before concrete builders');
 
 const nmapProfiles=Object.freeze({
- discover:Object.freeze({id:'discover',label:'Discover hosts',detail:'Find live hosts before you know what is there.',defaultOutput:'scans/discovery'}),
- quick:Object.freeze({id:'quick',label:'Quick TCP',detail:'Fast first pass across the most common TCP ports.',defaultOutput:'scans/quick'}),
- full:Object.freeze({id:'full',label:'Full TCP',detail:'Sweep all TCP ports before deeper service work.',defaultOutput:'scans/full-tcp'}),
- service:Object.freeze({id:'service',label:'Service + scripts',detail:'Version detection and default scripts on a known host.',defaultOutput:'scans/services'}),
- udp:Object.freeze({id:'udp',label:'Top UDP',detail:'Target the most common UDP services as a separate pass.',defaultOutput:'scans/udp'})
+ discover:Object.freeze({id:'discover',label:'Discover hosts',detail:'Find live hosts before you know what is there.',defaultOutput:'scans/discovery',portScope:'none',minRate:''}),
+ quick:Object.freeze({id:'quick',label:'Quick TCP',detail:'Fast first pass across the most common TCP ports.',defaultOutput:'scans/quick',portScope:'top1000',minRate:''}),
+ full:Object.freeze({id:'full',label:'Full TCP',detail:'Sweep all TCP ports before deeper service work.',defaultOutput:'scans/full-tcp',portScope:'all',minRate:'1000'}),
+ service:Object.freeze({id:'service',label:'Service + scripts',detail:'Version detection and default scripts on a known host.',defaultOutput:'scans/services',portScope:'none',minRate:''}),
+ udp:Object.freeze({id:'udp',label:'Top UDP',detail:'Target the most common UDP services as a separate pass.',defaultOutput:'scans/udp',portScope:'top100udp',minRate:''})
 });
 
 const nmap=schema.register({
@@ -21,7 +21,10 @@ const nmap=schema.register({
  fields:[
   {id:'profile',label:'Scan goal',type:'select',default:'discover',options:Object.values(nmapProfiles).map(p=>({value:p.id,label:p.label}))},
   {id:'target',label:'Authorized target / CIDR / range',type:'text',required:true,autofill:'target.value',placeholder:'10.10.10.0/24',help:'One authorized Nmap target specification.'},
-  {id:'ports',label:'Ports override',type:'text',placeholder:'80,443,445 or 1-65535',help:'Optional. Replaces the profile port scope.'},
+  {id:'portScope',label:'Port scope',type:'select',default:'none',options:[
+   {value:'none',label:'Profile default / none'},{value:'top1000',label:'Top 1000 TCP ports'},{value:'all',label:'All TCP ports'},{value:'top100udp',label:'Top 100 UDP ports'},{value:'custom',label:'Custom ports'}
+  ]},
+  {id:'ports',label:'Custom ports',type:'text',placeholder:'80,443,445 or 1-65535',help:'Selecting or typing custom ports replaces the profile port scope.'},
   {id:'timing',label:'Timing',type:'select',default:'T4',options:['T2','T3','T4','T5'].map(v=>({value:v,label:v}))},
   {id:'minRate',label:'Minimum rate',type:'number',placeholder:'1000'},
   {id:'maxRetries',label:'Max retries',type:'number',placeholder:'2'},
@@ -35,10 +38,13 @@ const nmap=schema.register({
  command:{executable:'nmap',tokens:[
   {kind:'choice',field:'profile',choices:[
    {value:'discover',arg:'-sn'},
-   {value:'quick',arg:'-Pn --top-ports 1000 --open'},
-   {value:'full',arg:'-Pn -p- --open --min-rate 1000'},
+   {value:'quick',arg:'-Pn --open'},
+   {value:'full',arg:'-Pn --open'},
    {value:'service',arg:'-Pn --open'},
-   {value:'udp',arg:'-sU -Pn --top-ports 100 --open'}
+   {value:'udp',arg:'-sU -Pn --open'}
+  ]},
+  {kind:'choice',field:'portScope',choices:[
+   {value:'none',arg:''},{value:'top1000',arg:'--top-ports 1000'},{value:'all',arg:'-p-'},{value:'top100udp',arg:'--top-ports 100'},{value:'custom',arg:''}
   ]},
   {kind:'field',field:'ports',flag:'-p'},
   {kind:'toggle',field:'scripts',flag:'-sC'},
@@ -61,9 +67,11 @@ function profile(id){return nmapProfiles[id]||nmapProfiles.discover;}
 function defaults(values){
  const out={...(values||{})},p=profile(out.profile);
  if(out.profile==null||out.profile==='')out.profile=p.id;
+ if(out.portScope==null||out.portScope==='')out.portScope=out.ports?'custom':p.portScope;
  if(out.timing==null||out.timing==='')out.timing='T4';
  if(out.resolveDns==null)out.resolveDns=false;
  if((out.output==null||out.output==='')&&p.defaultOutput)out.output=p.defaultOutput;
+ if((out.minRate==null||out.minRate==='')&&p.minRate)out.minRate=p.minRate;
  if(p.id==='service'){
   if(out.scripts==null)out.scripts=true;
   if(out.version==null)out.version=true;
