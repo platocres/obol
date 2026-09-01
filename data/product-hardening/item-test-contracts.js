@@ -151,6 +151,21 @@ const contracts={
   validationCommands:['node tools/validate-tool-builder-platform.js','node tests/run-v9.14-tests.js'],
   proofFiles:['data/tool-builders.js','data/tool-builder-schema.js','data/tool-builder-inventory.js','assets/tool-builder-current.js','assets/app-v8.8.js','tools/validate-tool-builder-platform.js','tests/run-v9.14-tests.js','docs/v9.14.md']
  },
+ 'tb-getnpusers':{
+  acceptance:['Tool and relevant Card routes expose one schema-driven impacket-GetNPUsers builder with users-file and single-user sources, explicit no-pass/password/NT-hash/Kerberos-cache flows, domain/DC targeting, request and Hashcat/John output controls, deterministic copy-only generation, and an AS-REP handoff boundary that requires reviewed output before hash or credential claims.'],
+  validationCommands:['node tools/validate-tool-builder-platform.js','node tests/run-v9.17-tests.js'],
+  proofFiles:['data/tool-builders.js','data/tool-builder-inventory.js','assets/tool-builder-current.js','assets/app-v8.8.js','data/product-hardening/product-hardening-queue.js','data/product-hardening/work-packages.js','tests/run-v9.17-tests.js','docs/TOOL-BUILDER-COVERAGE.md','docs/v9.17.md']
+ },
+ 'tb-getuserspns':{
+  acceptance:['Tool and relevant Card routes expose one schema-driven impacket-GetUserSPNs builder with password, NT-hash, and Kerberos-cache auth, cross-trust target-domain/DC controls, list/request-all/request-user/request-machine modes, users-file, save/output, RC4/stealth/machine controls, deterministic copy-only generation, and a TGS cracking handoff that remains unproven until reviewed and independently validated.'],
+  validationCommands:['node tools/validate-tool-builder-platform.js','node tests/run-v9.17-tests.js'],
+  proofFiles:['data/tool-builders.js','data/tool-builder-inventory.js','assets/tool-builder-current.js','assets/app-v8.8.js','data/product-hardening/product-hardening-queue.js','data/product-hardening/work-packages.js','tests/run-v9.17-tests.js','docs/TOOL-BUILDER-COVERAGE.md','docs/v9.17.md']
+ },
+ 'tb-evilwinrm':{
+  acceptance:['Tool and relevant Card routes expose one schema-driven Evil-WinRM launcher with password, NT-hash, and Kerberos-ticket modes; target/user context; realm/ticket, SSL, port, scripts, executables, URL, SPN, and logging controls; explicit upload/download planning without auto-running interactive commands; deterministic copy-only generation; and an Evidence boundary that requires reviewed connection/output before access or transfer claims.'],
+  validationCommands:['node tools/validate-tool-builder-platform.js','node tests/run-v9.17-tests.js'],
+  proofFiles:['data/tool-builders.js','data/tool-builder-inventory.js','assets/tool-builder-current.js','assets/app-v8.8.js','data/product-hardening/product-hardening-queue.js','data/product-hardening/work-packages.js','tests/run-v9.17-tests.js','docs/TOOL-BUILDER-COVERAGE.md','docs/v9.17.md']
+ },
  'tb-tool-inventory-lock':{
   acceptance:['Every runnable tool identity observed in the current lane/card command corpus and tool registry resolves through one explicit stable inventory disposition. New tool identities fail validation until they are explicitly implemented, modeled, superseded, or rejected with rationale, and aliases normalize to one canonical identity.'],
   validationCommands:['node tools/validate-tool-builder-platform.js','node tests/run-v9.12-tests.js'],
@@ -203,5 +218,5 @@ const contracts={
  }
 };
 const requiredForStatuses=['modeled','complete','superseded','rejected'];
-root.OBOL_PRODUCT_HARDENING_TEST_CONTRACTS={version:'9.16.0',requiredForStatuses,contracts};
+root.OBOL_PRODUCT_HARDENING_TEST_CONTRACTS={version:'9.17.0',requiredForStatuses,contracts};
 })(typeof window!=='undefined'?window:globalThis);

@@ -150,10 +150,31 @@ assert(secretsdump&&inventory.get('impacket-secretsdump').status==='implemented'
 assert.strictEqual(renderer.compile(secretsdump,builders.defaultsFor('tb-secretsdump',{authMode:'ntlm',target:'dc01.corp.local',domain:'CORP',username:'alice',hash:'8846f7eaee8fb117ad06bdd830b7586c',justDcUser:'administrator'}),{}),'impacket-secretsdump -just-dc-user administrator -hashes :8846f7eaee8fb117ad06bdd830b7586c CORP/alice@dc01.corp.local','secretsdump NT-hash command must compile deterministically');
 assert.strictEqual(renderer.compile(secretsdump,builders.defaultsFor('tb-secretsdump',{authMode:'local-hives',sam:'SAM',system:'SYSTEM'}),{}),'impacket-secretsdump -sam SAM -system SYSTEM LOCAL','secretsdump local-hive command must compile without remote credentials');
 
+const getnpusers=schema.get('tb-getnpusers');
+assert(getnpusers&&inventory.get('impacket-getnpusers').status==='implemented','GetNPUsers builder must be registered and implemented');
+assert.deepStrictEqual(Array.from(schema.validateBuilder(getnpusers)),[],'GetNPUsers builder must satisfy stable schema');
+assert.strictEqual(renderer.compile(getnpusers,builders.defaultsFor('tb-getnpusers',{domain:'corp.local',usersFile:'users.txt',output:'asrep.txt',dcIp:'10.10.10.10'}),{}),'impacket-GetNPUsers -usersfile users.txt -request -format hashcat -outputfile asrep.txt -no-pass -dc-ip 10.10.10.10 corp.local/','GetNPUsers users-file no-pass flow must compile deterministically');
+assert.strictEqual(renderer.compile(getnpusers,builders.defaultsFor('tb-getnpusers',{source:'single-user',domain:'CORP.LOCAL',username:'alice',authMode:'ntlm',hash:'8846f7eaee8fb117ad06bdd830b7586c'}),{}),'impacket-GetNPUsers -request -format hashcat -hashes :8846f7eaee8fb117ad06bdd830b7586c CORP.LOCAL/alice','GetNPUsers NT-hash flow must compile deterministically');
+
+const getuserspns=schema.get('tb-getuserspns');
+assert(getuserspns&&inventory.get('impacket-getuserspns').status==='implemented','GetUserSPNs builder must be registered and implemented');
+assert.deepStrictEqual(Array.from(schema.validateBuilder(getuserspns)),[],'GetUserSPNs builder must satisfy stable schema');
+assert.strictEqual(renderer.compile(getuserspns,builders.defaultsFor('tb-getuserspns',{domain:'CORP.LOCAL',username:'alice',password:'Password1!',output:'tgs.txt',dcIp:'10.10.10.10'}),{}),"impacket-GetUserSPNs -request -outputfile tgs.txt -dc-ip 10.10.10.10 'CORP.LOCAL/alice:Password1!'",'GetUserSPNs password request must compile deterministically');
+assert.strictEqual(renderer.compile(getuserspns,builders.defaultsFor('tb-getuserspns',{authMode:'ntlm',domain:'CORP.LOCAL',username:'alice',hash:'8846f7eaee8fb117ad06bdd830b7586c',requestMode:'request-user',requestUser:'svc_sql'}),{}),'impacket-GetUserSPNs -request-user svc_sql -hashes :8846f7eaee8fb117ad06bdd830b7586c CORP.LOCAL/alice','GetUserSPNs targeted NT-hash request must compile deterministically');
+
+const evilwinrm=schema.get('tb-evilwinrm');
+assert(evilwinrm&&inventory.get('evilwinrm').status==='implemented','Evil-WinRM builder must be registered and implemented');
+assert.deepStrictEqual(Array.from(schema.validateBuilder(evilwinrm)),[],'Evil-WinRM builder must satisfy stable schema');
+assert.strictEqual(renderer.compile(evilwinrm,builders.defaultsFor('tb-evilwinrm',{target:'10.10.10.10',username:'Administrator',password:'Password1!'}),{}),"evil-winrm -i 10.10.10.10 -u Administrator -p 'Password1!'",'Evil-WinRM password launcher must compile deterministically');
+assert.strictEqual(renderer.compile(evilwinrm,builders.defaultsFor('tb-evilwinrm',{authMode:'ntlm',target:'dc01.corp.local',username:'administrator',hash:'8846f7eaee8fb117ad06bdd830b7586c',ssl:true,port:'5986'}),{}),'evil-winrm -i dc01.corp.local -u administrator -H 8846f7eaee8fb117ad06bdd830b7586c -S -P 5986','Evil-WinRM NT-hash SSL launcher must compile deterministically');
+assert.strictEqual(inventory.get('getnpusers').queueItem,'tb-getnpusers','GetNPUsers alias must resolve to canonical builder');
+assert.strictEqual(inventory.get('getuserspns').queueItem,'tb-getuserspns','GetUserSPNs alias must resolve to canonical builder');
+assert.strictEqual(inventory.get('evil-winrm').queueItem,'tb-evilwinrm','evil-winrm alias must resolve to canonical builder');
+
 const rendererSource=read('assets/tool-builder-current.js');
 for(const forbidden of ["require('child_process')",'child_process','spawnSync(','execSync(','eval(','new Function('])assert(!rendererSource.includes(forbidden),'browser renderer contains forbidden execution primitive '+forbidden);
 for(const required of ['OBOL_TOOL_BUILDER','shellQuote','conditionMatches','commandExecutable','compile','mount','aria-live','navigator.clipboard','data-field-id'])assert(rendererSource.includes(required),'generic renderer source missing '+required);
 const bridge=read('assets/app-v8.8.js');
 for(const required of ['data/tool-builder-schema.js','data/tool-builder-inventory.js','assets/tool-builder-current.js','data/tool-builders.js','decorateNmapBuilder88','currentNmapBuilder88','decorateCurrentToolBuilders88','builderForTool88','currentBuilderSourceTool88','mountBuilder88','tb-gobuster-ferox'])assert(bridge.includes(required),'current browser bridge does not load/mount Tool Builder owner: '+required);
 
-console.log(`Tool Builder Platform valid: ${observed.size} runnable tool identities have explicit dispositions; schema, declared executable selection, conditional/repeated/concatenated command shapes, renderer, implemented representative builders, human-run boundary, queue references, and route integration are locked.`);
+console.log(`Tool Builder Platform valid: ${observed.size} runnable tool identities have explicit dispositions; schema, declared executable selection, conditional/repeated/concatenated command shapes, renderer, implemented representative builders including Kerberos roasting and WinRM launchers, human-run boundary, queue references, and route integration are locked.`);
