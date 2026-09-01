@@ -54,6 +54,7 @@ function prefillForBuilder(row,builder){
   else setIf(out,builder,['ccache','cacheFile','ticketFile'],value);
  }
  if(kind==='kirbi'){
+  const auth=selectValue(builder,'authMode',['kerberos-ticket','kerberos-cache','kerberos','ticket']);if(auth&&builder.id==='tb-evilwinrm')out.authMode=auth;
   if(builder.id==='tb-evilwinrm')setIf(out,builder,['ticketFile'],value);
  }
  if(kind==='pfx'||kind==='certificate'){
