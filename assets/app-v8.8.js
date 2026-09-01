@@ -11,7 +11,8 @@ const WORKFLOW_SOURCE='assets/workflow-current.js';
 // active product-hardening queue surface
 let releaseLoading=null,workflowLoading=null,productAssetsLoading=null,accessibilityLoading=null,fieldNotesLoading=null,toolBuilderLoading=null,releaseContractsInstalled=false;
 function active88(){return typeof C!=='undefined'&&C.VERSION==='8.8.0';}
-function page88(){return (location.hash||'#/home').replace(/^#\/?/,'').split('/').filter(Boolean)[0]||'home';}
+function routeParts88(){return (location.hash||'#/home').replace(/^#\/?/,'').split('/').filter(Boolean);}
+function page88(){return routeParts88()[0]||'home';}
 function e88(v){return typeof esc==='function'?esc(String(v==null?'':v)):String(v==null?'':v).replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));}
 function release88(){return window.OBOL_CURRENT_RELEASE||null;}
 function identity88(){return window.OBOL_RELEASE_IDENTITY||null;}
@@ -79,8 +80,57 @@ function decorateNmapBuilder88(){
   });
  }
 }
+function toolBuilderContext88(){
+ let host=null;try{host=typeof currentHost==='function'?currentHost():null;}catch(_e){}
+ const params=typeof state!=='undefined'&&state&&state.params||{};
+ const target=(host&&host.ip)||params.target||'';
+ return{
+  target:{value:target,ip:target,hostname:(host&&host.hostname)||''},
+  context:{domain:params.domain||'',username:params.user||params.username||'',port:params.port||''},
+  workspace:{wordlist:params.wordlist||'',outputDir:params.output||'',hashfile:params.hashfile||''}
+ };
+}
+function builderForTool88(tool){
+ const inv=window.OBOL_TOOL_BUILDER_INVENTORY&&window.OBOL_TOOL_BUILDER_INVENTORY.get(tool);
+ if(!inv||inv.status!=='implemented'||!inv.queueItem)return null;
+ return window.OBOL_TOOL_BUILDER_SCHEMA&&window.OBOL_TOOL_BUILDER_SCHEMA.get(inv.queueItem);
+}
+function seedBuilderValues88(builder,context){
+ const params=typeof state!=='undefined'&&state&&state.params||{};
+ const seed={};
+ if(builder.id==='tb-hashcat'&&params.hashfile)seed.hashOrFile=params.hashfile;
+ if(builder.id==='tb-ffuf'&&params.wordlist)seed.wordlist=params.wordlist;
+ return window.OBOL_TOOL_BUILDERS&&typeof window.OBOL_TOOL_BUILDERS.defaultsFor==='function'?window.OBOL_TOOL_BUILDERS.defaultsFor(builder.id,seed,context):seed;
+}
+function mountBuilder88(host,builder){
+ if(!host||!builder||!window.OBOL_TOOL_BUILDER)return null;
+ const context=toolBuilderContext88();
+ const mount=window.OBOL_TOOL_BUILDER.mount(host,builder,context,seedBuilderValues88(builder,context));
+ if(window.OBOL_TOOL_BUILDERS&&typeof window.OBOL_TOOL_BUILDERS.enhanceMount==='function')window.OBOL_TOOL_BUILDERS.enhanceMount(builder.id,mount,context);
+ return mount;
+}
+function decorateCurrentToolBuilders88(){
+ const parts=routeParts88(),p=parts[0]||'home';
+ if(p==='tools'){
+  const tool=parts[1]?decodeURIComponent(parts[1]):'';const builder=builderForTool88(tool);const body=document.getElementById('tool-body');
+  if(!builder||!body||body.querySelector('[data-current-tool-builder88="'+builder.id+'"]'))return;
+  const host=document.createElement('div');host.dataset.currentToolBuilder88=builder.id;body.insertBefore(host,body.firstChild);mountBuilder88(host,builder);return;
+ }
+ if(p==='card'){
+  const cardId=parts[1]?decodeURIComponent(parts[1]):'',card=typeof CARDS!=='undefined'&&CARDS[cardId],cardRoot=document.querySelector('[data-cardroot="'+cardId+'"]');
+  if(!card||!cardRoot)return;
+  const builders=[];const seen=new Set();
+  for(const cmd of card.commands||[]){const builder=builderForTool88(cmd&&cmd.tool);if(builder&&!seen.has(builder.id)){seen.add(builder.id);builders.push(builder);}}
+  const cardBody=cardRoot.querySelector('.card-body');if(!cardBody)return;
+  const anchor=cardBody.querySelector('.cmd-block');
+  for(const builder of builders){
+   if(cardRoot.querySelector('[data-current-tool-builder88="'+builder.id+'"]'))continue;
+   const host=document.createElement('div');host.dataset.currentToolBuilder88=builder.id;if(anchor)cardBody.insertBefore(host,anchor);else cardBody.appendChild(host);mountBuilder88(host,builder);
+  }
+ }
+}
 function setVisibleVersion88(){const r=release88();if(!r)return;stampReleaseState88();const tag=document.querySelector('.tagline');if(tag)tag.textContent='Offensive Box Operations Ledger · '+r.label;const title='Obol '+r.label+' — '+r.phaseLabel;if(document.title!==title)document.title=title;const view=document.querySelector('#view');if(!view)return;view.querySelectorAll('.app-phase-badge88,.release-settings88,.product-home88').forEach(x=>x.remove());if(page88()==='settings'){const sub=view.querySelector('.subtitle')||view.querySelector('h2');if(sub)sub.insertAdjacentHTML('afterend','<p class="hint release-settings88">Current Obol release: <b>'+e88(r.label)+'</b> · workspace schema '+e88(C.VERSION)+'</p>');}}
-function decorate88(){if(!active88())return;const p=page88();const assets=p==='dashboard'?ensureProductAssets88():ensureWorkflow88();assets.then(()=>{installReleaseContracts88();setVisibleVersion88();const workflow=window.OBOL_CURRENT_WORKFLOW;if(workflow&&typeof workflow.decorateRoute==='function')workflow.decorateRoute();if(['card','path','tools'].includes(p))ensureFieldNotes88().then(ui=>{if(ui&&typeof ui.decorate==='function')ui.decorate();}).catch(()=>{});if(['boxes','card','tools'].includes(p))ensureToolBuilder88().then(()=>{if(p==='boxes')decorateNmapBuilder88();}).catch(()=>{});}).catch(()=>{});}
+function decorate88(){if(!active88())return;const p=page88();const assets=p==='dashboard'?ensureProductAssets88():ensureWorkflow88();assets.then(()=>{installReleaseContracts88();setVisibleVersion88();const workflow=window.OBOL_CURRENT_WORKFLOW;if(workflow&&typeof workflow.decorateRoute==='function')workflow.decorateRoute();if(['card','path','tools'].includes(p))ensureFieldNotes88().then(ui=>{if(ui&&typeof ui.decorate==='function')ui.decorate();}).catch(()=>{});if(['boxes','card','tools'].includes(p))ensureToolBuilder88().then(()=>{if(p==='boxes')decorateNmapBuilder88();if(['card','tools'].includes(p))decorateCurrentToolBuilders88();}).catch(()=>{});}).catch(()=>{});}
 const oldRoute88=route;route=function(){oldRoute88();for(const t of [0,40,180,520,1200,2600,4200])setTimeout(decorate88,t);};
 window.addEventListener('hashchange',()=>{for(const t of [20,120,420,900,1800,3000])setTimeout(decorate88,t);});
 ensureResponsive88();ensureAccessibility88().catch(()=>{});ensureRelease88().catch(()=>{});ensureWorkflow88().catch(()=>{});for(const t of [50,350,760,1300,2200,3600,5200])setTimeout(decorate88,t);
