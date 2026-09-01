@@ -106,6 +106,21 @@ const contracts={
   validationCommands:['node tools/validate-accessibility-contract.js','node tests/run-v9.5-tests.js'],
   proofFiles:['assets/accessibility.css','assets/accessibility.js','assets/app-v8.8.js','tools/validate-accessibility-contract.js','tests/run-v9.5-tests.js','docs/visual-qa/contrast-focus.md','docs/v9.5.md']
  },
+ 'tb-schema':{
+  acceptance:['A stable non-versioned Tool Builder schema defines typed fields, target/workspace autofill, execution context, credential-mode declarations, deterministic command tokens, Evidence expectations, manual-outcome boundaries, and report-lineage requirements; invalid or auto-executing builder definitions are rejected.'],
+  validationCommands:['node tools/validate-tool-builder-platform.js','node tests/run-v9.12-tests.js'],
+  proofFiles:['data/tool-builder-schema.js','tools/validate-tool-builder-platform.js','tests/run-v9.12-tests.js','docs/TOOL-BUILDER-COVERAGE.md','docs/v9.12.md']
+ },
+ 'tb-renderer':{
+  acceptance:['One generic browser renderer consumes Tool Builder schema records, applies context autofill, renders labeled accessible controls, generates a deterministic shell command preview with shell-safe quoting, supports copy-only operator handoff, and contains no command-execution primitive.'],
+  validationCommands:['node tools/validate-tool-builder-platform.js','node tests/run-v9.12-tests.js'],
+  proofFiles:['assets/tool-builder-current.js','data/tool-builder-schema.js','assets/app-v8.8.js','tools/validate-tool-builder-platform.js','tests/run-v9.12-tests.js','docs/v9.12.md']
+ },
+ 'tb-tool-inventory-lock':{
+  acceptance:['Every runnable tool identity observed in the current lane/card command corpus and tool registry resolves through one explicit stable inventory disposition. New tool identities fail validation until they are explicitly implemented, modeled, superseded, or rejected with rationale, and aliases normalize to one canonical identity.'],
+  validationCommands:['node tools/validate-tool-builder-platform.js','node tests/run-v9.12-tests.js'],
+  proofFiles:['data/tool-builder-inventory.js','data/tool-builder-schema.js','data/lanes.js','data/tools-v2.2.js','tools/validate-tool-builder-platform.js','tests/run-v9.12-tests.js','docs/TOOL-BUILDER-COVERAGE.md']
+ },
  'notes-private-source-pointer':{
   acceptance:['Public Obol points future agents to platocres/obol-source-notes and preserves the private raw-note boundary.'],
   validationCommands:['node tools/validate-product-hardening-queue.js','node tests/run-v9.0-tests.js'],
@@ -141,6 +156,11 @@ const contracts={
   validationCommands:['node tools/validate-asset-references.js','node tests/run-v9.0-tests.js'],
   proofFiles:['tools/validate-asset-references.js','product-hardening.html','tests/run-v9.0-tests.js']
  },
+ 'qa-builder-contract-test':{
+  acceptance:['A permanent Tool Builder contract gate validates every implemented builder against schema, rendering, command generation, Evidence expectations, manual-outcome boundaries, report lineage, inventory coverage, alias normalization, and the human-run no-execution rule. The gate includes a synthetic fixture so the platform is testable before representative builders are migrated.'],
+  validationCommands:['node tools/validate-tool-builder-platform.js','node tests/run-v9.12-tests.js'],
+  proofFiles:['tools/validate-tool-builder-platform.js','data/tool-builder-schema.js','data/tool-builder-inventory.js','assets/tool-builder-current.js','tests/run-v9.12-tests.js','tools/release-preflight.js','docs/v9.12.md']
+ },
  'qa-release-contract-v9':{
   acceptance:['Release contract validator understands post-Orange product-hardening releases and protects against fake runtime overlays.'],
   validationCommands:['node tools/validate-release-pr.js --repo-only --release-version=9.0','node tests/run-v9.0-tests.js'],
@@ -148,5 +168,5 @@ const contracts={
  }
 };
 const requiredForStatuses=['modeled','complete','superseded','rejected'];
-root.OBOL_PRODUCT_HARDENING_TEST_CONTRACTS={version:'9.11.0',requiredForStatuses,contracts};
+root.OBOL_PRODUCT_HARDENING_TEST_CONTRACTS={version:'9.12.0',requiredForStatuses,contracts};
 })(typeof window!=='undefined'?window:globalThis);
