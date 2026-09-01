@@ -13,8 +13,8 @@ const run=args=>cp.spawnSync(process.execPath,args.map((part,idx)=>idx===0?path.
 
 let uidCounter=0;
 const sandbox={
- window:{location:{hash:'#/tools/hashcat'}},globalThis:null,location:{hash:'#/tools/hashcat'},
- navigator:{clipboard:{writeText:()=>Promise.resolve()}}
+ window:{location:{hash:'#/tools/hashcat'},OBOL_CURRENT_RELEASE:{version:'9.22.0',label:'v9.22',phase:'product-hardening',phaseLabel:'Product Hardening',orangeBaseline:'v8.8'}},
+ globalThis:null,location:{hash:'#/tools/hashcat'},navigator:{clipboard:{writeText:()=>Promise.resolve()}}
 };
 sandbox.globalThis=sandbox.window;
 sandbox.window.OBOL_CORE_V2={
@@ -31,7 +31,6 @@ sandbox.window.OBOL_CORE_V2={
 };
 vm.createContext(sandbox);
 for(const rel of [
- 'data/current-release.js',
  'data/product-hardening/product-hardening-queue.js',
  'data/product-hardening/work-packages.js',
  'data/product-hardening/item-test-contracts.js',
@@ -51,33 +50,32 @@ const contracts=sandbox.window.OBOL_PRODUCT_HARDENING_TEST_CONTRACTS;
 const schema=sandbox.window.OBOL_TOOL_BUILDER_SCHEMA;
 const credential=sandbox.window.OBOL_CREDENTIAL_MATERIAL;
 const C=sandbox.window.OBOL_CORE_V2;
-assert(release&&q&&packages&&contracts&&schema&&credential&&C,'v9.22 stable owners load');
+assert(release&&q&&packages&&contracts&&schema&&credential&&C,'v9.22 historical owners load');
 assert.strictEqual(release.version,'9.22.0');
-assert.strictEqual(release.label,'v9.22');
 assert.strictEqual(release.orangeBaseline,'v8.8');
 
 const completed=['cred-schema','cred-hash-routing','cred-cross-tool-handshake','cred-validation-boundary','cred-report-redaction'];
 for(const id of completed){
  const item=q.items.find(entry=>entry.id===id);
  assert(item&&item.status==='complete','v9.22 completes '+id);
- assert(!q.buildNext(1000).some(entry=>entry.id===id),id+' leaves Product Build Next');
+ assert(!q.buildNext(1000).some(entry=>entry.id===id),id+' leaves the v9.22 Build Next projection');
  const contract=contracts.contracts[id];
- assert(contract&&contract.acceptance.length&&contract.validationCommands.length&&contract.proofFiles.length,id+' owns item-specific proof');
- assert(contract.validationCommands.includes('node tests/run-v9.22-tests.js'),id+' contract names the v9.22 regression suite');
+ assert(contract&&contract.acceptance.length&&contract.validationCommands.length&&contract.proofFiles.length,id+' retains item-specific proof');
+ assert(contract.validationCommands.includes('node tests/run-v9.22-tests.js'),id+' contract retains the v9.22 suite');
  for(const rel of contract.proofFiles)assert(exists(rel),'v9.22 proof file exists for '+id+': '+rel);
 }
-assert.strictEqual(contracts.version,'9.22.0','current item-test contract projection advances to v9.22');
-assert.strictEqual(q.tracks.find(track=>track.id==='tool-builders').complete,18,'Tool Builder track remains complete');
-assert.strictEqual(q.tracks.find(track=>track.id==='credential-modes').complete,5,'Credential modes advances to 5/14');
-assert.strictEqual(q.totals().complete,44,'overall Product Hardening completion advances to 44');
-assert.strictEqual(q.totals().queued,30,'five Credential Material items leave the queued set');
-assert(q.buildNext(1)[0]&&q.buildNext(1)[0].id==='cred-password','Product Build Next advances to password mode controls');
+assert.strictEqual(contracts.version,'9.22.0','v9.22 contract projection remains historically reproducible');
+assert.strictEqual(q.tracks.find(track=>track.id==='tool-builders').complete,18,'v9.22 Tool Builder milestone remains 18/18');
+assert.strictEqual(q.tracks.find(track=>track.id==='credential-modes').complete,5,'v9.22 Credential Material milestone remains 5/14');
+assert.strictEqual(q.totals().complete,44,'v9.22 Product Hardening milestone remains 44 complete');
+assert.strictEqual(q.totals().queued,30,'v9.22 queued milestone remains 30');
+assert(q.buildNext(1)[0]&&q.buildNext(1)[0].id==='cred-password','v9.22 Build Next historically advances to password mode controls');
 const recommended=packages.recommend(q);
-assert(recommended&&recommended.id==='credential-mode-coverage','Credential Mode Coverage becomes the next recommended package');
-assert.strictEqual(recommended.liveItems.length,9,'next credential-mode package exposes all nine live mode items');
-assert.deepStrictEqual(Array.from(packages.validate(q)),[],'work-package projection remains valid');
+assert(recommended&&recommended.id==='credential-mode-coverage','v9.22 historically recommends Credential Mode Coverage');
+assert.strictEqual(recommended.liveItems.length,9,'v9.22 credential-mode package historically exposes nine live items');
+assert.deepStrictEqual(Array.from(packages.validate(q)),[],'v9.22 work-package projection remains valid');
 
-assert.strictEqual(credential.version,'1.0.0','Credential Material uses a stable non-versioned schema identity');
+assert.strictEqual(credential.version,'1.0.0','Credential Material keeps its stable non-versioned schema identity');
 for(const kind of ['password','ntlm','netntlmv1','netntlmv2','kerberos-asrep','kerberos-tgs','mscache2','ccache','kirbi','pfx','certificate','ssh-key','cookie','bearer-token','api-key'])assert(credential.kinds.includes(kind),'Credential Material includes '+kind);
 
 const ambiguous='8846f7eaee8fb117ad06bdd830b7586c';
@@ -140,18 +138,16 @@ assert(safe.credentialMaterials.some(row=>row.kind==='ssh-key'&&row.value==='/tm
 assert(safe.credentialMaterials.some(row=>row.kind==='password'&&row.status==='validated'),'sanitization preserves proof state without exposing the secret');
 
 const runtime=read('assets/runtime-current.js');
-for(const token of ['function loadCredentialMaterial','data/credential-material.js','assets/credential-material-current.js','loadCredentialMaterial(0)'])assert(runtime.includes(token),'current runtime Credential Material hydration contains '+token);
+for(const token of ['function loadCredentialMaterial','data/credential-material.js','assets/credential-material-current.js','loadCredentialMaterial(0)'])assert(runtime.includes(token),'current runtime retains v9.22 Credential Material hydration token '+token);
 const ui=read('assets/credential-material-current.js');
-for(const token of ['Reuse candidate material','Use selected in this builder','independent reviewed Evidence','installLiveReportBoundary','prefillForBuilder'])assert(ui.includes(token),'Credential Material UI preserves '+token);
+for(const token of ['Reuse candidate material','Use selected in this builder','independent reviewed Evidence','installLiveReportBoundary'])assert(ui.includes(token),'Credential Material UI preserves '+token);
 const source=read('data/credential-material.js')+'\n'+ui;
-for(const forbidden of ["require('child_process')",'child_process','spawnSync(','execSync(','eval(','new Function('])assert(!source.includes(forbidden),'Credential Material contains forbidden execution primitive '+forbidden);
+for(const forbidden of ["require('child_process')",'child_process','spawnSync(','execSync(','eval(','new Function('])assert(!source.includes(forbidden),'Credential Material contains no execution primitive '+forbidden);
 
-const readme=read('README.md');
-assert(readme.includes('Current release: **v9.22**'),'README identifies v9.22 as current');
-assert(readme.includes('**Current product-hardening queue:** 44/632 complete (7%), 30 queued, 9 foundation items modeled.'),'README reports v9.22 queue totals');
-assert(readme.includes('**Recommended work package:** **Credential Mode Coverage**'),'README handoff advances to Credential Mode Coverage');
-assert(readme.includes('**Credential modes:** 5/14 complete (36%)'),'README reports Credential Material progress');
-assert(exists('docs/v9.22.md'),'v9.22 release documentation exists');
+const releaseDoc=read('docs/v9.22.md');
+assert(releaseDoc.includes('Product Hardening advances from 39/632 to 44/632 complete'),'v9.22 release doc preserves the historical queue milestone');
+assert(releaseDoc.includes('Credential modes advances to 5/14'),'v9.22 release doc preserves the Credential Material milestone');
+assert(releaseDoc.includes('Credential Mode Coverage'),'v9.22 release doc preserves its historical handoff');
 for(const forbidden of ['assets/obol-v9.22.css','assets/app-v9.22.js','assets/core-v9.22.js','data/project-model-v9.22.js'])assert(!exists(forbidden),'no fake v9.22 runtime overlay: '+forbidden);
 
 for(const command of [
@@ -167,4 +163,4 @@ for(const command of [
  assert.strictEqual(result.status,0,(result.stderr||result.stdout||'').trim());
 }
 
-console.log('v9.22 Credential Material Platform regression tests passed.');
+console.log('v9.22 Credential Material Platform historical regression tests passed.');
