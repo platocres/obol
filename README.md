@@ -73,7 +73,7 @@ Recommended work-package metadata comes from `data/product-hardening/work-packag
 **Work-package entry:** **Nmap GUI builder**
 **Ownership area:** `tool-builder/canonical-implementations`
 **Package guidance:** Use the canonical builder engine to implement several representative tools in one coherent pass, while preserving separate acceptance and regression proof for every builder.
-**Package dependencies:** tool-builder-platform.
+**Package dependencies:** Tool Builder Platform
 
 **Live items in this package:**
 - **Nmap GUI builder** — Targets view gets a canonical Nmap launchpad with toggles for ports, scripts, timing, output files, discovery, and canonical scan profiles.
