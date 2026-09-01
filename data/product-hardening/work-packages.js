@@ -14,10 +14,15 @@ function applyCurrentReleaseCompletions(){
  if(currentReleaseAtLeast(9,22))for(const id of ['cred-schema','cred-hash-routing','cred-cross-tool-handshake','cred-validation-boundary','cred-report-redaction'])completed.add(id);
  if(currentReleaseAtLeast(9,23))for(const id of ['cred-password','cred-ntlm','cred-netntlm','cred-kerberos-hashes','cred-mscache2','cred-ccache-kirbi','cred-pfx-cert','cred-ssh-key','cred-cookie-token'])completed.add(id);
  if(currentReleaseAtLeast(9,24))for(const id of ['manual-schema','manual-ui','manual-success-unlocks','manual-failure-triage','manual-proof-report','manual-queue-interaction','manual-tests','manual-all-cards'])completed.add(id);
+ if(currentReleaseAtLeast(9,25))for(const id of ['notes-enex-extraction','notes-atomization-schema','notes-field-panel','notes-tool-influence','notes-path-gap-influence','qa-notes-ledger-test'])completed.add(id);
  for(const item of q.items||[])if(completed.has(item.id))item.status='complete';
  for(const trackId of ['tool-builders','credential-modes','manual-outcomes']){
   const track=(q.tracks||[]).find(entry=>entry.id===trackId);
   if(track)track.complete=(q.items||[]).filter(item=>item.track===trackId&&item.status==='complete').length;
+ }
+ if(currentReleaseAtLeast(9,25)){
+  const notesTrack=(q.tracks||[]).find(entry=>entry.id==='notes-integration');
+  if(notesTrack)notesTrack.complete=4;
  }
  return q;
 }
