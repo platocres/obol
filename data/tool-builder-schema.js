@@ -72,6 +72,25 @@ function validateToken(token,index,fieldIds){
  return errors;
 }
 
+function validateExecutable(executable,fieldIds){
+ const errors=[];
+ if(typeof executable==='string'){
+  if(!text(executable).trim())fail(errors,'command executable must not be empty');
+  return errors;
+ }
+ if(!executable||typeof executable!=='object')return['command executable must be a string or declared selector'];
+ if(!fieldIds.has(executable.field))fail(errors,'command executable selector references unknown field '+text(executable.field));
+ if(!Array.isArray(executable.choices)||!executable.choices.length)fail(errors,'command executable selector requires choices');
+ for(const choice of executable.choices||[]){
+  if(!choice||typeof choice!=='object'||!Object.prototype.hasOwnProperty.call(choice,'value')||!text(choice.command).trim()){
+   fail(errors,'command executable selector contains an invalid choice');
+   continue;
+  }
+  if(!/^[A-Za-z0-9_./+-]+$/.test(text(choice.command)))fail(errors,'command executable selector contains unsafe command literal '+text(choice.command));
+ }
+ return errors;
+}
+
 function validateBuilder(builder){
  const errors=[];
  if(!builder||typeof builder!=='object')return['builder must be an object'];
@@ -95,7 +114,7 @@ function validateBuilder(builder){
  const command=builder.command;
  if(!command||typeof command!=='object')fail(errors,'builder '+text(builder.id)+' requires command model');
  else{
-  if(!text(command.executable).trim())fail(errors,'builder '+text(builder.id)+' requires command executable');
+  for(const error of validateExecutable(command.executable,ids))fail(errors,error);
   const tokens=array(command.tokens);
   if(!tokens.length)fail(errors,'builder '+text(builder.id)+' requires command tokens');
   tokens.forEach((token,index)=>{for(const error of validateToken(token,index,ids))fail(errors,error);});
@@ -120,11 +139,16 @@ function freezeCondition(condition){
  }
  return condition;
 }
+function freezeExecutable(executable){
+ if(typeof executable==='string')return executable;
+ if(!executable||typeof executable!=='object')return executable;
+ return Object.freeze({...executable,choices:Object.freeze(array(executable.choices).map(choice=>Object.freeze({...choice})))});
+}
 function freezeBuilder(builder){
  const copy={...builder};
  copy.fields=Object.freeze(array(builder.fields).map(field=>Object.freeze({...field,options:Object.freeze(array(field.options).map(o=>Object.freeze({...o}))),requiredWhen:freezeCondition(field.requiredWhen),visibleWhen:freezeCondition(field.visibleWhen)})));
  copy.credentialModes=Object.freeze(array(builder.credentialModes));
- copy.command=Object.freeze({...builder.command,tokens:Object.freeze(array(builder.command&&builder.command.tokens).map(token=>Object.freeze({...token,choices:Object.freeze(array(token.choices).map(c=>Object.freeze({...c}))),when:freezeCondition(token.when),parts:Object.freeze(array(token.parts).map(part=>Object.freeze({...part})))})))});
+ copy.command=Object.freeze({...builder.command,executable:freezeExecutable(builder.command&&builder.command.executable),tokens:Object.freeze(array(builder.command&&builder.command.tokens).map(token=>Object.freeze({...token,choices:Object.freeze(array(token.choices).map(c=>Object.freeze({...c}))),when:freezeCondition(token.when),parts:Object.freeze(array(token.parts).map(part=>Object.freeze({...part})))})))});
  copy.evidence=Object.freeze({...builder.evidence});
  copy.manualOutcome=Object.freeze({...builder.manualOutcome});
  copy.reportLineage=Object.freeze({...builder.reportLineage,secretFields:Object.freeze(array(builder.reportLineage&&builder.reportLineage.secretFields))});

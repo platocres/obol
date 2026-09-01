@@ -90,6 +90,20 @@ assert.throws(()=>renderer.compile(conditionalFixture,{mode:'password',target:'h
 assert.strictEqual(renderer.compile(conditionalFixture,{mode:'password',target:'https://box.local',user:'alice',password:'p a s s',headers:'X-One: 1\nX-Two: two words'},{}),"curl 'alice:p a s s' -H 'X-One: 1' -H 'X-Two: two words' https://box.local",'concat and repeated values must remain shell-safe and deterministic');
 assert(renderer.html(conditionalFixture,{}, {mode:'anonymous',target:'https://box.local'}).includes('data-field-id="password"'),'renderer must retain conditional field rows for live mode switching');
 
+const executableFixture={
+ id:'fixture-executable-selector',tool:'content-discovery',title:'Executable selector fixture',summary:'Exercises a safe declared executable selector without user-controlled command names.',executionContext:'kali',credentialModes:[],
+ fields:[{id:'engine',label:'Engine',type:'select',default:'one',options:[{value:'one',label:'One'},{value:'two',label:'Two'}]},{id:'target',label:'Target',type:'text',required:true}],
+ command:{executable:{field:'engine',choices:[{value:'one',command:'tool-one'},{value:'two',command:'tool-two'}]},tokens:[{kind:'field',field:'target'}]},
+ evidence:{expectation:'Selected tool output returned to Evidence.',proofBoundary:'Generated command is activity until reviewed Evidence exists.'},
+ manualOutcome:{supported:true,boundary:'Manual outcome does not create report proof.'},
+ reportLineage:{activity:true,evidenceRequiredForProof:true,secretFields:[]}
+};
+assert.deepStrictEqual(Array.from(schema.validateBuilder(executableFixture)),[],'declared executable selector fixture must satisfy stable schema');
+assert.strictEqual(renderer.commandExecutable(executableFixture,{engine:'two'}),'tool-two','renderer resolves only a declared executable choice');
+assert.strictEqual(renderer.compile(executableFixture,{engine:'two',target:'box.local'},{}),'tool-two box.local','declared executable selector compiles deterministically');
+const unsafeExecutable={...executableFixture,id:'fixture-unsafe-executable',command:{...executableFixture.command,executable:{field:'engine',choices:[{value:'one',command:'tool-one;whoami'}]}}};
+assert(schema.validateBuilder(unsafeExecutable).some(error=>error.includes('unsafe command literal')),'schema must reject unsafe declared executable literals');
+
 const nmap=schema.get('tb-nmap');
 assert(nmap,'canonical Nmap builder must register');
 assert.strictEqual(inventory.get('nmap').status,'implemented','Nmap inventory disposition must be implemented');
@@ -112,9 +126,24 @@ assert(hashcat&&inventory.get('hashcat').status==='implemented','Hashcat builder
 assert.strictEqual(builders.detectHashcatMode('$krb5asrep$23$user@CORP.LOCAL:deadbeef').mode,'18200','Hashcat detector must route AS-REP hashes to mode 18200');
 assert.strictEqual(renderer.compile(hashcat,builders.defaultsFor('tb-hashcat',{hashOrFile:'hashes.txt',mode:'1000',attack:'mask',mask:'?u?l?l?l?d'}),{}),"hashcat -m 1000 -a 3 hashes.txt '?u?l?l?l?d'",'Hashcat mask command must compile deterministically');
 
+const john=schema.get('tb-john');
+assert(john&&inventory.get('john').status==='implemented','John builder must be registered and implemented');
+assert.strictEqual(renderer.compile(john,builders.defaultsFor('tb-john',{hashFile:'hashes.txt'}),{}),'john --format=NT --wordlist=/usr/share/wordlists/rockyou.txt hashes.txt','John default wordlist command must compile deterministically');
+
 const ffuf=schema.get('tb-ffuf');
 assert(ffuf&&inventory.get('ffuf').status==='implemented','ffuf builder must be registered and implemented');
 assert.strictEqual(renderer.compile(ffuf,builders.defaultsFor('tb-ffuf',{url:'http://10.10.10.10/FUZZ',wordlist:'words.txt',headers:'Host: FUZZ.corp.local\nCookie: session=abc',filterSize:'4242'},{}),{}),"ffuf -u http://10.10.10.10/FUZZ -w words.txt -fs 4242 -H 'Host: FUZZ.corp.local' -H 'Cookie: session=abc'",'ffuf repeated headers must compile deterministically');
+
+const contentDiscovery=schema.get('tb-gobuster-ferox');
+assert(contentDiscovery,'canonical Gobuster/Feroxbuster builder must register');
+assert.strictEqual(inventory.get('gobuster').status,'implemented','Gobuster inventory disposition must be implemented');
+assert.strictEqual(inventory.get('feroxbuster').status,'implemented','Feroxbuster inventory disposition must be implemented');
+assert.strictEqual(inventory.get('gobuster').queueItem,'tb-gobuster-ferox');
+assert.strictEqual(inventory.get('ferox').queueItem,'tb-gobuster-ferox','ferox alias must resolve to shared builder');
+assert.deepStrictEqual(Array.from(schema.validateBuilder(contentDiscovery)),[],'content-discovery builder must satisfy stable schema');
+assert.strictEqual(renderer.compile(contentDiscovery,builders.defaultsFor('tb-gobuster-ferox',{engine:'gobuster',target:'http://10.10.10.10',wordlist:'words.txt'}),{}),'gobuster dir -u http://10.10.10.10 -w words.txt -b 404','Gobuster default directory command must compile deterministically');
+assert.strictEqual(renderer.compile(contentDiscovery,builders.defaultsFor('tb-gobuster-ferox',{engine:'gobuster',gobusterMode:'dns',target:'corp.local',wordlist:'subdomains.txt',statusCodes:''}),{}),'gobuster dns -d corp.local -w subdomains.txt','Gobuster DNS mode must use domain targeting without web-only flags');
+assert.strictEqual(renderer.compile(contentDiscovery,builders.defaultsFor('tb-gobuster-ferox',{engine:'feroxbuster',target:'https://box.local',wordlist:'words.txt',extensions:'php,txt',statusCodes:'404,403',filterSize:'1234,5678',headers:'Cookie: session=abc',threads:'50',recursion:false,followRedirects:true,insecure:true,addSlash:true,rate:'100',output:'ferox.txt'}),{}),"feroxbuster -u https://box.local -w words.txt -x php -x txt -C 404 -C 403 -S 1234 -S 5678 -H 'Cookie: session=abc' -t 50 --no-recursion -r -k -f --rate-limit 100 -o ferox.txt",'Feroxbuster repeated filters, recursion, headers, rate, and output must compile deterministically');
 
 const secretsdump=schema.get('tb-secretsdump');
 assert(secretsdump&&inventory.get('impacket-secretsdump').status==='implemented','secretsdump builder must be registered and implemented');
@@ -123,8 +152,8 @@ assert.strictEqual(renderer.compile(secretsdump,builders.defaultsFor('tb-secrets
 
 const rendererSource=read('assets/tool-builder-current.js');
 for(const forbidden of ["require('child_process')",'child_process','spawnSync(','execSync(','eval(','new Function('])assert(!rendererSource.includes(forbidden),'browser renderer contains forbidden execution primitive '+forbidden);
-for(const required of ['OBOL_TOOL_BUILDER','shellQuote','conditionMatches','compile','mount','aria-live','navigator.clipboard','data-field-id'])assert(rendererSource.includes(required),'generic renderer source missing '+required);
+for(const required of ['OBOL_TOOL_BUILDER','shellQuote','conditionMatches','commandExecutable','compile','mount','aria-live','navigator.clipboard','data-field-id'])assert(rendererSource.includes(required),'generic renderer source missing '+required);
 const bridge=read('assets/app-v8.8.js');
-for(const required of ['data/tool-builder-schema.js','data/tool-builder-inventory.js','assets/tool-builder-current.js','data/tool-builders.js','decorateNmapBuilder88','currentNmapBuilder88','decorateCurrentToolBuilders88','builderForTool88','mountBuilder88'])assert(bridge.includes(required),'current browser bridge does not load/mount Tool Builder owner: '+required);
+for(const required of ['data/tool-builder-schema.js','data/tool-builder-inventory.js','assets/tool-builder-current.js','data/tool-builders.js','decorateNmapBuilder88','currentNmapBuilder88','decorateCurrentToolBuilders88','builderForTool88','currentBuilderSourceTool88','mountBuilder88','tb-gobuster-ferox'])assert(bridge.includes(required),'current browser bridge does not load/mount Tool Builder owner: '+required);
 
-console.log(`Tool Builder Platform valid: ${observed.size} runnable tool identities have explicit dispositions; schema, conditional/repeated/concatenated command shapes, renderer, implemented representative builders, human-run boundary, queue references, and route integration are locked.`);
+console.log(`Tool Builder Platform valid: ${observed.size} runnable tool identities have explicit dispositions; schema, declared executable selection, conditional/repeated/concatenated command shapes, renderer, implemented representative builders, human-run boundary, queue references, and route integration are locked.`);

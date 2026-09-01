@@ -8,7 +8,7 @@ Every relevant point on the Path should expose the right tool through a context-
 
 ## Stable platform owners
 
-v9.12 establishes the reusable platform, v9.13 begins concrete migration with Nmap, v9.14 proves the platform across credential-aware, cracking, content-discovery, and credential-dump command shapes, and v9.15 extends the cracking surface with John the Ripper without adding another renderer:
+v9.12 establishes the reusable platform, v9.13 begins concrete migration with Nmap, v9.14 proves the platform across credential-aware, cracking, content-discovery, and credential-dump command shapes, v9.15 extends cracking with John the Ripper, and v9.16 proves one canonical schema record can safely represent closely related executables without adding another renderer:
 
 - `data/tool-builder-schema.js` owns the stable builder data contract and registry helpers;
 - `assets/tool-builder-current.js` owns generic accessible rendering, context autofill, shell-safe command generation, and copy-only operator handoff;
@@ -39,9 +39,11 @@ The schema deliberately keeps command generation separate from execution. Obol m
 
 The v9.13 schema permits a choice to intentionally emit no CLI argument. This is a generic representation for modes where selecting an option means omitting a flag rather than invoking tool-specific compiler code.
 
-v9.14 extends the same stable schema without changing its version identity. Builders may now declare conditional visibility and requiredness, conditional command tokens, repeated values such as one `-H` per header, and concatenated shell-safe positional values such as `domain/user:password@target`. Those capabilities are generic and reusable. They exist because representative real tools require them, not as tool-specific compiler branches.
+v9.14 extends the same stable schema without changing its version identity. Builders may declare conditional visibility and requiredness, conditional command tokens, repeated values such as one `-H` per header, and concatenated shell-safe positional values such as `domain/user:password@target`. Those capabilities are generic and reusable. They exist because representative real tools require them, not as tool-specific compiler branches.
 
-The generic renderer now scopes field element IDs by builder ID so multiple builders may coexist on one card without duplicate DOM IDs. Conditional fields update in place as the operator changes modes. The browser bridge mounts implemented builders in the existing Tools view and on relevant Card surfaces while Targets retains its dedicated canonical Nmap placement and historical Nmap Evidence ingestion compatibility.
+v9.16 adds another generic command-model shape without changing the stable schema or renderer version: `command.executable` may be a declared selector that maps a schema field to a fixed set of safe executable literals. This lets one canonical builder represent closely related sibling tools such as Gobuster and Feroxbuster while preventing free-form executable text from becoming a command. The schema validates the declaration and the renderer resolves only one of its fixed choices.
+
+The generic renderer scopes field element IDs by builder ID so multiple builders may coexist on one card without duplicate DOM IDs. Conditional fields update in place as the operator changes modes. The browser bridge mounts implemented builders in the existing Tools view and on relevant Card surfaces while Targets retains its dedicated canonical Nmap placement and historical Nmap Evidence ingestion compatibility. For shared builders, the bridge may seed a declared mode from the active inventory-backed tool route while leaving the schema and renderer generic.
 
 ## Inventory lock
 
@@ -54,7 +56,7 @@ Every runnable tool identity observed in the current lane/card corpus and tool r
 
 Aliases normalize to one canonical identity. New command/tool data must fail validation until the inventory is updated deliberately. This prevents runnable tools from silently appearing outside builder coverage accounting.
 
-An `implemented` inventory record that points at a Product Hardening queue item must resolve to a registered concrete builder with the same stable item ID. The permanent platform validator enforces this so inventory status cannot get ahead of actual builder ownership.
+An `implemented` inventory record that points at a Product Hardening queue item must resolve to a registered concrete builder with the same stable item ID. Multiple sibling tools may deliberately point to one shared canonical builder when that relationship is explicit in inventory and the builder itself contains only declared executable choices. The permanent platform validator enforces the queue and registration boundary.
 
 ## Representative priority builders
 
@@ -65,7 +67,7 @@ The v9 queue seeds representative builders first so the generic schema covers th
 - Hashcat - **implemented in v9.14**
 - John - **implemented in v9.15**
 - ffuf - **implemented in v9.14**
-- gobuster / feroxbuster
+- gobuster / feroxbuster - **implemented in v9.16**
 - impacket-secretsdump - **implemented in v9.14**
 - impacket-GetNPUsers
 - impacket-GetUserSPNs
@@ -99,9 +101,21 @@ The builder uses the same `workspace.hashfile` and `workspace.wordlist` context 
 
 As with Hashcat, a selected format, generated command, or manual cracked outcome is only workflow activity. Reviewed cracking output is required before a recovered secret is treated as Evidence, and independent validation remains required before claiming working access.
 
+### v9.16 Gobuster / Feroxbuster migration boundary
+
+v9.16 completes `tb-gobuster-ferox` with one shared canonical content-discovery builder. Gobuster and Feroxbuster remain separate runnable inventory identities, but both point to the same queue item and schema record because they share the same user problem and control surface. The active Tool/Card route seeds which declared executable the builder opens with.
+
+**Gobuster** exposes `dir`, `vhost`, and `dns` modes; URL/domain targeting; wordlist; directory extensions; allow or filter status codes; response-length filtering; repeated headers; threads; redirects/TLS handling; trailing-slash and expanded-output controls where applicable; and output file handling.
+
+**Feroxbuster** exposes target and wordlist; repeated extension/status/size filters; repeated headers; threads; recursion on/off and depth; redirects/TLS/trailing-slash controls; rate limiting; and output file handling.
+
+The executable selector is not a shell field. The only valid choices are fixed schema declarations for `gobuster` and `feroxbuster`; unknown selections fail generation. This keeps the shared-builder convenience inside the same no-execution and shell-safety boundary as the rest of the platform.
+
+A generated discovery command, request count, or manually declared finding remains workflow activity. Discovered paths, hosts, subdomains, and response facts require reviewed tool output in Evidence before they become report-ready.
+
 The existing command cards remain useful readable references. When a card contains an implemented tool, the current bridge adds the canonical builder near that card rather than deleting historical guidance or creating a second proof model. Generated commands still flow through the same human-run boundary and must return to Evidence before report-ready facts exist.
 
-The next highest-priority Tool Builder migration after v9.15 is gobuster / feroxbuster. It should continue using these stable owners and should cover mode, extensions, status filtering, concurrency, recursion, and output without adding a tool-specific renderer.
+The next highest-priority Tool Builder migration after v9.16 is **GetNPUsers**. It should continue using these stable owners and should cover username sources, no-pass flow, domain/DC targeting, output handling, and AS-REP hash handoff without adding a tool-specific renderer.
 
 ## Architecture rule
 

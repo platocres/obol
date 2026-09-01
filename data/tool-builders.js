@@ -229,6 +229,68 @@ const ffuf=schema.register({
  reportLineage:{activity:true,evidenceRequiredForProof:true,secretFields:['headers']}
 });
 
+const contentDiscovery=schema.register({
+ id:'tb-gobuster-ferox',
+ tool:'gobuster/feroxbuster',
+ title:'Gobuster / Feroxbuster content discovery',
+ summary:'Choose Gobuster or Feroxbuster, then build a focused content-discovery command with target, wordlist, mode, extensions, response filters, headers, concurrency, recursion, and output controls.',
+ executionContext:'kali',
+ credentialModes:['cookie-token'],
+ fields:[
+  {id:'engine',label:'Tool',type:'select',default:'gobuster',options:[{value:'gobuster',label:'Gobuster'},{value:'feroxbuster',label:'Feroxbuster'}]},
+  {id:'gobusterMode',label:'Gobuster mode',type:'select',default:'dir',options:[{value:'dir',label:'Directory / file discovery'},{value:'vhost',label:'Virtual-host discovery'},{value:'dns',label:'DNS subdomain discovery'}],visibleWhen:{field:'engine',equals:'gobuster'}},
+  {id:'target',label:'Target URL / domain',type:'text',required:true,autofill:'target.value',placeholder:'http://10.10.10.10 or corp.local',help:'Gobuster DNS mode expects a domain; web modes and Feroxbuster expect a URL.'},
+  {id:'wordlist',label:'Wordlist',type:'path',required:true,autofill:'workspace.wordlist',default:'/usr/share/seclists/Discovery/Web-Content/raft-small-words.txt'},
+  {id:'extensions',label:'Extensions',type:'text',placeholder:'php,txt,bak',help:'Gobuster sends the comma list with -x; Feroxbuster emits one -x per extension.'},
+  {id:'statusMode',label:'Status handling',type:'select',default:'filter',options:[{value:'filter',label:'Filter / deny these status codes'},{value:'allow',label:'Allow only these status codes'}]},
+  {id:'statusCodes',label:'Status codes',type:'text',default:'404',placeholder:'404 or 200,301,302',help:'Gobuster uses -b/-s; Feroxbuster uses -C/-s.'},
+  {id:'filterSize',label:'Filter response sizes',type:'text',placeholder:'1234,5678',help:'Gobuster uses --exclude-length; Feroxbuster emits one -S per size.'},
+  {id:'headers',label:'Headers (one per line)',type:'textarea',placeholder:'Cookie: session=abc\nAuthorization: Bearer TOKEN',help:'Each non-empty line becomes its own -H argument.'},
+  {id:'threads',label:'Threads',type:'number',placeholder:'40'},
+  {id:'recursion',label:'Recursive scan',type:'checkbox',default:true,visibleWhen:{field:'engine',equals:'feroxbuster'},help:'Feroxbuster recurses by default. Turn this off to emit --no-recursion.'},
+  {id:'depth',label:'Maximum recursion depth',type:'number',placeholder:'4',visibleWhen:[{field:'engine',equals:'feroxbuster'},{field:'recursion',truthy:true}]},
+  {id:'followRedirects',label:'Follow redirects',type:'checkbox'},
+  {id:'insecure',label:'Ignore TLS certificate validation',type:'checkbox'},
+  {id:'addSlash',label:'Append slash to requests',type:'checkbox'},
+  {id:'rate',label:'Rate limit requests/sec',type:'number',placeholder:'100',visibleWhen:{field:'engine',equals:'feroxbuster'}},
+  {id:'expanded',label:'Show expanded full URLs',type:'checkbox',visibleWhen:{field:'engine',equals:'gobuster'}},
+  {id:'output',label:'Output file',type:'path',placeholder:'discovery.txt'}
+ ],
+ command:{executable:{field:'engine',choices:[{value:'gobuster',command:'gobuster'},{value:'feroxbuster',command:'feroxbuster'}]},tokens:[
+  {kind:'choice',field:'gobusterMode',choices:[{value:'dir',arg:'dir'},{value:'vhost',arg:'vhost'},{value:'dns',arg:'dns'}],when:{field:'engine',equals:'gobuster'}},
+  {kind:'field',field:'target',flag:'-u',when:{field:'engine',equals:'feroxbuster'}},
+  {kind:'field',field:'target',flag:'-u',when:[{field:'engine',equals:'gobuster'},{field:'gobusterMode',in:['dir','vhost']}]},
+  {kind:'field',field:'target',flag:'-d',when:[{field:'engine',equals:'gobuster'},{field:'gobusterMode',equals:'dns'}]},
+  {kind:'field',field:'wordlist',flag:'-w'},
+  {kind:'field',field:'extensions',flag:'-x',when:[{field:'engine',equals:'gobuster'},{field:'gobusterMode',equals:'dir'}]},
+  {kind:'repeat',field:'extensions',flag:'-x',split:'comma',when:{field:'engine',equals:'feroxbuster'}},
+  {kind:'field',field:'statusCodes',flag:'-b',when:[{field:'engine',equals:'gobuster'},{field:'gobusterMode',in:['dir','vhost']},{field:'statusMode',equals:'filter'}]},
+  {kind:'literal',value:"-b ''",when:[{field:'engine',equals:'gobuster'},{field:'gobusterMode',in:['dir','vhost']},{field:'statusMode',equals:'allow'}]},
+  {kind:'field',field:'statusCodes',flag:'-s',when:[{field:'engine',equals:'gobuster'},{field:'gobusterMode',in:['dir','vhost']},{field:'statusMode',equals:'allow'}]},
+  {kind:'repeat',field:'statusCodes',flag:'-C',split:'comma',when:[{field:'engine',equals:'feroxbuster'},{field:'statusMode',equals:'filter'}]},
+  {kind:'repeat',field:'statusCodes',flag:'-s',split:'comma',when:[{field:'engine',equals:'feroxbuster'},{field:'statusMode',equals:'allow'}]},
+  {kind:'field',field:'filterSize',flag:'--exclude-length',when:[{field:'engine',equals:'gobuster'},{field:'gobusterMode',in:['dir','vhost']}]},
+  {kind:'repeat',field:'filterSize',flag:'-S',split:'comma',when:{field:'engine',equals:'feroxbuster'}},
+  {kind:'repeat',field:'headers',flag:'-H',split:'lines',when:[{field:'engine',equals:'gobuster'},{field:'gobusterMode',in:['dir','vhost']}]},
+  {kind:'repeat',field:'headers',flag:'-H',split:'lines',when:{field:'engine',equals:'feroxbuster'}},
+  {kind:'field',field:'threads',flag:'-t'},
+  {kind:'choice',field:'recursion',choices:[{value:true,arg:''},{value:false,arg:'--no-recursion'}],when:{field:'engine',equals:'feroxbuster'}},
+  {kind:'field',field:'depth',flag:'-d',when:[{field:'engine',equals:'feroxbuster'},{field:'recursion',truthy:true}]},
+  {kind:'toggle',field:'followRedirects',flag:'-r',when:{field:'engine',equals:'feroxbuster'}},
+  {kind:'toggle',field:'followRedirects',flag:'-r',when:[{field:'engine',equals:'gobuster'},{field:'gobusterMode',in:['dir','vhost']}]},
+  {kind:'toggle',field:'insecure',flag:'-k',when:{field:'engine',equals:'feroxbuster'}},
+  {kind:'toggle',field:'insecure',flag:'-k',when:[{field:'engine',equals:'gobuster'},{field:'gobusterMode',in:['dir','vhost']}]},
+  {kind:'toggle',field:'addSlash',flag:'-f',when:{field:'engine',equals:'feroxbuster'}},
+  {kind:'toggle',field:'addSlash',flag:'-f',when:[{field:'engine',equals:'gobuster'},{field:'gobusterMode',equals:'dir'}]},
+  {kind:'field',field:'rate',flag:'--rate-limit',when:{field:'engine',equals:'feroxbuster'}},
+  {kind:'toggle',field:'expanded',flag:'-e',when:[{field:'engine',equals:'gobuster'},{field:'gobusterMode',in:['dir','vhost']}]},
+  {kind:'field',field:'output',flag:'-o'}
+ ]},
+ evidence:{expectation:'Return discovered paths, virtual hosts, subdomains, or saved result output showing the response metadata actually observed by Gobuster or Feroxbuster.',proofBoundary:'A generated discovery command, request count, or manual claim of findings is activity only. Paths, hosts, and response facts become report-ready only after the returned tool output is reviewed as Evidence.'},
+ manualOutcome:{supported:true,boundary:'The operator may record found candidates, exhausted wordlist, blocked, failed, filtered incorrectly, or skipped state without creating report proof on its own.'},
+ reportLineage:{activity:true,evidenceRequiredForProof:true,secretFields:['headers']}
+});
+
 const secretsdump=schema.register({
  id:'tb-secretsdump',
  tool:'impacket-secretsdump',
@@ -307,6 +369,11 @@ function defaultsFfuf(values,context){
  if(!out.url){const target=context&&context.target&&context.target.value||'';if(target)out.url=/^https?:\/\//i.test(target)?target.replace(/\/$/,'')+'/FUZZ':'http://'+target.replace(/\/$/,'')+'/FUZZ';}
  return out;
 }
+function defaultsContentDiscovery(values,context){
+ const out={engine:'gobuster',gobusterMode:'dir',wordlist:'/usr/share/seclists/Discovery/Web-Content/raft-small-words.txt',statusMode:'filter',statusCodes:'404',recursion:true,...(values||{})};
+ if(!out.target){const target=context&&context.target&&context.target.value||'';if(target)out.target=/^https?:\/\//i.test(target)?target:'http://'+target.replace(/^\/+|\/+$/g,'');}
+ return out;
+}
 function defaultsSecretsdump(values){return{authMode:'password',...(values||{})};}
 function defaultsFor(id,values,context){
  if(id==='tb-nmap')return defaultsNmap(values);
@@ -314,6 +381,7 @@ function defaultsFor(id,values,context){
  if(id==='tb-hashcat')return defaultsHashcat(values);
  if(id==='tb-john')return defaultsJohn(values);
  if(id==='tb-ffuf')return defaultsFfuf(values,context);
+ if(id==='tb-gobuster-ferox')return defaultsContentDiscovery(values,context);
  if(id==='tb-secretsdump')return defaultsSecretsdump(values);
  return{...(values||{})};
 }
@@ -363,6 +431,6 @@ function enhanceMount(id,mount,context){
  return mount;
 }
 
-const byId=Object.freeze({'tb-nmap':nmap,'tb-nxc':nxc,'tb-hashcat':hashcat,'tb-john':john,'tb-ffuf':ffuf,'tb-secretsdump':secretsdump});
-root.OBOL_TOOL_BUILDERS=Object.freeze({version:'1.0.0',byId,nmapProfiles,hashcatModes,johnFormats,nmap,nxc,hashcat,john,ffuf,secretsdump,profile,defaults:defaultsNmap,defaultsFor,detectHashcatMode,enhanceMount});
+const byId=Object.freeze({'tb-nmap':nmap,'tb-nxc':nxc,'tb-hashcat':hashcat,'tb-john':john,'tb-ffuf':ffuf,'tb-gobuster-ferox':contentDiscovery,'tb-secretsdump':secretsdump});
+root.OBOL_TOOL_BUILDERS=Object.freeze({version:'1.0.0',byId,nmapProfiles,hashcatModes,johnFormats,nmap,nxc,hashcat,john,ffuf,contentDiscovery,secretsdump,profile,defaults:defaultsNmap,defaultsFor,detectHashcatMode,enhanceMount});
 })(typeof window!=='undefined'?window:globalThis);
