@@ -77,6 +77,8 @@ Recommended work-package metadata comes from `data/product-hardening/work-packag
 
 **Live items in this package:**
 - **GetNPUsers builder** — Support username sources, no-pass flow, DC/domain inputs, output file, and AS-REP hash handoff.
+- **GetUserSPNs builder** — Support auth modes, request mode, target domain/DC, output file, and TGS cracking handoff.
+- **Evil-WinRM builder** — Expose password, NT hash, SSL, scripts, uploads/downloads, and target context cleanly.
 
 **Highest-priority live items:**
 1. **GetNPUsers builder** — Support username sources, no-pass flow, DC/domain inputs, output file, and AS-REP hash handoff.
