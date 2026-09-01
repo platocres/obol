@@ -4,7 +4,7 @@ Obol is a static, browser-local workspace for OSCP-style labs, Active Directory 
 
 Live site: `https://platocres.github.io/obol/`
 
-Current release: **v9.19**
+Current release: **v9.20**
 
 Open `#/dashboard` for the active Product Hardening Dashboard and Product Build Next queue.
 
@@ -34,7 +34,7 @@ Before building:
 6. If no release PR exists, create the release branch and open one normal, **non-draft** release PR as early as GitHub permits. Keep that same PR for the entire build. Required checks, not Draft status, prevent premature merge.
 7. Start with the highest-priority Product Build Next item unless the user directs otherwise. Treat it as the entry point into the recommended coherent work package, not as a one-item limit.
 8. Inspect related, adjacent, and dependency-linked items in the same ownership area. Complete as many as safely fit the same architectural context and blast radius. Do not stop merely because the first item's acceptance criteria are satisfied if closely related work can be completed and fully tested in the same PR.
-9. Keep queue-item accountability atomic. Every item advanced or closed still needs its own acceptance criteria, validation commands, proof files, and item-specific tests.
+9. Keep queue-item accountability atomic. Every item advanced or closed still needs acceptance criteria, validation commands, proof files, and item-specific tests.
 10. Do not batch unrelated work. Stop expanding the package when the next item materially changes ownership area, architectural context, migration risk, or test strategy.
 11. Sync generated Product Build Next output, run the required validation, and keep the entire coherent work package in the one active release/product-hardening PR until the exact final head is green.
 
@@ -66,33 +66,33 @@ The completed Orange methodology/source queue is historical, regression-protecte
 This block is generated from `data/product-hardening/product-hardening-queue.js`. Do not edit it manually.
 Recommended work-package metadata comes from `data/product-hardening/work-packages.js`.
 
-**Current product-hardening queue:** 36/632 complete (6%), 38 queued, 9 foundation items modeled.
+**Current product-hardening queue:** 37/632 complete (6%), 37 queued, 9 foundation items modeled.
 **Private notes source:** `platocres/obol-source-notes` — 556 notes and 1326 embedded resources accounted.
 
-**Recommended work package:** **curl builder** — 1 live item / 1 tracked.
-**Work-package entry:** **curl builder**
+**Recommended work package:** **chisel builder** — 1 live item / 1 tracked.
+**Work-package entry:** **chisel builder**
 **Ownership area:** `tool-builders`
 **Package guidance:** Complete the highest-priority item. Before stopping, inspect adjacent queue work for a coherent same-ownership package.
 **Package dependencies:** none.
 
 **Live items in this package:**
-- **curl builder** — Headers, cookies, body, proxy, method, auth, uploads, and output options should be explicit toggles/fields.
+- **chisel builder** — Expose client/server roles, reverse mode, SOCKS, remotes, ports, and cleanup guidance.
 
 **Highest-priority live items:**
-1. **curl builder** — Headers, cookies, body, proxy, method, auth, uploads, and output options should be explicit toggles/fields.
-2. **chisel builder** — Expose client/server roles, reverse mode, SOCKS, remotes, ports, and cleanup guidance.
-3. **SSH / plink tunnel builders** — Create guided local, remote, and dynamic forwarding builders with Windows/Kali execution context.
-4. **Credential Material schema** — Represent passwords, hashes, tickets, certificates, keys, cookies, and tokens as first-class typed materials.
-5. **Password mode controls** — Standard username/password inputs and escaping rules across all relevant builders.
-6. **NT hash and LM:NT mode controls** — Correct flags for tools that support pass-the-hash or LM:NT pair input.
-7. **NetNTLMv1/v2 detection** — Pasted challenge-response hashes should route to appropriate cracking builders and modes.
-8. **Kerberos TGS / AS-REP detection** — Identify common TGS and AS-REP hash shapes and select correct cracking modes.
+1. **chisel builder** — Expose client/server roles, reverse mode, SOCKS, remotes, ports, and cleanup guidance.
+2. **SSH / plink tunnel builders** — Create guided local, remote, and dynamic forwarding builders with Windows/Kali execution context.
+3. **Credential Material schema** — Represent passwords, hashes, tickets, certificates, keys, cookies, and tokens as first-class typed materials.
+4. **Password mode controls** — Standard username/password inputs and escaping rules across all relevant builders.
+5. **NT hash and LM:NT mode controls** — Correct flags for tools that support pass-the-hash or LM:NT pair input.
+6. **NetNTLMv1/v2 detection** — Pasted challenge-response hashes should route to appropriate cracking builders and modes.
+7. **Kerberos TGS / AS-REP detection** — Identify common TGS and AS-REP hash shapes and select correct cracking modes.
+8. **MSCache2 mode support** — Support domain cached credential hash workflows.
 
 **Track status:**
 - **Critical correctness:** 4/4 complete (100%), 0 modeled.
 - **Architecture / runtime:** 6/10 complete (60%), 3 modeled.
 - **UI / UX repair:** 7/8 complete (88%), 1 modeled.
-- **Tool GUI builders:** 15/18 complete (83%), 0 modeled.
+- **Tool GUI builders:** 16/18 complete (89%), 0 modeled.
 - **Credential modes:** 0/14 complete (0%), 0 modeled.
 - **Manual outcomes:** 0/8 complete (0%), 0 modeled.
 - **Notes integration:** 0/556 complete (0%), 2 modeled.
@@ -152,6 +152,7 @@ node tests/run-v9.16-tests.js
 node tests/run-v9.17-tests.js
 node tests/run-v9.18-tests.js
 node tests/run-v9.19-tests.js
+node tests/run-v9.20-tests.js
 ```
 
 ## GitHub Pages
