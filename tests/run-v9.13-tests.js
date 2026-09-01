@@ -21,6 +21,15 @@ const renderer=sandbox.window.OBOL_TOOL_BUILDER;
 const builders=sandbox.window.OBOL_TOOL_BUILDERS;
 assert(q&&contracts&&schema&&inventory&&renderer&&builders,'v9.13 durable owners load');
 
+const queueItem=q.items.find(item=>item.id==='tb-nmap');
+assert(queueItem&&queueItem.status==='complete','v9.13 completes tb-nmap');
+assert.strictEqual(q.tracks.find(track=>track.id==='tool-builders').complete,4,'Tool Builder track advances to 4/18');
+assert(!q.buildNext(1000).some(item=>item.id==='tb-nmap'),'completed Nmap item stays out of Product Build Next');
+assert(q.buildNext(1)[0]&&q.buildNext(1)[0].id==='tb-nxc','Product Build Next advances to NetExec / nxc');
+const nmapContract=contracts.contracts['tb-nmap'];
+assert(nmapContract&&nmapContract.acceptance.length&&nmapContract.validationCommands.includes('node tests/run-v9.13-tests.js'),'tb-nmap owns item-specific Definition of Done and regression proof');
+for(const rel of nmapContract.proofFiles)assert(exists(rel),'tb-nmap proof file exists: '+rel);
+
 const nmap=schema.get('tb-nmap');
 assert(nmap,'v9.13 registers the canonical Nmap builder');
 assert.deepStrictEqual(Array.from(schema.validateBuilder(nmap)),[],'Nmap builder satisfies the generic schema');
@@ -41,7 +50,7 @@ const html=renderer.html(nmap,{target:{value:'10.10.10.10'}},builders.defaults({
 for(const token of ['Nmap launchpad','Scan goal','Authorized target / CIDR / range','Port scope','Custom ports','Timing','Default scripts (-sC)','Service versions (-sV)','Output basename','Generated command','Evidence and report boundary'])assert(html.includes(token),'Nmap renderer is missing '+token);
 
 const bridge=read('assets/app-v8.8.js');
-for(const token of ['data/tool-builders.js','decorateNmapBuilder88','currentNmapValues88','syncLegacyNmap88','data-current-nmap-builder88',"['boxes','card','tools']"])assert(bridge.includes(token),'Targets bridge missing '+token);
+for(const token of ['data/tool-builders.js','decorateNmapBuilder88','currentNmapValues88','syncLegacyNmap88','currentNmapBuilder88',"['boxes','card','tools']"])assert(bridge.includes(token),'Targets bridge missing '+token);
 for(const token of ['.discovery-grid31','.scan-options31','.generated31','.paste-scan31'])assert(bridge.includes(token),'Nmap migration must preserve historical intake while replacing builder UI: '+token);
 const historicalApp=read('assets/app-v3.1.js');
 assert(historicalApp.includes('Paste Nmap results and discover targets'),'historical Nmap Evidence intake remains available');
