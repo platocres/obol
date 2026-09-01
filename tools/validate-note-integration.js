@@ -34,8 +34,9 @@ assert(atom&&atom.noteId==='offsec-pen-200-0123456789abcdef','metadata atomizer 
 assert.strictEqual(atom.resourceCount,3);
 assert(!Object.prototype.hasOwnProperty.call(atom,'source_file')&&!Object.prototype.hasOwnProperty.call(atom,'content'),'metadata atomizer strips private/raw fields');
 
+const publicProjection=JSON.stringify({sourceInventory:notes.sourceInventory,ledger:notes.ledger,fieldNotes:Array.from(field.entries),atom:JSON.parse(JSON.stringify(atom))});
+for(const forbidden of ['sources/raw/','<en-note','<resource>'])assert(!publicProjection.includes(forbidden),'public notes projection excludes raw private-source marker '+forbidden);
 const source=read('data/note-integration.js')+'\n'+read('data/field-notes.js')+'\n'+read('assets/field-notes.js');
-for(const forbidden of ['sources/raw/','<en-note','<resource>'])assert(!source.includes(forbidden),'public notes implementation excludes raw private-source marker '+forbidden);
 const ui=read('assets/field-notes.js');
 for(const token of ['data/note-integration.js','decorateTools','Field-note branches','data-field-notes-tool','data-field-notes-path'])assert(ui.includes(token),'field-note UI integration missing '+token);
 for(const forbidden of ["require('child_process')",'child_process','spawnSync(','execSync(','eval(','new Function('])assert(!source.includes(forbidden),'notes integration contains no execution primitive '+forbidden);
