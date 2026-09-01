@@ -22,7 +22,7 @@ function applyCurrentReleaseCompletions(){
  }
  if(currentReleaseAtLeast(9,25)){
   const notesTrack=(q.tracks||[]).find(entry=>entry.id==='notes-integration');
-  if(notesTrack)notesTrack.complete=currentReleaseAtLeast(9,26)?15:4;
+  if(notesTrack)notesTrack.complete=currentReleaseAtLeast(9,27)?41:(currentReleaseAtLeast(9,26)?15:4);
  }
  return q;
 }
