@@ -80,6 +80,6 @@ const rendererSource=read('assets/tool-builder-current.js');
 for(const forbidden of ["require('child_process')",'child_process','spawnSync(','execSync(','eval(','new Function('])assert(!rendererSource.includes(forbidden),'browser renderer contains forbidden execution primitive '+forbidden);
 for(const required of ['OBOL_TOOL_BUILDER','shellQuote','compile','mount','aria-live','navigator.clipboard'])assert(rendererSource.includes(required),'generic renderer source missing '+required);
 const bridge=read('assets/app-v8.8.js');
-for(const required of ['data/tool-builder-schema.js','data/tool-builder-inventory.js','assets/tool-builder-current.js','data/tool-builders.js','decorateNmapBuilder88','data-current-nmap-builder88'])assert(bridge.includes(required),'current browser bridge does not load/mount Tool Builder owner: '+required);
+for(const required of ['data/tool-builder-schema.js','data/tool-builder-inventory.js','assets/tool-builder-current.js','data/tool-builders.js','decorateNmapBuilder88','currentNmapBuilder88'])assert(bridge.includes(required),'current browser bridge does not load/mount Tool Builder owner: '+required);
 
 console.log(`Tool Builder Platform valid: ${observed.size} runnable tool identities have explicit dispositions; schema, renderer, implemented builders, command compiler, human-run boundary, queue references, and representative inventory coverage are locked.`);
