@@ -112,7 +112,12 @@ function validateBuilder(builder){
 
 function freezeCondition(condition){
  if(Array.isArray(condition))return Object.freeze(condition.map(freezeCondition));
- if(condition&&typeof condition==='object')return Object.freeze({...condition,in:Array.isArray(condition.in)?Object.freeze([...condition.in]):condition.in,notIn:Array.isArray(condition.notIn)?Object.freeze([...condition.notIn]):condition.notIn});
+ if(condition&&typeof condition==='object'){
+  const copy={...condition};
+  if(Array.isArray(condition.in))copy.in=Object.freeze([...condition.in]);
+  if(Array.isArray(condition.notIn))copy.notIn=Object.freeze([...condition.notIn]);
+  return Object.freeze(copy);
+ }
  return condition;
 }
 function freezeBuilder(builder){
