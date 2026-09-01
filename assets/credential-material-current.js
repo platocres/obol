@@ -2,13 +2,17 @@
 (function(root){
 const API=()=>root.OBOL_CREDENTIAL_MATERIAL||null;
 const SCHEMA=()=>root.OBOL_TOOL_BUILDER_SCHEMA||null;
-const e=v=>String(v==null?'':v).replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot',"'":'&#39;'}[c]));
-function currentState(){try{return typeof state!=='undefined'?state:null;}catch(_err){return null;}}
+const e=v=>String(v==null?'':v).replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
+function currentState(){try{return typeof state!=='undefined'?state:(root.state||null);}catch(_err){return root.state||null;}}
 function persist(){try{if(typeof save==='function')save();}catch(_err){}}
 function routeParts(){return typeof location==='undefined'?[]:(location.hash||'#/home').replace(/^#\/?/,'').split('/').filter(Boolean);}
-function visibleLabel(row){return [API().kindLabel(row.kind),row.username||row.domain||'',row.status==='validated'?'validated':'candidate'].filter(Boolean).join(' · ');}
+function visibleLabel(row){return [API().kindLabel(row.kind),row.username||row.domain||'',row.status==='validated'?'validated':row.status==='rejected'?'rejected':'candidate'].filter(Boolean).join(' · ');}
 function optionRows(rows,selectedId){return '<option value="">Choose saved material</option>'+rows.map(row=>'<option value="'+e(row.id)+'"'+(row.id===selectedId?' selected':'')+'>'+e(visibleLabel(row))+'</option>').join('');}
 function kindOptions(){const api=API();return ['auto',...api.kinds].map(kind=>'<option value="'+e(kind)+'">'+e(kind==='auto'?'Auto-detect':api.kindLabel(kind))+'</option>').join('');}
+function installLiveReportBoundary(){
+ const api=API(),R=root.OBOL_REPORT_V2;if(!api||!R||typeof R.generate!=='function'||R.generate.__obolCredentialLiveRedaction)return false;
+ const old=R.generate;const generate=function(){return api.redactText(old.apply(R,arguments),currentState());};generate.__obolCredentialLiveRedaction=true;root.OBOL_REPORT_V2={...R,generate};return true;
+}
 function applyValues(form,builder,values){
  if(!form)return false;let changed=false;
  for(const [field,value] of Object.entries(values||{})){
@@ -45,12 +49,12 @@ function decorateBuilder(section){
  host.addEventListener('click',event=>{const button=event.target.closest('[data-route-builder]');if(!button)return;const raw=value.value;if(!String(raw||'').trim())return;const row=api.add(s,{kind:button.dataset.routeKind||'auto',value:raw,source:'credential-hash-route'});api.select(s,row.id);persist();const target=schema.get(button.dataset.routeBuilder);if(target)location.hash='#/tools/'+encodeURIComponent(target.tool);});
 }
 function decorate(){
- const api=API();if(!api)return;api.installCore();api.installReportBoundary();
+ const api=API();if(!api)return;api.installCore();api.installReportBoundary();installLiveReportBoundary();const s=currentState();if(s)api.ensureState(s,true);
  const parts=routeParts(),page=parts[0]||'home';if(!['card','tools'].includes(page))return;
  document.querySelectorAll('.tool-builder-current').forEach(decorateBuilder);
 }
 let observer=null;
 function start(){decorate();for(const delay of [60,180,500,1200,2600])setTimeout(decorate,delay);if(typeof MutationObserver!=='undefined'&&!observer){observer=new MutationObserver(()=>decorate());observer.observe(document.documentElement,{childList:true,subtree:true});}}
 if(typeof window!=='undefined'){window.addEventListener('hashchange',start);if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',start,{once:true});else start();}
-root.OBOL_CREDENTIAL_MATERIAL_UI=Object.freeze({version:'1.0.0',decorate,applyValues});
+root.OBOL_CREDENTIAL_MATERIAL_UI=Object.freeze({version:'1.0.0',decorate,applyValues,installLiveReportBoundary});
 })(typeof window!=='undefined'?window:globalThis);
