@@ -45,7 +45,7 @@ const records={
  evilwinrm:['modeled','tb-evilwinrm','Evil-WinRM has an explicit representative builder item.'],
  rdesktop:['modeled',null,'RDP client remains inventoried for later builder coverage.'],
  xfreerdp:['modeled',null,'FreeRDP client remains inventoried for later builder coverage.'],
- john:['modeled','tb-john','John is a representative cracking builder.'],
+ john:['implemented','tb-john','John the Ripper is implemented as the canonical format-aware wordlist, incremental, and cracked-result builder.'],
  hashcat:['implemented','tb-hashcat','Hashcat is implemented with common lab hash-mode detection plus explicit mode, attack, rule, workload, and output controls.'],
  hydra:['modeled',null,'Credential guessing remains inventoried for later builder coverage.'],
  crunch:['modeled',null,'Wordlist generation remains inventoried for later builder coverage.'],
