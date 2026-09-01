@@ -86,16 +86,16 @@ const packages=[
   guidance:'Use the canonical builder engine to implement several representative tools in one coherent pass, while preserving separate acceptance and regression proof for every builder.'
  },
  {
-  id:'kerberos-winrm-builders',
-  title:'Kerberos Roast and WinRM Builders',
+  id:'kerberos-roast-builders',
+  title:'Kerberos Roasting Builders',
   priority:'normal',
-  ownershipArea:'tool-builder/windows-auth-access',
-  itemIds:['tb-getnpusers','tb-getuserspns','tb-evilwinrm'],
+  ownershipArea:'tool-builder/impacket-kerberos-roasting',
+  itemIds:['tb-getnpusers','tb-getuserspns'],
   dependencies:['tool-builder-platform'],
-  relatedItems:['cred-password','cred-ntlm','cred-kerberos-hashes','cred-cross-tool-handshake','cred-validation-boundary'],
+  relatedItems:['tb-evilwinrm','cred-kerberos-hashes','cred-cross-tool-handshake','cred-validation-boundary'],
   parallelSafe:true,
   recommendedBatch:true,
-  guidance:'Complete AS-REP roasting, Kerberoasting, and WinRM access launchers together while keeping each builder atomic, copy-only, credential-aware, and explicit about hash/output handoff versus independently proven access.'
+  guidance:'Implement the paired Impacket AS-REP and Kerberoasting builders together because they share domain/DC targeting, request/output handoff, and cracking-proof boundaries. Evil-WinRM is related Windows authentication work but remains a separate remote-access builder, not part of the Kerberos-roasting package.'
  },
  {
   id:'credential-material-platform',
