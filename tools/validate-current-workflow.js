@@ -47,8 +47,8 @@ if(q){
  if(!a||a.complete<5)bad('architecture/runtime does not preserve dashboard-owner completion');
  if(!u||u.complete<5)bad('UI/UX does not preserve the v9.8 user-workflow completion milestone');
 }
-const rec=q&&packages.recommend(q);
-if(!rec||!rec.entryItem||rec.entryItem.id!=='runtime-lazy-load-plan')bad('Product Build Next did not advance to lazy-loading after the dashboard workflow package');
+const rec=q&&packages.recommend(q),top=q&&q.buildNext(1)[0];
+if(top&&(!rec||!rec.entryItem||rec.entryItem.id!==top.id))bad('Product Build Next recommendation does not begin with the current highest-priority queued item');
 
 if(fail.length){console.error('Current workflow validation failed:');for(const m of fail)console.error('- '+m);process.exit(1);}
-console.log('Current workflow valid: one Product Hardening dashboard owner, user-first Home, secondary dashboard navigation, and explicit Next Steps decision brief.');
+console.log('Current workflow valid: one Product Hardening dashboard owner, user-first Home, secondary dashboard navigation, explicit Next Steps decision brief, and live queue handoff.');
