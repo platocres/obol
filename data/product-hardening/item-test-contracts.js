@@ -176,6 +176,11 @@ const contracts={
   validationCommands:['node tools/validate-tool-builder-platform.js','node tests/run-v9.19-tests.js'],
   proofFiles:['data/tool-builders.js','data/tool-builder-schema.js','data/tool-builder-inventory.js','assets/tool-builder-current.js','assets/app-v8.8.js','data/product-hardening/product-hardening-queue.js','tests/run-v9.19-tests.js','docs/TOOL-BUILDER-COVERAGE.md','docs/v9.19.md']
  },
+ 'tb-curl':{
+  acceptance:['Tool and relevant Card routes expose one schema-driven curl builder with explicit URL and request method controls; repeated headers; cookie and request-body inputs; Basic, NTLM, and OAuth2 bearer authentication; proxy and optional proxy credentials; raw/binary and multipart upload modes; redirect, TLS, compression, timeout, output, response-header, status, verbose, and failure controls; deterministic copy-only command generation; secret-aware report lineage; and proof boundaries that require reviewed returned output before HTTP, authentication, transfer, or application-state claims.'],
+  validationCommands:['node tools/validate-tool-builder-platform.js','node tests/run-v9.20-tests.js'],
+  proofFiles:['data/tool-builders.js','data/tool-builder-schema.js','data/tool-builder-inventory.js','assets/tool-builder-current.js','assets/app-v8.8.js','data/product-hardening/product-hardening-queue.js','tests/run-v9.20-tests.js','docs/TOOL-BUILDER-COVERAGE.md','docs/v9.20.md']
+ },
  'tb-tool-inventory-lock':{
   acceptance:['Every runnable tool identity observed in the current lane/card command corpus and tool registry resolves through one explicit stable inventory disposition. New tool identities fail validation until they are explicitly implemented, modeled, superseded, or rejected with rationale, and aliases normalize to one canonical identity.'],
   validationCommands:['node tools/validate-tool-builder-platform.js','node tests/run-v9.12-tests.js'],
@@ -228,5 +233,5 @@ const contracts={
  }
 };
 const requiredForStatuses=['modeled','complete','superseded','rejected'];
-root.OBOL_PRODUCT_HARDENING_TEST_CONTRACTS={version:'9.19.0',requiredForStatuses,contracts};
+root.OBOL_PRODUCT_HARDENING_TEST_CONTRACTS={version:'9.20.0',requiredForStatuses,contracts};
 })(typeof window!=='undefined'?window:globalThis);
