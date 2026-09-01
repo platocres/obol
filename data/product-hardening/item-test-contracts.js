@@ -96,6 +96,11 @@ const contracts={
   validationCommands:['node tools/validate-field-notes-ui.js','node tools/validate-asset-references.js','node tests/run-v9.10-tests.js'],
   proofFiles:['data/field-notes.js','assets/field-notes.js','assets/field-notes.css','assets/app-v8.8.js','tools/validate-field-notes-ui.js','tests/run-v9.10-tests.js','docs/NOTES-INTEGRATION.md','docs/UX-QUALITY.md','docs/v9.10.md']
  },
+ 'ux-mobile-density':{
+  acceptance:['The current workspace and Product Hardening Dashboard remain usable at narrow-laptop, exam-split, tablet, and mobile widths: dense grids collapse before clipping, intentionally wide tabs and tables contain their own horizontal overflow, commands/forms/modals remain reachable, field-note disclosure stays anchored, and the page does not hide overflow globally to mask layout defects.'],
+  validationCommands:['node tools/validate-responsive-layout.js','node tools/validate-asset-references.js','node tests/run-v9.11-tests.js'],
+  proofFiles:['assets/responsive-current.css','assets/product-hardening-dashboard.css','assets/field-notes.css','assets/app-v8.8.js','tools/validate-responsive-layout.js','tests/fixtures/responsive-v9.11-viewports.json','docs/visual-qa/responsive-density.md','tests/run-v9.11-tests.js','docs/UX-QUALITY.md','docs/v9.11.md']
+ },
  'ux-keyboard-focus':{
   acceptance:['Native controls and existing non-native interactive workspace surfaces expose a clearly visible focus-visible ring; card headers, state cards, phase/toggle chips, facts, progress/timer controls, and lane tabs are keyboard reachable and activate with Enter or Space; open modals receive dialog semantics, initial focus, contained Tab order, and focus restoration on close.'],
   validationCommands:['node tools/validate-accessibility-contract.js','node tests/run-v9.5-tests.js'],
@@ -143,5 +148,5 @@ const contracts={
  }
 };
 const requiredForStatuses=['modeled','complete','superseded','rejected'];
-root.OBOL_PRODUCT_HARDENING_TEST_CONTRACTS={version:'9.10.0',requiredForStatuses,contracts};
+root.OBOL_PRODUCT_HARDENING_TEST_CONTRACTS={version:'9.11.0',requiredForStatuses,contracts};
 })(typeof window!=='undefined'?window:globalThis);
