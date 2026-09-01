@@ -141,6 +141,11 @@ const contracts={
   validationCommands:['node tools/validate-tool-builder-platform.js','node tests/run-v9.14-tests.js'],
   proofFiles:['data/tool-builders.js','data/tool-builder-schema.js','data/tool-builder-inventory.js','assets/tool-builder-current.js','assets/app-v8.8.js','tools/validate-tool-builder-platform.js','tests/run-v9.14-tests.js','docs/v9.14.md']
  },
+ 'tb-gobuster-ferox':{
+  acceptance:['Tool and relevant Card routes expose one canonical schema-driven content-discovery builder shared by Gobuster and Feroxbuster. The builder uses a declared executable selector rather than user-controlled command text; covers Gobuster dir/vhost/dns modes plus Feroxbuster recursion/depth behavior; exposes target, wordlist, extensions, allow/filter status controls, response-size filters, repeated headers, threads, redirect/TLS/slash options, rate/output controls where supported; seeds the selected engine from the active tool route; and preserves the reviewed-Evidence proof boundary.'],
+  validationCommands:['node tools/validate-tool-builder-platform.js','node tests/run-v9.16-tests.js'],
+  proofFiles:['data/tool-builders.js','data/tool-builder-schema.js','data/tool-builder-inventory.js','assets/tool-builder-current.js','assets/app-v8.8.js','tools/validate-tool-builder-platform.js','tests/run-v9.16-tests.js','docs/TOOL-BUILDER-COVERAGE.md','docs/v9.16.md']
+ },
  'tb-secretsdump':{
   acceptance:['Tool and relevant Card routes expose one schema-driven impacket-secretsdump builder with remote password, NT-hash, Kerberos-cache, and local-hive modes, explicit domain/user/target and DC scope controls, output handling, secret-safe fields, and proof boundaries that do not infer privilege or recovered credentials from command generation alone.'],
   validationCommands:['node tools/validate-tool-builder-platform.js','node tests/run-v9.14-tests.js'],
@@ -198,5 +203,5 @@ const contracts={
  }
 };
 const requiredForStatuses=['modeled','complete','superseded','rejected'];
-root.OBOL_PRODUCT_HARDENING_TEST_CONTRACTS={version:'9.15.0',requiredForStatuses,contracts};
+root.OBOL_PRODUCT_HARDENING_TEST_CONTRACTS={version:'9.16.0',requiredForStatuses,contracts};
 })(typeof window!=='undefined'?window:globalThis);
