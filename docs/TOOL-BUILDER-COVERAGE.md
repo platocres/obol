@@ -8,13 +8,14 @@ Every relevant point on the Path should expose the right tool through a context-
 
 ## Stable platform owners
 
-v9.12 establishes the reusable platform, v9.13 begins concrete migration with Nmap, v9.14 proves the platform across credential-aware, cracking, content-discovery, and credential-dump command shapes, v9.15 extends cracking with John the Ripper, v9.16 proves one canonical schema record can safely represent closely related executables without adding another renderer, v9.17 extends the same stable platform across a paired Impacket Kerberos-roasting package plus an independent WinRM remote-access builder, v9.18 adds a mode-driven Certipy AD CS surface, v9.19 adds a request-driven sqlmap surface, and v9.20 adds a general HTTP curl request surface without changing the stable schema or renderer identity:
+v9.12 establishes the reusable platform, v9.13 begins concrete migration with Nmap, v9.14 proves the platform across credential-aware, cracking, content-discovery, and credential-dump command shapes, v9.15 extends cracking with John the Ripper, v9.16 proves one canonical schema record can safely represent closely related executables without adding another renderer, v9.17 extends the same stable platform across a paired Impacket Kerberos-roasting package plus an independent WinRM remote-access builder, v9.18 adds a mode-driven Certipy AD CS surface, v9.19 adds a request-driven sqlmap surface, v9.20 adds a general HTTP curl request surface, and v9.21 closes the representative Tool GUI Builder track with chisel plus shared SSH/plink tunneling without changing the stable schema or renderer identity:
 
 - `data/tool-builder-schema.js` owns the stable builder data contract and registry helpers;
 - `assets/tool-builder-current.js` owns generic accessible rendering, context autofill, shell-safe command generation, and copy-only operator handoff;
-- `data/tool-builder-inventory.js` owns explicit runnable-tool dispositions and alias normalization;
-- `data/tool-builders.js` owns concrete schema-driven builder definitions;
-- `tools/validate-tool-builder-platform.js` is the permanent contract and inventory gate.
+- `data/tool-builder-inventory.js` owns the base explicit runnable-tool dispositions and alias normalization;
+- `data/tool-builders.js` owns the base concrete schema-driven builder definitions;
+- `data/tool-builders-tunnels.js` is the stable non-versioned tunneling pack that registers chisel and SSH/plink into the same schema, extends the current concrete-builder projection, and marks those inventory identities implemented when the pack is hydrated;
+- `tools/validate-tool-builder-platform.js` remains the permanent base contract and inventory gate, while the v9.21 historical regression suite permanently protects the tunnel pack and its route hydration.
 
 These are stable non-versioned owners. Do not add a release-specific Tool Builder mini-runtime or build a bespoke renderer for each tool.
 
@@ -43,11 +44,11 @@ v9.14 extends the same stable schema without changing its version identity. Buil
 
 v9.16 adds another generic command-model shape without changing the stable schema or renderer version: `command.executable` may be a declared selector that maps a schema field to a fixed set of safe executable literals. This lets one canonical builder represent closely related sibling tools such as Gobuster and Feroxbuster while preventing free-form executable text from becoming a command. The schema validates the declaration and the renderer resolves only one of its fixed choices.
 
-The generic renderer scopes field element IDs by builder ID so multiple builders may coexist on one card without duplicate DOM IDs. Conditional fields update in place as the operator changes modes. The browser bridge mounts implemented builders in the existing Tools view and on relevant Card surfaces while Targets retains its dedicated canonical Nmap placement and historical Nmap Evidence ingestion compatibility. For shared builders, the bridge may seed a declared mode from the active inventory-backed tool route while leaving the schema and renderer generic.
+The generic renderer scopes field element IDs by builder ID so multiple builders may coexist on one card without duplicate DOM IDs. Conditional fields update in place as the operator changes modes. The browser bridge mounts implemented builders in the existing Tools view and on relevant Card surfaces while Targets retains its dedicated canonical Nmap placement and historical Nmap Evidence ingestion compatibility. For shared builders, the bridge may seed a declared mode from the active inventory-backed tool route while leaving the schema and renderer generic. v9.21 keeps this behavior but hydrates the tunneling pack only on tool-bearing routes through the stable current runtime loader.
 
 ## Inventory lock
 
-Every runnable tool identity observed in the current lane/card corpus and tool registry must resolve to one explicit inventory disposition in `data/tool-builder-inventory.js`:
+Every runnable tool identity observed in the current lane/card corpus and tool registry must resolve to one explicit inventory disposition in `data/tool-builder-inventory.js` or a stable non-versioned implementation projection loaded with its schema pack:
 
 - `implemented` - a schema-driven builder exists and passes the permanent contract;
 - `modeled` - the tool is known and remains queued for builder work;
@@ -56,7 +57,7 @@ Every runnable tool identity observed in the current lane/card corpus and tool r
 
 Aliases normalize to one canonical identity. New command/tool data must fail validation until the inventory is updated deliberately. This prevents runnable tools from silently appearing outside builder coverage accounting.
 
-An `implemented` inventory record that points at a Product Hardening queue item must resolve to a registered concrete builder with the same stable item ID. Multiple sibling tools may deliberately point to one shared canonical builder when that relationship is explicit in inventory and the builder itself contains only declared executable choices. The permanent platform validator enforces the queue and registration boundary.
+An `implemented` inventory record that points at a Product Hardening queue item must resolve to a registered concrete builder with the same stable item ID. Multiple sibling tools may deliberately point to one shared canonical builder when that relationship is explicit in inventory and the builder itself contains only declared executable choices. The permanent base platform validator and versioned regression suites enforce the queue and registration boundary.
 
 ## Representative priority builders
 
@@ -75,8 +76,8 @@ The v9 queue seeds representative builders first so the generic schema covers th
 - Certipy - **implemented in v9.18**
 - sqlmap - **implemented in v9.19**
 - curl - **implemented in v9.20**
-- chisel
-- SSH / plink
+- chisel - **implemented in v9.21**
+- SSH / plink - **implemented in v9.21**
 
 ### Nmap migration boundary
 
@@ -163,7 +164,17 @@ The surface follows current upstream curl command-line contracts for `--request`
 
 Headers, cookies, request bodies, server passwords, bearer tokens, and proxy passwords are secret-bearing report-lineage inputs. A generated curl command, copied request, planned upload, or manual success never proves HTTP status, content, authentication, transfer success, or application state. Returned response material must be reviewed as Evidence before those facts become report-ready.
 
-The next highest-priority Tool Builder migration after v9.20 is **chisel**. SSH/plink remains adjacent tunnel work but belongs to the same future tunneling context rather than this HTTP request-builder release.
+### v9.21 tunneling migration boundary
+
+v9.21 completes the final two seeded Tool GUI Builder items as one coherent tunneling work package.
+
+**chisel** exposes client and server roles. Server mode covers listener host/port, reverse and SOCKS enablement, single-user/auth-file authentication, key/backend controls, TLS and client-CA controls, keepalive, and verbose logging. Client mode covers normal/reverse SOCKS, TCP/UDP forward and reverse-forward remotes, explicit listener ports, authentication, fingerprint pinning, repeated headers, proxying, Host/SNI overrides, TLS/mTLS, transport verification, keepalive, retry controls, and verbose logging. The builder follows chisel's current rule that client flags precede the server address and remotes follow it.
+
+**SSH / plink** is one shared builder with a declared executable selector, not a free-form command name. It covers local, remote, and dynamic forwarding; bind/listener/destination fields; username and SSH port; agent, key, and supported password behavior; forward-only and compression switches; OpenSSH forward-failure, strict-host-key, and known-hosts controls; and Plink batch, password, and pinned-host-key controls. The active Plink Tools route seeds the shared builder to Plink while OpenSSH remains the default elsewhere.
+
+Both builders include explicit cleanup language because stopping the external process is part of the operator workflow. A generated tunnel command or manual success remains activity. Listener creation, path reachability, SOCKS behavior, reverse exposure, and teardown require reviewed runtime Evidence.
+
+With v9.21, Tool GUI Builders are **18/18 complete**. Product Build Next moves into the Credential Material Platform, beginning with `cred-schema` rather than inventing more representative builder work.
 
 ## Architecture rule
 
