@@ -4,7 +4,7 @@ Obol is a static, browser-local workspace for OSCP-style labs, Active Directory 
 
 Live site: `https://platocres.github.io/obol/`
 
-Current release: **v9.20**
+Current release: **v9.21**
 
 Open `#/dashboard` for the active Product Hardening Dashboard and Product Build Next queue.
 
@@ -66,33 +66,39 @@ The completed Orange methodology/source queue is historical, regression-protecte
 This block is generated from `data/product-hardening/product-hardening-queue.js`. Do not edit it manually.
 Recommended work-package metadata comes from `data/product-hardening/work-packages.js`.
 
-**Current product-hardening queue:** 37/632 complete (6%), 37 queued, 9 foundation items modeled.
+**Current product-hardening queue:** 39/632 complete (6%), 35 queued, 9 foundation items modeled.
 **Private notes source:** `platocres/obol-source-notes` — 556 notes and 1326 embedded resources accounted.
 
-**Recommended work package:** **chisel builder** — 1 live item / 1 tracked.
-**Work-package entry:** **chisel builder**
-**Ownership area:** `tool-builders`
-**Package guidance:** Complete the highest-priority item. Before stopping, inspect adjacent queue work for a coherent same-ownership package.
-**Package dependencies:** none.
+**Recommended work package:** **Credential Material Platform** — 5 live items / 5 tracked.
+**Work-package entry:** **Credential Material schema**
+**Ownership area:** `credentials/model-routing`
+**Package guidance:** Establish typed credential material, routing, cross-tool handoff, proof boundaries, and redaction as one platform rather than re-solving credential behavior per tool.
+**Package dependencies:** Tool Builder Platform
 
 **Live items in this package:**
-- **chisel builder** — Expose client/server roles, reverse mode, SOCKS, remotes, ports, and cleanup guidance.
+- **Credential Material schema** — Represent passwords, hashes, tickets, certificates, keys, cookies, and tokens as first-class typed materials.
+- **Paste hash and route builder** — A pasted hash should produce likely type, compatible builders, and minimum command suggestions.
+- **Credential validation proof boundary** — Recovered material remains candidate material until an independent validation action proves access.
+- **Credential report redaction consistency** — Reports and exports must keep secrets redacted unless explicitly included.
+- **Credential handoff between tools** — Cracked or captured material should populate compatible builders without forcing manual re-entry.
+
+**Related items to consider, not automatically in scope:** Password mode controls; NT hash and LM:NT mode controls; NetNTLMv1/v2 detection; Kerberos TGS / AS-REP detection; PFX / certificate controls; SSH key controls; Cookie / token controls.
 
 **Highest-priority live items:**
-1. **chisel builder** — Expose client/server roles, reverse mode, SOCKS, remotes, ports, and cleanup guidance.
-2. **SSH / plink tunnel builders** — Create guided local, remote, and dynamic forwarding builders with Windows/Kali execution context.
-3. **Credential Material schema** — Represent passwords, hashes, tickets, certificates, keys, cookies, and tokens as first-class typed materials.
-4. **Password mode controls** — Standard username/password inputs and escaping rules across all relevant builders.
-5. **NT hash and LM:NT mode controls** — Correct flags for tools that support pass-the-hash or LM:NT pair input.
-6. **NetNTLMv1/v2 detection** — Pasted challenge-response hashes should route to appropriate cracking builders and modes.
-7. **Kerberos TGS / AS-REP detection** — Identify common TGS and AS-REP hash shapes and select correct cracking modes.
-8. **MSCache2 mode support** — Support domain cached credential hash workflows.
+1. **Credential Material schema** — Represent passwords, hashes, tickets, certificates, keys, cookies, and tokens as first-class typed materials.
+2. **Password mode controls** — Standard username/password inputs and escaping rules across all relevant builders.
+3. **NT hash and LM:NT mode controls** — Correct flags for tools that support pass-the-hash or LM:NT pair input.
+4. **NetNTLMv1/v2 detection** — Pasted challenge-response hashes should route to appropriate cracking builders and modes.
+5. **Kerberos TGS / AS-REP detection** — Identify common TGS and AS-REP hash shapes and select correct cracking modes.
+6. **MSCache2 mode support** — Support domain cached credential hash workflows.
+7. **ccache / kirbi controls** — Ticket-based builders should expose KRB5CCNAME, ticket conversion, and service-use expectations.
+8. **PFX / certificate controls** — Certificate auth workflows need PFX/password, cert/key, UPN/domain/DC, and output lineage controls.
 
 **Track status:**
 - **Critical correctness:** 4/4 complete (100%), 0 modeled.
 - **Architecture / runtime:** 6/10 complete (60%), 3 modeled.
 - **UI / UX repair:** 7/8 complete (88%), 1 modeled.
-- **Tool GUI builders:** 16/18 complete (89%), 0 modeled.
+- **Tool GUI builders:** 18/18 complete (100%), 0 modeled.
 - **Credential modes:** 0/14 complete (0%), 0 modeled.
 - **Manual outcomes:** 0/8 complete (0%), 0 modeled.
 - **Notes integration:** 0/556 complete (0%), 2 modeled.
@@ -153,6 +159,7 @@ node tests/run-v9.17-tests.js
 node tests/run-v9.18-tests.js
 node tests/run-v9.19-tests.js
 node tests/run-v9.20-tests.js
+node tests/run-v9.21-tests.js
 ```
 
 ## GitHub Pages
