@@ -1,7 +1,7 @@
 'use strict';
 (function(root){
 const aliases=Object.freeze({
- nxc:'netexec',cme:'crackmapexec','enum4linux-ng':'enum4linuxng','getuserspns':'impacket-getuserspns','getnpusers':'impacket-getnpusers','secretsdump':'impacket-secretsdump','psexec':'impacket-psexec','wmiexec':'impacket-wmiexec','smbexec':'impacket-smbexec','dcomexec':'impacket-dcomexec','ntlmrelayx':'impacket-ntlmrelayx','bloodhound':'bloodhound-python','ferox':'feroxbuster','xfreerdp3':'xfreerdp',
+ nxc:'netexec',cme:'crackmapexec','enum4linux-ng':'enum4linuxng','getuserspns':'impacket-getuserspns','getnpusers':'impacket-getnpusers','secretsdump':'impacket-secretsdump','psexec':'impacket-psexec','wmiexec':'impacket-wmiexec','smbexec':'impacket-smbexec','dcomexec':'impacket-dcomexec','ntlmrelayx':'impacket-ntlmrelayx','bloodhound':'bloodhound-python','ferox':'feroxbuster','xfreerdp3':'xfreerdp','certipy-ad':'certipy',
  'evil-winrm':'evilwinrm','dnstool.py':'dnstool','ouned.py':'ouned','targetedkerberoast.py':'targetedkerberoast','cve-2024-29849.py':'cve-2024-29849'
 });
 const records={
@@ -62,7 +62,7 @@ const records={
  winpeas:['modeled',null,'Windows enumeration helper remains inventoried for later builder coverage.'],
  pspy:['modeled',null,'Linux process observation remains inventoried for later builder coverage.'],
  searchsploit:['modeled',null,'Exploit reference lookup remains inventoried for later builder coverage.'],
- certipy:['modeled','tb-certipy','Certipy has an explicit representative AD CS builder item.'],
+ certipy:['implemented','tb-certipy','Certipy is implemented as the canonical mode-driven AD CS builder for find, req, auth, relay, shadow, and account workflows with explicit cleanup operations and certificate-proof boundaries.'],
  python3:['modeled',null,'Python helper actions remain inventoried when represented as runnable cards.'],
  python:['modeled',null,'Python helper actions remain inventoried when represented as runnable cards.'],
  powershell:['modeled',null,'PowerShell helper actions remain inventoried when represented as runnable cards.'],
