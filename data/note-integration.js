@@ -51,7 +51,8 @@ function sourceForRef(ref){ref=clean(ref);return SOURCE_INVENTORY.find(source=>r
 function atomizeMetadata(raw){
  raw=raw&&typeof raw==='object'?raw:{};
  const noteId=clean(raw.note_id||raw.noteId),sourceId=clean(raw.source_id||raw.sourceId),title=clean(raw.title),tags=Array.isArray(raw.tags)?raw.tags.map(clean).filter(Boolean):[];
- if(!noteId||!sourceId||!sourceForRef(noteId))return null;
+ const source=sourceForRef(noteId);
+ if(!noteId||!sourceId||!source||source.id!==sourceId)return null;
  return Object.freeze({noteId,sourceId,titleHint:title.slice(0,160),tags:Object.freeze(tags.slice(0,64)),resourceCount:Number(raw.resource_count||raw.resourceCount||0)||0,contentSha256:clean(raw.content_sha256||raw.contentSha256),integrationStatus:'pending-review',disposition:null,candidateKinds:Object.freeze([]),candidateToolBindings:Object.freeze([]),candidatePathBindings:Object.freeze([])});
 }
 function totals(){return SOURCE_INVENTORY.reduce((acc,source)=>({notes:acc.notes+source.noteCount,resources:acc.resources+source.resourceCount}),{notes:0,resources:0});}
@@ -64,7 +65,7 @@ function validate(){
  if(sum.resources!==LEDGER.expectedResources)failures.push('source inventory resource total does not match ledger');
  if(dispositionTotal()!==LEDGER.expectedNotes)failures.push('disposition counts do not account for every staged note');
  if(LEDGER.dispositionCounts.modeled!==MODELED_SOURCE_REFS.length)failures.push('modeled disposition count does not match modeled source references');
- for(const ref of MODELED_SOURCE_REFS)if(!sourceForRef(ref))failures.push('unknown modeled source ref '+ref);
+ for(const ref of MODELED_SOURCE_REFS){if(!/^(?:htb-penetration-tester|offsec-pen-200)-[0-9a-f]{16}$/.test(ref))failures.push('invalid opaque source ref '+ref);if(!sourceForRef(ref))failures.push('unknown modeled source ref '+ref);}
  for(const note of PUBLIC_FIELD_NOTES){
   if(seen.has(note.id))failures.push('duplicate public field note '+note.id);seen.add(note.id);
   if(!ATOM_KINDS.includes(note.kind))failures.push('invalid public field-note kind '+note.id);
