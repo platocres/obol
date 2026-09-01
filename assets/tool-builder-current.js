@@ -1,7 +1,7 @@
 'use strict';
 (function(root){
 function schema(){return root.OBOL_TOOL_BUILDER_SCHEMA||null;}
-function esc(v){return String(v==null?'':v).replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot',"'":'&#39;'}[c]));}
+function esc(v){return String(v==null?'':v).replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));}
 function shellQuote(v){
  const value=String(v==null?'':v);
  if(value==='')return "''";
