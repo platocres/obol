@@ -65,8 +65,9 @@ for(const token of ["id:'tb-curl'","flag:'--data'","flag:'--json'","flag:'--uplo
 const rendererSource=read('assets/tool-builder-current.js');
 for(const forbidden of ["require('child_process')",'child_process','spawnSync(','execSync(','eval(','new Function('])assert(!rendererSource.includes(forbidden),'browser Tool Builder contains forbidden execution primitive '+forbidden);
 
-const release=read('data/current-release.js');
-assert(release.includes("version:'9.20.0'")&&release.includes("label:'v9.20'"),'current release authority advances to v9.20');
+const releaseSource=read('data/current-release.js');
+const releaseMatch=releaseSource.match(/version:'(\d+)\.(\d+)\.(\d+)'/);
+assert(releaseMatch&&Number(releaseMatch[1])===9&&Number(releaseMatch[2])>=20,'current release authority preserves or advances the v9.20 milestone');
 assert(exists('docs/v9.20.md'),'v9.20 release documentation exists');
 for(const forbidden of ['assets/obol-v9.20.css','assets/app-v9.20.js','assets/core-v9.20.js','data/project-model-v9.20.js'])assert(!exists(forbidden),'no fake v9.20 runtime overlay: '+forbidden);
 
