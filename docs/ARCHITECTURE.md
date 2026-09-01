@@ -58,6 +58,20 @@ The master Product Dashboard is exposed in secondary navigation so it is easy to
 
 `tools/validate-current-workflow.js` is the permanent ownership gate for this boundary and runs during Product Hardening preflight.
 
+### Current Tool Builder ownership
+
+v9.12 establishes a stable non-versioned Tool Builder Platform before representative tool builders are migrated.
+
+`data/tool-builder-schema.js` owns the reusable builder contract: typed inputs, execution context, target/workspace autofill, credential-mode declarations, deterministic command tokens, Evidence expectations, manual-outcome boundaries, and report-lineage requirements. The schema rejects automatic execution hooks because Obol remains a command-planning surface, not an execution engine.
+
+`assets/tool-builder-current.js` is the single generic browser renderer/compiler. It renders labeled controls from schema data, applies context autofill, produces a shell-safe command preview, and supports copy-only handoff. It does not own target facts, Evidence truth, success state, or report proof. Those remain in the existing engagement/core boundaries.
+
+`data/tool-builder-inventory.js` is the explicit runnable-tool accounting owner. Current lane/card commands and the tool registry must resolve to an `implemented`, `modeled`, `superseded`, or `rejected` disposition with rationale. Aliases normalize to canonical identities so `nxc`, `cme`, and Impacket shorthand do not create parallel coverage records.
+
+`tools/validate-tool-builder-platform.js` permanently enforces the schema/renderer/inventory/no-execution contract. The v8.8 current bridge lazily loads these owners on card/tool surfaces rather than introducing `app-v9.x`, `core-v9.x`, or release-specific Tool Builder layers.
+
+Representative builders are migrations onto this platform, not new mini-apps. Existing bespoke behavior, beginning with the rich Nmap command builder, remains a compatibility boundary until a schema-driven replacement proves equivalent behavior and can retire the old rendering owner safely.
+
 ## Ownership rules
 
 ### Project status

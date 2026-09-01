@@ -4,7 +4,7 @@ Obol is a static, browser-local workspace for OSCP-style labs, Active Directory 
 
 Live site: `https://platocres.github.io/obol/`
 
-Current release: **v9.11**
+Current release: **v9.12**
 
 Open `#/dashboard` for the active Product Hardening Dashboard and Product Build Next queue.
 
@@ -46,6 +46,7 @@ There must be only one open release/product-hardening PR at a time. If one exist
 - [`docs/PRODUCT-HARDENING.md`](docs/PRODUCT-HARDENING.md) - active v9 product vision, tracks, work-package rules, and item Definition of Done.
 - [`docs/ARCHITECTURE.md`](docs/ARCHITECTURE.md) - runtime ownership, compaction strategy, and legacy-layer boundaries.
 - [`docs/PROOF-CONTRACT.md`](docs/PROOF-CONTRACT.md) - Evidence, proof boundaries, manual outcomes, and report readiness.
+- [`docs/TOOL-BUILDER-COVERAGE.md`](docs/TOOL-BUILDER-COVERAGE.md) - stable Tool Builder Platform, runnable-tool inventory, and representative-builder migration contract.
 - [`docs/NOTES-INTEGRATION.md`](docs/NOTES-INTEGRATION.md) - private source repo `platocres/obol-source-notes` and normalized public-output workflow.
 - [`docs/UX-QUALITY.md`](docs/UX-QUALITY.md) - UI/UX quality goals and seeded product defects.
 - [`docs/NORTH-STAR.md`](docs/NORTH-STAR.md) and [`docs/ORANGE-SOURCE-DEPTH.md`](docs/ORANGE-SOURCE-DEPTH.md) - completed Orange methodology/source accounting and historical regression baseline.
@@ -65,43 +66,44 @@ The completed Orange methodology/source queue is historical, regression-protecte
 This block is generated from `data/product-hardening/product-hardening-queue.js`. Do not edit it manually.
 Recommended work-package metadata comes from `data/product-hardening/work-packages.js`.
 
-**Current product-hardening queue:** 20/632 complete (3%), 54 queued, 9 foundation items modeled.
+**Current product-hardening queue:** 24/632 complete (4%), 50 queued, 9 foundation items modeled.
 **Private notes source:** `platocres/obol-source-notes` — 556 notes and 1326 embedded resources accounted.
 
-**Recommended work package:** **Tool Builder Platform** — 4 live items / 4 tracked.
-**Work-package entry:** **Define Tool Builder schema**
-**Ownership area:** `tool-builder/schema-renderer`
-**Package guidance:** Build the reusable schema, renderer, inventory lock, and contract tests together before proliferating bespoke tool implementations.
-**Package dependencies:** none.
+**Recommended work package:** **Representative Tool Builder Set** — 5 live items / 5 tracked.
+**Work-package entry:** **Nmap GUI builder**
+**Ownership area:** `tool-builder/canonical-implementations`
+**Package guidance:** Use the canonical builder engine to implement several representative tools in one coherent pass, while preserving separate acceptance and regression proof for every builder.
+**Package dependencies:** Tool Builder Platform
 
 **Live items in this package:**
-- **Define Tool Builder schema** — A data-driven schema must describe inputs, toggles, target autofill, credential modes, output options, evidence expectations, and report lineage.
-- **Build generic Tool Builder renderer** — One renderer should power tool GUIs instead of custom JavaScript per tool.
-- **Generate complete tool-builder inventory** — Derive the full tool/action list and require a modeled, superseded, or rejected disposition for every runnable tool.
-- **Tool builder contract tests** — Every implemented builder must satisfy schema, rendering, command, evidence, manual outcome, and report-lineage checks.
+- **Nmap GUI builder** — Targets view gets a canonical Nmap launchpad with toggles for ports, scripts, timing, output files, discovery, and canonical scan profiles.
+- **NetExec / nxc builder hardening** — Use the existing nxc work as the pattern for credential-aware builders across the app.
+- **Hashcat builder with hash detection** — User can paste a hash, select/confirm type, and generate the correct minimal command plus optional rules/workload toggles.
+- **ffuf builder** — Make URL, wordlist, recursion, extensions, filters, matchers, headers, and output explicit controls.
+- **impacket-secretsdump builder** — Expose password/hash/kerberos/local auth modes, target/DC context, output handling, and proof boundaries.
 
-**Related items to consider, not automatically in scope:** Credential Material schema; Manual Outcome schema.
+**Related items to consider, not automatically in scope:** Password mode controls; NT hash and LM:NT mode controls; Paste hash and route builder; Manual Outcome UI controls.
 
 **Highest-priority live items:**
-1. **Define Tool Builder schema** — A data-driven schema must describe inputs, toggles, target autofill, credential modes, output options, evidence expectations, and report lineage.
-2. **Build generic Tool Builder renderer** — One renderer should power tool GUIs instead of custom JavaScript per tool.
-3. **Nmap GUI builder** — Targets view gets a canonical Nmap launchpad with toggles for ports, scripts, timing, output files, discovery, and canonical scan profiles.
-4. **NetExec / nxc builder hardening** — Use the existing nxc work as the pattern for credential-aware builders across the app.
-5. **Hashcat builder with hash detection** — User can paste a hash, select/confirm type, and generate the correct minimal command plus optional rules/workload toggles.
-6. **John builder with format selection** — Support common lab formats and wordlist/rule toggles without requiring users to memorize format strings.
-7. **ffuf builder** — Make URL, wordlist, recursion, extensions, filters, matchers, headers, and output explicit controls.
-8. **gobuster / feroxbuster builders** — Directory/content enumeration builders need mode, extensions, status filters, threads, recursion, and output controls.
+1. **Nmap GUI builder** — Targets view gets a canonical Nmap launchpad with toggles for ports, scripts, timing, output files, discovery, and canonical scan profiles.
+2. **NetExec / nxc builder hardening** — Use the existing nxc work as the pattern for credential-aware builders across the app.
+3. **Hashcat builder with hash detection** — User can paste a hash, select/confirm type, and generate the correct minimal command plus optional rules/workload toggles.
+4. **John builder with format selection** — Support common lab formats and wordlist/rule toggles without requiring users to memorize format strings.
+5. **ffuf builder** — Make URL, wordlist, recursion, extensions, filters, matchers, headers, and output explicit controls.
+6. **gobuster / feroxbuster builders** — Directory/content enumeration builders need mode, extensions, status filters, threads, recursion, and output controls.
+7. **impacket-secretsdump builder** — Expose password/hash/kerberos/local auth modes, target/DC context, output handling, and proof boundaries.
+8. **GetNPUsers builder** — Support username sources, no-pass flow, DC/domain inputs, output file, and AS-REP hash handoff.
 
 **Track status:**
 - **Critical correctness:** 4/4 complete (100%), 0 modeled.
 - **Architecture / runtime:** 6/10 complete (60%), 3 modeled.
 - **UI / UX repair:** 7/8 complete (88%), 1 modeled.
-- **Tool GUI builders:** 0/18 complete (0%), 0 modeled.
+- **Tool GUI builders:** 3/18 complete (17%), 0 modeled.
 - **Credential modes:** 0/14 complete (0%), 0 modeled.
 - **Manual outcomes:** 0/8 complete (0%), 0 modeled.
 - **Notes integration:** 0/556 complete (0%), 2 modeled.
 - **Offline / performance:** 1/6 complete (17%), 0 modeled.
-- **Testing / visual QA:** 2/8 complete (25%), 3 modeled.
+- **Testing / visual QA:** 3/8 complete (38%), 3 modeled.
 
 Generated by `node tools/sync-product-build-next.js --write`. Verify with `node tools/sync-product-build-next.js --check`.
 <!-- OBOL-PRODUCT-BUILD-NEXT:END -->
@@ -125,6 +127,7 @@ node tools/validate-current-release.js
 node tools/validate-version-identity.js
 node tools/validate-accessibility-contract.js
 node tools/validate-responsive-layout.js
+node tools/validate-tool-builder-platform.js
 node tools/validate-current-workflow.js
 node tools/validate-field-notes-ui.js
 node tools/sync-current-styles.js --check
@@ -147,6 +150,7 @@ node tests/run-v9.8-tests.js
 node tests/run-v9.9-tests.js
 node tests/run-v9.10-tests.js
 node tests/run-v9.11-tests.js
+node tests/run-v9.12-tests.js
 ```
 
 ## GitHub Pages
