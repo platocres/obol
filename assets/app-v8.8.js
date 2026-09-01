@@ -17,6 +17,7 @@ function release88(){return window.OBOL_CURRENT_RELEASE||null;}
 function identity88(){return window.OBOL_RELEASE_IDENTITY||null;}
 function addStyle88(href){if(document.querySelector('link[data-obol-product-hardening="'+href+'"]')||document.querySelector('link[href="'+href+'"]'))return;const link=document.createElement('link');link.rel='stylesheet';link.href=href;link.dataset.obolProductHardening=href;document.head.appendChild(link);}
 function addScript88(src){if(document.querySelector('script[data-obol-product-hardening="'+src+'"]')||document.querySelector('script[src="'+src+'"]'))return Promise.resolve();return new Promise((resolve,reject)=>{const s=document.createElement('script');s.src=src;s.dataset.obolProductHardening=src;s.onload=resolve;s.onerror=()=>reject(new Error('failed to load '+src));document.head.appendChild(s);});}
+function ensureResponsive88(){addStyle88('assets/responsive-current.css');}
 function ensureAccessibility88(){addStyle88('assets/accessibility.css');if(accessibilityLoading)return accessibilityLoading;accessibilityLoading=addScript88('assets/accessibility.js');return accessibilityLoading;}
 function ensureFieldNotes88(){if(window.OBOL_FIELD_NOTES_UI&&window.OBOL_FIELD_NOTES)return Promise.resolve(window.OBOL_FIELD_NOTES_UI);if(fieldNotesLoading)return fieldNotesLoading;addStyle88('assets/field-notes.css');fieldNotesLoading=addScript88('data/field-notes.js').then(()=>addScript88('assets/field-notes.js')).then(()=>window.OBOL_FIELD_NOTES_UI);return fieldNotesLoading;}
 function stampReleaseState88(){const i=identity88();if(!i||typeof i.stampState!=='function'||typeof state==='undefined'||!state)return;i.stampState(state);}
@@ -29,5 +30,5 @@ function setVisibleVersion88(){const r=release88();if(!r)return;stampReleaseStat
 function decorate88(){if(!active88())return;const p=page88();const assets=p==='dashboard'?ensureProductAssets88():ensureWorkflow88();assets.then(()=>{installReleaseContracts88();setVisibleVersion88();const workflow=window.OBOL_CURRENT_WORKFLOW;if(workflow&&typeof workflow.decorateRoute==='function')workflow.decorateRoute();if(['card','path','tools'].includes(p))ensureFieldNotes88().then(ui=>{if(ui&&typeof ui.decorate==='function')ui.decorate();}).catch(()=>{});}).catch(()=>{});}
 const oldRoute88=route;route=function(){oldRoute88();for(const t of [0,40,180,520,1200,2600,4200])setTimeout(decorate88,t);};
 window.addEventListener('hashchange',()=>{for(const t of [20,120,420,900,1800,3000])setTimeout(decorate88,t);});
-ensureAccessibility88().catch(()=>{});ensureRelease88().catch(()=>{});ensureWorkflow88().catch(()=>{});for(const t of [50,350,760,1300,2200,3600,5200])setTimeout(decorate88,t);
+ensureResponsive88();ensureAccessibility88().catch(()=>{});ensureRelease88().catch(()=>{});ensureWorkflow88().catch(()=>{});for(const t of [50,350,760,1300,2200,3600,5200])setTimeout(decorate88,t);
 })();
