@@ -36,13 +36,15 @@ const fixture=[
  {id:'three',title:'Three',body:'Normalized path guidance.',kind:'path-guidance',pathIds:['path'],sourceRefs:['note-3']}
 ];
 assert.strictEqual(fieldNotes.relevant({cardId:'card-a'},fixture).length,1,'card matching returns one relevant fixture note');
-assert.strictEqual(fieldNotes.relevant({toolId:'nmap'},fixture).length,1,'tool matching returns one relevant fixture note');
+assert.strictEqual(fieldNotes.relevant({toolId:'nmap'},fixture).length,1,'single tool matching returns one relevant fixture note');
+assert.strictEqual(fieldNotes.relevant({toolIds:['curl','nmap']},fixture).length,1,'multi-tool card context matches relevant tool guidance');
 assert.strictEqual(fieldNotes.relevant({pathId:'path'},fixture).length,1,'path matching returns one relevant fixture note');
 assert.strictEqual(fieldNotes.relevant({cardId:'card-b'},fixture).length,0,'unrelated context stays clean');
 
 const ui=read('assets/field-notes.js'),css=read('assets/field-notes.css'),bridge=read('assets/app-v8.8.js'),releaseDoc=read('docs/v9.10.md'),uxDoc=read('docs/UX-QUALITY.md'),notesDoc=read('docs/NOTES-INTEGRATION.md');
 assert(ui.includes('<details class="field-notes-current"')&&ui.includes('Field notes'),'field-note renderer uses labeled native progressive disclosure');
 assert(ui.includes("body.querySelector('.card-actions')"),'card field notes render beside action context');
+assert(ui.includes('toolIds:[...new Set(toolIds)]'),'card context exposes all unique tool bindings');
 assert(css.includes('.field-notes-current>summary:focus-visible'),'field-note disclosure retains keyboard focus treatment');
 assert(css.includes('@media(max-width:720px)'),'field-note UI accounts for narrow screens');
 assert(bridge.includes("['card','path','tools'].includes(p)")&&bridge.includes('ensureFieldNotes88'),'field-note owners are route-gated in the current bridge');
