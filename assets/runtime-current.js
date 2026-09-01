@@ -59,20 +59,20 @@ function rerenderAfterLazy(){
 }
 function toolBuilderBaseReady(){return !!(root.OBOL_TOOL_BUILDER_SCHEMA&&root.OBOL_TOOL_BUILDER_INVENTORY&&root.OBOL_TOOL_BUILDER&&root.OBOL_TOOL_BUILDERS);}
 function loadCredentialMaterial(attempt){
- if(root.OBOL_CREDENTIAL_MATERIAL){
+ if(root.OBOL_CREDENTIAL_MATERIAL&&root.OBOL_CREDENTIAL_MODES){
   if(typeof root.OBOL_CREDENTIAL_MATERIAL.installCore==='function')root.OBOL_CREDENTIAL_MATERIAL.installCore();
   if(typeof root.OBOL_CREDENTIAL_MATERIAL.installReportBoundary==='function')root.OBOL_CREDENTIAL_MATERIAL.installReportBoundary();
   if(root.OBOL_CREDENTIAL_MATERIAL_UI&&typeof root.OBOL_CREDENTIAL_MATERIAL_UI.decorate==='function')root.OBOL_CREDENTIAL_MATERIAL_UI.decorate();
-  return Promise.resolve(['credentialMaterial']);
+  return Promise.resolve(['credentialMaterial','credentialModes']);
  }
  if(credentialMaterialLoad)return credentialMaterialLoad;
  const n=Number(attempt||0);
  if(!root.OBOL_CORE_V2){if(n>=100)return Promise.resolve([]);return new Promise(resolve=>setTimeout(resolve,20)).then(()=>loadCredentialMaterial(n+1));}
- credentialMaterialLoad=appendScripts(['data/credential-material.js','assets/credential-material-current.js']).then(()=>{
+ credentialMaterialLoad=appendScripts(['data/credential-material.js','data/credential-modes.js','assets/credential-material-current.js']).then(()=>{
   if(root.OBOL_CREDENTIAL_MATERIAL&&typeof root.OBOL_CREDENTIAL_MATERIAL.installCore==='function')root.OBOL_CREDENTIAL_MATERIAL.installCore();
   if(root.OBOL_CREDENTIAL_MATERIAL&&typeof root.OBOL_CREDENTIAL_MATERIAL.installReportBoundary==='function')root.OBOL_CREDENTIAL_MATERIAL.installReportBoundary();
-  return root.OBOL_CREDENTIAL_MATERIAL?['credentialMaterial']:[];
- }).finally(()=>{if(!root.OBOL_CREDENTIAL_MATERIAL)credentialMaterialLoad=null;});
+  return root.OBOL_CREDENTIAL_MATERIAL&&root.OBOL_CREDENTIAL_MODES?['credentialMaterial','credentialModes']:[];
+ }).finally(()=>{if(!root.OBOL_CREDENTIAL_MATERIAL||!root.OBOL_CREDENTIAL_MODES)credentialMaterialLoad=null;});
  return credentialMaterialLoad;
 }
 function loadTunnelBuilders(attempt){
