@@ -1,9 +1,17 @@
 'use strict';
 (function(root){
-const STYLE='assets/field-notes.css';
+const STYLE='assets/field-notes.css',INTEGRATION='data/note-integration.js';
+let integrationLoading=null;
 function e(v){return String(v==null?'':v).replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));}
 function ensureStyle(){if(document.querySelector('link[data-obol-field-notes]')||document.querySelector('link[href="'+STYLE+'"]'))return;const l=document.createElement('link');l.rel='stylesheet';l.href=STYLE;l.dataset.obolFieldNotes='1';document.head.appendChild(l);}
-function page(){return (location.hash||'#/home').replace(/^#\/?/,'').split('/').filter(Boolean)[0]||'home';}
+function ensureIntegration(){
+ if(root.OBOL_NOTE_INTEGRATION)return Promise.resolve(root.OBOL_NOTE_INTEGRATION);
+ if(integrationLoading)return integrationLoading;
+ integrationLoading=new Promise((resolve,reject)=>{const existing=document.querySelector('script[src="'+INTEGRATION+'"]');if(existing){const wait=()=>root.OBOL_NOTE_INTEGRATION?resolve(root.OBOL_NOTE_INTEGRATION):setTimeout(wait,20);wait();return;}const s=document.createElement('script');s.src=INTEGRATION;s.async=false;s.dataset.obolFieldNotesIntegration='1';s.onload=()=>resolve(root.OBOL_NOTE_INTEGRATION||null);s.onerror=()=>reject(new Error('Failed to load '+INTEGRATION));(document.head||document.documentElement).appendChild(s);}).finally(()=>{if(!root.OBOL_NOTE_INTEGRATION)integrationLoading=null;});
+ return integrationLoading;
+}
+function parts(){return (location.hash||'#/home').replace(/^#\/?/,'').split('/').filter(Boolean);}
+function page(){return parts()[0]||'home';}
 function cardContext(rootEl){
  const cardEl=rootEl&&rootEl.closest?rootEl.closest('[data-cardroot]'):null;
  const cardId=cardEl&&cardEl.dataset?cardEl.dataset.cardroot:'';
@@ -12,10 +20,11 @@ function cardContext(rootEl){
  if(card){if(card.tool){toolIds.push(card.tool);tags.push(card.tool);}for(const cmd of card.commands||[])if(cmd.tool){toolIds.push(cmd.tool);tags.push(cmd.tool);}}
  return{cardId,toolIds:[...new Set(toolIds)],tags:[...new Set(tags)]};
 }
+function toolContext(){const p=parts();return{toolId:p[0]==='tools'&&p[1]?decodeURIComponent(p[1]):''};}
 function notesFor(context){const api=root.OBOL_FIELD_NOTES;return api&&typeof api.relevant==='function'?api.relevant(context):[];}
-function html(rows){
+function html(rows,label){
  if(!rows.length)return'';
- return '<details class="field-notes-current" data-field-notes-current><summary><span>Field notes</span><span class="field-notes-count">'+rows.length+' relevant</span></summary><div class="field-notes-list">'+rows.map(n=>'<article class="field-note-item"><b>'+e(n.title)+'</b><p>'+e(n.body)+'</p><span class="field-note-kind">'+e(n.kind.replace(/-/g,' '))+'</span></article>').join('')+'</div></details>';
+ return '<details class="field-notes-current" data-field-notes-current><summary><span>'+e(label||'Field notes')+'</span><span class="field-notes-count">'+rows.length+' relevant</span></summary><div class="field-notes-list">'+rows.map(n=>'<article class="field-note-item"><b>'+e(n.title)+'</b><p>'+e(n.body)+'</p><span class="field-note-kind">'+e(n.kind.replace(/-/g,' '))+'</span></article>').join('')+'</div></details>';
 }
 function decorateCards(){
  document.querySelectorAll('[data-cardroot] .card-body').forEach(body=>{
@@ -25,15 +34,22 @@ function decorateCards(){
   if(actions)actions.insertAdjacentHTML('beforebegin',html(rows));else body.insertAdjacentHTML('beforeend',html(rows));
  });
 }
+function decorateTools(){
+ if(page()!=='tools')return;
+ const body=document.querySelector('#tool-body'),ctx=toolContext();if(!body||!ctx.toolId||body.querySelector('[data-field-notes-tool]'))return;
+ const rows=notesFor(ctx);if(!rows.length)return;
+ const wrap=document.createElement('div');wrap.dataset.fieldNotesTool='1';wrap.innerHTML=html(rows,'Field notes for '+ctx.toolId);body.insertBefore(wrap,body.firstChild);
+}
 function decoratePath(){
  if(page()!=='path')return;
  const v=document.querySelector('#view');if(!v||v.querySelector('[data-field-notes-path]'))return;
  const rows=notesFor({pathId:'path'});if(!rows.length)return;
  const shell=v.querySelector('.next-shell34')||v;
- const wrap=document.createElement('div');wrap.dataset.fieldNotesPath='1';wrap.innerHTML=html(rows);shell.appendChild(wrap);
+ const wrap=document.createElement('div');wrap.dataset.fieldNotesPath='1';wrap.innerHTML=html(rows,'Field-note branches');shell.appendChild(wrap);
 }
-function decorate(){ensureStyle();decorateCards();decoratePath();}
-root.OBOL_FIELD_NOTES_UI=Object.freeze({version:'1.0.0',decorate,notesFor,html,cardContext});
+function decorateNow(){ensureStyle();decorateCards();decorateTools();decoratePath();}
+function decorate(){ensureIntegration().then(decorateNow).catch(()=>{});}
+root.OBOL_FIELD_NOTES_UI=Object.freeze({version:'1.1.0',decorate,notesFor,html,cardContext,toolContext,ensureIntegration});
 for(const t of [0,80,240,700,1600])setTimeout(decorate,t);
 window.addEventListener('hashchange',()=>{for(const t of [20,120,420])setTimeout(decorate,t);});
 })(typeof window!=='undefined'?window:globalThis);
