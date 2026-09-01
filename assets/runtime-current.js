@@ -4,7 +4,7 @@ const manifest=root.OBOL_RUNTIME_MANIFEST;
 if(!manifest)throw new Error('Obol runtime manifest must load before assets/runtime-current.js');
 let stylesWritten=false,scriptsWritten=false;
 const groupLoads=new Map();
-let tunnelBuilderLoad=null,credentialMaterialLoad=null;
+let tunnelBuilderLoad=null,credentialMaterialLoad=null,manualOutcomeLoad=null;
 const esc=v=>String(v).replace(/&/g,'&amp;').replace(/"/g,'&quot;').replace(/</g,'&lt;');
 
 function canParserWrite(){return typeof document!=='undefined'&&document.readyState==='loading'&&typeof document.write==='function';}
@@ -75,6 +75,22 @@ function loadCredentialMaterial(attempt){
  }).finally(()=>{if(!root.OBOL_CREDENTIAL_MATERIAL||!root.OBOL_CREDENTIAL_MODES)credentialMaterialLoad=null;});
  return credentialMaterialLoad;
 }
+function loadManualOutcomes(attempt){
+ if(root.OBOL_MANUAL_OUTCOMES){
+  if(root.OBOL_MANUAL_OUTCOMES_UI&&typeof root.OBOL_MANUAL_OUTCOMES_UI.installReportBoundary==='function')root.OBOL_MANUAL_OUTCOMES_UI.installReportBoundary();
+  if(root.OBOL_MANUAL_OUTCOMES_UI&&typeof root.OBOL_MANUAL_OUTCOMES_UI.decorate==='function')root.OBOL_MANUAL_OUTCOMES_UI.decorate();
+  return Promise.resolve(['manualOutcomes']);
+ }
+ if(manualOutcomeLoad)return manualOutcomeLoad;
+ const n=Number(attempt||0);
+ if(!root.OBOL_CORE_V2){if(n>=100)return Promise.resolve([]);return new Promise(resolve=>setTimeout(resolve,20)).then(()=>loadManualOutcomes(n+1));}
+ manualOutcomeLoad=appendScripts(['data/manual-outcomes.js','assets/manual-outcomes-current.js']).then(()=>{
+  if(root.OBOL_MANUAL_OUTCOMES_UI&&typeof root.OBOL_MANUAL_OUTCOMES_UI.installReportBoundary==='function')root.OBOL_MANUAL_OUTCOMES_UI.installReportBoundary();
+  if(root.OBOL_MANUAL_OUTCOMES_UI&&typeof root.OBOL_MANUAL_OUTCOMES_UI.decorate==='function')root.OBOL_MANUAL_OUTCOMES_UI.decorate();
+  return root.OBOL_MANUAL_OUTCOMES?['manualOutcomes']:[];
+ }).finally(()=>{if(!root.OBOL_MANUAL_OUTCOMES)manualOutcomeLoad=null;});
+ return manualOutcomeLoad;
+}
 function loadTunnelBuilders(attempt){
  if(root.OBOL_TUNNEL_TOOL_BUILDERS)return Promise.resolve(['data/tool-builders-tunnels.js']);
  if(tunnelBuilderLoad)return tunnelBuilderLoad;
@@ -88,13 +104,13 @@ function loadTunnelBuilders(attempt){
 }
 function hydrateRoute(){
  const page=routeName();
- return ensureRoute(page).then(names=>loadCredentialMaterial(0).then(credentials=>{
+ return ensureRoute(page).then(names=>loadCredentialMaterial(0).then(credentials=>loadManualOutcomes(0).then(manual=>{
   const toolBearing=['boxes','card','tools'].includes(page);
   return (toolBearing?loadTunnelBuilders(0):Promise.resolve([])).then(extra=>{
-   if(names.length||extra.length)rerenderAfterLazy();
-   return names.concat(credentials,extra.length?['tunnelToolBuilders']:[]);
+   if(names.length||extra.length||manual.length)rerenderAfterLazy();
+   return names.concat(credentials,manual,extra.length?['tunnelToolBuilders']:[]);
   });
- }));
+ })));
 }
 function budgetSnapshot(){
  const startup=startupList();
@@ -107,6 +123,6 @@ if(typeof window!=='undefined'){
  if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',()=>{hydrateRoute().catch(()=>{});},{once:true});
  else setTimeout(()=>{hydrateRoute().catch(()=>{});},0);
 }
-root.OBOL_RUNTIME_LOADER=Object.freeze({manifest,writeStyles,writeScripts,appendScripts,loadGroup,ensureRoute,routeName,loadCredentialMaterial,loadTunnelBuilders,budgetSnapshot});
+root.OBOL_RUNTIME_LOADER=Object.freeze({manifest,writeStyles,writeScripts,appendScripts,loadGroup,ensureRoute,routeName,loadCredentialMaterial,loadManualOutcomes,loadTunnelBuilders,budgetSnapshot});
 root.__OBOL_RUNTIME_ENTRYPOINT__='manifest-v1';
 })(typeof window!=='undefined'?window:globalThis);
