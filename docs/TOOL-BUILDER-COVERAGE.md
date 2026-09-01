@@ -8,7 +8,7 @@ Every relevant point on the Path should expose the right tool through a context-
 
 ## Stable platform owners
 
-v9.12 establishes the reusable platform, v9.13 begins concrete migration with Nmap, v9.14 proves the platform across credential-aware, cracking, content-discovery, and credential-dump command shapes, v9.15 extends cracking with John the Ripper, and v9.16 proves one canonical schema record can safely represent closely related executables without adding another renderer:
+v9.12 establishes the reusable platform, v9.13 begins concrete migration with Nmap, v9.14 proves the platform across credential-aware, cracking, content-discovery, and credential-dump command shapes, v9.15 extends cracking with John the Ripper, v9.16 proves one canonical schema record can safely represent closely related executables without adding another renderer, and v9.17 extends the same stable platform across Kerberos roasting and WinRM access launchers:
 
 - `data/tool-builder-schema.js` owns the stable builder data contract and registry helpers;
 - `assets/tool-builder-current.js` owns generic accessible rendering, context autofill, shell-safe command generation, and copy-only operator handoff;
@@ -69,9 +69,9 @@ The v9 queue seeds representative builders first so the generic schema covers th
 - ffuf - **implemented in v9.14**
 - gobuster / feroxbuster - **implemented in v9.16**
 - impacket-secretsdump - **implemented in v9.14**
-- impacket-GetNPUsers
-- impacket-GetUserSPNs
-- Evil-WinRM
+- impacket-GetNPUsers - **implemented in v9.17**
+- impacket-GetUserSPNs - **implemented in v9.17**
+- Evil-WinRM - **implemented in v9.17**
 - Certipy
 - sqlmap
 - curl
@@ -113,9 +113,21 @@ The executable selector is not a shell field. The only valid choices are fixed s
 
 A generated discovery command, request count, or manually declared finding remains workflow activity. Discovered paths, hosts, subdomains, and response facts require reviewed tool output in Evidence before they become report-ready.
 
+### v9.17 Kerberos roast and WinRM migration boundary
+
+v9.17 completes one coherent same-ownership work package while keeping all three queue items independently tested and evidenced.
+
+**impacket-GetNPUsers** supports users-file and single-user sources; no-pass, password, NT-hash, and Kerberos-cache flows; domain, DC IP, and DC hostname context; request mode; Hashcat/John output format; and AS-REP output files. The users-file flow defaults to the upstream no-password pattern. Saved `$krb5asrep$` material is a cracking candidate, not a recovered credential or access fact.
+
+**impacket-GetUserSPNs** supports password, NT-hash, and Kerberos-cache authentication; optional cross-trust target domains; list, request-all, request-user, and request-machine modes; optional users files; saved TGS hashes/tickets; RC4, stealth, and machine-only controls; and DC IP/hostname context. Saved `$krb5tgs$` material is reviewed Evidence for a roastable service ticket, not proof that a password was cracked or that service access works.
+
+**Evil-WinRM** supports password, NT-hash, and Kerberos-ticket/ccache launchers; target and username context; realm, ticket, SSL, port, WinRM URL, SPN, scripts directory, executables directory, and session logging controls. Upload/download fields are explicit post-connect planning only. They are not appended to the launcher and Obol never drives the interactive shell.
+
+The three implementations rely on the existing conditional fields, shell-safe concatenation, and ordinary field/toggle/choice tokens. v9.17 therefore does not add a new schema version, generic renderer capability, or runtime layer.
+
 The existing command cards remain useful readable references. When a card contains an implemented tool, the current bridge adds the canonical builder near that card rather than deleting historical guidance or creating a second proof model. Generated commands still flow through the same human-run boundary and must return to Evidence before report-ready facts exist.
 
-The next highest-priority Tool Builder migration after v9.16 is **GetNPUsers**. It should continue using these stable owners and should cover username sources, no-pass flow, domain/DC targeting, output handling, and AS-REP hash handoff without adding a tool-specific renderer.
+The next highest-priority Tool Builder migration after v9.17 is **Certipy**. It should remain mode-driven and schema-based, with AD CS request/authentication/relay/shadow/account operations separated cleanly enough that cleanup and proof boundaries stay explicit.
 
 ## Architecture rule
 
