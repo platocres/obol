@@ -29,7 +29,7 @@ function normalizeValues(builder,values,context){
 function validateRequired(builder,values){
  const missing=[];
  for(const field of builder.fields||[]){
-  const required=field.required||conditionMatches(field.requiredWhen,values);
+  const required=field.required===true||(field.requiredWhen?conditionMatches(field.requiredWhen,values):false);
   if(!required)continue;
   const v=values[field.id];
   if(v===undefined||v===null||v===''||(field.type==='checkbox'&&field.mustBeChecked===true&&!truthy(v)))missing.push(field.label||field.id);
