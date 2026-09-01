@@ -73,6 +73,11 @@ const packages=[
   guidance:'Establish typed credential material, routing, cross-tool handoff, proof boundaries, and redaction as one platform rather than re-solving credential behavior per tool.'
  },
  {
+  id:'credential-mode-coverage',title:'Credential Mode Coverage',priority:'normal',ownershipArea:'credentials/tool-modes',
+  itemIds:['cred-password','cred-ntlm','cred-netntlm','cred-kerberos-hashes','cred-mscache2','cred-ccache-kirbi','cred-pfx-cert','cred-ssh-key','cred-cookie-token'],dependencies:['credential-material-platform'],relatedItems:['tb-nxc','tb-hashcat','tb-john','tb-certipy','tb-ssh-plink','tb-curl'],parallelSafe:true,recommendedBatch:true,
+  guidance:'Use the Credential Material Platform to make password, hash, ticket, certificate, key, and token modes consistent across compatible builders without duplicating secret-routing logic per tool.'
+ },
+ {
   id:'manual-outcome-platform',title:'Manual Outcome Platform',priority:'normal',ownershipArea:'workflow/outcomes-proof',
   itemIds:['manual-schema','manual-ui','manual-success-unlocks','manual-failure-triage','manual-proof-report','manual-tests'],dependencies:[],relatedItems:['manual-queue-interaction','manual-all-cards'],parallelSafe:false,recommendedBatch:true,
   guidance:'Implement manual outcome state, controls, advancement, failure triage, proof handling, and regression coverage as a single workflow capability.'
