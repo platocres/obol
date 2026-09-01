@@ -8,7 +8,7 @@ Every relevant point on the Path should expose the right tool through a context-
 
 ## Stable platform owners
 
-v9.12 establishes the reusable platform and v9.13 begins concrete migrations:
+v9.12 establishes the reusable platform, v9.13 begins concrete migration with Nmap, and v9.14 proves the platform across credential-aware, cracking, content-discovery, and credential-dump command shapes:
 
 - `data/tool-builder-schema.js` owns the stable builder data contract and registry helpers;
 - `assets/tool-builder-current.js` owns generic accessible rendering, context autofill, shell-safe command generation, and copy-only operator handoff;
@@ -39,6 +39,10 @@ The schema deliberately keeps command generation separate from execution. Obol m
 
 The v9.13 schema permits a choice to intentionally emit no CLI argument. This is a generic representation for modes where selecting an option means omitting a flag rather than invoking tool-specific compiler code.
 
+v9.14 extends the same stable schema without changing its version identity. Builders may now declare conditional visibility and requiredness, conditional command tokens, repeated values such as one `-H` per header, and concatenated shell-safe positional values such as `domain/user:password@target`. Those capabilities are generic and reusable. They exist because representative real tools require them, not as tool-specific compiler branches.
+
+The generic renderer now scopes field element IDs by builder ID so multiple builders may coexist on one card without duplicate DOM IDs. Conditional fields update in place as the operator changes modes. The browser bridge mounts implemented builders in the existing Tools view and on relevant Card surfaces while Targets retains its dedicated canonical Nmap placement and historical Nmap Evidence ingestion compatibility.
+
 ## Inventory lock
 
 Every runnable tool identity observed in the current lane/card corpus and tool registry must resolve to one explicit inventory disposition in `data/tool-builder-inventory.js`:
@@ -57,12 +61,12 @@ An `implemented` inventory record that points at a Product Hardening queue item 
 The v9 queue seeds representative builders first so the generic schema covers the hard shapes before the full inventory is burned down:
 
 - Nmap - **implemented in v9.13**
-- NetExec / nxc
-- Hashcat
+- NetExec / nxc - **implemented in v9.14**
+- Hashcat - **implemented in v9.14**
 - John
-- ffuf
+- ffuf - **implemented in v9.14**
 - gobuster / feroxbuster
-- impacket-secretsdump
+- impacket-secretsdump - **implemented in v9.14**
 - impacket-GetNPUsers
 - impacket-GetUserSPNs
 - Evil-WinRM
@@ -74,11 +78,22 @@ The v9 queue seeds representative builders first so the generic schema covers th
 
 ### Nmap migration boundary
 
-The v9.13 Nmap builder preserves the existing discovery-first profile behavior for host discovery, quick TCP, full TCP, service/default-script, and top-UDP scans. Targets now receives the schema-driven builder from `data/tool-builders.js` through the generic renderer, with explicit port-scope/custom-port, timing, rate/retry, script/version/OS/reason/DNS, and output controls.
+The v9.13 Nmap builder preserves the existing discovery-first profile behavior for host discovery, quick TCP, full TCP, service/default-script, and top-UDP scans. Targets receives the schema-driven builder from `data/tool-builders.js` through the generic renderer, with explicit port-scope/custom-port, timing, rate/retry, script/version/OS/reason/DNS, and output controls.
 
 The historical Nmap parser and paste/intake path remain compatibility owners for Evidence ingestion. The new form mirrors its values into that path rather than inventing a second Evidence or target-discovery implementation. Those historical intake owners should only be retired after equivalent Evidence behavior is consolidated and independently regression-protected.
 
-The next highest-priority representative migration is NetExec / nxc. It should use the same stable owners while exercising credential-mode behavior rather than adding another custom renderer.
+### v9.14 representative migration boundary
+
+v9.14 closes the rest of the original Representative Tool Builder Set:
+
+- **NetExec / nxc** covers SMB, LDAP, WinRM, FTP, and MSSQL protocol selection; anonymous, password, NT-hash, and Kerberos-cache auth shapes; common enumeration, roasting, BloodHound, LAPS, dump, and execution-check actions; and output/DNS/local-auth/continue controls.
+- **Hashcat** accepts a hash or hash file, detects several common lab hash shapes, lets the operator confirm the hash mode, and builds straight or mask attacks with wordlist, rule, workload, optimized-kernel, output, and `--show` controls.
+- **ffuf** covers URL/FUZZ placement, wordlists, recursion/depth, extensions, match/filter controls, repeated headers, threads, rate, and output.
+- **impacket-secretsdump** covers remote password, pass-the-hash, Kerberos-cache, and local-hive modes, plus DC-only scoping and output handling.
+
+The existing command cards remain useful readable references. When a card contains an implemented tool, the current bridge adds the canonical builder near that card rather than deleting historical guidance or creating a second proof model. Generated commands still flow through the same human-run boundary and must return to Evidence before report-ready facts exist.
+
+The next highest-priority Tool Builder migration after v9.14 is John the Ripper. It should continue using these stable owners and should exercise format selection and rule/wordlist behavior without adding a tool-specific renderer.
 
 ## Architecture rule
 
