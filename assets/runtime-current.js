@@ -4,12 +4,10 @@ const manifest=root.OBOL_RUNTIME_MANIFEST;
 if(!manifest)throw new Error('Obol runtime manifest must load before assets/runtime-current.js');
 let stylesWritten=false,scriptsWritten=false;
 const groupLoads=new Map();
-let tunnelBuilderLoad=null;
+let tunnelBuilderLoad=null,credentialMaterialLoad=null;
 const esc=v=>String(v).replace(/&/g,'&amp;').replace(/"/g,'&quot;').replace(/</g,'&lt;');
 
-function canParserWrite(){
- return typeof document!=='undefined'&&document.readyState==='loading'&&typeof document.write==='function';
-}
+function canParserWrite(){return typeof document!=='undefined'&&document.readyState==='loading'&&typeof document.write==='function';}
 function writeStyles(){
  if(stylesWritten)return Promise.resolve();
  stylesWritten=true;
@@ -60,6 +58,23 @@ function rerenderAfterLazy(){
  try{if(typeof root.route==='function')root.route();}catch(err){setTimeout(()=>{try{if(typeof root.route==='function')root.route();}catch(e){}},0);}
 }
 function toolBuilderBaseReady(){return !!(root.OBOL_TOOL_BUILDER_SCHEMA&&root.OBOL_TOOL_BUILDER_INVENTORY&&root.OBOL_TOOL_BUILDER&&root.OBOL_TOOL_BUILDERS);}
+function loadCredentialMaterial(attempt){
+ if(root.OBOL_CREDENTIAL_MATERIAL){
+  if(typeof root.OBOL_CREDENTIAL_MATERIAL.installCore==='function')root.OBOL_CREDENTIAL_MATERIAL.installCore();
+  if(typeof root.OBOL_CREDENTIAL_MATERIAL.installReportBoundary==='function')root.OBOL_CREDENTIAL_MATERIAL.installReportBoundary();
+  if(root.OBOL_CREDENTIAL_MATERIAL_UI&&typeof root.OBOL_CREDENTIAL_MATERIAL_UI.decorate==='function')root.OBOL_CREDENTIAL_MATERIAL_UI.decorate();
+  return Promise.resolve(['credentialMaterial']);
+ }
+ if(credentialMaterialLoad)return credentialMaterialLoad;
+ const n=Number(attempt||0);
+ if(!root.OBOL_CORE_V2){if(n>=100)return Promise.resolve([]);return new Promise(resolve=>setTimeout(resolve,20)).then(()=>loadCredentialMaterial(n+1));}
+ credentialMaterialLoad=appendScripts(['data/credential-material.js','assets/credential-material-current.js']).then(()=>{
+  if(root.OBOL_CREDENTIAL_MATERIAL&&typeof root.OBOL_CREDENTIAL_MATERIAL.installCore==='function')root.OBOL_CREDENTIAL_MATERIAL.installCore();
+  if(root.OBOL_CREDENTIAL_MATERIAL&&typeof root.OBOL_CREDENTIAL_MATERIAL.installReportBoundary==='function')root.OBOL_CREDENTIAL_MATERIAL.installReportBoundary();
+  return root.OBOL_CREDENTIAL_MATERIAL?['credentialMaterial']:[];
+ }).finally(()=>{if(!root.OBOL_CREDENTIAL_MATERIAL)credentialMaterialLoad=null;});
+ return credentialMaterialLoad;
+}
 function loadTunnelBuilders(attempt){
  if(root.OBOL_TUNNEL_TOOL_BUILDERS)return Promise.resolve(['data/tool-builders-tunnels.js']);
  if(tunnelBuilderLoad)return tunnelBuilderLoad;
@@ -73,13 +88,13 @@ function loadTunnelBuilders(attempt){
 }
 function hydrateRoute(){
  const page=routeName();
- return ensureRoute(page).then(names=>{
+ return ensureRoute(page).then(names=>loadCredentialMaterial(0).then(credentials=>{
   const toolBearing=['boxes','card','tools'].includes(page);
   return (toolBearing?loadTunnelBuilders(0):Promise.resolve([])).then(extra=>{
    if(names.length||extra.length)rerenderAfterLazy();
-   return names.concat(extra.length?['tunnelToolBuilders']:[]);
+   return names.concat(credentials,extra.length?['tunnelToolBuilders']:[]);
   });
- });
+ }));
 }
 function budgetSnapshot(){
  const startup=startupList();
@@ -92,6 +107,6 @@ if(typeof window!=='undefined'){
  if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',()=>{hydrateRoute().catch(()=>{});},{once:true});
  else setTimeout(()=>{hydrateRoute().catch(()=>{});},0);
 }
-root.OBOL_RUNTIME_LOADER=Object.freeze({manifest,writeStyles,writeScripts,appendScripts,loadGroup,ensureRoute,routeName,loadTunnelBuilders,budgetSnapshot});
+root.OBOL_RUNTIME_LOADER=Object.freeze({manifest,writeStyles,writeScripts,appendScripts,loadGroup,ensureRoute,routeName,loadCredentialMaterial,loadTunnelBuilders,budgetSnapshot});
 root.__OBOL_RUNTIME_ENTRYPOINT__='manifest-v1';
 })(typeof window!=='undefined'?window:globalThis);
