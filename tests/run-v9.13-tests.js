@@ -23,9 +23,8 @@ assert(q&&contracts&&schema&&inventory&&renderer&&builders,'v9.13 durable owners
 
 const queueItem=q.items.find(item=>item.id==='tb-nmap');
 assert(queueItem&&queueItem.status==='complete','v9.13 completes tb-nmap');
-assert.strictEqual(q.tracks.find(track=>track.id==='tool-builders').complete,4,'Tool Builder track advances to 4/18');
+assert(q.tracks.find(track=>track.id==='tool-builders').complete>=4,'Tool Builder track retains the v9.13 Nmap completion');
 assert(!q.buildNext(1000).some(item=>item.id==='tb-nmap'),'completed Nmap item stays out of Product Build Next');
-assert(q.buildNext(1)[0]&&q.buildNext(1)[0].id==='tb-nxc','Product Build Next advances to NetExec / nxc');
 const nmapContract=contracts.contracts['tb-nmap'];
 assert(nmapContract&&nmapContract.acceptance.length&&nmapContract.validationCommands.includes('node tests/run-v9.13-tests.js'),'tb-nmap owns item-specific Definition of Done and regression proof');
 for(const rel of nmapContract.proofFiles)assert(exists(rel),'tb-nmap proof file exists: '+rel);
@@ -56,9 +55,8 @@ const historicalApp=read('assets/app-v3.1.js');
 assert(historicalApp.includes('Paste Nmap results and discover targets'),'historical Nmap Evidence intake remains available');
 assert(read('assets/nmap-v3.1.js').includes('hostDiscovery31'),'host-discovery parser compatibility remains available');
 
-const release=read('data/current-release.js');
-assert(release.includes("version:'9.13.0'")&&release.includes("label:'v9.13'"),'current release authority advances to v9.13');
-assert(exists('docs/v9.13.md'),'v9.13 release documentation exists');
+const releaseDoc=read('docs/v9.13.md');
+assert(releaseDoc.includes('# Obol v9.13')&&releaseDoc.includes('Canonical Nmap Tool Builder'),'v9.13 release documentation preserves the historical Nmap migration milestone');
 for(const forbidden of ['assets/obol-v9.13.css','assets/app-v9.13.js','assets/core-v9.13.js','data/project-model-v9.13.js'])assert(!exists(forbidden),'no fake v9.13 runtime overlay: '+forbidden);
 
 for(const command of [

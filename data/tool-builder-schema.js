@@ -3,7 +3,7 @@
 const fieldTypes=Object.freeze(['text','number','select','checkbox','secret','path','textarea']);
 const credentialKinds=Object.freeze(['password','ntlm','netntlm','kerberos','certificate','ssh-key','cookie-token']);
 const executionContexts=Object.freeze(['kali','linux','windows','remote-shell','any']);
-const autofillKeys=Object.freeze(['target.ip','target.hostname','target.value','context.domain','context.username','context.port','workspace.wordlist','workspace.outputDir']);
+const autofillKeys=Object.freeze(['target.ip','target.hostname','target.value','context.domain','context.username','context.port','workspace.wordlist','workspace.outputDir','workspace.hashfile']);
 const dispositionStatuses=Object.freeze(['implemented','modeled','superseded','rejected']);
 const registry=new Map();
 
@@ -30,18 +30,45 @@ function validateField(field,index){
  return errors;
 }
 
+function validateCondition(condition,label,fieldIds){
+ const errors=[];
+ if(condition==null)return errors;
+ if(Array.isArray(condition)){
+  if(!condition.length)fail(errors,label+' contains an empty condition list');
+  condition.forEach((entry,index)=>{for(const error of validateCondition(entry,label+'['+index+']',fieldIds))fail(errors,error);});
+  return errors;
+ }
+ if(typeof condition!=='object')return[label+' must be an object or array'];
+ if(!fieldIds.has(condition.field))fail(errors,label+' references unknown field '+text(condition.field));
+ const operators=['equals','notEquals','in','notIn','truthy'].filter(key=>Object.prototype.hasOwnProperty.call(condition,key));
+ if(operators.length!==1)fail(errors,label+' must declare exactly one condition operator');
+ if(Object.prototype.hasOwnProperty.call(condition,'in')&&!Array.isArray(condition.in))fail(errors,label+' in operator requires an array');
+ if(Object.prototype.hasOwnProperty.call(condition,'notIn')&&!Array.isArray(condition.notIn))fail(errors,label+' notIn operator requires an array');
+ if(Object.prototype.hasOwnProperty.call(condition,'truthy')&&typeof condition.truthy!=='boolean')fail(errors,label+' truthy operator requires a boolean');
+ return errors;
+}
+
 function validateToken(token,index,fieldIds){
  const errors=[];
  if(!token||typeof token!=='object')return['command token '+index+' must be an object'];
- const kinds=['literal','field','toggle','choice'];
+ const kinds=['literal','field','toggle','choice','concat','repeat'];
  if(!kinds.includes(token.kind))fail(errors,'command token '+index+' has unsupported kind '+text(token.kind));
+ if(token.when)for(const error of validateCondition(token.when,'command token '+index+' when',fieldIds))fail(errors,error);
  if(token.kind==='literal'&&!text(token.value).trim())fail(errors,'literal command token '+index+' requires value');
- if(['field','toggle','choice'].includes(token.kind)&&!fieldIds.has(token.field))fail(errors,'command token '+index+' references unknown field '+text(token.field));
+ if(['field','toggle','choice','repeat'].includes(token.kind)&&!fieldIds.has(token.field))fail(errors,'command token '+index+' references unknown field '+text(token.field));
  if(token.kind==='toggle'&&!text(token.flag).trim())fail(errors,'toggle command token '+index+' requires flag');
  if(token.kind==='choice'&&!Array.isArray(token.choices))fail(errors,'choice command token '+index+' requires choices');
- // A choice may intentionally emit an empty argument. This represents a UI mode
- // such as "no default port scope" without requiring a bespoke renderer branch.
  if(token.kind==='choice')for(const choice of token.choices||[])if(!choice||typeof choice!=='object'||!Object.prototype.hasOwnProperty.call(choice,'value')||!Object.prototype.hasOwnProperty.call(choice,'arg'))fail(errors,'choice command token '+index+' contains an invalid choice');
+ if(token.kind==='concat'){
+  if(!Array.isArray(token.parts)||!token.parts.length)fail(errors,'concat command token '+index+' requires parts');
+  for(const part of token.parts||[]){
+   if(!part||typeof part!=='object'){fail(errors,'concat command token '+index+' contains an invalid part');continue;}
+   const hasField=Object.prototype.hasOwnProperty.call(part,'field'),hasLiteral=Object.prototype.hasOwnProperty.call(part,'literal');
+   if(hasField===hasLiteral)fail(errors,'concat command token '+index+' parts require exactly one field or literal');
+   if(hasField&&!fieldIds.has(part.field))fail(errors,'concat command token '+index+' references unknown field '+text(part.field));
+  }
+ }
+ if(token.kind==='repeat'&&token.split&&!['lines','comma','space'].includes(token.split))fail(errors,'repeat command token '+index+' has unsupported split '+text(token.split));
  return errors;
 }
 
@@ -57,6 +84,11 @@ function validateBuilder(builder){
  fields.forEach((field,index)=>{
   for(const error of validateField(field,index))fail(errors,error);
   if(field&&field.id){if(ids.has(field.id))fail(errors,'duplicate field id '+field.id);ids.add(field.id);}
+ });
+ fields.forEach(field=>{
+  if(!field)return;
+  if(field.requiredWhen)for(const error of validateCondition(field.requiredWhen,'field '+field.id+' requiredWhen',ids))fail(errors,error);
+  if(field.visibleWhen)for(const error of validateCondition(field.visibleWhen,'field '+field.id+' visibleWhen',ids))fail(errors,error);
  });
  const credentialModes=array(builder.credentialModes);
  for(const mode of credentialModes)if(!credentialKinds.includes(mode))fail(errors,'builder '+text(builder.id)+' has unsupported credential mode '+text(mode));
@@ -78,11 +110,21 @@ function validateBuilder(builder){
  return unique(errors);
 }
 
+function freezeCondition(condition){
+ if(Array.isArray(condition))return Object.freeze(condition.map(freezeCondition));
+ if(condition&&typeof condition==='object'){
+  const copy={...condition};
+  if(Array.isArray(condition.in))copy.in=Object.freeze([...condition.in]);
+  if(Array.isArray(condition.notIn))copy.notIn=Object.freeze([...condition.notIn]);
+  return Object.freeze(copy);
+ }
+ return condition;
+}
 function freezeBuilder(builder){
  const copy={...builder};
- copy.fields=Object.freeze(array(builder.fields).map(field=>Object.freeze({...field,options:Object.freeze(array(field.options).map(o=>Object.freeze({...o})))})));
+ copy.fields=Object.freeze(array(builder.fields).map(field=>Object.freeze({...field,options:Object.freeze(array(field.options).map(o=>Object.freeze({...o}))),requiredWhen:freezeCondition(field.requiredWhen),visibleWhen:freezeCondition(field.visibleWhen)})));
  copy.credentialModes=Object.freeze(array(builder.credentialModes));
- copy.command=Object.freeze({...builder.command,tokens:Object.freeze(array(builder.command&&builder.command.tokens).map(token=>Object.freeze({...token,choices:Object.freeze(array(token.choices).map(c=>Object.freeze({...c})))})))});
+ copy.command=Object.freeze({...builder.command,tokens:Object.freeze(array(builder.command&&builder.command.tokens).map(token=>Object.freeze({...token,choices:Object.freeze(array(token.choices).map(c=>Object.freeze({...c}))),when:freezeCondition(token.when),parts:Object.freeze(array(token.parts).map(part=>Object.freeze({...part})))})))});
  copy.evidence=Object.freeze({...builder.evidence});
  copy.manualOutcome=Object.freeze({...builder.manualOutcome});
  copy.reportLineage=Object.freeze({...builder.reportLineage,secretFields:Object.freeze(array(builder.reportLineage&&builder.reportLineage.secretFields))});

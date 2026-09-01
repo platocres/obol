@@ -121,6 +121,26 @@ const contracts={
   validationCommands:['node tools/validate-tool-builder-platform.js','node tests/run-v9.13-tests.js'],
   proofFiles:['data/tool-builders.js','data/tool-builder-schema.js','data/tool-builder-inventory.js','assets/tool-builder-current.js','assets/app-v8.8.js','assets/app-v3.1.js','assets/nmap-v3.1.js','tools/validate-tool-builder-platform.js','tests/run-v9.13-tests.js','docs/v9.13.md']
  },
+ 'tb-nxc':{
+  acceptance:['Tool and relevant Card routes expose one schema-driven NetExec builder with explicit protocol, anonymous/password/NT-hash/Kerberos-cache authentication, target/domain/user context, common enumeration/roasting/dumping/execution-check actions, output controls, secret-safe inputs, and a strict Evidence proof boundary.'],
+  validationCommands:['node tools/validate-tool-builder-platform.js','node tests/run-v9.14-tests.js'],
+  proofFiles:['data/tool-builders.js','data/tool-builder-schema.js','data/tool-builder-inventory.js','assets/tool-builder-current.js','assets/app-v8.8.js','tools/validate-tool-builder-platform.js','tests/run-v9.14-tests.js','docs/v9.14.md']
+ },
+ 'tb-hashcat':{
+  acceptance:['Tool and relevant Card routes expose one schema-driven Hashcat builder that detects common structured lab hash shapes when confident, allows explicit mode confirmation, supports straight/mask attacks, wordlists, rules, workload, optimized kernels, output/show modes, and keeps recovered material unproven until reviewed and independently validated for access.'],
+  validationCommands:['node tools/validate-tool-builder-platform.js','node tests/run-v9.14-tests.js'],
+  proofFiles:['data/tool-builders.js','data/tool-builder-schema.js','data/tool-builder-inventory.js','assets/tool-builder-current.js','assets/app-v8.8.js','tools/validate-tool-builder-platform.js','tests/run-v9.14-tests.js','docs/v9.14.md']
+ },
+ 'tb-ffuf':{
+  acceptance:['Tool and relevant Card routes expose one schema-driven ffuf builder with explicit FUZZ URL, wordlist, recursion/depth, extensions, match/filter controls, repeated headers, concurrency/rate, output handling, and reviewed-response Evidence boundaries.'],
+  validationCommands:['node tools/validate-tool-builder-platform.js','node tests/run-v9.14-tests.js'],
+  proofFiles:['data/tool-builders.js','data/tool-builder-schema.js','data/tool-builder-inventory.js','assets/tool-builder-current.js','assets/app-v8.8.js','tools/validate-tool-builder-platform.js','tests/run-v9.14-tests.js','docs/v9.14.md']
+ },
+ 'tb-secretsdump':{
+  acceptance:['Tool and relevant Card routes expose one schema-driven impacket-secretsdump builder with remote password, NT-hash, Kerberos-cache, and local-hive modes, explicit domain/user/target and DC scope controls, output handling, secret-safe fields, and proof boundaries that do not infer privilege or recovered credentials from command generation alone.'],
+  validationCommands:['node tools/validate-tool-builder-platform.js','node tests/run-v9.14-tests.js'],
+  proofFiles:['data/tool-builders.js','data/tool-builder-schema.js','data/tool-builder-inventory.js','assets/tool-builder-current.js','assets/app-v8.8.js','tools/validate-tool-builder-platform.js','tests/run-v9.14-tests.js','docs/v9.14.md']
+ },
  'tb-tool-inventory-lock':{
   acceptance:['Every runnable tool identity observed in the current lane/card command corpus and tool registry resolves through one explicit stable inventory disposition. New tool identities fail validation until they are explicitly implemented, modeled, superseded, or rejected with rationale, and aliases normalize to one canonical identity.'],
   validationCommands:['node tools/validate-tool-builder-platform.js','node tests/run-v9.12-tests.js'],
@@ -173,5 +193,5 @@ const contracts={
  }
 };
 const requiredForStatuses=['modeled','complete','superseded','rejected'];
-root.OBOL_PRODUCT_HARDENING_TEST_CONTRACTS={version:'9.13.0',requiredForStatuses,contracts};
+root.OBOL_PRODUCT_HARDENING_TEST_CONTRACTS={version:'9.14.0',requiredForStatuses,contracts};
 })(typeof window!=='undefined'?window:globalThis);

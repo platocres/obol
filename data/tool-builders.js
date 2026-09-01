@@ -63,8 +63,176 @@ const nmap=schema.register({
  reportLineage:{activity:true,evidenceRequiredForProof:true,secretFields:[]}
 });
 
+const nxc=schema.register({
+ id:'tb-nxc',
+ tool:'nxc',
+ title:'NetExec / nxc',
+ summary:'Build a credential-aware NetExec validation, enumeration, roasting, dump, or execution-check command from one shared surface.',
+ executionContext:'kali',
+ credentialModes:['password','ntlm','kerberos'],
+ fields:[
+  {id:'protocol',label:'Protocol',type:'select',default:'smb',options:[{value:'smb',label:'SMB'},{value:'ldap',label:'LDAP'},{value:'winrm',label:'WinRM'},{value:'ftp',label:'FTP'},{value:'mssql',label:'MSSQL'}]},
+  {id:'target',label:'Authorized target / subnet / targets file',type:'text',required:true,autofill:'target.value',placeholder:'10.10.10.10'},
+  {id:'authMode',label:'Authentication mode',type:'select',default:'password',options:[{value:'anonymous',label:'Anonymous / null session'},{value:'password',label:'Username + password'},{value:'ntlm',label:'Username + NT hash'},{value:'kerberos-cache',label:'Kerberos cache (KRB5CCNAME)'}]},
+  {id:'domain',label:'Domain',type:'text',autofill:'context.domain',placeholder:'CORP.LOCAL',visibleWhen:{field:'authMode',in:['password','ntlm']}},
+  {id:'username',label:'Username / user list',type:'text',autofill:'context.username',placeholder:'alice or users.txt',requiredWhen:{field:'authMode',in:['password','ntlm']},visibleWhen:{field:'authMode',in:['password','ntlm']}},
+  {id:'password',label:'Password',type:'secret',credentialKind:'password',requiredWhen:{field:'authMode',equals:'password'},visibleWhen:{field:'authMode',equals:'password'}},
+  {id:'hash',label:'NT hash or LM:NT pair',type:'secret',credentialKind:'ntlm',placeholder:'8846f7eaee8fb117ad06bdd830b7586c',requiredWhen:{field:'authMode',equals:'ntlm'},visibleWhen:{field:'authMode',equals:'ntlm'}},
+  {id:'action',label:'Action',type:'select',default:'validate',options:[
+   {value:'validate',label:'Validate credentials / profile host'},{value:'shares',label:'List SMB shares'},{value:'users',label:'Enumerate users'},{value:'groups',label:'Enumerate groups'},{value:'pass-pol',label:'Read password policy'},{value:'rid-brute',label:'RID brute-force users'},{value:'spider',label:'Spider readable shares'},{value:'asrep',label:'AS-REP roast to file'},{value:'kerberoast',label:'Kerberoast to file'},{value:'bloodhound',label:'BloodHound collection'},{value:'laps',label:'Read LAPS via module'},{value:'sam',label:'Dump SAM'},{value:'lsa',label:'Dump LSA secrets'},{value:'ntds',label:'Dump NTDS'},{value:'exec-cmd',label:'Command execution check (-x)'},{value:'exec-ps',label:'PowerShell execution check (-X)'}
+  ]},
+  {id:'output',label:'Roast output file',type:'path',placeholder:'hashes.txt',requiredWhen:{field:'action',in:['asrep','kerberoast']},visibleWhen:{field:'action',in:['asrep','kerberoast']}},
+  {id:'dnsServer',label:'DNS server',type:'text',autofill:'target.ip',placeholder:'10.10.10.10',visibleWhen:{field:'action',equals:'bloodhound'}},
+  {id:'command',label:'Command to run',type:'text',placeholder:'whoami /all',requiredWhen:{field:'action',equals:'exec-cmd'},visibleWhen:{field:'action',equals:'exec-cmd'}},
+  {id:'powershell',label:'PowerShell to run',type:'textarea',placeholder:'Get-ChildItem C:\\Users',requiredWhen:{field:'action',equals:'exec-ps'},visibleWhen:{field:'action',equals:'exec-ps'}},
+  {id:'localAuth',label:'Use local authentication (--local-auth)',type:'checkbox',visibleWhen:{field:'protocol',equals:'smb'}},
+  {id:'continueOnSuccess',label:'Continue after successful authentication',type:'checkbox'}
+ ],
+ command:{executable:'nxc',tokens:[
+  {kind:'choice',field:'protocol',choices:[{value:'smb',arg:'smb'},{value:'ldap',arg:'ldap'},{value:'winrm',arg:'winrm'},{value:'ftp',arg:'ftp'},{value:'mssql',arg:'mssql'}]},
+  {kind:'field',field:'target'},
+  {kind:'choice',field:'authMode',choices:[{value:'anonymous',arg:"-u '' -p ''"},{value:'password',arg:''},{value:'ntlm',arg:''},{value:'kerberos-cache',arg:'-k --use-kcache'}]},
+  {kind:'field',field:'domain',flag:'-d',when:{field:'authMode',in:['password','ntlm']}},
+  {kind:'field',field:'username',flag:'-u',when:{field:'authMode',in:['password','ntlm']}},
+  {kind:'field',field:'password',flag:'-p',when:{field:'authMode',equals:'password'}},
+  {kind:'field',field:'hash',flag:'-H',when:{field:'authMode',equals:'ntlm'}},
+  {kind:'toggle',field:'localAuth',flag:'--local-auth',when:{field:'protocol',equals:'smb'}},
+  {kind:'toggle',field:'continueOnSuccess',flag:'--continue-on-success'},
+  {kind:'choice',field:'action',choices:[
+   {value:'validate',arg:''},{value:'shares',arg:'--shares'},{value:'users',arg:'--users'},{value:'groups',arg:'--groups'},{value:'pass-pol',arg:'--pass-pol'},{value:'rid-brute',arg:'--rid-brute'},{value:'spider',arg:'-M spider_plus'},{value:'asrep',arg:'--asreproast'},{value:'kerberoast',arg:'--kerberoasting'},{value:'bloodhound',arg:'--bloodhound -c All'},{value:'laps',arg:'-M laps'},{value:'sam',arg:'--sam'},{value:'lsa',arg:'--lsa'},{value:'ntds',arg:'--ntds'},{value:'exec-cmd',arg:''},{value:'exec-ps',arg:''}
+  ]},
+  {kind:'field',field:'output',when:{field:'action',in:['asrep','kerberoast']}},
+  {kind:'field',field:'dnsServer',flag:'--dns-server',when:{field:'action',equals:'bloodhound'}},
+  {kind:'field',field:'command',flag:'-x',when:{field:'action',equals:'exec-cmd'}},
+  {kind:'field',field:'powershell',flag:'-X',when:{field:'action',equals:'exec-ps'}}
+ ]},
+ evidence:{expectation:'Return the relevant NetExec output to Evidence: authentication result, enumerated objects, roast material, dump output, or explicit execution-check output.',proofBoundary:'A generated command or manually declared NetExec success is not proof of credential validity, administrative access, dumped secrets, or execution until reviewed output supports that fact.'},
+ manualOutcome:{supported:true,boundary:'The operator may record success, failure, blocking, or skip state for the attempted NetExec action; report-ready access and credential facts still require reviewed Evidence.'},
+ reportLineage:{activity:true,evidenceRequiredForProof:true,secretFields:['password','hash']}
+});
+
+const hashcatModes=Object.freeze([
+ {value:'0',label:'MD5 (0)'},{value:'100',label:'SHA1 (100)'},{value:'500',label:'md5crypt $1$ (500)'},{value:'1000',label:'NTLM (1000)'},{value:'1800',label:'sha512crypt $6$ (1800)'},{value:'2100',label:'DCC2 / MSCache2 (2100)'},{value:'3000',label:'LM (3000)'},{value:'3200',label:'bcrypt (3200)'},{value:'5500',label:'NetNTLMv1 (5500)'},{value:'5600',label:'NetNTLMv2 (5600)'},{value:'13100',label:'Kerberos TGS etype 23 (13100)'},{value:'18200',label:'Kerberos AS-REP etype 23 (18200)'},{value:'22000',label:'WPA-PBKDF2/PMKID (22000)'}
+]);
+const hashcat=schema.register({
+ id:'tb-hashcat',
+ tool:'hashcat',
+ title:'Hashcat',
+ summary:'Paste a single hash or provide a hash file, confirm the detected/common mode, then build a minimal straight or mask attack with optional rules and workload controls.',
+ executionContext:'kali',
+ credentialModes:['ntlm','netntlm','kerberos'],
+ fields:[
+  {id:'hashOrFile',label:'Hash or hash file',type:'text',required:true,autofill:'workspace.hashfile',placeholder:'$krb5asrep$23$... or hashes.txt',help:'Paste one hash for mode detection, or point to a file containing hashes.'},
+  {id:'mode',label:'Hash mode',type:'select',default:'1000',options:hashcatModes},
+  {id:'attack',label:'Attack type',type:'select',default:'straight',options:[{value:'straight',label:'Wordlist / straight'},{value:'mask',label:'Mask attack'}]},
+  {id:'wordlist',label:'Wordlist',type:'path',autofill:'workspace.wordlist',default:'/usr/share/wordlists/rockyou.txt',requiredWhen:[{field:'show',truthy:false},{field:'attack',equals:'straight'}],visibleWhen:[{field:'show',truthy:false},{field:'attack',equals:'straight'}]},
+  {id:'mask',label:'Mask',type:'text',placeholder:'?u?l?l?l?l?d?d',requiredWhen:[{field:'show',truthy:false},{field:'attack',equals:'mask'}],visibleWhen:[{field:'show',truthy:false},{field:'attack',equals:'mask'}]},
+  {id:'rule',label:'Rule file',type:'path',placeholder:'/usr/share/hashcat/rules/best64.rule',visibleWhen:[{field:'show',truthy:false},{field:'attack',equals:'straight'}]},
+  {id:'workload',label:'Workload profile',type:'select',default:'default',options:[{value:'default',label:'Default'},{value:'1',label:'1 - low'},{value:'2',label:'2 - default profile'},{value:'3',label:'3 - high'},{value:'4',label:'4 - nightmare'}],visibleWhen:{field:'show',truthy:false}},
+  {id:'optimized',label:'Optimized kernels (-O)',type:'checkbox',visibleWhen:{field:'show',truthy:false}},
+  {id:'output',label:'Recovered output file',type:'path',placeholder:'cracked.txt',visibleWhen:{field:'show',truthy:false}},
+  {id:'show',label:'Show already cracked results (--show)',type:'checkbox'}
+ ],
+ command:{executable:'hashcat',tokens:[
+  {kind:'field',field:'mode',flag:'-m'},
+  {kind:'choice',field:'attack',choices:[{value:'straight',arg:''},{value:'mask',arg:'-a 3'}],when:{field:'show',truthy:false}},
+  {kind:'choice',field:'workload',choices:[{value:'default',arg:''},{value:'1',arg:'-w 1'},{value:'2',arg:'-w 2'},{value:'3',arg:'-w 3'},{value:'4',arg:'-w 4'}],when:{field:'show',truthy:false}},
+  {kind:'toggle',field:'optimized',flag:'-O',when:{field:'show',truthy:false}},
+  {kind:'field',field:'output',flag:'-o',when:{field:'show',truthy:false}},
+  {kind:'toggle',field:'show',flag:'--show'},
+  {kind:'field',field:'hashOrFile'},
+  {kind:'field',field:'wordlist',when:[{field:'show',truthy:false},{field:'attack',equals:'straight'}]},
+  {kind:'field',field:'mask',when:[{field:'show',truthy:false},{field:'attack',equals:'mask'}]},
+  {kind:'field',field:'rule',flag:'-r',when:[{field:'show',truthy:false},{field:'attack',equals:'straight'}]}
+ ]},
+ evidence:{expectation:'Return the relevant Hashcat status or recovered result to Evidence, preferably the cracked account/hash mapping rather than only the launch command.',proofBoundary:'Hash shape detection and a generated cracking command are not proof that a password was recovered. A recovered credential remains candidate material until independently validated against an authorized service.'},
+ manualOutcome:{supported:true,boundary:'The operator may record exhausted, cracked, blocked, failed, or skipped workflow state; a manual cracked assertion does not create validated access without Evidence.'},
+ reportLineage:{activity:true,evidenceRequiredForProof:true,secretFields:['hashOrFile']}
+});
+
+const ffuf=schema.register({
+ id:'tb-ffuf',
+ tool:'ffuf',
+ title:'ffuf content discovery',
+ summary:'Build a content or virtual-host fuzzing command with explicit URL, wordlist, recursion, extensions, filters, matchers, headers, concurrency, and output controls.',
+ executionContext:'kali',
+ credentialModes:['cookie-token'],
+ fields:[
+  {id:'url',label:'URL containing FUZZ',type:'text',required:true,autofill:'target.value',placeholder:'http://10.10.10.10/FUZZ',help:'Place FUZZ where ffuf should substitute the wordlist entry.'},
+  {id:'wordlist',label:'Wordlist',type:'path',required:true,autofill:'workspace.wordlist',default:'/usr/share/seclists/Discovery/Web-Content/raft-small-words.txt'},
+  {id:'extensions',label:'Extensions (-e)',type:'text',placeholder:'.php,.txt,.bak'},
+  {id:'recursion',label:'Enable recursion',type:'checkbox'},
+  {id:'recursionDepth',label:'Recursion depth',type:'number',placeholder:'2',visibleWhen:{field:'recursion',truthy:true}},
+  {id:'matchCodes',label:'Match status codes (-mc)',type:'text',placeholder:'200,204,301,302,307,401,403'},
+  {id:'filterCodes',label:'Filter status codes (-fc)',type:'text',placeholder:'404'},
+  {id:'filterSize',label:'Filter response size (-fs)',type:'text',placeholder:'0,4242'},
+  {id:'filterWords',label:'Filter response words (-fw)',type:'text',placeholder:'12'},
+  {id:'headers',label:'Headers (one per line)',type:'textarea',placeholder:'Host: FUZZ.corp.local\nAuthorization: Bearer TOKEN',help:'Each non-empty line becomes its own -H argument.'},
+  {id:'threads',label:'Threads (-t)',type:'number',placeholder:'40'},
+  {id:'rate',label:'Rate limit requests/sec',type:'number',placeholder:'100'},
+  {id:'output',label:'Output file',type:'path',placeholder:'ffuf.json'}
+ ],
+ command:{executable:'ffuf',tokens:[
+  {kind:'field',field:'url',flag:'-u'},
+  {kind:'field',field:'wordlist',flag:'-w'},
+  {kind:'field',field:'extensions',flag:'-e'},
+  {kind:'toggle',field:'recursion',flag:'-recursion'},
+  {kind:'field',field:'recursionDepth',flag:'-recursion-depth',when:{field:'recursion',truthy:true}},
+  {kind:'field',field:'matchCodes',flag:'-mc'},
+  {kind:'field',field:'filterCodes',flag:'-fc'},
+  {kind:'field',field:'filterSize',flag:'-fs'},
+  {kind:'field',field:'filterWords',flag:'-fw'},
+  {kind:'repeat',field:'headers',flag:'-H',split:'lines'},
+  {kind:'field',field:'threads',flag:'-t'},
+  {kind:'field',field:'rate',flag:'-rate'},
+  {kind:'field',field:'output',flag:'-o'}
+ ]},
+ evidence:{expectation:'Return ffuf result rows or the saved output showing distinct discovered paths/hosts and their response metadata.',proofBoundary:'A generated ffuf command, request count, or manual success does not prove a path or virtual host exists. Reviewed response results are the Evidence boundary.'},
+ manualOutcome:{supported:true,boundary:'The operator may record whether fuzzing found candidates, exhausted the list, was filtered incorrectly, failed, or was skipped; report claims still require reviewed result Evidence.'},
+ reportLineage:{activity:true,evidenceRequiredForProof:true,secretFields:['headers']}
+});
+
+const secretsdump=schema.register({
+ id:'tb-secretsdump',
+ tool:'impacket-secretsdump',
+ title:'impacket-secretsdump',
+ summary:'Build a remote password/hash/Kerberos dump or a local hive parse while keeping credential modes, target context, scope, output, and proof boundaries explicit.',
+ executionContext:'kali',
+ credentialModes:['password','ntlm','kerberos'],
+ fields:[
+  {id:'authMode',label:'Mode',type:'select',default:'password',options:[{value:'password',label:'Remote username + password'},{value:'ntlm',label:'Remote pass-the-hash'},{value:'kerberos-cache',label:'Remote Kerberos cache'},{value:'local-hives',label:'Local SAM/SYSTEM hives'}]},
+  {id:'target',label:'Target / DC',type:'text',autofill:'target.value',placeholder:'dc01.corp.local',requiredWhen:{field:'authMode',in:['password','ntlm','kerberos-cache']},visibleWhen:{field:'authMode',in:['password','ntlm','kerberos-cache']}},
+  {id:'domain',label:'Domain',type:'text',autofill:'context.domain',placeholder:'CORP',visibleWhen:{field:'authMode',in:['password','ntlm','kerberos-cache']}},
+  {id:'username',label:'Username',type:'text',autofill:'context.username',placeholder:'alice',requiredWhen:{field:'authMode',in:['password','ntlm','kerberos-cache']},visibleWhen:{field:'authMode',in:['password','ntlm','kerberos-cache']}},
+  {id:'password',label:'Password',type:'secret',credentialKind:'password',requiredWhen:{field:'authMode',equals:'password'},visibleWhen:{field:'authMode',equals:'password'}},
+  {id:'hash',label:'NT hash or LM:NT pair',type:'secret',credentialKind:'ntlm',placeholder:'8846f7eaee8fb117ad06bdd830b7586c',requiredWhen:{field:'authMode',equals:'ntlm'},visibleWhen:{field:'authMode',equals:'ntlm'}},
+  {id:'sam',label:'SAM hive',type:'path',placeholder:'SAM',requiredWhen:{field:'authMode',equals:'local-hives'},visibleWhen:{field:'authMode',equals:'local-hives'}},
+  {id:'system',label:'SYSTEM hive',type:'path',placeholder:'SYSTEM',requiredWhen:{field:'authMode',equals:'local-hives'},visibleWhen:{field:'authMode',equals:'local-hives'}},
+  {id:'security',label:'SECURITY hive (optional)',type:'path',placeholder:'SECURITY',visibleWhen:{field:'authMode',equals:'local-hives'}},
+  {id:'justDc',label:'Dump only domain controller data (-just-dc)',type:'checkbox',visibleWhen:{field:'authMode',in:['password','ntlm','kerberos-cache']}},
+  {id:'justDcUser',label:'Single DC user',type:'text',placeholder:'administrator',visibleWhen:{field:'authMode',in:['password','ntlm','kerberos-cache']}},
+  {id:'output',label:'Output basename',type:'path',placeholder:'loot/secretsdump'}
+ ],
+ command:{executable:'impacket-secretsdump',tokens:[
+  {kind:'field',field:'output',flag:'-outputfile'},
+  {kind:'toggle',field:'justDc',flag:'-just-dc',when:{field:'authMode',in:['password','ntlm','kerberos-cache']}},
+  {kind:'field',field:'justDcUser',flag:'-just-dc-user',when:{field:'authMode',in:['password','ntlm','kerberos-cache']}},
+  {kind:'choice',field:'authMode',choices:[{value:'password',arg:''},{value:'ntlm',arg:''},{value:'kerberos-cache',arg:'-k -no-pass'},{value:'local-hives',arg:''}]},
+  {kind:'field',field:'hash',flag:'-hashes',prefix:':',when:{field:'authMode',equals:'ntlm'}},
+  {kind:'concat',when:{field:'authMode',equals:'password'},parts:[{field:'domain',suffix:'/'},{field:'username'},{literal:':'},{field:'password'},{literal:'@'},{field:'target'}]},
+  {kind:'concat',when:{field:'authMode',in:['ntlm','kerberos-cache']},parts:[{field:'domain',suffix:'/'},{field:'username'},{literal:'@'},{field:'target'}]},
+  {kind:'field',field:'sam',flag:'-sam',when:{field:'authMode',equals:'local-hives'}},
+  {kind:'field',field:'system',flag:'-system',when:{field:'authMode',equals:'local-hives'}},
+  {kind:'field',field:'security',flag:'-security',when:{field:'authMode',equals:'local-hives'}},
+  {kind:'literal',value:'LOCAL',when:{field:'authMode',equals:'local-hives'}}
+ ]},
+ evidence:{expectation:'Return reviewed secretsdump output or the saved dump artifacts showing the specific SAM/LSA/cached/NTDS material actually recovered.',proofBoundary:'A generated secretsdump command or manually declared success does not prove administrative rights, replication rights, or credential recovery. Reviewed dump output is required, and recovered secrets remain sensitive candidate material until independently validated where access is claimed.'},
+ manualOutcome:{supported:true,boundary:'The operator may record attempted, successful, failed, blocked, or skipped dump workflow state without automatically creating credential or privilege facts.'},
+ reportLineage:{activity:true,evidenceRequiredForProof:true,secretFields:['password','hash']}
+});
+
 function profile(id){return nmapProfiles[id]||nmapProfiles.discover;}
-function defaults(values){
+function defaultsNmap(values){
  const out={...(values||{})},p=profile(out.profile);
  if(out.profile==null||out.profile==='')out.profile=p.id;
  if(out.portScope==null||out.portScope==='')out.portScope=out.ports?'custom':p.portScope;
@@ -78,6 +246,84 @@ function defaults(values){
  }
  return out;
 }
+function defaultsNxc(values){return{protocol:'smb',authMode:'password',action:'validate',...(values||{})};}
+function detectHashcatMode(value){
+ const raw=String(value||'').trim();if(!raw||raw.includes('\n'))return null;
+ if(/^\$krb5asrep\$23\$/i.test(raw))return{mode:'18200',label:'Kerberos AS-REP etype 23'};
+ if(/^\$krb5tgs\$23\$/i.test(raw))return{mode:'13100',label:'Kerberos TGS etype 23'};
+ if(/^\$DCC2\$/i.test(raw))return{mode:'2100',label:'DCC2 / MSCache2'};
+ if(/^\$2[aby]\$/i.test(raw))return{mode:'3200',label:'bcrypt'};
+ if(/^\$6\$/.test(raw))return{mode:'1800',label:'sha512crypt'};
+ if(/^\$1\$/.test(raw))return{mode:'500',label:'md5crypt'};
+ if(/^[^:\r\n]+::[^:\r\n]*:[0-9a-f]{16}:[0-9a-f]{32}:[0-9a-f]+$/i.test(raw))return{mode:'5600',label:'NetNTLMv2'};
+ return null;
+}
+function defaultsHashcat(values){
+ const out={attack:'straight',workload:'default',wordlist:'/usr/share/wordlists/rockyou.txt',...(values||{})};
+ if((out.mode==null||out.mode==='')&&out.hashOrFile){const hit=detectHashcatMode(out.hashOrFile);if(hit)out.mode=hit.mode;}
+ if(out.mode==null||out.mode==='')out.mode='1000';
+ return out;
+}
+function defaultsFfuf(values,context){
+ const out={wordlist:'/usr/share/seclists/Discovery/Web-Content/raft-small-words.txt',...(values||{})};
+ if(!out.url){const target=context&&context.target&&context.target.value||'';if(target)out.url=/^https?:\/\//i.test(target)?target.replace(/\/$/,'')+'/FUZZ':'http://'+target.replace(/\/$/,'')+'/FUZZ';}
+ return out;
+}
+function defaultsSecretsdump(values){return{authMode:'password',...(values||{})};}
+function defaultsFor(id,values,context){
+ if(id==='tb-nmap')return defaultsNmap(values);
+ if(id==='tb-nxc')return defaultsNxc(values);
+ if(id==='tb-hashcat')return defaultsHashcat(values);
+ if(id==='tb-ffuf')return defaultsFfuf(values,context);
+ if(id==='tb-secretsdump')return defaultsSecretsdump(values);
+ return{...(values||{})};
+}
 
-root.OBOL_TOOL_BUILDERS=Object.freeze({version:'1.0.0',nmapProfiles,nmap,profile,defaults});
+function enhanceNmap(mount){
+ if(!mount||!mount.form)return;const form=mount.form;
+ let lastProfile=form.elements.namedItem('profile')&&form.elements.namedItem('profile').value;
+ form.addEventListener('input',event=>{
+  if(event.target&&event.target.name==='ports'&&event.target.value.trim()){
+   const scope=form.elements.namedItem('portScope');if(scope&&scope.value!=='custom'){scope.value='custom';mount.refresh();}
+  }
+ });
+ form.addEventListener('change',event=>{
+  if(event.target&&event.target.name==='profile'){
+   const next=event.target.value,output=form.elements.namedItem('output'),scope=form.elements.namedItem('portScope'),minRate=form.elements.namedItem('minRate'),scripts=form.elements.namedItem('scripts'),version=form.elements.namedItem('version');
+   const oldProfile=profile(lastProfile),nextProfile=profile(next);
+   if(output&&(!output.value||output.value===oldProfile.defaultOutput))output.value=nextProfile.defaultOutput;
+   if(scope&&(!scope.value||scope.value===oldProfile.portScope))scope.value=nextProfile.portScope;
+   if(minRate&&(!minRate.value||minRate.value===oldProfile.minRate))minRate.value=nextProfile.minRate;
+   if(next==='service'){if(scripts)scripts.checked=true;if(version)version.checked=true;}
+   lastProfile=next;mount.refresh();
+  }
+  if(event.target&&event.target.name==='portScope'&&event.target.value!=='custom'){
+   const ports=form.elements.namedItem('ports');if(ports&&ports.value){ports.value='';mount.refresh();}
+  }
+ });
+}
+function enhanceNxc(mount){
+ if(!mount||!mount.form)return;const form=mount.form;
+ const protocolByAction={shares:'smb',users:'smb',groups:'smb','pass-pol':'smb','rid-brute':'smb',spider:'smb',sam:'smb',lsa:'smb',ntds:'smb',asrep:'ldap',kerberoast:'ldap',bloodhound:'ldap',laps:'ldap'};
+ form.addEventListener('change',event=>{
+  if(!event.target||event.target.name!=='action')return;
+  const protocol=form.elements.namedItem('protocol'),next=protocolByAction[event.target.value];
+  if(protocol&&next){protocol.value=next;mount.refresh();}
+ });
+}
+function enhanceHashcat(mount){
+ if(!mount||!mount.form||!mount.shell)return;const form=mount.form,input=form.elements.namedItem('hashOrFile'),mode=form.elements.namedItem('mode');if(!input||!mode)return;
+ const row=input.closest('[data-field-id="hashOrFile"]');const hint=document.createElement('small');hint.className='hint tool-builder-detection';hint.dataset.hashcatDetection='true';if(row)row.appendChild(hint);
+ const detect=()=>{const hit=detectHashcatMode(input.value);if(hit){mode.value=hit.mode;hint.textContent='Detected likely '+hit.label+' (mode '+hit.mode+'). Confirm the selected mode before running.';mount.refresh();}else hint.textContent=input.value.trim()?'No confident automatic match. Select the correct mode manually.':'Paste one hash to detect common lab formats.';};
+ input.addEventListener('input',detect);detect();
+}
+function enhanceMount(id,mount,context){
+ if(id==='tb-nmap')enhanceNmap(mount,context);
+ if(id==='tb-nxc')enhanceNxc(mount,context);
+ if(id==='tb-hashcat')enhanceHashcat(mount,context);
+ return mount;
+}
+
+const byId=Object.freeze({'tb-nmap':nmap,'tb-nxc':nxc,'tb-hashcat':hashcat,'tb-ffuf':ffuf,'tb-secretsdump':secretsdump});
+root.OBOL_TOOL_BUILDERS=Object.freeze({version:'1.0.0',byId,nmapProfiles,hashcatModes,nmap,nxc,hashcat,ffuf,secretsdump,profile,defaults:defaultsNmap,defaultsFor,detectHashcatMode,enhanceMount});
 })(typeof window!=='undefined'?window:globalThis);
