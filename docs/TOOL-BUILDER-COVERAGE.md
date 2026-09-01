@@ -8,7 +8,7 @@ Every relevant point on the Path should expose the right tool through a context-
 
 ## Stable platform owners
 
-v9.12 establishes the reusable platform, v9.13 begins concrete migration with Nmap, and v9.14 proves the platform across credential-aware, cracking, content-discovery, and credential-dump command shapes:
+v9.12 establishes the reusable platform, v9.13 begins concrete migration with Nmap, v9.14 proves the platform across credential-aware, cracking, content-discovery, and credential-dump command shapes, and v9.15 extends the cracking surface with John the Ripper without adding another renderer:
 
 - `data/tool-builder-schema.js` owns the stable builder data contract and registry helpers;
 - `assets/tool-builder-current.js` owns generic accessible rendering, context autofill, shell-safe command generation, and copy-only operator handoff;
@@ -63,7 +63,7 @@ The v9 queue seeds representative builders first so the generic schema covers th
 - Nmap - **implemented in v9.13**
 - NetExec / nxc - **implemented in v9.14**
 - Hashcat - **implemented in v9.14**
-- John
+- John - **implemented in v9.15**
 - ffuf - **implemented in v9.14**
 - gobuster / feroxbuster
 - impacket-secretsdump - **implemented in v9.14**
@@ -91,9 +91,17 @@ v9.14 closes the rest of the original Representative Tool Builder Set:
 - **ffuf** covers URL/FUZZ placement, wordlists, recursion/depth, extensions, match/filter controls, repeated headers, threads, rate, and output.
 - **impacket-secretsdump** covers remote password, pass-the-hash, Kerberos-cache, and local-hive modes, plus DC-only scoping and output handling.
 
+### v9.15 John migration boundary
+
+v9.15 adds **John the Ripper** as the next canonical cracking builder. The builder exposes common lab formats directly, including NT/NTLM, raw MD5/SHA1, md5crypt, sha512crypt, bcrypt, MSCache2, NetNTLMv1/v2, Kerberos AS-REP, and Kerberos TGS. Operators can select wordlist, incremental, or `--show` behavior, optionally enable John rules or a named rule set, and set fork workers, session name, and pot file without memorizing format or option strings.
+
+The builder uses the same `workspace.hashfile` and `workspace.wordlist` context boundary as the existing cracking surfaces, and it is mounted automatically by the existing inventory-driven Tools/Card bridge once the John inventory record is implemented. No John-specific renderer, route, or runtime layer is introduced.
+
+As with Hashcat, a selected format, generated command, or manual cracked outcome is only workflow activity. Reviewed cracking output is required before a recovered secret is treated as Evidence, and independent validation remains required before claiming working access.
+
 The existing command cards remain useful readable references. When a card contains an implemented tool, the current bridge adds the canonical builder near that card rather than deleting historical guidance or creating a second proof model. Generated commands still flow through the same human-run boundary and must return to Evidence before report-ready facts exist.
 
-The next highest-priority Tool Builder migration after v9.14 is John the Ripper. It should continue using these stable owners and should exercise format selection and rule/wordlist behavior without adding a tool-specific renderer.
+The next highest-priority Tool Builder migration after v9.15 is gobuster / feroxbuster. It should continue using these stable owners and should cover mode, extensions, status filtering, concurrency, recursion, and output without adding a tool-specific renderer.
 
 ## Architecture rule
 

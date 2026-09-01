@@ -131,6 +131,11 @@ const contracts={
   validationCommands:['node tools/validate-tool-builder-platform.js','node tests/run-v9.14-tests.js'],
   proofFiles:['data/tool-builders.js','data/tool-builder-schema.js','data/tool-builder-inventory.js','assets/tool-builder-current.js','assets/app-v8.8.js','tools/validate-tool-builder-platform.js','tests/run-v9.14-tests.js','docs/v9.14.md']
  },
+ 'tb-john':{
+  acceptance:['Tool and relevant Card routes expose one schema-driven John the Ripper builder with explicit common lab hash formats, wordlist/incremental/show actions, optional rules/rule set, fork/session/pot controls, workspace hash/wordlist autofill, deterministic shell-safe command generation, and an Evidence boundary that keeps recovered material unproven until reviewed and independently validated for access.'],
+  validationCommands:['node tools/validate-tool-builder-platform.js','node tests/run-v9.15-tests.js'],
+  proofFiles:['data/tool-builders.js','data/tool-builder-schema.js','data/tool-builder-inventory.js','assets/tool-builder-current.js','assets/app-v8.8.js','tools/validate-tool-builder-platform.js','tests/run-v9.15-tests.js','docs/TOOL-BUILDER-COVERAGE.md','docs/v9.15.md']
+ },
  'tb-ffuf':{
   acceptance:['Tool and relevant Card routes expose one schema-driven ffuf builder with explicit FUZZ URL, wordlist, recursion/depth, extensions, match/filter controls, repeated headers, concurrency/rate, output handling, and reviewed-response Evidence boundaries.'],
   validationCommands:['node tools/validate-tool-builder-platform.js','node tests/run-v9.14-tests.js'],
@@ -193,5 +198,5 @@ const contracts={
  }
 };
 const requiredForStatuses=['modeled','complete','superseded','rejected'];
-root.OBOL_PRODUCT_HARDENING_TEST_CONTRACTS={version:'9.14.0',requiredForStatuses,contracts};
+root.OBOL_PRODUCT_HARDENING_TEST_CONTRACTS={version:'9.15.0',requiredForStatuses,contracts};
 })(typeof window!=='undefined'?window:globalThis);
