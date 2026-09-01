@@ -8,7 +8,7 @@ Every relevant point on the Path should expose the right tool through a context-
 
 ## Stable platform owners
 
-v9.12 establishes the reusable platform, v9.13 begins concrete migration with Nmap, v9.14 proves the platform across credential-aware, cracking, content-discovery, and credential-dump command shapes, v9.15 extends cracking with John the Ripper, v9.16 proves one canonical schema record can safely represent closely related executables without adding another renderer, v9.17 extends the same stable platform across a paired Impacket Kerberos-roasting package plus an independent WinRM remote-access builder, v9.18 adds a mode-driven Certipy AD CS surface, and v9.19 adds a request-driven sqlmap surface without changing the stable schema or renderer identity:
+v9.12 establishes the reusable platform, v9.13 begins concrete migration with Nmap, v9.14 proves the platform across credential-aware, cracking, content-discovery, and credential-dump command shapes, v9.15 extends cracking with John the Ripper, v9.16 proves one canonical schema record can safely represent closely related executables without adding another renderer, v9.17 extends the same stable platform across a paired Impacket Kerberos-roasting package plus an independent WinRM remote-access builder, v9.18 adds a mode-driven Certipy AD CS surface, v9.19 adds a request-driven sqlmap surface, and v9.20 adds a general HTTP curl request surface without changing the stable schema or renderer identity:
 
 - `data/tool-builder-schema.js` owns the stable builder data contract and registry helpers;
 - `assets/tool-builder-current.js` owns generic accessible rendering, context autofill, shell-safe command generation, and copy-only operator handoff;
@@ -74,7 +74,7 @@ The v9 queue seeds representative builders first so the generic schema covers th
 - Evil-WinRM - **implemented in v9.17**
 - Certipy - **implemented in v9.18**
 - sqlmap - **implemented in v9.19**
-- curl
+- curl - **implemented in v9.20**
 - chisel
 - SSH / plink
 
@@ -155,7 +155,15 @@ The surface follows the current upstream sqlmap usage contract (`sqlmapproject/s
 
 Request bodies, cookies, and extra headers are secret-bearing inputs in report lineage. A generated command, heuristic response, DBMS hint, or manually declared success never proves SQL injection or data access. Returned sqlmap output must be reviewed as Evidence before injection, DBMS identity, schema/data access, privilege, or compromise claims become report-ready.
 
-The next highest-priority Tool Builder migration after v9.19 is **curl**. It should remain schema-driven and make method, headers, cookies, body, proxy, authentication, upload, and output controls explicit without introducing automatic execution.
+### v9.20 curl migration boundary
+
+v9.20 completes **curl** through the same stable Tool Builder schema and generic copy-only renderer. The builder exposes automatic, GET, HEAD, POST, PUT, PATCH, DELETE, and custom HTTP methods; repeated `-H` headers; cookie material; raw/form data, JSON bodies, binary bodies, direct file uploads, and multipart file fields; Basic, NTLM, and OAuth2 bearer authentication; proxy and proxy credentials; redirects, TLS verification override, compressed responses, connect/total timeouts; and explicit response/output controls.
+
+The surface follows current upstream curl command-line contracts for `--request`, `-H/--header`, `--user`, `--oauth2-bearer`, `--form`, `--upload-file`, `--output`, and related transfer controls. It uses dedicated `--head` for HEAD and `--get` for GET-with-data rather than pretending `-X HEAD` changes curl's transfer semantics.
+
+Headers, cookies, request bodies, server passwords, bearer tokens, and proxy passwords are secret-bearing report-lineage inputs. A generated curl command, copied request, planned upload, or manual success never proves HTTP status, content, authentication, transfer success, or application state. Returned response material must be reviewed as Evidence before those facts become report-ready.
+
+The next highest-priority Tool Builder migration after v9.20 is **chisel**. SSH/plink remains adjacent tunnel work but belongs to the same future tunneling context rather than this HTTP request-builder release.
 
 ## Architecture rule
 
