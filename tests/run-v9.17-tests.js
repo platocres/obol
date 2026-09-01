@@ -37,8 +37,10 @@ assert.strictEqual(q.totals().complete,34,'overall Product Hardening completion 
 assert.strictEqual(q.totals().queued,40,'three Tool Builder items leave the queued set');
 assert(q.buildNext(1)[0]&&q.buildNext(1)[0].id==='tb-certipy','Product Build Next advances to Certipy');
 const kerberosPackage=packages.packageForItem('tb-getnpusers');
-assert(kerberosPackage&&kerberosPackage.id==='kerberos-winrm-builders','v9.17 work package is modeled explicitly');
-assert.deepStrictEqual(Array.from(kerberosPackage.itemIds),['tb-getnpusers','tb-getuserspns','tb-evilwinrm'],'v9.17 package tracks exactly the coherent three-item scope');
+assert(kerberosPackage&&kerberosPackage.id==='kerberos-roast-builders','v9.17 models the Impacket Kerberos roasting pair explicitly');
+assert.deepStrictEqual(Array.from(kerberosPackage.itemIds),['tb-getnpusers','tb-getuserspns'],'Kerberos roasting package contains only the two Impacket roasting builders');
+assert.strictEqual(packages.packageForItem('tb-evilwinrm'),null,'Evil-WinRM remains an independent remote-access builder rather than being classified as Kerberos roasting');
+assert(kerberosPackage.relatedItems.includes('tb-evilwinrm'),'Evil-WinRM may remain related Windows authentication work without being bundled into the Kerberos package');
 const recommendation=packages.recommend(q);
 assert(recommendation&&recommendation.entryItem.id==='tb-certipy','post-v9.17 work-package recommendation follows Certipy');
 
@@ -102,4 +104,4 @@ for(const command of [
  assert.strictEqual(result.status,0,(result.stderr||result.stdout||'').trim());
 }
 
-console.log('v9.17 Kerberos roast and Evil-WinRM Tool Builder regression tests passed.');
+console.log('v9.17 Kerberos roasting and independent Evil-WinRM Tool Builder regression tests passed.');
