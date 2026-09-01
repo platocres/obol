@@ -25,6 +25,16 @@ jobs:
         uses: actions/setup-node@v4
         with:
           node-version: '24'
+      - name: Escape Markdown code spans inside helper templates
+        run: |
+          python3 - <<'PY'
+          from pathlib import Path
+          import re
+          p=Path('.github/v919-build.js')
+          s=p.read_text()
+          s=re.sub(r'`([^`\n]+)`', lambda m: '\\`'+m.group(1)+'\\`', s)
+          p.write_text(s)
+          PY
       - name: Apply v9.19 source changes
         run: node .github/v919-build.js
       - name: Validate prepared release
