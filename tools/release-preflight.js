@@ -36,7 +36,7 @@ function run(label,args){
 
 const syntaxFiles=['tools/release-smoke.js','tools/validate-historical-tests.js','tools/sync-readme-build-next.js','tools/release-preflight.js','tools/validate-release-pr.js','tools/validate-release-quality.js',currentTest];
 if(isProductHardening){
-  syntaxFiles.push('data/current-release.js','data/runtime-manifest.js','assets/runtime-current.js','data/product-hardening/product-hardening-queue.js','data/product-hardening/item-test-contracts.js','tools/validate-current-release.js','tools/validate-version-identity.js','tools/validate-accessibility-contract.js','tools/validate-current-workflow.js','tools/validate-runtime-manifest.js','tools/sync-current-styles.js','tools/sync-current-release.js','tools/validate-product-hardening-queue.js','tools/validate-asset-references.js','tools/sync-product-build-next.js','tools/validate-open-pr-uniqueness.js');
+  syntaxFiles.push('data/current-release.js','data/runtime-manifest.js','assets/runtime-current.js','data/product-hardening/product-hardening-queue.js','data/product-hardening/item-test-contracts.js','tools/validate-current-release.js','tools/validate-version-identity.js','tools/validate-accessibility-contract.js','tools/validate-current-workflow.js','tools/validate-runtime-loading.js','tools/validate-runtime-manifest.js','tools/sync-current-styles.js','tools/sync-current-release.js','tools/validate-product-hardening-queue.js','tools/validate-asset-references.js','tools/sync-product-build-next.js','tools/validate-open-pr-uniqueness.js');
 }else{
   for(const dir of ['data','assets']){
     for(const name of fs.readdirSync(path.join(root,dir))){if(name.endsWith(`-v${version}.js`))syntaxFiles.push(path.join(dir,name));}
@@ -64,6 +64,7 @@ if(isProductHardening){
   run('contrast and focus accessibility',['tools/validate-accessibility-contract.js']);
   run('current workflow ownership',['tools/validate-current-workflow.js']);
   run('current stylesheet synchronization',['tools/sync-current-styles.js','--check']);
+  run('runtime loading and request budget',['tools/validate-runtime-loading.js']);
   run('runtime manifest and equivalence',['tools/validate-runtime-manifest.js']);
   run('current release README synchronization',['tools/sync-current-release.js','--check']);
   run('product-hardening queue contracts',['tools/validate-product-hardening-queue.js']);

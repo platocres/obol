@@ -19,7 +19,7 @@ function exists(label,list){
  for(const rel of list)assert(fs.existsSync(path.join(root,rel)),label+' references missing asset '+rel);
 }
 
-assert.strictEqual(manifest.schemaVersion,'1.0.0','runtime manifest schema is stable');
+assert(/^1\.\d+\.\d+$/.test(manifest.schemaVersion),'runtime manifest remains on compatible schema major 1');
 assert.strictEqual(manifest.compatibility.strategy,'script-exact-load-order+style-import-equivalence','runtime compatibility strategy protects script order and CSS cascade equivalence');
 assert.strictEqual(fixture.release,manifest.compatibility.baselineRelease,'runtime manifest baseline release matches fixture');
 const historicalStyles=manifest.compatibility.historicalStyles;
@@ -30,11 +30,15 @@ assert.strictEqual(hash(historicalStyles),fixture.styleOrderSha256,'historical s
 assert.strictEqual(hash(manifest.scripts),fixture.scriptOrderSha256,'historical script order fingerprint is preserved');
 assert.deepStrictEqual(manifest.styles,[manifest.compatibility.styleOwner],'current runtime exposes exactly one stable stylesheet owner');
 assert.strictEqual(manifest.compatibility.styleOwner,'assets/obol-current.css','stable current stylesheet owner is non-versioned');
+assert(Array.isArray(manifest.startupScripts)&&manifest.startupScripts.length<=manifest.scripts.length,'runtime manifest exposes a bounded startup script subset');
+for(const src of manifest.startupScripts)assert(manifest.scripts.includes(src),'startup script falls outside the frozen compatibility ledger: '+src);
 unique('historical runtime styles',historicalStyles);
 unique('runtime scripts',manifest.scripts);
+unique('startup runtime scripts',manifest.startupScripts);
 exists('current runtime styles',manifest.styles);
 exists('historical runtime styles',historicalStyles);
 exists('runtime scripts',manifest.scripts);
+exists('startup runtime scripts',manifest.startupScripts);
 
 const css=read(manifest.compatibility.styleOwner).replace(/\r\n/g,'\n');
 const imported=[];
@@ -81,7 +85,7 @@ assert.deepStrictEqual(projected,expectedProjection,'legacy index observation pr
 assert.strictEqual(new Set(projected).size,projected.length,'projected manifest basenames are unique');
 
 const loader=read('assets/runtime-current.js');
-for(const token of ['OBOL_RUNTIME_MANIFEST','writeStyles','writeScripts','document.write','manifest.styles','manifest.scripts'])assert(loader.includes(token),'current browser entrypoint missing '+token);
+for(const token of ['OBOL_RUNTIME_MANIFEST','writeStyles','writeScripts','document.write','manifest.styles','manifest.scripts','manifest.startupScripts||manifest.scripts'])assert(loader.includes(token),'current browser entrypoint missing '+token);
 const nodeLoader=read('tools/current-runtime.js');
 assert(nodeLoader.includes('runtime-manifest.js'),'Node current-runtime loader consumes runtime manifest');
 assert(!/const\s+DATA\s*=\s*\[/.test(nodeLoader)&&!/const\s+CORE\s*=\s*\[/.test(nodeLoader),'Node loader no longer owns duplicate hand-maintained load arrays');
@@ -103,4 +107,4 @@ assert(loaded&&loaded.C&&loaded.lanes,'manifest-backed Node current runtime init
 assert.strictEqual(loaded.C.VERSION,'8.8.0','runtime consolidation preserves the v8.8 workspace schema identity');
 assert(loaded.project,'manifest-backed runtime preserves the current v8.8 project adapter');
 
-console.log('Runtime manifest valid: one browser stylesheet owner preserves the v9.5 CSS cascade by generated ordered imports; script load-order fingerprints, inert compatibility projections, and v8.8 runtime initialization remain equivalent.');
+console.log('Runtime manifest valid: the full v9.5 compatibility order and CSS cascade remain frozen while the current startup subset is manifest-owned and bounded.');

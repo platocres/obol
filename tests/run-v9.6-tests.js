@@ -39,14 +39,15 @@ assert(runtimePackage&&runtimePackage.id==='runtime-consolidation-foundation','r
 const manifest=require(path.join(root,'data','runtime-manifest.js'));
 const fixture=require(path.join(root,'tests','fixtures','runtime-v9.5-load-order.json'));
 const historicalStyles=(manifest.compatibility&&manifest.compatibility.historicalStyles)||manifest.styles;
-assert.strictEqual(manifest.schemaVersion,'1.0.0');
+assert(/^1\.\d+\.\d+$/.test(manifest.schemaVersion),'runtime manifest remains compatible with the v9.6 schema-major contract');
 assert.strictEqual(manifest.compatibility.baselineRelease,'v9.5');
 assert(manifest.compatibility.strategy,'runtime compatibility strategy remains explicit');
 assert.strictEqual(fixture.styleCount,69,'v9.5 baseline captured 69 historical stylesheets');
 assert.strictEqual(fixture.scriptCount,327,'v9.5 baseline captured 327 historical scripts');
 assert.strictEqual(historicalStyles.length,fixture.styleCount,'v9.5 historical stylesheet cardinality remains represented after later consolidation');
-assert.strictEqual(manifest.scripts.length,fixture.scriptCount,'current manifest preserves baseline script cardinality');
+assert.strictEqual(manifest.scripts.length,fixture.scriptCount,'full compatibility manifest preserves baseline script cardinality');
 assert(Array.isArray(manifest.styles)&&manifest.styles.length>=1,'current manifest retains at least one executable stylesheet owner');
+assert(Array.isArray(manifest.startupScripts)&&manifest.startupScripts.every(src=>manifest.scripts.includes(src)),'later runtime loading work preserves a manifest-backed startup subset of the historical ledger');
 
 const index=read('index.html');
 const browserLoader=read('assets/runtime-current.js');
@@ -59,7 +60,7 @@ const releaseDoc=read('docs/v9.6.md');
 assert(index.includes('data/runtime-manifest.js')&&index.includes('assets/runtime-current.js'),'index uses stable current runtime owners');
 assert(index.includes('OBOL_RUNTIME_LOADER.writeStyles()')&&index.includes('OBOL_RUNTIME_LOADER.writeScripts()'),'index projects both asset classes through the current loader');
 assert(index.includes('OBOL-RUNTIME-MANIFEST-PROJECTION:START')&&index.includes('OBOL-RUNTIME-MANIFEST-PROJECTION:END'),'index preserves one inert manifest-backed observation projection for historical regression suites');
-assert(browserLoader.includes('manifest.styles')&&browserLoader.includes('manifest.scripts'),'browser entrypoint consumes runtime manifest arrays');
+assert(browserLoader.includes('manifest.styles')&&browserLoader.includes('manifest.scripts'),'browser entrypoint still consumes runtime manifest arrays');
 assert(nodeLoader.includes('runtime-manifest.js')&&!/const\s+DATA\s*=\s*\[/.test(nodeLoader),'Node loader consumes manifest instead of a duplicated DATA array');
 assert(nodeLoader.includes('OBOL-NODE-RUNTIME-MANIFEST-PROJECTION:START')&&nodeLoader.includes('OBOL-NODE-RUNTIME-MANIFEST-PROJECTION:END'),'Node loader preserves one inert manifest-backed source-observation projection for historical regression suites');
 assert(assetValidator.includes('scanRuntimeManifest')&&assetValidator.includes("'runtime manifest'"),'asset validator traverses manifest-owned assets');
@@ -84,4 +85,4 @@ for(const command of [
  assert.strictEqual(result.status,0,(result.stderr||result.stdout||'').trim());
 }
 
-console.log('v9.6 Runtime Consolidation Foundation regression tests passed.');
+console.log('v9.6 Runtime Consolidation Foundation milestone remains regression-protected while later manifest-owned loading policy may advance.');

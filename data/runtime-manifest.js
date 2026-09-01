@@ -79,17 +79,61 @@ const app=[
 
 const scripts=[...domain,...vendor,...core,...nmap,...report,...appPrelude,...intake,...app];
 const groups=Object.freeze({domain:freeze(domain),vendor:freeze(vendor),core:freeze(core),nmap:freeze(nmap),report:freeze(report),appPrelude:freeze(appPrelude),intake:freeze(intake),app:freeze(app)});
+
 const lazy=Object.freeze({
  productHardening:freeze(['data/current-release.js','data/product-hardening/product-hardening-queue.js','data/product-hardening/work-packages.js','assets/product-hardening-dashboard.css','assets/product-hardening-dashboard.js','assets/workflow-current.js']),
- accessibility:freeze(['assets/accessibility.css','assets/accessibility.js'])
+ accessibility:freeze(['assets/accessibility.css','assets/accessibility.js']),
+ evidenceParsing:freeze([...vendor,'assets/bh-v2-patch.js',...intake]),
+ nmap:freeze(nmap),
+ reportOverlays:freeze(report.slice(1)),
+ toolReferenceData:freeze(['data/wordlists.js','data/scripts.js','data/scripts-v2.5.js'])
 });
+const deferredScriptGroups=freeze(['evidenceParsing','nmap','reportOverlays','toolReferenceData']);
+const deferredScriptSet=new Set(deferredScriptGroups.flatMap(name=>lazy[name]||[]));
+const startupScripts=freeze(scripts.filter(src=>!deferredScriptSet.has(src)));
+const routeLazy=Object.freeze({
+ home:freeze([]),
+ boxes:freeze(['nmap']),
+ intake:freeze(['nmap','evidenceParsing']),
+ artifacts:freeze(['nmap','evidenceParsing']),
+ tools:freeze(['toolReferenceData']),
+ report:freeze(['reportOverlays']),
+ dashboard:freeze([]),
+ map:freeze([]),
+ lanes:freeze([]),
+ card:freeze([]),
+ path:freeze([]),
+ lineage:freeze([]),
+ search:freeze([])
+});
+const surfacePolicy=Object.freeze({
+ dashboard:Object.freeze({policy:'route-lazy',owner:'productHardening',reason:'Product-hardening queue, package, stylesheet, and renderer assets are loaded only for #/dashboard or the standalone dashboard entrypoint.'}),
+ methodology:Object.freeze({policy:'shared-core-eager',owner:'domain/core',reason:'Methodology data drives Home and Next Steps ranking, so route-only deferral would change operator behavior.'}),
+ toolLibrary:Object.freeze({policy:'route-lazy',owner:'toolReferenceData',reason:'Wordlist and script reference payloads are route-local and load when Tools is opened.'}),
+ lineage:Object.freeze({policy:'shared-core-eager',owner:'core/app',reason:'Artifact and activity lineage participates in Evidence, recommendation, and reporting semantics across primary workflow routes.'}),
+ historical:Object.freeze({policy:'compatibility-eager',owner:'scripts',reason:'Historical behavior overlays remain in the startup compatibility chain until a later compaction proves safe removal through the equivalence harness.'}),
+ evidence:Object.freeze({policy:'route-lazy',owner:'evidenceParsing',reason:'BloodHound helpers and versioned Evidence parser overlays load when Evidence/Artifacts is opened.'}),
+ report:Object.freeze({policy:'route-lazy',owner:'reportOverlays',reason:'The stable base report owner stays eager; historical report overlays load on Report.'})
+});
+const performance=Object.freeze({
+ baseline:Object.freeze({historicalScripts:327,historicalStyles:69}),
+ startup:Object.freeze({historicalScripts:startupScripts.length,maxHistoricalScripts:266,minDeferredHistoricalScripts:61}),
+ styleRequests:Object.freeze({currentOwner:1,historicalImports:historicalStyles.length}),
+ requiredDeferredGroups:deferredScriptGroups
+});
+
 return Object.freeze({
- schemaVersion:'1.0.0',
+ schemaVersion:'1.1.0',
  styles:freeze(styles),
  scripts:freeze(scripts),
+ startupScripts,
  groups,
  node:Object.freeze({data:freeze(nodeData),core:groups.core}),
  lazy,
+ deferredScriptGroups,
+ routeLazy,
+ surfacePolicy,
+ performance,
  compatibility:Object.freeze({
   baselineRelease:'v9.5',
   strategy:'script-exact-load-order+style-import-equivalence',
