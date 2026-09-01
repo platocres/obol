@@ -171,6 +171,11 @@ const contracts={
   validationCommands:['node tools/validate-tool-builder-platform.js','node tests/run-v9.18-tests.js'],
   proofFiles:['data/tool-builders.js','data/tool-builder-schema.js','data/tool-builder-inventory.js','assets/tool-builder-current.js','assets/app-v8.8.js','data/product-hardening/product-hardening-queue.js','tests/run-v9.18-tests.js','docs/TOOL-BUILDER-COVERAGE.md','docs/v9.18.md']
  },
+ 'tb-sqlmap':{
+  acceptance:['Tool and relevant Card routes expose one schema-driven sqlmap builder with URL and raw-request-file input modes; explicit parameter, method/body, cookie/header, level/risk, DBMS, technique, tamper, proxy, timing/retry, output/session, and conservative follow-up action controls; deterministic copy-only command generation; secret-safe request material; and proof boundaries that require reviewed returned output before injection, DBMS, schema/data-access, privilege, or compromise claims.'],
+  validationCommands:['node tools/validate-tool-builder-platform.js','node tests/run-v9.19-tests.js'],
+  proofFiles:['data/tool-builders.js','data/tool-builder-schema.js','data/tool-builder-inventory.js','assets/tool-builder-current.js','assets/app-v8.8.js','data/product-hardening/product-hardening-queue.js','tests/run-v9.19-tests.js','docs/TOOL-BUILDER-COVERAGE.md','docs/v9.19.md']
+ },
  'tb-tool-inventory-lock':{
   acceptance:['Every runnable tool identity observed in the current lane/card command corpus and tool registry resolves through one explicit stable inventory disposition. New tool identities fail validation until they are explicitly implemented, modeled, superseded, or rejected with rationale, and aliases normalize to one canonical identity.'],
   validationCommands:['node tools/validate-tool-builder-platform.js','node tests/run-v9.12-tests.js'],
@@ -223,5 +228,5 @@ const contracts={
  }
 };
 const requiredForStatuses=['modeled','complete','superseded','rejected'];
-root.OBOL_PRODUCT_HARDENING_TEST_CONTRACTS={version:'9.18.0',requiredForStatuses,contracts};
+root.OBOL_PRODUCT_HARDENING_TEST_CONTRACTS={version:'9.19.0',requiredForStatuses,contracts};
 })(typeof window!=='undefined'?window:globalThis);

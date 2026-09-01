@@ -8,7 +8,7 @@ Every relevant point on the Path should expose the right tool through a context-
 
 ## Stable platform owners
 
-v9.12 establishes the reusable platform, v9.13 begins concrete migration with Nmap, v9.14 proves the platform across credential-aware, cracking, content-discovery, and credential-dump command shapes, v9.15 extends cracking with John the Ripper, v9.16 proves one canonical schema record can safely represent closely related executables without adding another renderer, v9.17 extends the same stable platform across a paired Impacket Kerberos-roasting package plus an independent WinRM remote-access builder, and v9.18 adds a mode-driven Certipy AD CS surface without changing the stable schema or renderer identity:
+v9.12 establishes the reusable platform, v9.13 begins concrete migration with Nmap, v9.14 proves the platform across credential-aware, cracking, content-discovery, and credential-dump command shapes, v9.15 extends cracking with John the Ripper, v9.16 proves one canonical schema record can safely represent closely related executables without adding another renderer, v9.17 extends the same stable platform across a paired Impacket Kerberos-roasting package plus an independent WinRM remote-access builder, v9.18 adds a mode-driven Certipy AD CS surface, and v9.19 adds a request-driven sqlmap surface without changing the stable schema or renderer identity:
 
 - `data/tool-builder-schema.js` owns the stable builder data contract and registry helpers;
 - `assets/tool-builder-current.js` owns generic accessible rendering, context autofill, shell-safe command generation, and copy-only operator handoff;
@@ -73,7 +73,7 @@ The v9 queue seeds representative builders first so the generic schema covers th
 - impacket-GetUserSPNs - **implemented in v9.17**
 - Evil-WinRM - **implemented in v9.17**
 - Certipy - **implemented in v9.18**
-- sqlmap
+- sqlmap - **implemented in v9.19**
 - curl
 - chisel
 - SSH / plink
@@ -147,7 +147,15 @@ Certificate requests, PFX files, tickets, hashes, Shadow Credential changes, acc
 
 The existing command cards remain useful readable references. When a card contains an implemented tool, the current bridge adds the canonical builder near that card rather than deleting historical guidance or creating a second proof model. Generated commands still flow through the same human-run boundary and must return to Evidence before report-ready facts exist.
 
-The next highest-priority Tool Builder migration after v9.18 is **sqlmap**. It should remain schema-driven and should expose request-file versus URL input, parameter scope, cookies, risk/level, DBMS hints, tamper selection, and output controls without introducing automatic execution.
+### v9.19 sqlmap migration boundary
+
+v9.19 completes **sqlmap** through the same stable Tool Builder schema and generic copy-only renderer. The builder accepts either a target URL or a locally saved raw HTTP request, with explicit parameter scoping, HTTP method and body, cookie material, escaped multi-header input, conservative level/risk defaults, optional DBMS and technique hints, tamper scripts, proxy/TLS/user-agent controls, request pacing and retry controls, output/session handling, and deliberate follow-up actions from detection through selected database/table/column dumping.
+
+The surface follows the current upstream sqlmap usage contract (\`sqlmapproject/sqlmap\` wiki) for \`-u\`, \`-r\`, \`-p\`, \`--data\`, \`--cookie\`, \`--headers\`, \`--level\`, \`--risk\`, \`--dbms\`, \`--technique\`, \`--tamper\`, \`--batch\`, \`--output-dir\`, \`--flush-session\`, and related request controls. Defaults stay at level 1 and risk 1; deeper or riskier testing is an explicit operator choice.
+
+Request bodies, cookies, and extra headers are secret-bearing inputs in report lineage. A generated command, heuristic response, DBMS hint, or manually declared success never proves SQL injection or data access. Returned sqlmap output must be reviewed as Evidence before injection, DBMS identity, schema/data access, privilege, or compromise claims become report-ready.
+
+The next highest-priority Tool Builder migration after v9.19 is **curl**. It should remain schema-driven and make method, headers, cookies, body, proxy, authentication, upload, and output controls explicit without introducing automatic execution.
 
 ## Architecture rule
 
