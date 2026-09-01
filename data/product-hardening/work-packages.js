@@ -86,6 +86,18 @@ const packages=[
   guidance:'Use the canonical builder engine to implement several representative tools in one coherent pass, while preserving separate acceptance and regression proof for every builder.'
  },
  {
+  id:'kerberos-winrm-builders',
+  title:'Kerberos Roast and WinRM Builders',
+  priority:'normal',
+  ownershipArea:'tool-builder/windows-auth-access',
+  itemIds:['tb-getnpusers','tb-getuserspns','tb-evilwinrm'],
+  dependencies:['tool-builder-platform'],
+  relatedItems:['cred-password','cred-ntlm','cred-kerberos-hashes','cred-cross-tool-handshake','cred-validation-boundary'],
+  parallelSafe:true,
+  recommendedBatch:true,
+  guidance:'Complete AS-REP roasting, Kerberoasting, and WinRM access launchers together while keeping each builder atomic, copy-only, credential-aware, and explicit about hash/output handoff versus independently proven access.'
+ },
+ {
   id:'credential-material-platform',
   title:'Credential Material Platform',
   priority:'normal',
