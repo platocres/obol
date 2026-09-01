@@ -95,11 +95,24 @@ function builderForTool88(tool){
  if(!inv||inv.status!=='implemented'||!inv.queueItem)return null;
  return window.OBOL_TOOL_BUILDER_SCHEMA&&window.OBOL_TOOL_BUILDER_SCHEMA.get(inv.queueItem);
 }
+function currentBuilderSourceTool88(builder){
+ const parts=routeParts88(),p=parts[0]||'home';
+ if(p==='tools')return parts[1]?decodeURIComponent(parts[1]):'';
+ if(p==='card'){
+  const cardId=parts[1]?decodeURIComponent(parts[1]):'',card=typeof CARDS!=='undefined'&&CARDS[cardId];
+  if(card)for(const cmd of card.commands||[]){const candidate=builderForTool88(cmd&&cmd.tool);if(candidate&&candidate.id===builder.id)return cmd.tool||'';}
+ }
+ return'';
+}
 function seedBuilderValues88(builder,context){
  const params=typeof state!=='undefined'&&state&&state.params||{};
  const seed={};
  if(builder.id==='tb-hashcat'&&params.hashfile)seed.hashOrFile=params.hashfile;
- if(builder.id==='tb-ffuf'&&params.wordlist)seed.wordlist=params.wordlist;
+ if(['tb-ffuf','tb-gobuster-ferox'].includes(builder.id)&&params.wordlist)seed.wordlist=params.wordlist;
+ if(builder.id==='tb-gobuster-ferox'){
+  const inv=window.OBOL_TOOL_BUILDER_INVENTORY,key=inv&&typeof inv.key==='function'?inv.key(currentBuilderSourceTool88(builder)):'';
+  if(key==='gobuster'||key==='feroxbuster')seed.engine=key;
+ }
  return window.OBOL_TOOL_BUILDERS&&typeof window.OBOL_TOOL_BUILDERS.defaultsFor==='function'?window.OBOL_TOOL_BUILDERS.defaultsFor(builder.id,seed,context):seed;
 }
 function mountBuilder88(host,builder){
