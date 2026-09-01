@@ -61,6 +61,20 @@ Product Dashboard is exposed in the secondary navigation menu so it is easy to f
 
 `tools/validate-current-workflow.js` protects this division of responsibility. Future UI changes should preserve the operator-first Home/Path contract and keep project/build accounting in the dashboard rather than reintroducing release-specific status panels.
 
+## v9.10 contextual field-notes baseline
+
+v9.10 completes `ux-progressive-notes` by defining the presentation boundary before private notes are broadly atomized into public guidance.
+
+`data/field-notes.js` is the stable normalized public data contract. Entries can bind to card IDs, tool IDs, Path IDs, or normalized tags and are typed as lesson, tool guidance, path guidance, troubleshooting, Evidence, report, or cleanup guidance. The shipped ledger is intentionally empty until private-source work produces reviewed Obol-owned records. The UI must not fabricate guidance merely to populate the surface.
+
+`assets/field-notes.js` and `assets/field-notes.css` provide the stable current disclosure owner. Relevant notes appear near card actions or Path context inside a collapsed native `details` disclosure labeled **Field notes**. When no normalized entry matches the current context, no field-notes panel is shown. This keeps the primary operator scan path clean and avoids turning Obol into a notebook browser.
+
+The v8.8 compatibility bridge route-gates these owners to card, Path, and Tools surfaces rather than paying their cost on ordinary Home startup. Keyboard focus and narrow-screen behavior reuse the current accessibility direction.
+
+This release establishes the UI/data boundary only. It does not claim `notes-enex-extraction`, `notes-atomization-schema`, `notes-field-panel`, or the 556-note disposition burn-down complete. Those items remain accountable to the private-source integration queue and must populate the normalized owner only with reviewed, derived material.
+
+`tools/validate-field-notes-ui.js` protects relevance matching, collapsed disclosure, route gating, and the private-source boundary.
+
 ## Visual QA direction
 
 Browser/screenshot QA should catch UI regressions in addition to deterministic repository validation. v9.5 establishes screenshot-assisted contrast/focus review; the separate `qa-playwright-smoke` item remains queued for automated route opening, console-error detection, and captured screenshots across the full core route set.

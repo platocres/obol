@@ -30,6 +30,24 @@ OffSec PEN-200.enex
 Combined: 556 notes, 1,326 embedded resources
 ```
 
+## Public field-note contract
+
+v9.10 establishes `data/field-notes.js` as the stable public owner for normalized field-note records. It is a presentation/integration boundary, not a copy of the private note ledger.
+
+A public field-note record must be rewritten as Obol-owned guidance and may contain only the normalized fields needed for contextual delivery, including:
+
+- a stable Obol record ID;
+- a short title and derived guidance body;
+- a normalized kind such as lesson, tool guidance, path guidance, troubleshooting, Evidence, report, or cleanup;
+- explicit card, tool, Path, or tag bindings;
+- optional opaque source references used for private-ledger traceability.
+
+Public source references must not contain raw ENEX paths, course text, flags, screenshots, or proprietary notebook content. The public app should be able to render a field note without reading the private repository.
+
+`assets/field-notes.js` selects only records relevant to the active card/tool/Path context and renders them through collapsed progressive disclosure. An empty relevant set renders nothing. This prevents the public app from becoming a notebook dump while giving later atomization work a stable destination.
+
+The v9.10 public field-note ledger is intentionally empty. This is deliberate: `ux-progressive-notes` establishes the presentation contract, while `notes-enex-extraction`, `notes-atomization-schema`, `notes-field-panel`, note influence, and disposition burn-down remain separate queue work. Those items must earn populated public records through reviewed private-source derivation rather than by copying raw material.
+
 ## Dispositions
 
 Each note must eventually end in one of these terminal states:
