@@ -4,7 +4,7 @@ Obol is a static, browser-local workspace for OSCP-style labs, Active Directory 
 
 Live site: `https://platocres.github.io/obol/`
 
-Current release: **v9.25**
+Current release: **v9.26**
 
 Open `#/dashboard` for the active Product Hardening Dashboard and Product Build Next queue.
 
@@ -66,7 +66,7 @@ The completed Orange methodology/source queue is historical, regression-protecte
 This block is generated from `data/product-hardening/product-hardening-queue.js`. Do not edit it manually.
 Recommended work-package metadata comes from `data/product-hardening/work-packages.js`.
 
-**Current product-hardening queue:** 66/632 complete (10%), 7 queued, 9 foundation items modeled.
+**Current product-hardening queue:** 77/632 complete (12%), 7 queued, 9 foundation items modeled.
 **Private notes source:** `platocres/obol-source-notes` — 556 notes and 1326 embedded resources accounted.
 
 **Recommended work package:** **Burn down all 556 note dispositions** — 1 live item / 1 tracked.
@@ -94,7 +94,7 @@ Recommended work-package metadata comes from `data/product-hardening/work-packag
 - **Tool GUI builders:** 18/18 complete (100%), 0 modeled.
 - **Credential modes:** 14/14 complete (100%), 0 modeled.
 - **Manual outcomes:** 8/8 complete (100%), 0 modeled.
-- **Notes integration:** 4/556 complete (1%), 2 modeled.
+- **Notes integration:** 15/556 complete (3%), 2 modeled.
 - **Offline / performance:** 1/6 complete (17%), 0 modeled.
 - **Testing / visual QA:** 4/8 complete (50%), 3 modeled.
 
@@ -158,6 +158,7 @@ node tests/run-v9.22-tests.js
 node tests/run-v9.23-tests.js
 node tests/run-v9.24-tests.js
 node tests/run-v9.25-tests.js
+node tests/run-v9.26-tests.js
 ```
 
 ## GitHub Pages

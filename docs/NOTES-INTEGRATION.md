@@ -42,34 +42,72 @@ A public field-note record must be rewritten as Obol-owned guidance and may cont
 - explicit card, tool, Path, or tag bindings;
 - optional opaque source references used for private-ledger traceability.
 
-Public source references must not contain raw ENEX paths, course text, flags, screenshots, or proprietary notebook content. The public app should be able to render a field note without reading the private repository.
+Public source references must not contain raw ENEX paths, course text, flags, screenshots, lab targets, or proprietary notebook content. The public app should be able to render a field note without reading the private repository.
 
-`assets/field-notes.js` selects only records relevant to the active card/tool/Path context and renders them through collapsed progressive disclosure. An empty relevant set renders nothing. This prevents the public app from becoming a notebook dump while giving later atomization work a stable destination.
+`assets/field-notes.js` selects only records relevant to the active card/tool/Path context and renders them through collapsed progressive disclosure. An empty relevant set renders nothing. This prevents the public app from becoming a notebook dump while giving reviewed source lessons a stable destination.
 
-The v9.10 public field-note ledger was intentionally empty. v9.25 is the first release to populate that presentation contract from reviewed private-source derivation.
+The v9.10 public field-note ledger was intentionally empty. v9.25 was the first release to populate that presentation contract from reviewed private-source derivation.
 
 ## v9.25 Notes Integration Foundation
 
-`data/note-integration.js` is now the stable public-safe ingestion and ledger owner. It mirrors only the source-level counts and hashes required to prove source identity, defines normalized atom kinds and dispositions, accepts sanitized private metadata records, and owns opaque lineage from reviewed private notes to rewritten public outputs.
+`data/note-integration.js` became the stable public-safe ingestion and ledger owner in v9.25. It mirrors only source-level counts and hashes required to prove source identity, defines normalized atom kinds and dispositions, accepts sanitized private metadata records, and owns opaque lineage from reviewed private notes to rewritten public outputs.
 
 The public projection deliberately does not carry raw ENEX paths or note bodies. `atomizeMetadata(...)` retains only the note/source IDs, a short title hint, tags, resource count, and content digest needed for review bookkeeping.
 
-v9.25 models four reviewed seed notes into rewritten guidance. Their topics are credential-dump proof boundaries, pass-the-hash material routing, response-driven content discovery, and path-traversal proof sequencing. These outputs are bound to relevant Tool pages and Path through the existing field-note UI. The source references exposed publicly are opaque private-ledger IDs only.
+v9.25 modeled four reviewed seed notes into rewritten guidance covering credential-dump proof boundaries, pass-the-hash material routing, response-driven content discovery, and path-traversal proof sequencing. The stable owner preserves this four-note milestone explicitly even as later review waves advance the current ledger.
 
-The current public ledger summary is:
+The v9.25 historical milestone is:
 
 ```text
+reviewed: 4
 modeled: 4
-pending-review: 552
-superseded: 0
-rejected: 0
 private-reference-only: 0
+pending-review: 552
 total: 556
 ```
 
-This does not complete the separate 556-note disposition burn-down. It proves the system that future releases use to burn it down safely and measurably.
+## v9.26 disposition review waves
 
-`tools/validate-note-integration.js` permanently verifies source totals, disposition reconciliation, modeled lineage, public-safe atomization, tool/Path bindings, raw-source exclusion, and the no-execution boundary.
+v9.26 advances the note-integration owner to schema 1.1.0 and begins the substantive `notes-disposition-burn-down` review work.
+
+The private source repository now supports bounded review packets generated from the Git LFS ENEX sources. Those private packets expose enough note substance for agents to review lessons instead of deciding from titles alone. They remain private source material and must never be copied into public Obol.
+
+Public Obol stores only explicit `reviewedDispositions` rows. Every reviewed row contains:
+
+- an opaque private-source note ID;
+- a terminal disposition;
+- the review wave that made the decision;
+- a substantive rationale;
+- derived public output IDs when the note is modeled.
+
+Modeled notes must link to at least one rewritten public output. Notes marked `superseded`, `rejected`, or `private-reference-only` must not publish derived output merely to increase coverage numbers. Public Field Notes may cite only source rows that are explicitly modeled, and validation enforces the lineage in both directions.
+
+The v9.26 first review wave advances the ledger to:
+
+```text
+reviewed: 15
+modeled: 11
+private-reference-only: 4
+superseded: 0
+rejected: 0
+pending-review: 541
+total: 556
+```
+
+The `notes-disposition-burn-down` Product Hardening item remains queued. Partial review progress is shown through the 15/556 Notes Integration denominator; the atomic queue item does not become complete until all 556 source notes have terminal dispositions.
+
+The new modeled guidance adds durable lessons for:
+
+- treating client-side controls as behavior rather than authorization proof;
+- preserving decode/mutate/re-encode order when fuzzing transformed web values;
+- separating persisted input, readable inclusion, executable interpretation, and command-execution proof in file-inclusion chains;
+- testing path-normalization and filter assumptions incrementally while treating legacy bypasses as runtime-dependent hypotheses;
+- comparing authorization and security-filter behavior across HTTP methods without treating a method change alone as proof;
+- reporting command-injection remediation as a design, allowlisting, least-privilege, and constrained-scope problem rather than blacklist tuning.
+
+Reviewed records that are primarily navigation indexes, volatile extension catalogs, lab-specific outcome records without a distinct new lesson, or opaque command-obfuscation catalogs may remain `private-reference-only` with rationale. Private-reference-only is a real terminal review decision, not a hidden backlog bucket.
+
+`tools/validate-note-integration.js` permanently verifies source totals, explicit disposition reconciliation, terminal rationale, modeled-output lineage, historical v9.25 milestone preservation, public-safe atomization, contextual tool/Path bindings, raw-source exclusion, and the no-execution boundary.
 
 ## Dispositions
 
@@ -80,9 +118,9 @@ Each note must eventually end in one of these terminal states:
 - rejected
 - private-reference-only
 
-Before terminal review, a note may remain `pending-review` in the private/public-safe ledger projection.
+Before terminal review, a note remains `pending-review` in the public-safe ledger projection.
 
-Modeled notes should produce one or more normalized Obol artifacts:
+Modeled notes should produce one or more normalized Obol artifacts when the reviewed source genuinely adds product value:
 
 - path/action improvement;
 - tool-builder toggle or mode;
@@ -93,6 +131,8 @@ Modeled notes should produce one or more normalized Obol artifacts:
 - report guidance;
 - contextual field-note panel content.
 
+A modeled source note is product-development lineage only. It does not establish any fact, access, exploitation success, or report proof in an operator workspace.
+
 ## Rule against raw course dumping
 
-Do not copy course text, walkthrough text, screenshots, flags, or proprietary notebook content into the public Obol repo. Extract lessons and rewrite them as Obol-owned guidance.
+Do not copy course text, walkthrough text, screenshots, flags, lab targets, or proprietary notebook content into the public Obol repo. Extract lessons and rewrite them as Obol-owned guidance.

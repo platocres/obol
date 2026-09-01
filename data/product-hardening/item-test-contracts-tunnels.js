@@ -67,5 +67,15 @@ if(currentReleaseAtLeast(9,25)){
  base.contracts['qa-notes-ledger-test']={acceptance:['Permanent notes-integration validation reconciles the two private source inventories to 556 notes and 1326 resources, requires disposition counts to sum to all staged notes, preserves opaque lineage for every public derived note, and fails on raw ENEX/source leakage or invalid modeled references.'],validationCommands:validation,proofFiles:noteProof};
  base.version='9.25.0';
 }
+if(currentReleaseAtLeast(9,26)){
+ const dispositionProof=['data/note-integration.js','data/field-notes.js','data/product-hardening/work-packages.js','data/product-hardening/item-test-contracts-tunnels.js','tools/validate-note-integration.js','tests/run-v9.26-tests.js','docs/NOTES-INTEGRATION.md','docs/v9.26.md','README.md'];
+ const validation=['node tests/run-v9.26-tests.js','node tools/validate-note-integration.js','node tools/validate-field-notes-ui.js','node tools/validate-product-hardening-queue.js','node tools/validate-asset-references.js'];
+ base.contracts['notes-disposition-burn-down']={
+  acceptance:['The note disposition burn-down is represented by explicit per-note terminal review rows with opaque source IDs, substantive rationale, and derived output links for modeled notes; the v9.26 first review wave advances the ledger to 15/556 reviewed with 11 modeled and 4 private-reference-only while the queue item remains queued until all 556 notes have terminal dispositions. Raw review packet text and course-specific output never enter public Obol.'],
+  validationCommands:validation,
+  proofFiles:dispositionProof
+ };
+ base.version='9.26.0';
+}
 root.OBOL_PRODUCT_HARDENING_TEST_CONTRACTS=base;
 })(typeof window!=='undefined'?window:globalThis);
