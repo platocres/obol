@@ -1,0 +1,35 @@
+'use strict';
+
+const assert=require('assert');
+const fs=require('fs');
+const path=require('path');
+const vm=require('vm');
+const cp=require('child_process');
+const root=path.join(__dirname,'..');
+const read=rel=>fs.readFileSync(path.join(root,rel),'utf8');
+const exists=rel=>fs.existsSync(path.join(root,rel));
+const run=args=>cp.spawnSync(process.execPath,args.map((part,idx)=>idx===0?path.join(root,part):part),{cwd:root,encoding:'utf8'});
+const sandbox={window:{},globalThis:null};sandbox.globalThis=sandbox.window;vm.createContext(sandbox);
+for(const rel of ['data/current-release.js','data/product-hardening/product-hardening-queue.js','data/product-hardening/work-packages.js','data/product-hardening/item-test-contracts.js','data/product-hardening/item-test-contracts-tunnels.js','data/note-integration.js','data/field-notes.js'])vm.runInContext(read(rel),sandbox,{filename:rel});
+const release=sandbox.window.OBOL_CURRENT_RELEASE,q=sandbox.window.OBOL_PRODUCT_HARDENING,packages=sandbox.window.OBOL_PRODUCT_HARDENING_WORK_PACKAGES,contracts=sandbox.window.OBOL_PRODUCT_HARDENING_TEST_CONTRACTS,notes=sandbox.window.OBOL_NOTE_INTEGRATION,field=sandbox.window.OBOL_FIELD_NOTES;
+assert(release&&q&&packages&&contracts&&notes&&field,'v9.25 stable owners load');
+assert.strictEqual(release.version,'9.25.0');assert.strictEqual(release.label,'v9.25');assert.strictEqual(release.orangeBaseline,'v8.8');
+const completed=['notes-enex-extraction','notes-atomization-schema','notes-field-panel','notes-tool-influence','notes-path-gap-influence','qa-notes-ledger-test'];
+for(const id of completed){const item=q.items.find(entry=>entry.id===id);assert(item&&item.status==='complete','v9.25 completes '+id);assert(!q.buildNext(1000).some(entry=>entry.id===id),id+' leaves Product Build Next');const contract=contracts.contracts[id];assert(contract&&contract.acceptance.length&&contract.validationCommands.length&&contract.proofFiles.length,id+' owns item-specific proof');assert(contract.validationCommands.includes('node tests/run-v9.25-tests.js'),id+' contract names v9.25 regressions');for(const rel of contract.proofFiles)assert(exists(rel),'v9.25 proof file exists for '+id+': '+rel);}
+assert.strictEqual(contracts.version,'9.25.0');
+assert.strictEqual(q.tracks.find(track=>track.id==='notes-integration').complete,4,'four reviewed notes are modeled');
+assert.strictEqual(q.tracks.find(track=>track.id==='testing-qa').complete,4,'notes ledger QA advances testing track');
+assert.strictEqual(q.totals().complete,66,'Product Hardening reaches 66/632 complete');assert.strictEqual(q.totals().queued,7,'six foundation queue items leave queued state');assert.strictEqual(q.totals().modeled,9,'foundation modeled count stays stable');
+assert(q.buildNext(1)[0]&&q.buildNext(1)[0].id==='notes-disposition-burn-down','Product Build Next advances to the 556-note disposition burn-down');
+const rec=packages.recommend(q);assert(rec&&rec.id==='single-notes-disposition-burn-down','next recommendation is the remaining notes disposition item');assert.deepStrictEqual(Array.from(packages.validate(q)),[],'work-package projection remains valid');
+
+assert.strictEqual(notes.privateRepo,'platocres/obol-source-notes');assert.deepStrictEqual(Array.from(notes.validate()),[],'notes integration self-validates');assert.deepStrictEqual(JSON.parse(JSON.stringify(notes.totals())),{notes:556,resources:1326});assert.strictEqual(notes.ledger.dispositionCounts.modeled,4);assert.strictEqual(notes.ledger.dispositionCounts['pending-review'],552);assert.strictEqual(field.entries.length,4,'reviewed seed notes populate the public Field Notes owner');
+assert(field.relevant({toolId:'nxc'}).some(n=>n.id==='note-pth-material-routing'),'PtH guidance reaches nxc');assert(field.relevant({toolId:'ffuf'}).some(n=>n.id==='note-web-fuzzing-signal-first'),'content-discovery guidance reaches ffuf');assert(field.relevant({toolId:'curl'}).some(n=>n.id==='note-traversal-reproduce-before-chain'),'traversal guidance reaches curl');assert.strictEqual(field.relevant({pathId:'path'}).length,4,'all seed notes can influence Path as contextual guidance');assert.strictEqual(field.relevant({toolId:'unrelated-tool'}).length,0,'unrelated Tool surface stays clean');
+const atom=notes.atomizeMetadata({note_id:'htb-penetration-tester-0123456789abcdef',source_id:'htb-penetration-tester',title:'Safe metadata title',tags:['tag'],resource_count:2,content_sha256:'abc',source_file:'private',content:'private'});assert(atom&&atom.integrationStatus==='pending-review');assert(!Object.prototype.hasOwnProperty.call(atom,'source_file')&&!Object.prototype.hasOwnProperty.call(atom,'content'),'atomization strips private/raw fields');
+const ui=read('assets/field-notes.js');for(const token of ['data/note-integration.js','decorateTools','Field-note branches','data-field-notes-tool','data-field-notes-path'])assert(ui.includes(token),'field-note UI contains '+token);
+const publicProjection=JSON.stringify({sourceInventory:notes.sourceInventory,ledger:notes.ledger,fieldNotes:Array.from(field.entries),atom:JSON.parse(JSON.stringify(atom))});for(const forbidden of ['sources/raw/','<en-note','<resource>'])assert(!publicProjection.includes(forbidden),'public projection excludes raw marker '+forbidden);
+const source=read('data/note-integration.js')+'\n'+read('data/field-notes.js')+'\n'+ui;for(const forbidden of ["require('child_process')",'child_process','spawnSync(','execSync(','eval(','new Function('])assert(!source.includes(forbidden),'notes foundation contains no execution primitive '+forbidden);
+for(const forbidden of ['assets/obol-v9.25.css','assets/app-v9.25.js','assets/core-v9.25.js','data/project-model-v9.25.js'])assert(!exists(forbidden),'no fake v9.25 runtime overlay: '+forbidden);assert(exists('docs/v9.25.md'),'v9.25 release documentation exists');
+const readme=read('README.md');assert(readme.includes('Current release: **v9.25**'),'README identifies v9.25 as current');assert(readme.includes('**Current product-hardening queue:** 66/632 complete (10%), 7 queued, 9 foundation items modeled.'),'README reports v9.25 queue totals');assert(readme.includes('**Notes integration:** 4/556 complete (1%)'),'README reports reviewed note dispositions');assert(readme.includes('**Testing / visual QA:** 4/8 complete (50%)'),'README reports notes ledger QA');assert(readme.includes('**Recommended work package:** **Burn down all 556 note dispositions**'),'README advances Product Build Next to disposition burn-down');
+for(const command of [['tools/validate-note-integration.js'],['tools/validate-field-notes-ui.js'],['tools/validate-product-hardening-queue.js'],['tools/validate-current-release.js'],['tools/validate-asset-references.js'],['tools/sync-current-release.js','--check'],['tools/sync-product-build-next.js','--check'],['tools/validate-release-pr.js','--repo-only']]){const result=run(command);assert.strictEqual(result.status,0,(result.stderr||result.stdout||'').trim());}
+console.log('v9.25 Notes Integration Foundation regression tests passed.');

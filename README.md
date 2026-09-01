@@ -4,7 +4,7 @@ Obol is a static, browser-local workspace for OSCP-style labs, Active Directory 
 
 Live site: `https://platocres.github.io/obol/`
 
-Current release: **v9.24**
+Current release: **v9.25**
 
 Open `#/dashboard` for the active Product Hardening Dashboard and Product Build Next queue.
 
@@ -66,34 +66,26 @@ The completed Orange methodology/source queue is historical, regression-protecte
 This block is generated from `data/product-hardening/product-hardening-queue.js`. Do not edit it manually.
 Recommended work-package metadata comes from `data/product-hardening/work-packages.js`.
 
-**Current product-hardening queue:** 61/632 complete (10%), 13 queued, 9 foundation items modeled.
+**Current product-hardening queue:** 66/632 complete (10%), 7 queued, 9 foundation items modeled.
 **Private notes source:** `platocres/obol-source-notes` — 556 notes and 1326 embedded resources accounted.
 
-**Recommended work package:** **Notes Integration Foundation** — 6 live items / 6 tracked.
-**Work-package entry:** **ENEX extraction pipeline**
-**Ownership area:** `notes/ingestion-bindings`
-**Package guidance:** Build extraction, atomization, contextual display, tool/path influence, and ledger proof around the private notes source as one durable ingestion system.
+**Recommended work package:** **Burn down all 556 note dispositions** — 1 live item / 1 tracked.
+**Work-package entry:** **Burn down all 556 note dispositions**
+**Ownership area:** `notes-integration`
+**Package guidance:** Complete the highest-priority item. Before stopping, inspect adjacent queue work for a coherent same-ownership package.
 **Package dependencies:** none.
 
 **Live items in this package:**
-- **ENEX extraction pipeline** — Use private source repo scripts to extract note metadata and candidates into normalized Obol-safe records.
-- **Note atomization schema** — Each note must yield candidate lessons, tool bindings, path bindings, troubleshooting, evidence, report guidance, or a terminal rejection.
-- **Contextual field-notes panel** — Add expandable relevant field notes at path/tool points without cluttering the operator workflow.
-- **Notes influence tool builders** — Note-derived command variants and failure lessons should become toggles, modes, or guidance in relevant builders.
-- **Notes influence Path gaps** — If notes reveal realistic actions missing from the path, add modeled path improvements rather than storing passive notes only.
-- **Notes ledger coverage tests** — The note-integration ledger must preserve source counts and terminal dispositions until all 556 notes are resolved.
-
-**Related items to consider, not automatically in scope:** Burn down all 556 note dispositions; Design contextual field-notes disclosure.
+- **Burn down all 556 note dispositions** — Every note must end modeled, superseded, rejected, or private-reference-only with rationale.
 
 **Highest-priority live items:**
-1. **ENEX extraction pipeline** — Use private source repo scripts to extract note metadata and candidates into normalized Obol-safe records.
-2. **Note atomization schema** — Each note must yield candidate lessons, tool bindings, path bindings, troubleshooting, evidence, report guidance, or a terminal rejection.
-3. **Contextual field-notes panel** — Add expandable relevant field notes at path/tool points without cluttering the operator workflow.
-4. **Notes influence tool builders** — Note-derived command variants and failure lessons should become toggles, modes, or guidance in relevant builders.
-5. **Notes influence Path gaps** — If notes reveal realistic actions missing from the path, add modeled path improvements rather than storing passive notes only.
-6. **Burn down all 556 note dispositions** — Every note must end modeled, superseded, rejected, or private-reference-only with rationale.
-7. **Quiet service worker caching** — Improve repeat-load and offline behavior without prompting users to install anything.
-8. **IndexedDB workspace storage** — Support durable larger local workspaces, multiple engagements, and cached indexes while remaining browser-local.
+1. **Burn down all 556 note dispositions** — Every note must end modeled, superseded, rejected, or private-reference-only with rationale.
+2. **Quiet service worker caching** — Improve repeat-load and offline behavior without prompting users to install anything.
+3. **IndexedDB workspace storage** — Support durable larger local workspaces, multiple engagements, and cached indexes while remaining browser-local.
+4. **Web Workers for heavy tasks** — Move evidence parsing, search indexing, and report generation off the UI thread.
+5. **Non-intrusive update notice** — When cached app updates are available, notify users without install nagging.
+6. **Workspace storage migration safety** — Any storage refactor must preserve existing browser-local workspaces and sanitized exports.
+7. **Playwright browser smoke tests** — Open core routes, fail on console errors, and capture screenshots for Home, Targets, Evidence, Next Steps, Report, and Dashboard.
 
 **Track status:**
 - **Critical correctness:** 4/4 complete (100%), 0 modeled.
@@ -102,9 +94,9 @@ Recommended work-package metadata comes from `data/product-hardening/work-packag
 - **Tool GUI builders:** 18/18 complete (100%), 0 modeled.
 - **Credential modes:** 14/14 complete (100%), 0 modeled.
 - **Manual outcomes:** 8/8 complete (100%), 0 modeled.
-- **Notes integration:** 0/556 complete (0%), 2 modeled.
+- **Notes integration:** 4/556 complete (1%), 2 modeled.
 - **Offline / performance:** 1/6 complete (17%), 0 modeled.
-- **Testing / visual QA:** 3/8 complete (38%), 3 modeled.
+- **Testing / visual QA:** 4/8 complete (50%), 3 modeled.
 
 Generated by `node tools/sync-product-build-next.js --write`. Verify with `node tools/sync-product-build-next.js --check`.
 <!-- OBOL-PRODUCT-BUILD-NEXT:END -->
@@ -131,6 +123,7 @@ node tools/validate-responsive-layout.js
 node tools/validate-tool-builder-platform.js
 node tools/validate-current-workflow.js
 node tools/validate-field-notes-ui.js
+node tools/validate-note-integration.js
 node tools/sync-current-styles.js --check
 node tools/validate-runtime-loading.js
 node tools/validate-runtime-manifest.js
@@ -164,6 +157,7 @@ node tests/run-v9.21-tests.js
 node tests/run-v9.22-tests.js
 node tests/run-v9.23-tests.js
 node tests/run-v9.24-tests.js
+node tests/run-v9.25-tests.js
 ```
 
 ## GitHub Pages

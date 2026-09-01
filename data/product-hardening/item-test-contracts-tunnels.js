@@ -22,31 +22,11 @@ base.contracts['tb-ssh-plink']={
 base.version='9.21.0';
 if(currentReleaseAtLeast(9,22)){
  const commonProof=['data/credential-material.js','assets/credential-material-current.js','assets/runtime-current.js','data/product-hardening/work-packages.js','data/product-hardening/item-test-contracts-tunnels.js','tests/run-v9.22-tests.js','docs/v9.22.md'];
- base.contracts['cred-schema']={
-  acceptance:['A stable browser-local Credential Material model represents password, hash, challenge-response, ticket, certificate, key, cookie, token, and opaque-secret material with type, context, provenance, sensitivity, candidate/validated/rejected state, typed-artifact migration compatibility, and no automatic authentication or command execution.'],
-  validationCommands:['node tests/run-v9.22-tests.js','node tools/validate-product-hardening-queue.js','node tools/validate-asset-references.js'],
-  proofFiles:commonProof
- };
- base.contracts['cred-hash-routing']={
-  acceptance:['Pasted common lab hash shapes are classified with explicit confidence, ambiguous 32-hex input remains visibly ambiguous, and recognized crackable material produces deterministic Hashcat/John builder suggestions with the appropriate mode or format without executing either tool.'],
-  validationCommands:['node tests/run-v9.22-tests.js','node tools/validate-product-hardening-queue.js'],
-  proofFiles:commonProof
- };
- base.contracts['cred-cross-tool-handshake']={
-  acceptance:['Saved Credential Material can be selected once and mapped only into declared compatible Tool Builder fields, including cracking, password/hash authentication, ticket/certificate/key, and web-secret fields where available, while preserving the copy-only human-run command boundary.'],
-  validationCommands:['node tests/run-v9.22-tests.js','node tools/validate-tool-builder-platform.js','node tools/validate-asset-references.js'],
-  proofFiles:commonProof
- };
- base.contracts['cred-validation-boundary']={
-  acceptance:['New and recovered Credential Material remains candidate material until an independent validation action cites reviewed Evidence and an explicit access fact; manual selection, command generation, cracking output, or operator assertion alone cannot mark the material validated.'],
-  validationCommands:['node tests/run-v9.22-tests.js','node tools/validate-product-hardening-queue.js'],
-  proofFiles:commonProof
- };
- base.contracts['cred-report-redaction']={
-  acceptance:['Sanitized exports redact secret Credential Material values while preserving non-secret material paths and lineage metadata, and current report generation redacts known saved secrets by default without converting candidate material into proof.'],
-  validationCommands:['node tests/run-v9.22-tests.js','node tools/validate-version-identity.js','node tools/validate-asset-references.js'],
-  proofFiles:commonProof
- };
+ base.contracts['cred-schema']={acceptance:['A stable browser-local Credential Material model represents password, hash, challenge-response, ticket, certificate, key, cookie, token, and opaque-secret material with type, context, provenance, sensitivity, candidate/validated/rejected state, typed-artifact migration compatibility, and no automatic authentication or command execution.'],validationCommands:['node tests/run-v9.22-tests.js','node tools/validate-product-hardening-queue.js','node tools/validate-asset-references.js'],proofFiles:commonProof};
+ base.contracts['cred-hash-routing']={acceptance:['Pasted common lab hash shapes are classified with explicit confidence, ambiguous 32-hex input remains visibly ambiguous, and recognized crackable material produces deterministic Hashcat/John builder suggestions with the appropriate mode or format without executing either tool.'],validationCommands:['node tests/run-v9.22-tests.js','node tools/validate-product-hardening-queue.js'],proofFiles:commonProof};
+ base.contracts['cred-cross-tool-handshake']={acceptance:['Saved Credential Material can be selected once and mapped only into declared compatible Tool Builder fields, including cracking, password/hash authentication, ticket/certificate/key, and web-secret fields where available, while preserving the copy-only human-run command boundary.'],validationCommands:['node tests/run-v9.22-tests.js','node tools/validate-tool-builder-platform.js','node tools/validate-asset-references.js'],proofFiles:commonProof};
+ base.contracts['cred-validation-boundary']={acceptance:['New and recovered Credential Material remains candidate material until an independent validation action cites reviewed Evidence and an explicit access fact; manual selection, command generation, cracking output, or operator assertion alone cannot mark the material validated.'],validationCommands:['node tests/run-v9.22-tests.js','node tools/validate-product-hardening-queue.js'],proofFiles:commonProof};
+ base.contracts['cred-report-redaction']={acceptance:['Sanitized exports redact secret Credential Material values while preserving non-secret material paths and lineage metadata, and current report generation redacts known saved secrets by default without converting candidate material into proof.'],validationCommands:['node tests/run-v9.22-tests.js','node tools/validate-version-identity.js','node tools/validate-asset-references.js'],proofFiles:commonProof};
  base.version='9.22.0';
 }
 if(currentReleaseAtLeast(9,23)){
@@ -75,6 +55,17 @@ if(currentReleaseAtLeast(9,24)){
  base.contracts['manual-tests']={acceptance:['Dedicated v9.24 regressions prove all four outcome controls, tried semantics, success advancement, failure triage, queue transitions, report non-laundering, runtime hydration, persistence compatibility, and the human-run no-execution boundary.'],validationCommands:validation,proofFiles:manualProof};
  base.contracts['manual-all-cards']={acceptance:['The stable Manual Outcome owner classifies every methodology card with executable commands as manual-outcome covered and the browser decorator targets every rendered runnable data-cardroot without bespoke card IDs or lab-specific branches.'],validationCommands:validation,proofFiles:manualProof};
  base.version='9.24.0';
+}
+if(currentReleaseAtLeast(9,25)){
+ const noteProof=['data/note-integration.js','data/field-notes.js','assets/field-notes.js','data/product-hardening/work-packages.js','data/product-hardening/item-test-contracts-tunnels.js','tools/validate-note-integration.js','tests/run-v9.25-tests.js','docs/NOTES-INTEGRATION.md','docs/v9.25.md','README.md'];
+ const validation=['node tests/run-v9.25-tests.js','node tools/validate-note-integration.js','node tools/validate-field-notes-ui.js','node tools/validate-product-hardening-queue.js','node tools/validate-asset-references.js'];
+ base.contracts['notes-enex-extraction']={acceptance:['The private source repository remains the raw ENEX owner while public Obol consumes a sanitized source-inventory projection with exact source hashes, 556-note/1326-resource accounting, opaque note references, and no raw course content or ENEX paths in browser data.'],validationCommands:validation,proofFiles:noteProof};
+ base.contracts['notes-atomization-schema']={acceptance:['A stable non-versioned note-integration owner defines normalized lesson, tool-guidance, path-guidance, troubleshooting, Evidence, report, and cleanup atoms plus terminal dispositions, and can atomize private metadata into review records without carrying raw note bodies into public Obol.'],validationCommands:validation,proofFiles:noteProof};
+ base.contracts['notes-field-panel']={acceptance:['Reviewed normalized note outputs populate the stable public Field Notes owner and render through collapsed contextual disclosure on relevant Cards, Tool pages, and Path without dumping the private notebook or showing unrelated notes.'],validationCommands:validation,proofFiles:noteProof};
+ base.contracts['notes-tool-influence']={acceptance:['Modeled note outputs can bind to one or more tool identifiers and appear as contextual tool-builder guidance on the matching Tool surface, allowing private-source lessons to influence command choices and failure handling without adding bespoke execution code.'],validationCommands:validation,proofFiles:noteProof};
+ base.contracts['notes-path-gap-influence']={acceptance:['Modeled note outputs can bind to Path and appear as explicit field-note branches that help the operator choose or refine a next-step branch while remaining guidance rather than fabricated facts, automatic execution, or report proof.'],validationCommands:validation,proofFiles:noteProof};
+ base.contracts['qa-notes-ledger-test']={acceptance:['Permanent notes-integration validation reconciles the two private source inventories to 556 notes and 1326 resources, requires disposition counts to sum to all staged notes, preserves opaque lineage for every public derived note, and fails on raw ENEX/source leakage or invalid modeled references.'],validationCommands:validation,proofFiles:noteProof};
+ base.version='9.25.0';
 }
 root.OBOL_PRODUCT_HARDENING_TEST_CONTRACTS=base;
 })(typeof window!=='undefined'?window:globalThis);

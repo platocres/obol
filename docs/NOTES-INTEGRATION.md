@@ -46,7 +46,30 @@ Public source references must not contain raw ENEX paths, course text, flags, sc
 
 `assets/field-notes.js` selects only records relevant to the active card/tool/Path context and renders them through collapsed progressive disclosure. An empty relevant set renders nothing. This prevents the public app from becoming a notebook dump while giving later atomization work a stable destination.
 
-The v9.10 public field-note ledger is intentionally empty. This is deliberate: `ux-progressive-notes` establishes the presentation contract, while `notes-enex-extraction`, `notes-atomization-schema`, `notes-field-panel`, note influence, and disposition burn-down remain separate queue work. Those items must earn populated public records through reviewed private-source derivation rather than by copying raw material.
+The v9.10 public field-note ledger was intentionally empty. v9.25 is the first release to populate that presentation contract from reviewed private-source derivation.
+
+## v9.25 Notes Integration Foundation
+
+`data/note-integration.js` is now the stable public-safe ingestion and ledger owner. It mirrors only the source-level counts and hashes required to prove source identity, defines normalized atom kinds and dispositions, accepts sanitized private metadata records, and owns opaque lineage from reviewed private notes to rewritten public outputs.
+
+The public projection deliberately does not carry raw ENEX paths or note bodies. `atomizeMetadata(...)` retains only the note/source IDs, a short title hint, tags, resource count, and content digest needed for review bookkeeping.
+
+v9.25 models four reviewed seed notes into rewritten guidance. Their topics are credential-dump proof boundaries, pass-the-hash material routing, response-driven content discovery, and path-traversal proof sequencing. These outputs are bound to relevant Tool pages and Path through the existing field-note UI. The source references exposed publicly are opaque private-ledger IDs only.
+
+The current public ledger summary is:
+
+```text
+modeled: 4
+pending-review: 552
+superseded: 0
+rejected: 0
+private-reference-only: 0
+total: 556
+```
+
+This does not complete the separate 556-note disposition burn-down. It proves the system that future releases use to burn it down safely and measurably.
+
+`tools/validate-note-integration.js` permanently verifies source totals, disposition reconciliation, modeled lineage, public-safe atomization, tool/Path bindings, raw-source exclusion, and the no-execution boundary.
 
 ## Dispositions
 
@@ -56,6 +79,8 @@ Each note must eventually end in one of these terminal states:
 - superseded
 - rejected
 - private-reference-only
+
+Before terminal review, a note may remain `pending-review` in the private/public-safe ledger projection.
 
 Modeled notes should produce one or more normalized Obol artifacts:
 
