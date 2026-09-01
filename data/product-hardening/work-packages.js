@@ -13,8 +13,9 @@ function applyCurrentReleaseCompletions(){
  const completed=new Set(['tb-chisel','tb-ssh-plink']);
  if(currentReleaseAtLeast(9,22))for(const id of ['cred-schema','cred-hash-routing','cred-cross-tool-handshake','cred-validation-boundary','cred-report-redaction'])completed.add(id);
  if(currentReleaseAtLeast(9,23))for(const id of ['cred-password','cred-ntlm','cred-netntlm','cred-kerberos-hashes','cred-mscache2','cred-ccache-kirbi','cred-pfx-cert','cred-ssh-key','cred-cookie-token'])completed.add(id);
+ if(currentReleaseAtLeast(9,24))for(const id of ['manual-schema','manual-ui','manual-success-unlocks','manual-failure-triage','manual-proof-report','manual-queue-interaction','manual-tests','manual-all-cards'])completed.add(id);
  for(const item of q.items||[])if(completed.has(item.id))item.status='complete';
- for(const trackId of ['tool-builders','credential-modes']){
+ for(const trackId of ['tool-builders','credential-modes','manual-outcomes']){
   const track=(q.tracks||[]).find(entry=>entry.id===trackId);
   if(track)track.complete=(q.items||[]).filter(item=>item.track===trackId&&item.status==='complete').length;
  }
@@ -80,8 +81,8 @@ const packages=[
  },
  {
   id:'manual-outcome-platform',title:'Manual Outcome Platform',priority:'normal',ownershipArea:'workflow/outcomes-proof',
-  itemIds:['manual-schema','manual-ui','manual-success-unlocks','manual-failure-triage','manual-proof-report','manual-tests'],dependencies:[],relatedItems:['manual-queue-interaction','manual-all-cards'],parallelSafe:false,recommendedBatch:true,
-  guidance:'Implement manual outcome state, controls, advancement, failure triage, proof handling, and regression coverage as a single workflow capability.'
+  itemIds:['manual-schema','manual-ui','manual-success-unlocks','manual-failure-triage','manual-proof-report','manual-queue-interaction','manual-tests','manual-all-cards'],dependencies:[],relatedItems:[],parallelSafe:false,recommendedBatch:true,
+  guidance:'Implement manual outcome state, controls, advancement, failure triage, proof handling, queued-intent interaction, all-card coverage, and regression protection as a single workflow capability.'
  },
  {
   id:'notes-integration-platform',title:'Notes Integration Foundation',priority:'normal',ownershipArea:'notes/ingestion-bindings',
