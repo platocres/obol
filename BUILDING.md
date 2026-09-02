@@ -1,6 +1,6 @@
 # Obol Build and Release Workflow
 
-This file is a mandatory companion to `README.md` for future Obol build work. Read `docs/PRODUCT-HARDENING.md` for the active v9 engineering contract, then consult the owner docs relevant to the change: `docs/ARCHITECTURE.md`, `docs/NORTH-STAR.md`, `docs/PROOF-CONTRACT.md`, `docs/NOTES-INTEGRATION.md`, `docs/UX-QUALITY.md`, and `docs/ORANGE-SOURCE-DEPTH.md`.
+This file is a mandatory companion to `README.md` for future Obol build work. Read `docs/PRODUCT-HARDENING.md` for the active v9 engineering contract, then consult the owner docs relevant to the change: `docs/ARCHITECTURE.md`, `docs/NORTH-STAR.md`, `docs/PROOF-CONTRACT.md`, `docs/NOTES-INTEGRATION.md`, `docs/NOTES-IMPACT.md`, `docs/RUNTIME-COMPACTION.md`, `docs/UX-QUALITY.md`, and `docs/ORANGE-SOURCE-DEPTH.md`.
 
 ## Incremental release policy
 
@@ -15,6 +15,7 @@ The intended release flow is:
 - never use Draft status as a release gate, and never close/recreate a healthy release PR merely to transition between Draft and Ready states;
 - push incremental, coherent commits to that same PR;
 - ordinary release commits run `node tools/release-smoke.js`;
+- while developing a coherent package, use `node tools/scope-check.js` as the focused inner-loop gate instead of manually running every historical release suite;
 - use `[preflight]` when a coherent current-release snapshot is ready;
 - do not create a second build/release/product-hardening PR to work around a failed check;
 - when the product release changes, update `data/current-release.js`, synchronize README with `node tools/sync-current-release.js --write`, and validate the authority with `node tools/validate-current-release.js`;
@@ -23,7 +24,7 @@ The intended release flow is:
 - require `implemented-quality = 0` and `mapped-delivery = 0` before methodology expansion is merge-ready;
 - preserve canonical, frozen-baseline, file-level, and atomic denominators as historical milestones without forcing their detailed accounting into the current README;
 - audited source units must end as explicitly `modeled`, `superseded`, or `rejected` with rationale and required review dimensions accounted for;
-- product-hardening queue items may not move to `modeled`, `complete`, `superseded`, or `rejected` unless `data/product-hardening/item-test-contracts.js` names acceptance criteria, validation commands, and proof files for that item;
+- product-hardening queue items may not move to `modeled`, `complete`, `superseded`, or `rejected` unless the applicable item-test contract names acceptance criteria, validation commands, and proof files for that item;
 - make the exact final release commit with `[release-final]` only after code, tests, docs, README, changelog or dedicated release documentation, and PR description form one coherent snapshot;
 - require smoke, preflight, historical-test future safety, the complete historical regression chain, release-quality gate, release-contract validation, open-PR uniqueness validation, current-release synchronization, and generated Product Build Next synchronization on that exact head;
 - require the non-draft PR's required checks to pass on that same exact final head before calling the release merge-ready;
@@ -31,11 +32,14 @@ The intended release flow is:
 
 `tools/validate-open-pr-uniqueness.js` enforces the one-open-release/product-hardening-PR rule. It is invoked by `tools/validate-release-pr.js` for release-intent pull requests and rejects duplicate open release/product-hardening PRs.
 
-The three validation tiers are:
+The validation tiers are:
 
-1. **Smoke** - every release-branch push; JavaScript syntax plus local index asset-reference sanity.
-2. **Preflight** - `[preflight]` and `[release-final]`; current-release wiring, historical-test future safety, release contract, quality debt, current release regressions, and generated queue synchronization.
-3. **Final historical validation** - `[release-final]`, non-draft release pull requests, and `main`; complete historical regressions plus the permanent quality and synchronization gates.
+1. **Focused scope check** - `node tools/scope-check.js` during active package development; proves the current ownership area without forcing the whole historical archive through every small edit.
+2. **Smoke** - every release-branch push; JavaScript syntax plus local index asset-reference sanity.
+3. **Preflight** - `[preflight]` and `[release-final]`; current-release wiring, historical-test future safety, release contract, quality debt, current release regressions, and generated queue synchronization.
+4. **Final historical validation** - `[release-final]`, non-draft release pull requests, and `main`; `node tools/run-historical-contracts.js` owns the complete historical regressions plus the permanent quality and synchronization gates.
+
+Do not maintain or instruct agents to manually copy a giant list of `tests/run-vX.Y-tests.js` commands into their normal development loop. The named historical runner owns discovery and ordered execution of those preservation suites. Historical tests remain real gates; the change is that their orchestration has one owner instead of being duplicated across README, CI, and agent instructions.
 
 The release PR remains open and non-draft throughout development. A red required check means "keep building on this PR," not "replace the PR." GitHub branch protection and required checks are the merge gate.
 
@@ -45,7 +49,7 @@ Release-PR metadata enforcement applies only to release-intent pull requests. No
 
 ## Product-hardening item Definition of Done
 
-Every Product Build Next item must carry its own proof once it leaves `queued` status. The proof lives in `data/product-hardening/item-test-contracts.js`, and `tools/validate-product-hardening-queue.js` fails if a status-bearing item lacks all three of these:
+Every Product Build Next item must carry its own proof once it leaves `queued` status. The proof lives in `data/product-hardening/item-test-contracts.js` plus any current release extension loaded by the validator, and `tools/validate-product-hardening-queue.js` fails if a status-bearing item lacks all three of these:
 
 - acceptance criteria describing the behavior or governance guarantee;
 - validation commands proving the item-specific work;
@@ -101,15 +105,17 @@ v6.6 established the boundary between domain models and current project-status p
 
 ## Historical runtime compaction
 
-The historical browser load chain is acknowledged technical debt. With the pinned Orange 2025.03 methodology/source queue complete in v8.8, regression-equivalent compaction is now a primary engineering direction rather than secondary cleanup.
+The historical browser load chain is acknowledged technical debt. With the pinned Orange 2025.03 methodology/source queue complete in v8.8, regression-equivalent compaction is now a primary engineering direction rather than secondary cleanup. `docs/RUNTIME-COMPACTION.md` owns the detailed retirement lifecycle.
 
 For each ownership area selected for compaction:
 
 1. identify the historical layers that jointly own the behavior;
-2. implement a consolidated replacement with the same observable contracts;
-3. prove current behavior and required historical invariants through regression-equivalent tests;
+2. implement a consolidated stable current owner with the same observable contracts;
+3. prove current behavior and required historical invariants through regression-equivalent tests, adding browser-level proof when presentation/routing behavior is being removed;
 4. preserve state migration for existing browser-local workspaces;
-5. remove only the layers genuinely superseded by the consolidated owner.
+5. move still-useful historical expectations to fixture/current-owner tests;
+6. remove only the live layers genuinely superseded by the consolidated owner;
+7. retire assertions that protected only obsolete delivery shape.
 
 A smaller file count is not a win if it changes Evidence semantics, command behavior, recommendation logic, report lineage, or workspace compatibility.
 
