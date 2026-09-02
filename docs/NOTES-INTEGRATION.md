@@ -187,6 +187,12 @@ The packet advances the public projection to 32 normalized Field Notes and recor
 
 Contextual Field Notes on Tool and Path routes now lazy-load the packet layer as well as the base and historical review layers. Dashboard, README generation, validators, and workflow-route guidance therefore consume the same current Notes Integration state instead of stopping at different review schemas.
 
+## Current themed packet state
+
+The current public-safe ledger has **127/556** notes reviewed: **95 modeled**, **27 private-reference-only**, **5 superseded**, **0 rejected**, and **429 pending**. Completed subject packets are web upload/file inclusion, XSS/session behavior, credentials/authentication, and Windows privilege escalation. Linux privilege escalation and AD/pivoting remain the next named subject packets beneath the 556-note umbrella.
+
+The Windows privilege-escalation packet was selected after substantive review of the private title/tag shortlist (**32 candidates**) and private full-text sweep (**95 candidates**), then curated to **16** reusable subject sources. One source was already terminal from the credentials work and fifteen reached new terminal dispositions. Public guidance now covers Windows privilege-enumeration triage, access-token/integrity proof, privileged service/task/DLL execution preconditions, secret-hunting boundaries, and local-exploit risk/proof without publishing private course recipes.
+
 ## Dispositions
 
 Each note must eventually end in one of these terminal states:

@@ -34,6 +34,7 @@ run(['tools/validate-release-pr.js']);
 run(['tests/run-tests.js']);
 for(const file of fs.readdirSync(path.join(root,'tests')).filter(name=>/^run-v.*-tests\.js$/.test(name)).sort(natural))run(['tests/'+file]);
 run(['tools/validate-release-quality.js']);
+run(['tools/validate-readme-history-ownership.js']);
 run(['tools/sync-readme-build-next.js','--check']);
 run(['tools/sync-product-build-next.js','--check']);
 console.log('Complete historical contract runner passed.');

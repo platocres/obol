@@ -4,7 +4,7 @@ Obol is a static, browser-local workspace for OSCP-style labs, Active Directory 
 
 Live site: `https://platocres.github.io/obol/`
 
-Current release: **v9.34**
+Current release: **v9.35**
 
 Open `#/dashboard` for the active Product Hardening Dashboard and Product Build Next queue.
 
@@ -63,15 +63,11 @@ Product Build Next is the only active development queue. Its atomic item source 
 
 The 556-note disposition item is an umbrella requirement, not permission to perform anonymous review waves forever. Notes work should be organized as coherent subject packets and reported through the notes-to-product impact projection so the dashboard shows what was learned, where guidance is bound, what product mechanics actually changed, and what gaps remain.
 
-Historical runtime layers are explicit product debt, not permanent architecture. v9.29 completed the Dashboard retirement slice: the current Dashboard owns its route and paint, historical Dashboard data/presentation owners are out of live startup, and fixture/current-owner tests preserve the durable behavior. Remaining runtime areas should follow the same current-owner, equivalence, fixture, live-layer removal, and obsolete-test-retirement lifecycle instead of keeping old layers alive forever.
+Historical runtime layers are explicit product debt, not permanent architecture. The current Dashboard owns its route and paint, proven historical Dashboard data/presentation owners are out of live startup, and remaining runtime areas should follow the same current-owner, equivalence, fixture, live-layer removal, and obsolete-test-retirement lifecycle.
 
-v9.31 starts the next slice outside the Dashboard: Path, Card, and Tools now have a stable current operator-route owner. Path presents a compact current decision screen, while Card/Tools keep guided builders first and fold raw historical command blocks behind supporting detail.
+Path, Card, and Tools use a stable current operator-route owner. Path presents a compact decision screen, while Card/Tools keep guided builders first and fold raw historical command blocks behind supporting detail.
 
-v9.32 completes the XSS/session notes packet. The public product now carries normalized guidance for browser-execution proof, stored/reflected/DOM delivery and victim triggers, session-impact proof boundaries, and context-aware remediation without publishing raw private course material or payload catalogs.
-
-v9.33 completes the credentials/authentication notes packet. The public product now reinforces credential-material type and protocol scope, hash classification, lockout-aware password testing, protected-secret container boundaries, Basic-auth transport, Windows credential-source proof, per-service reuse validation, and the NetNTLM/pass-the-hash distinction while preserving the existing stable Credential Material and credential-mode mechanics.
-
-v9.34 hardens Dashboard freshness. Opening or re-opening the Product Hardening Dashboard now refreshes its current release, queue, work-package, notes-impact, renderer, and stylesheet owners through a cache-busted generation instead of trusting stale in-memory globals or recently cached static responses. The standalone Dashboard uses the same current owner, and browser smoke deliberately poisons Dashboard globals to prove the next activation restores authoritative current data.
+Notes Integration uses themed packets under the 556-note umbrella. Completed packets cover web upload/file inclusion, XSS/session behavior, credentials/authentication, and Windows privilege escalation; Linux privilege escalation and AD/pivoting remain live. The dashboard and generated Product Build Next block project the same current ledger and note-to-product impact state.
 
 The completed Orange methodology/source queue is historical, regression-protected baseline material. Do not reopen it unless a real defect is found or the pinned upstream source is deliberately repinned. Detailed Orange accounting belongs in the North Star/source-depth docs above, not in this README.
 
@@ -81,15 +77,15 @@ The completed Orange methodology/source queue is historical, regression-protecte
 This block is generated from `data/product-hardening/product-hardening-queue.js`. Do not edit it manually.
 Recommended work-package metadata comes from `data/product-hardening/work-packages.js`.
 
-**Current product-hardening queue:** 182/638 complete (29%), 9 queued, 9 foundation items modeled.
+**Current product-hardening queue:** 197/638 complete (31%), 8 queued, 9 foundation items modeled.
 **Private notes source:** `platocres/obol-source-notes` — 556 notes and 1326 embedded resources accounted.
-**Notes Integration:** 112/556 reviewed — 82 modeled, 25 private-only, 444 pending.
-**Derived note guidance:** 43 Field Notes · 38 tool-bound · 40 Path-bound · 12 Evidence · 5 Report.
+**Notes Integration:** 127/556 reviewed — 95 modeled, 27 private-only, 429 pending.
+**Derived note guidance:** 48 Field Notes · 43 tool-bound · 45 Path-bound · 14 Evidence · 5 Report.
 **Declared note-driven product mechanics:** 1 total · 1 builder · 0 Path logic · 0 Evidence parser · 0 report generator · 0 workflow.
-**Latest mined themes:** Credentials / auth material.
+**Latest mined themes:** Windows local privilege escalation.
 **Notes impact contract:** `docs/NOTES-IMPACT.md`.
 
-**Recommended work package:** **Notes Impact and Themed Burn-down** — 4 live items / 8 tracked.
+**Recommended work package:** **Notes Impact and Themed Burn-down** — 3 live items / 8 tracked.
 **Work-package entry:** **Burn down all 556 note dispositions**
 **Ownership area:** `notes/impact-packets`
 **Package guidance:** Treat the 556-note disposition item as the umbrella. Burn notes down in coherent themed packets, and for every modeled source record which Field Note, tool-bound or Path-bound guidance, Evidence/report/troubleshooting output, code-level product change, or explicit product gap it produced.
@@ -97,7 +93,6 @@ Recommended work-package metadata comes from `data/product-hardening/work-packag
 
 **Live items in this package:**
 - **Burn down all 556 note dispositions** — Umbrella disposition goal. Review work should be executed in themed packets and must record what each modeled note changed in Field Notes, tools, Path, Evidence, reports, troubleshooting, or product gaps.
-- **Notes packet: Windows privilege escalation** — Mine Windows privilege-escalation discovery, evidence, tool options, failure modes, path branches, proof boundaries, and reporting guidance.
 - **Notes packet: Linux privilege escalation** — Mine Linux privilege-escalation discovery, evidence, tool options, failure modes, path branches, proof boundaries, and reporting guidance.
 - **Notes packet: AD and pivoting** — Mine Active Directory, lateral movement, tunneling, pivoting, routing, credential use, evidence boundaries, and missing workflow/tool options.
 
@@ -105,13 +100,13 @@ Recommended work-package metadata comes from `data/product-hardening/work-packag
 
 **Highest-priority live items:**
 1. **Burn down all 556 note dispositions** — Umbrella disposition goal. Review work should be executed in themed packets and must record what each modeled note changed in Field Notes, tools, Path, Evidence, reports, troubleshooting, or product gaps.
-2. **Notes packet: Windows privilege escalation** — Mine Windows privilege-escalation discovery, evidence, tool options, failure modes, path branches, proof boundaries, and reporting guidance.
-3. **Notes packet: Linux privilege escalation** — Mine Linux privilege-escalation discovery, evidence, tool options, failure modes, path branches, proof boundaries, and reporting guidance.
-4. **Notes packet: AD and pivoting** — Mine Active Directory, lateral movement, tunneling, pivoting, routing, credential use, evidence boundaries, and missing workflow/tool options.
-5. **Quiet service worker caching** — Improve repeat-load and offline behavior without prompting users to install anything.
-6. **IndexedDB workspace storage** — Support durable larger local workspaces, multiple engagements, and cached indexes while remaining browser-local.
-7. **Web Workers for heavy tasks** — Move evidence parsing, search indexing, and report generation off the UI thread.
-8. **Non-intrusive update notice** — When cached app updates are available, notify users without install nagging.
+2. **Notes packet: Linux privilege escalation** — Mine Linux privilege-escalation discovery, evidence, tool options, failure modes, path branches, proof boundaries, and reporting guidance.
+3. **Notes packet: AD and pivoting** — Mine Active Directory, lateral movement, tunneling, pivoting, routing, credential use, evidence boundaries, and missing workflow/tool options.
+4. **Quiet service worker caching** — Improve repeat-load and offline behavior without prompting users to install anything.
+5. **IndexedDB workspace storage** — Support durable larger local workspaces, multiple engagements, and cached indexes while remaining browser-local.
+6. **Web Workers for heavy tasks** — Move evidence parsing, search indexing, and report generation off the UI thread.
+7. **Non-intrusive update notice** — When cached app updates are available, notify users without install nagging.
+8. **Workspace storage migration safety** — Any storage refactor must preserve existing browser-local workspaces and sanitized exports.
 
 **Track status:**
 - **Critical correctness:** 4/4 complete (100%), 0 modeled.
@@ -120,7 +115,7 @@ Recommended work-package metadata comes from `data/product-hardening/work-packag
 - **Tool GUI builders:** 19/19 complete (100%), 0 modeled.
 - **Credential modes:** 14/14 complete (100%), 0 modeled.
 - **Manual outcomes:** 8/8 complete (100%), 0 modeled.
-- **Notes integration:** 112/556 complete (20%), 2 modeled.
+- **Notes integration:** 127/556 complete (23%), 2 modeled.
 - **Offline / performance:** 1/6 complete (17%), 0 modeled.
 - **Testing / visual QA:** 6/9 complete (67%), 3 modeled.
 
@@ -149,7 +144,7 @@ The permanent notes-impact checks are:
 node tools/validate-notes-impact.js
 node tools/validate-note-integration.js
 node tools/sync-product-build-next.js --check
-node tests/run-v9.34-tests.js
+node tests/run-v9.35-tests.js
 ```
 
 ## GitHub Pages

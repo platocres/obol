@@ -2,7 +2,34 @@
 
 This file is the release-history source for Obol. Future build work should review this changelog together with the current README before changing architecture or methodology.
 
-The README is intentionally reserved for current project purpose, architecture, permanent requirements, a compact summary of only the latest three releases, and forward priorities.
+The README is intentionally reserved for current product purpose, permanent operating and build requirements, current architecture/state, and forward priorities. Release narratives and historical implementation summaries belong here, not in README.
+
+## v9.35 — Windows privilege-escalation notes and README history ownership
+
+- Completed the Windows privilege-escalation notes packet after substantive review of 32 private metadata candidates and 95 private full-text candidates, curating 16 reusable subject sources.
+- Advanced the public-safe ledger to 127/556 reviewed: 95 modeled, 27 private-reference-only, 5 superseded, 0 rejected, and 429 pending.
+- Added normalized guidance for Windows privilege-enumeration triage, access-token and integrity proof, privileged service/task/DLL execution preconditions, secret-hunting boundaries, and local-exploit risk/proof.
+- Kept the packet guidance-only at the mechanics layer because the reviewed sources did not expose a missing command-builder, Path, Evidence parser, report-generator, or workflow primitive that justified new code-level behavior.
+- Restored README to current-state handoff ownership, moved recent release narratives into CHANGELOG, and added a permanent README-history ownership validator to preflight and the historical contract runner.
+
+## v9.34 — Dashboard freshness and self-update hardening
+
+- Made Dashboard activation freshness-aware across current release, queue, work-package, notes-impact, renderer, and stylesheet owners.
+- Added cache-busted current-owner reloads, generation isolation, standalone/embedded convergence, stale-global browser regression coverage, and a permanent Dashboard freshness validator.
+- Preserved the stable current Dashboard owner instead of adding another versioned runtime layer.
+
+## v9.33 — credentials and authentication notes packet
+
+- Completed the credentials/authentication subject packet with 24 curated candidates: 2 previously terminal and 22 newly terminal.
+- Advanced the cumulative notes ledger to 112 reviewed, 82 modeled, 25 private-reference-only, 5 superseded, and 444 pending.
+- Added normalized guidance for credential material/protocol scope, hash classification, lockout-aware testing, protected secret containers, Basic-auth transport, Windows credential-source proof, reuse validation, and the NetNTLM/pass-the-hash distinction.
+- Confirmed existing Credential Material and credential-mode mechanics covered the reviewed operational needs, so the packet added no redundant runtime or builder layer.
+
+## v9.32 — XSS and session notes packet
+
+- Completed the XSS/session subject packet with explicit browser-execution, delivery/trigger, session-impact, and remediation proof boundaries.
+- Advanced the cumulative ledger to 90 reviewed, 63 modeled, 23 private-reference-only, 4 superseded, and 466 pending.
+- Preserved raw private payload and walkthrough material outside the public repository while binding rewritten guidance to current Tool, Path, Evidence, and Report surfaces.
 
 ## v9.31 — operator route ownership and tool declutter
 
@@ -11,6 +38,12 @@ The README is intentionally reserved for current project purpose, architecture, 
 - Made current schema-driven builders the primary Card/Tools surface and collapsed raw historical command blocks behind one supporting-detail disclosure.
 - Added Product Hardening queue/work-package entries and item-test contracts for operator route ownership, Next Step declutter, compact card tool presentation, and the focused UX regression.
 - Preserved the v9.30 notes ledger state while keeping notes burn-down as the highest-priority live Product Build Next item.
+
+## v9.30 — themed notes packet burn-down
+
+- Replaced anonymous note-review waves with explicit subject packets under the 556-note disposition umbrella.
+- Completed the web upload/file-inclusion packet, advancing the ledger to 76 reviewed and adding normalized proof, troubleshooting, cleanup, and remediation guidance.
+- Added the first declared note-driven code-level product change: curl path preservation for traversal hypotheses where client normalization would otherwise alter the request.
 
 ## v7.6 — admin source-depth completion
 
