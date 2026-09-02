@@ -131,7 +131,7 @@ function render(cycle){
 function scheduleRepair(){
  if(!instanceCurrent()||repairScheduled||!dashboardActive())return;
  repairScheduled=true;
- setTimeout(()=>{repairScheduled=false;if(!instanceCurrent()||!dashboardActive())return;const target=view();if(!target||currentMarker(target)||transientMarker(target))return;shell(true);render(activeAssetCycle||nextAssetCycle());},0);
+ setTimeout(()=>{repairScheduled=false;if(!instanceCurrent()||!dashboardActive())return;const target=view();if(!target||currentMarker(target)||transientMarker(target))return;shell(true);root.__OBOL_CURRENT_DASHBOARD_RENDER_PROMISE__=render(activeAssetCycle||nextAssetCycle());},0);
 }
 function armGuard(){
  const target=view();if(!target||observer)return;
@@ -147,9 +147,10 @@ function activate(){
  if(!instanceCurrent())return false;
  if(!dashboardActive()){disarmGuard();return false;}
  const cycle=nextAssetCycle();
- shell(true);armGuard();render(cycle);return true;
+ shell(true);armGuard();root.__OBOL_CURRENT_DASHBOARD_RENDER_PROMISE__=render(cycle);return true;
 }
 function refresh(){return refreshAssets(nextAssetCycle());}
+function whenRendered(){return root.__OBOL_CURRENT_DASHBOARD_RENDER_PROMISE__||Promise.resolve(false);}
 
 const routeCandidate=typeof root.route==='function'?root.route:null;
 const previousRoute=routeCandidate&&routeCandidate.__obolCurrentDashboardOwner&&routeCandidate.__obolPreviousRoute?routeCandidate.__obolPreviousRoute:routeCandidate;
@@ -162,5 +163,5 @@ if(previousRoute){
 root.addEventListener('hashchange',()=>{if(!instanceCurrent())return;if(dashboardActive())activate();else disarmGuard();});
 if(root.document.readyState==='loading')root.document.addEventListener('DOMContentLoaded',()=>{if(instanceCurrent()&&dashboardActive())activate();},{once:true});
 else setTimeout(()=>{if(instanceCurrent()&&dashboardActive())activate();},0);
-root.OBOL_CURRENT_DASHBOARD_ROUTE=Object.freeze({owner:OWNER,instance:INSTANCE,activate,render,refreshAssets:refresh,freshUrl,freshnessQuery:FRESH_QUERY,assetSources:Object.freeze(PRODUCT_SCRIPTS.slice()),styleSource:PRODUCT_STYLE});
+root.OBOL_CURRENT_DASHBOARD_ROUTE=Object.freeze({owner:OWNER,instance:INSTANCE,activate,render,whenRendered,refreshAssets:refresh,freshUrl,freshnessQuery:FRESH_QUERY,assetSources:Object.freeze(PRODUCT_SCRIPTS.slice()),styleSource:PRODUCT_STYLE});
 })(typeof window!=='undefined'?window:globalThis);
