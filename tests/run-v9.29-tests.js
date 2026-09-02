@@ -33,13 +33,14 @@ assert.strictEqual(itemMap.get('notes-impact-dashboard').status,'complete','note
 for(const id of ['notes-disposition-burn-down','notes-packet-web-upload-inclusion','notes-packet-xss-session','notes-packet-credentials-auth','notes-packet-windows-privesc','notes-packet-linux-privesc','notes-packet-ad-pivoting'])assert(itemMap.has(id),'notes umbrella/packet queue item exists: '+id);
 assert.strictEqual(itemMap.get('runtime-dashboard-no-flash').status,'complete','dashboard no-flash owner is complete');
 assert.strictEqual(itemMap.get('runtime-test-retirement-policy').status,'complete','runtime test-retirement policy is complete');
-assert.strictEqual(itemMap.get('qa-playwright-smoke').status,'queued','browser smoke remains the next proof gate');
-assert.strictEqual(itemMap.get('runtime-dashboard-layer-retirement').status,'queued','physical dashboard layer retirement waits for browser proof');
+assert.strictEqual(itemMap.get('qa-playwright-smoke').status,'complete','real browser smoke proof is complete and item-tested');
+assert.strictEqual(itemMap.get('runtime-dashboard-layer-retirement').status,'queued','physical dashboard layer retirement is now the active compaction gate');
 const architectureTrack=q.tracks.find(track=>track.id==='architecture-runtime');assert(architectureTrack&&architectureTrack.complete===8&&architectureTrack.total===12,'runtime-retirement work is represented in Architecture progress math');
-assert.strictEqual(q.totals().complete,119);assert.strictEqual(q.totals().total,634);assert.strictEqual(q.totals().queued,14);
-assert.strictEqual(q.buildNext(1)[0].id,'qa-playwright-smoke','Playwright browser smoke is next before layer deletion');
+const testingTrack=q.tracks.find(track=>track.id==='testing-qa');assert(testingTrack&&testingTrack.complete===5&&testingTrack.total===8,'browser smoke completion is represented in Testing progress math');
+assert.strictEqual(q.totals().complete,120);assert.strictEqual(q.totals().total,634);assert.strictEqual(q.totals().queued,13);
+assert.strictEqual(q.buildNext(1)[0].id,'runtime-dashboard-layer-retirement','physical dashboard retirement follows browser proof');
 const recommended=workPackages.recommend(q);assert(recommended&&recommended.id==='runtime-dashboard-retirement','next recommended package remains Dashboard Runtime Compaction');
-assert.deepStrictEqual(Array.from(recommended.liveItems).map(item=>item.id),['qa-playwright-smoke','runtime-dashboard-layer-retirement'],'runtime package orders browser proof before physical layer retirement');
+assert.deepStrictEqual(Array.from(recommended.liveItems).map(item=>item.id),['runtime-dashboard-layer-retirement'],'runtime package now exposes only physical layer retirement as live');
 const workPackageSource=read('data/product-hardening/work-packages.js');
 assert(!workPackageSource.includes('function currentReleaseAtLeast'),'work-package owner no longer derives queue completion from release numbers');
 assert(!workPackageSource.includes('completed=new Set'),'work-package owner no longer carries hidden completion overlays');
@@ -57,7 +58,7 @@ assert(stableOwner.includes("if(!currentMarker(current)&&!transientMarker(curren
 assert(!/const PRODUCT_SCRIPTS=\[[\s\S]*assets\/workflow-current\.js[\s\S]*\];/.test(stableOwner),'dashboard product dependency list does not pull the general workflow owner into the dashboard load race');
 assert(stableOwner.includes("'data/note-integration-reviews.js':()=>!!(root.OBOL_NOTE_INTEGRATION&&root.OBOL_NOTE_INTEGRATION.schemaVersion==='1.3.0')"),'dashboard owner waits for the review extension to execute, not merely for its script tag to exist');
 const app=read('assets/app-v8.8.js');
-for(const token of ['currentDashboardShell88','renderCurrentDashboard88','data-product-dashboard-owner="current-loading"','data/product-hardening/notes-impact-current.js'])assert(app.includes(token),'v8.8 compatibility bridge retains transitional Dashboard support: '+token);
+for(const token of ['currentDashboardShell88','renderCurrentDashboard88','data-product-hardening/notes-impact-current.js'.replace('data-product-hardening','data/product-hardening')])assert(app.includes(token),'v8.8 compatibility bridge retains transitional Dashboard support: '+token);
 const browserSmoke=read('tests/playwright-smoke.js');
 for(const token of ['installDashboardPaintObserver','historical dashboard painted before or after current owner','data-product-dashboard-owner="current"','current-owner paint proof'])assert(browserSmoke.includes(token),'browser smoke protects current Dashboard persistence: '+token);
 const dashboard=read('assets/product-hardening-dashboard.js');
@@ -70,4 +71,4 @@ const workflow=read('.github/workflows/tests.yml');assert(workflow.includes('nod
 const browserWorkflow=read('.github/workflows/browser-smoke.yml');assert(browserWorkflow.includes('node tests/playwright-smoke.js'),'browser workflow executes real route/render proof');
 for(const forbidden of ['assets/obol-v9.29.css','assets/app-v9.29.js','assets/core-v9.29.js','data/project-model-v9.29.js'])assert(!fs.existsSync(path.join(root,forbidden)),'no fake v9.29 runtime layer: '+forbidden);
 for(const command of [['tools/validate-notes-impact.js'],['tools/validate-note-integration.js'],['tools/validate-product-hardening-queue.js'],['tools/validate-runtime-manifest.js'],['tools/validate-runtime-loading.js'],['tools/validate-asset-references.js'],['tools/validate-release-pr.js']]){const result=run(command);assert.strictEqual(result.status,0,(result.stderr||result.stdout||'').trim());}
-console.log('v9.29 Notes Impact, stable Dashboard Current Owner, and Runtime Retirement Governance regression tests passed.');
+console.log('v9.29 Notes Impact, stable Dashboard Current Owner, Browser Smoke, and Runtime Retirement Governance regression tests passed.');
