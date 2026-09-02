@@ -8,6 +8,7 @@ const checks=[
  ['tools/validate-product-hardening-queue.js'],
  ['tools/validate-runtime-manifest.js'],
  ['tools/validate-asset-references.js'],
+ ['tools/audit-dashboard-runtime-dependencies.js'],
  ['tools/sync-current-release.js','--check'],
  ['tools/sync-product-build-next.js','--check'],
  ['tests/run-v9.29-tests.js']
