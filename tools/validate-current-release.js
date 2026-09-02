@@ -18,16 +18,17 @@ if(r&&r.orangeBaseline!=='v8.8')bad('completed Orange baseline identity drifted'
 if(identity&&r&&identity.release!==r)bad('release identity helper must share the current release authority object');
 if(identity&&typeof identity.stampState!=='function')bad('release identity helper must stamp state/export metadata');
 if(identity&&typeof identity.normalizeReportMarkdown!=='function')bad('release identity helper must normalize generated report identity');
-const readme=read('README.md'),app=read('assets/app-v8.8.js'),dashboard=read('assets/product-hardening-dashboard.js'),standalone=read('product-hardening.html'),core=read('assets/core-v8.8.js');
+const readme=read('README.md'),app=read('assets/app-v8.8.js'),dashboard=read('assets/product-hardening-dashboard.js'),standalone=read('product-hardening.html'),dashboardOwner=read('assets/dashboard-route-current.js'),core=read('assets/core-v8.8.js');
 if(r&&!readme.includes('Current release: **'+r.label+'**'))bad('README current release does not match authority');
 if(!app.includes("const RELEASE_SOURCE='data/current-release.js'"))bad('live app does not load current release authority');
 if(!app.includes('window.OBOL_CURRENT_RELEASE'))bad('live app does not consume current release authority');
 if(!app.includes('window.OBOL_RELEASE_IDENTITY'))bad('live app does not consume release identity helpers');
 if(/const PRODUCT_RELEASE=/.test(app))bad('live app retains a competing PRODUCT_RELEASE constant');
 for(const token of ['i.stampState(state)','i.stampState(safe)','i.normalizeReportMarkdown(md)','Current Obol release: <b>'])if(!app.includes(token))bad('live app release integration missing token: '+token);
-if(!standalone.includes('data/current-release.js'))bad('standalone dashboard does not load current release authority');
+if(!standalone.includes('assets/dashboard-route-current.js?obol-current='))bad('standalone dashboard does not delegate to the cache-busted current Dashboard owner');
+if(!dashboardOwner.includes("'data/current-release.js'"))bad('current Dashboard owner does not freshness-load current release authority');
 if(!dashboard.includes('window.OBOL_CURRENT_RELEASE'))bad('dashboard renderer does not consume current release authority');
 if(!dashboard.includes("document.title='Obol '+r.label+' '+r.phaseLabel+' Dashboard'"))bad('standalone dashboard title does not consume current release authority');
 if(!core.includes('C.VERSION=VERSION'))bad('v8.8 workspace/runtime schema version contract changed unexpectedly');
 if(r){const v=r.label.replace(/^v/,'');for(const forbidden of [`assets/core-v${v}.js`,`assets/app-v${v}.js`,`data/project-model-v${v}.js`,`assets/obol-v${v}.css`])if(fs.existsSync(path.join(root,forbidden)))bad('version authority must not create fake runtime layer: '+forbidden);}
-if(fail.length){console.error('Current release authority validation failed:');for(const m of fail)console.error('- '+m);process.exit(1);}console.log('Current release authority valid:',r.label,'with shared report/export identity helpers and v8.8 workspace schema preserved.');
+if(fail.length){console.error('Current release authority validation failed:');for(const m of fail)console.error('- '+m);process.exit(1);}console.log('Current release authority valid:',r.label,'with shared report/export identity helpers, current Dashboard ownership, and v8.8 workspace schema preserved.');

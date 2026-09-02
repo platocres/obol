@@ -108,6 +108,50 @@ async function installDashboardPaintObserver(page) {
             break;
           }
         }
+
+        const first = await page.evaluate(() => ({
+          release: window.OBOL_CURRENT_RELEASE && window.OBOL_CURRENT_RELEASE.version,
+          reviewed: window.OBOL_PRODUCT_HARDENING_NOTES_IMPACT && window.OBOL_PRODUCT_HARDENING_NOTES_IMPACT.review && window.OBOL_PRODUCT_HARDENING_NOTES_IMPACT.review.reviewed,
+          token: window.__OBOL_CURRENT_DASHBOARD_FRESHNESS__ && window.__OBOL_CURRENT_DASHBOARD_FRESHNESS__.token,
+          markerRelease: document.querySelector('[data-product-dashboard-owner="current"]') && document.querySelector('[data-product-dashboard-owner="current"]').dataset.dashboardRelease
+        }));
+        if (!first.release || first.markerRelease !== first.release) routeFailures.push('dashboard current-owner marker is not stamped with the authoritative release');
+        if (!first.token) routeFailures.push('dashboard freshness token is missing after initial render');
+
+        const refreshed = await page.evaluate(async expected => {
+          window.OBOL_CURRENT_RELEASE = { version: '0.0.0', label: 'v0.0', phaseLabel: 'Stale' };
+          window.OBOL_PRODUCT_HARDENING_NOTES_IMPACT = { review: { reviewed: -1 } };
+          const route = window.OBOL_CURRENT_DASHBOARD_ROUTE;
+          const activated = !!(route && route.activate());
+          const rendered = route && typeof route.whenRendered === 'function' ? await route.whenRendered() : false;
+          const marker = document.querySelector('[data-product-dashboard-owner="current"]');
+          const current = window.__OBOL_CURRENT_DASHBOARD_FRESHNESS__ || {};
+          const impact = window.OBOL_PRODUCT_HARDENING_NOTES_IMPACT || {};
+          return {
+            activated,
+            rendered,
+            markerRelease: marker && marker.dataset.dashboardRelease,
+            release: window.OBOL_CURRENT_RELEASE && window.OBOL_CURRENT_RELEASE.version,
+            reviewed: impact.review && impact.review.reviewed,
+            token: current.token || '',
+            routeError: window.__OBOL_CURRENT_DASHBOARD_ROUTE_ERROR__ || ''
+          };
+        }, first);
+        if (!refreshed.activated) routeFailures.push('dashboard current owner did not accept explicit re-activation');
+        if (!refreshed.rendered) routeFailures.push('dashboard re-activation did not complete a current render: ' + refreshed.routeError);
+        if (refreshed.release !== first.release || refreshed.markerRelease !== first.release) routeFailures.push('dashboard re-activation did not restore authoritative current-release data');
+        if (refreshed.reviewed !== first.reviewed) routeFailures.push('dashboard re-activation did not restore authoritative Notes Integration impact data');
+        if (!refreshed.token || refreshed.token === first.token) routeFailures.push('dashboard re-activation did not publish a distinct freshness generation');
+
+        const resources = await page.evaluate(() => performance.getEntriesByType('resource').map(entry => entry.name));
+        const dashboardFresh = resources.filter(name => /[?&]obol-dashboard=/.test(name));
+        const freshnessTokens = new Set(dashboardFresh.map(name => {
+          try { return new URL(name).searchParams.get('obol-dashboard'); } catch (err) { return null; }
+        }).filter(Boolean));
+        if (freshnessTokens.size < 2) routeFailures.push('dashboard did not request a distinct freshness generation on re-activation');
+        const freshReleaseLoads = dashboardFresh.filter(name => /\/data\/current-release\.js\?/.test(name));
+        if (freshReleaseLoads.length < 2) routeFailures.push('current release authority was not freshness-loaded on both dashboard activations');
+        if (!resources.some(name => /\/assets\/dashboard-route-current\.js\?[^#]*\bobol-current=/.test(name))) routeFailures.push('stable dashboard route owner was not self-refreshed through a cache-busted request');
       }
 
       const viewText = (await page.locator('#view').innerText()).trim();
@@ -119,6 +163,28 @@ async function installDashboardPaintObserver(page) {
 
       if (routeFailures.length) failures.push(route.id + ': ' + routeFailures.join(' | '));
     }
+
+    const standalone = await context.newPage();
+    const standaloneFailures = [];
+    standalone.on('console', message => { if (message.type() === 'error') standaloneFailures.push('console error: ' + message.text()); });
+    standalone.on('pageerror', error => standaloneFailures.push('page error: ' + error.message));
+    standalone.on('requestfailed', request => { if (localRequestFailure(request.url())) standaloneFailures.push('local request failed: ' + request.url()); });
+    const standaloneUrl = new URL('product-hardening.html', baseUrl).href;
+    const standaloneResponse = await standalone.goto(standaloneUrl, { waitUntil: 'domcontentloaded', timeout: 30000 });
+    if (standaloneResponse && !standaloneResponse.ok()) standaloneFailures.push('navigation returned HTTP ' + standaloneResponse.status());
+    await standalone.waitForSelector('#product-hardening-dashboard [data-product-dashboard-owner="current"]', { state: 'visible', timeout: 15000 });
+    const standaloneState = await standalone.evaluate(() => ({
+      release: window.OBOL_CURRENT_RELEASE && window.OBOL_CURRENT_RELEASE.version,
+      markerRelease: document.querySelector('#product-hardening-dashboard [data-product-dashboard-owner="current"]') && document.querySelector('#product-hardening-dashboard [data-product-dashboard-owner="current"]').dataset.dashboardRelease,
+      token: window.__OBOL_CURRENT_DASHBOARD_FRESHNESS__ && window.__OBOL_CURRENT_DASHBOARD_FRESHNESS__.token,
+      owner: window.OBOL_CURRENT_DASHBOARD_ROUTE && window.OBOL_CURRENT_DASHBOARD_ROUTE.owner
+    }));
+    if (!standaloneState.release || standaloneState.markerRelease !== standaloneState.release) standaloneFailures.push('standalone dashboard is not stamped with the authoritative current release');
+    if (!standaloneState.token) standaloneFailures.push('standalone dashboard did not use the shared freshness loader');
+    if (standaloneState.owner !== 'assets/dashboard-route-current.js') standaloneFailures.push('standalone dashboard did not converge on the stable current route owner');
+    await standalone.screenshot({ path: path.join(outputDir, 'dashboard-standalone.png'), fullPage: true });
+    await standalone.close();
+    if (standaloneFailures.length) failures.push('dashboard-standalone: ' + standaloneFailures.join(' | '));
   } finally {
     await context.close();
     await browser.close();
@@ -130,5 +196,5 @@ async function installDashboardPaintObserver(page) {
     process.exit(1);
   }
 
-  console.log('Playwright browser smoke passed for Home, Targets, Evidence, Next Steps, Report, and Dashboard with current-owner paint proof through the full legacy timer window.');
+  console.log('Playwright browser smoke passed for Home, Targets, Evidence, Next Steps, Report, embedded Dashboard freshness recovery, and the standalone Dashboard current-owner path.');
 })();
