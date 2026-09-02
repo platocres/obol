@@ -4,7 +4,7 @@ Obol is a static, browser-local workspace for OSCP-style labs, Active Directory 
 
 Live site: `https://platocres.github.io/obol/`
 
-Current release: **v9.31**
+Current release: **v9.32**
 
 Open `#/dashboard` for the active Product Hardening Dashboard and Product Build Next queue.
 
@@ -67,6 +67,8 @@ Historical runtime layers are explicit product debt, not permanent architecture.
 
 v9.31 starts the next slice outside the Dashboard: Path, Card, and Tools now have a stable current operator-route owner. Path presents a compact current decision screen, while Card/Tools keep guided builders first and fold raw historical command blocks behind supporting detail.
 
+v9.32 completes the XSS/session notes packet. The public product now carries normalized guidance for browser-execution proof, stored/reflected/DOM delivery and victim triggers, session-impact proof boundaries, and context-aware remediation without publishing raw private course material or payload catalogs.
+
 The completed Orange methodology/source queue is historical, regression-protected baseline material. Do not reopen it unless a real defect is found or the pinned upstream source is deliberately repinned. Detailed Orange accounting belongs in the North Star/source-depth docs above, not in this README.
 
 ### Product Build Next
@@ -75,15 +77,15 @@ The completed Orange methodology/source queue is historical, regression-protecte
 This block is generated from `data/product-hardening/product-hardening-queue.js`. Do not edit it manually.
 Recommended work-package metadata comes from `data/product-hardening/work-packages.js`.
 
-**Current product-hardening queue:** 146/638 complete (23%), 11 queued, 9 foundation items modeled.
+**Current product-hardening queue:** 160/638 complete (25%), 10 queued, 9 foundation items modeled.
 **Private notes source:** `platocres/obol-source-notes` — 556 notes and 1326 embedded resources accounted.
-**Notes Integration:** 76/556 reviewed — 53 modeled, 19 private-only, 480 pending.
-**Derived note guidance:** 32 Field Notes · 27 tool-bound · 29 Path-bound · 7 Evidence · 4 Report.
+**Notes Integration:** 90/556 reviewed — 63 modeled, 23 private-only, 466 pending.
+**Derived note guidance:** 35 Field Notes · 30 tool-bound · 32 Path-bound · 9 Evidence · 4 Report.
 **Declared note-driven product mechanics:** 1 total · 1 builder · 0 Path logic · 0 Evidence parser · 0 report generator · 0 workflow.
-**Latest mined themes:** File upload.
+**Latest mined themes:** XSS / session hardening.
 **Notes impact contract:** `docs/NOTES-IMPACT.md`.
 
-**Recommended work package:** **Notes Impact and Themed Burn-down** — 6 live items / 8 tracked.
+**Recommended work package:** **Notes Impact and Themed Burn-down** — 5 live items / 8 tracked.
 **Work-package entry:** **Burn down all 556 note dispositions**
 **Ownership area:** `notes/impact-packets`
 **Package guidance:** Treat the 556-note disposition item as the umbrella. Burn notes down in coherent themed packets, and for every modeled source record which Field Note, tool-bound or Path-bound guidance, Evidence/report/troubleshooting output, code-level product change, or explicit product gap it produced.
@@ -91,7 +93,6 @@ Recommended work-package metadata comes from `data/product-hardening/work-packag
 
 **Live items in this package:**
 - **Burn down all 556 note dispositions** — Umbrella disposition goal. Review work should be executed in themed packets and must record what each modeled note changed in Field Notes, tools, Path, Evidence, reports, troubleshooting, or product gaps.
-- **Notes packet: XSS and session impact** — Mine XSS, browser/session impact, cookie/CSP controls, request context, proof boundaries, remediation, and missing product branches.
 - **Notes packet: credentials and authentication** — Mine credentials, hashes, tickets, certificates, validation boundaries, auth failure modes, tool options, and cross-tool/path handoffs.
 - **Notes packet: Windows privilege escalation** — Mine Windows privilege-escalation discovery, evidence, tool options, failure modes, path branches, proof boundaries, and reporting guidance.
 - **Notes packet: Linux privilege escalation** — Mine Linux privilege-escalation discovery, evidence, tool options, failure modes, path branches, proof boundaries, and reporting guidance.
@@ -101,13 +102,13 @@ Recommended work-package metadata comes from `data/product-hardening/work-packag
 
 **Highest-priority live items:**
 1. **Burn down all 556 note dispositions** — Umbrella disposition goal. Review work should be executed in themed packets and must record what each modeled note changed in Field Notes, tools, Path, Evidence, reports, troubleshooting, or product gaps.
-2. **Notes packet: XSS and session impact** — Mine XSS, browser/session impact, cookie/CSP controls, request context, proof boundaries, remediation, and missing product branches.
-3. **Notes packet: credentials and authentication** — Mine credentials, hashes, tickets, certificates, validation boundaries, auth failure modes, tool options, and cross-tool/path handoffs.
-4. **Notes packet: Windows privilege escalation** — Mine Windows privilege-escalation discovery, evidence, tool options, failure modes, path branches, proof boundaries, and reporting guidance.
-5. **Notes packet: Linux privilege escalation** — Mine Linux privilege-escalation discovery, evidence, tool options, failure modes, path branches, proof boundaries, and reporting guidance.
-6. **Notes packet: AD and pivoting** — Mine Active Directory, lateral movement, tunneling, pivoting, routing, credential use, evidence boundaries, and missing workflow/tool options.
-7. **Quiet service worker caching** — Improve repeat-load and offline behavior without prompting users to install anything.
-8. **IndexedDB workspace storage** — Support durable larger local workspaces, multiple engagements, and cached indexes while remaining browser-local.
+2. **Notes packet: credentials and authentication** — Mine credentials, hashes, tickets, certificates, validation boundaries, auth failure modes, tool options, and cross-tool/path handoffs.
+3. **Notes packet: Windows privilege escalation** — Mine Windows privilege-escalation discovery, evidence, tool options, failure modes, path branches, proof boundaries, and reporting guidance.
+4. **Notes packet: Linux privilege escalation** — Mine Linux privilege-escalation discovery, evidence, tool options, failure modes, path branches, proof boundaries, and reporting guidance.
+5. **Notes packet: AD and pivoting** — Mine Active Directory, lateral movement, tunneling, pivoting, routing, credential use, evidence boundaries, and missing workflow/tool options.
+6. **Quiet service worker caching** — Improve repeat-load and offline behavior without prompting users to install anything.
+7. **IndexedDB workspace storage** — Support durable larger local workspaces, multiple engagements, and cached indexes while remaining browser-local.
+8. **Web Workers for heavy tasks** — Move evidence parsing, search indexing, and report generation off the UI thread.
 
 **Track status:**
 - **Critical correctness:** 4/4 complete (100%), 0 modeled.
@@ -116,7 +117,7 @@ Recommended work-package metadata comes from `data/product-hardening/work-packag
 - **Tool GUI builders:** 19/19 complete (100%), 0 modeled.
 - **Credential modes:** 14/14 complete (100%), 0 modeled.
 - **Manual outcomes:** 8/8 complete (100%), 0 modeled.
-- **Notes integration:** 76/556 complete (14%), 2 modeled.
+- **Notes integration:** 90/556 complete (16%), 2 modeled.
 - **Offline / performance:** 1/6 complete (17%), 0 modeled.
 - **Testing / visual QA:** 6/9 complete (67%), 3 modeled.
 
@@ -145,7 +146,7 @@ The permanent notes-impact checks are:
 node tools/validate-notes-impact.js
 node tools/validate-note-integration.js
 node tools/sync-product-build-next.js --check
-node tests/run-v9.31-tests.js
+node tests/run-v9.32-tests.js
 ```
 
 ## GitHub Pages
