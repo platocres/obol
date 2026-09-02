@@ -4,7 +4,7 @@ const manifest=root.OBOL_RUNTIME_MANIFEST;
 if(!manifest)throw new Error('Obol runtime manifest must load before assets/runtime-current.js');
 let stylesWritten=false,scriptsWritten=false;
 const groupLoads=new Map();
-let tunnelBuilderLoad=null,credentialMaterialLoad=null,manualOutcomeLoad=null;
+let tunnelBuilderLoad=null,credentialMaterialLoad=null,manualOutcomeLoad=null,dashboardViewGuard=null;
 const esc=v=>String(v).replace(/&/g,'&amp;').replace(/"/g,'&quot;').replace(/</g,'&lt;');
 
 function canParserWrite(){return typeof document!=='undefined'&&document.readyState==='loading'&&typeof document.write==='function';}
@@ -34,12 +34,50 @@ function startupList(){return manifest.startupScripts||manifest.scripts;}
 function currentOwnerList(){return Array.isArray(manifest.currentScripts)?manifest.currentScripts:[];}
 function browserScriptList(){return startupList().concat(currentOwnerList());}
 function routeName(){return typeof location==='undefined'?'home':((location.hash||'#/home').replace(/^#\/?/,'').split('/').filter(Boolean)[0]||'home');}
+function innerHtmlDescriptor(node){
+ let proto=node;
+ while(proto){
+  const descriptor=Object.getOwnPropertyDescriptor(proto,'innerHTML');
+  if(descriptor&&typeof descriptor.get==='function'&&typeof descriptor.set==='function')return descriptor;
+  proto=Object.getPrototypeOf(proto);
+ }
+ return null;
+}
+function releaseDashboardViewGuard(){
+ if(!dashboardViewGuard)return;
+ const {view}=dashboardViewGuard;
+ try{delete view.innerHTML;}catch(_err){}
+ dashboardViewGuard=null;
+ root.__OBOL_CURRENT_DASHBOARD_VIEW_GUARD__=false;
+}
+function protectDashboardView(){
+ if(typeof document==='undefined'||routeName()!=='dashboard')return null;
+ const view=document.getElementById('view');if(!view)return null;
+ if(dashboardViewGuard&&dashboardViewGuard.view===view)return view;
+ releaseDashboardViewGuard();
+ const descriptor=innerHtmlDescriptor(view);if(!descriptor)return view;
+ Object.defineProperty(view,'innerHTML',{
+  configurable:true,
+  enumerable:false,
+  get(){return descriptor.get.call(view);},
+  set(value){
+   const html=String(value==null?'':value);
+   const currentOwned=/data-product-dashboard-owner=(?:"|')(?:current|current-loading|current-error)(?:"|')/.test(html);
+   if(root.__OBOL_CURRENT_DASHBOARD_ROUTE_INTENT__&&!currentOwned)return;
+   descriptor.set.call(view,value);
+  }
+ });
+ dashboardViewGuard={view,descriptor};
+ root.__OBOL_CURRENT_DASHBOARD_VIEW_GUARD__=true;
+ return view;
+}
 function syncCurrentRouteOwnership(){
  const dashboard=routeName()==='dashboard';
  root.__OBOL_CURRENT_DASHBOARD_ROUTE_INTENT__=dashboard;
  if(typeof document==='undefined')return dashboard;
- const view=document.getElementById('view');
- if(dashboard&&view&&!view.querySelector('[data-product-dashboard-owner="current"],[data-product-dashboard-owner="current-loading"],[data-product-dashboard-owner="current-error"]')){
+ if(!dashboard){releaseDashboardViewGuard();return false;}
+ const view=protectDashboardView();
+ if(view&&!view.querySelector('[data-product-dashboard-owner="current"],[data-product-dashboard-owner="current-loading"],[data-product-dashboard-owner="current-error"]')){
   view.innerHTML='<div class="ph-shell" data-product-dashboard-owner="current-loading" data-runtime-current-route-shell="dashboard"><section class="ph-card"><h1>Obol Product Hardening</h1><p>Loading the current dashboard…</p></section></div>';
  }
  return dashboard;
@@ -117,6 +155,7 @@ function loadTunnelBuilders(attempt){
 }
 function hydrateRoute(){
  const page=routeName();
+ syncCurrentRouteOwnership();
  return ensureRoute(page).then(names=>loadCredentialMaterial(0).then(credentials=>loadManualOutcomes(0).then(manual=>{
   const toolBearing=['boxes','card','tools'].includes(page);
   return (toolBearing?loadTunnelBuilders(0):Promise.resolve([])).then(extra=>{
@@ -137,6 +176,6 @@ if(typeof window!=='undefined'){
  if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',()=>{syncCurrentRouteOwnership();hydrateRoute().catch(()=>{});},{once:true});
  else setTimeout(()=>{syncCurrentRouteOwnership();hydrateRoute().catch(()=>{});},0);
 }
-root.OBOL_RUNTIME_LOADER=Object.freeze({manifest,writeStyles,writeScripts,appendScripts,loadGroup,ensureRoute,routeName,syncCurrentRouteOwnership,loadCredentialMaterial,loadManualOutcomes,loadTunnelBuilders,budgetSnapshot});
+root.OBOL_RUNTIME_LOADER=Object.freeze({manifest,writeStyles,writeScripts,appendScripts,loadGroup,ensureRoute,routeName,syncCurrentRouteOwnership,protectDashboardView,releaseDashboardViewGuard,loadCredentialMaterial,loadManualOutcomes,loadTunnelBuilders,budgetSnapshot});
 root.__OBOL_RUNTIME_ENTRYPOINT__='manifest-v1';
 })(typeof window!=='undefined'?window:globalThis);
