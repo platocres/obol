@@ -6,6 +6,7 @@ on:
       - release/obol-v9.35
     paths:
       - 'tools/apply-v9.35-build.js'
+      - 'tools/fix-v9.35-builder.js'
       - '.github/workflows/v9.35-build.yml'
 
 permissions:
@@ -32,7 +33,7 @@ jobs:
         run: |
           rm -f tools/fix-v9.35-builder.js
           git config user.name "github-actions[bot]"
-          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git config user.email "41898282+platocres@users.noreply.github.com"
           git add -A
           if git diff --cached --quiet; then
             echo "No changes to commit"
