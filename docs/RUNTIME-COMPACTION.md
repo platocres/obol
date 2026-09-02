@@ -40,7 +40,7 @@ Product Build Next should retire layers by ownership area rather than attempting
 The first package is Dashboard retirement because the user could visibly see old dashboard layers paint before the current Product Hardening Dashboard. The v9.29 sequence is:
 
 1. Establish current dashboard no-flash ownership.
-2. Add Playwright browser smoke coverage for the core routes, including Dashboard, with console-error failure and representative screenshots.
+2. Add Playwright browser smoke coverage for the core routes, including Dashboard, with console-error failure, dashboard paint-history proof, and representative screenshots.
 3. Prove the remaining historical dashboard data/presentation dependencies can be removed or decoupled without breaking mixed historical core/runtime owners.
 4. Remove only the historical dashboard owners whose live dependencies have been eliminated.
 5. Move the historical expectations that still matter to fixtures/current-owner tests and retire assertions that protected obsolete delivery shape.
@@ -52,9 +52,32 @@ The order matters: **current owner -> browser proof/equivalence -> dependency re
 
 `#/dashboard` now bypasses the historical route renderer. `assets/app-v8.8.js` immediately installs a current Product Hardening loading shell, loads the current dashboard owners, and renders `assets/product-hardening-dashboard.js`. Historical dashboard presentation is therefore no longer allowed to paint first.
 
-That does not yet mean every historical dashboard file can safely leave startup. Historical core overlays still contain hard load-time dependencies on historical dashboard data. For example, `assets/core-v6.5.js` reads `OBOL_DASHBOARD_V65` during initialization and throws if that owner is absent. Removing `data/dashboard-v6.5.js` from startup while `core-v6.5.js` remains live would trade visible layering for a boot regression.
+That does not yet mean every historical dashboard file can safely leave startup. Historical core overlays still contain hard load-time dependencies on historical dashboard data. For example, `assets/core-v6.5.js` reads `OBOL_DASHBOARD_V65` during initialization and throws if that owner is absent. Some historical `data/dashboard-v*.js` owners also performed command/tool/path mutations while defining dashboard/source-accounting metadata. Removing those files blindly would trade visible layering for a boot or methodology regression.
 
 Accordingly, `runtime-dashboard-no-flash` is complete, while physical `runtime-dashboard-layer-retirement` remains queued. `qa-playwright-smoke` is intentionally the next gate. The physical-retirement item should only close when the browser proof is green and the remaining core/data dependencies have been decoupled or replaced by current/fixture-backed contracts.
+
+## Dependency audit
+
+`node tools/audit-dashboard-runtime-dependencies.js` inventories every historical `data/dashboard-v*.js` file that still participates in live startup, the `OBOL_DASHBOARD_*` globals it exports, live startup consumers of those globals, and detected domain-mutation signals inside the file.
+
+Use it before each dashboard-compaction change. The audit makes the blocking work explicit rather than treating all dashboard files as interchangeable presentation assets.
+
+Use:
+
+```bash
+node tools/audit-dashboard-runtime-dependencies.js
+node tools/audit-dashboard-runtime-dependencies.js --json
+```
+
+Once the decoupling work is actually complete, this becomes a retirement assertion:
+
+```bash
+node tools/audit-dashboard-runtime-dependencies.js --require-retired
+```
+
+`--require-retired` must not be enabled in the ordinary release gate until the historical dashboard owners have genuinely left `startupScripts`. Its purpose is to become the final proof for `runtime-dashboard-layer-retirement`, not to create a fake green check while dependencies still exist.
+
+The desired replacement is not another stack of versioned compatibility shims. Historical dashboard-owned domain mutations that are still product behavior should move to the appropriate stable/current domain owner or a deliberately consolidated compatibility owner. Historical dashboard metrics needed only for regression history should move to fixtures/docs. Only then should the old dashboard file leave startup.
 
 ## Test tiers
 
@@ -64,8 +87,11 @@ Development should use the smallest test set that proves the current work packag
 - release smoke remains the ordinary release-branch push gate.
 - preflight remains the coherent current-release gate.
 - `node tools/run-historical-contracts.js` is the named complete historical regression gate used for final release confidence.
+- `.github/workflows/browser-smoke.yml` runs the real Chromium route smoke and uploads screenshots for the six primary surfaces.
 
-CI delegates the complete ready-PR/main/release-final preservation chain to the named historical runner. The complete historical runner is intentionally expensive. It should protect final/current behavior and historical contracts, not be the default inner-loop command for every small edit.
+CI delegates the complete ready-PR/main/release-final preservation chain to the named historical runner. Browser smoke is a separate user-visible runtime gate because a static historical assertion cannot prove route paint order, console cleanliness, local asset loading, or real rendered composition.
+
+The complete historical runner is intentionally expensive. It should protect final/current behavior and historical contracts, not be the default inner-loop command for every small edit.
 
 ## Test retirement
 
