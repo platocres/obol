@@ -4,7 +4,7 @@ Obol is a static, browser-local workspace for OSCP-style labs, Active Directory 
 
 Live site: `https://platocres.github.io/obol/`
 
-Current release: **v9.29**
+Current release: **v9.30**
 
 Open `#/dashboard` for the active Product Hardening Dashboard and Product Build Next queue.
 
@@ -73,12 +73,12 @@ The completed Orange methodology/source queue is historical, regression-protecte
 This block is generated from `data/product-hardening/product-hardening-queue.js`. Do not edit it manually.
 Recommended work-package metadata comes from `data/product-hardening/work-packages.js`.
 
-**Current product-hardening queue:** 121/634 complete (19%), 12 queued, 9 foundation items modeled.
+**Current product-hardening queue:** 131/634 complete (21%), 12 queued, 9 foundation items modeled.
 **Private notes source:** `platocres/obol-source-notes` — 556 notes and 1326 embedded resources accounted.
-**Notes Integration:** 55/556 reviewed — 43 modeled, 12 private-only, 501 pending.
-**Derived note guidance:** 24 Field Notes · 20 tool-bound · 22 Path-bound · 5 Evidence · 4 Report.
-**Declared note-driven product mechanics:** 0 total · 0 builder · 0 Path logic · 0 Evidence parser · 0 report generator · 0 workflow.
-**Latest mined themes:** File upload, File inclusion, Content discovery, XSS / session hardening.
+**Notes Integration:** 65/556 reviewed — 48 modeled, 13 private-only, 491 pending.
+**Derived note guidance:** 29 Field Notes · 24 tool-bound · 27 Path-bound · 6 Evidence · 4 Report.
+**Declared note-driven product mechanics:** 1 total · 1 builder · 0 Path logic · 0 Evidence parser · 0 report generator · 0 workflow.
+**Latest mined themes:** File inclusion, File upload.
 **Notes impact contract:** `docs/NOTES-IMPACT.md`.
 
 **Recommended work package:** **Notes Impact and Themed Burn-down** — 7 live items / 8 tracked.
@@ -115,7 +115,7 @@ Recommended work-package metadata comes from `data/product-hardening/work-packag
 - **Tool GUI builders:** 18/18 complete (100%), 0 modeled.
 - **Credential modes:** 14/14 complete (100%), 0 modeled.
 - **Manual outcomes:** 8/8 complete (100%), 0 modeled.
-- **Notes integration:** 55/556 complete (10%), 2 modeled.
+- **Notes integration:** 65/556 complete (12%), 2 modeled.
 - **Offline / performance:** 1/6 complete (17%), 0 modeled.
 - **Testing / visual QA:** 5/8 complete (63%), 3 modeled.
 
@@ -144,7 +144,7 @@ The permanent notes-impact checks are:
 node tools/validate-notes-impact.js
 node tools/validate-note-integration.js
 node tools/sync-product-build-next.js --check
-node tests/run-v9.29-tests.js
+node tests/run-v9.30-tests.js
 ```
 
 ## GitHub Pages
