@@ -12,12 +12,18 @@ const PRODUCT_SCRIPTS=[
  'data/product-hardening/notes-impact-current.js',
  'assets/product-hardening-dashboard.js'
 ];
+function reviewSchemaAtLeast(major,minor){
+ const match=String(root.OBOL_NOTE_INTEGRATION&&root.OBOL_NOTE_INTEGRATION.schemaVersion||'').match(/^(\d+)\.(\d+)\./);
+ if(!match)return false;
+ const currentMajor=Number(match[1]),currentMinor=Number(match[2]);
+ return currentMajor>major||(currentMajor===major&&currentMinor>=minor);
+}
 const READY={
  'data/current-release.js':()=>!!(root.OBOL_CURRENT_RELEASE&&root.OBOL_RELEASE_IDENTITY),
  'data/product-hardening/product-hardening-queue.js':()=>!!root.OBOL_PRODUCT_HARDENING,
  'data/product-hardening/work-packages.js':()=>!!root.OBOL_PRODUCT_HARDENING_WORK_PACKAGES,
  'data/note-integration.js':()=>!!root.OBOL_NOTE_INTEGRATION,
- 'data/note-integration-reviews.js':()=>!!(root.OBOL_NOTE_INTEGRATION&&root.OBOL_NOTE_INTEGRATION.schemaVersion==='1.3.0'),
+ 'data/note-integration-reviews.js':()=>reviewSchemaAtLeast(1,3),
  'data/product-hardening/note-progress-current.js':()=>!!root.OBOL_PRODUCT_HARDENING_NOTE_PROGRESS,
  'data/product-hardening/notes-impact-current.js':()=>!!root.OBOL_PRODUCT_HARDENING_NOTES_IMPACT,
  'assets/product-hardening-dashboard.js':()=>typeof root.renderProductHardeningDashboard==='function'
