@@ -1,0 +1,40 @@
+name: v9.30 README repair
+
+on:
+  push:
+    branches:
+      - release/obol-v9.30
+    paths:
+      - '.github/workflows/v9.30-readme-repair.yml'
+
+permissions:
+  contents: write
+
+jobs:
+  repair:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout release branch
+        uses: actions/checkout@v4
+        with:
+          ref: release/obol-v9.30
+          fetch-depth: 0
+      - name: Set up Node
+        uses: actions/setup-node@v4
+        with:
+          node-version: 24
+      - name: Restore and regenerate README
+        run: |
+          git show origin/main:README.md > README.md
+          node tools/sync-current-release.js --write
+          node tools/sync-product-build-next.js --write
+          node tools/validate-current-release.js
+          node tools/sync-product-build-next.js --check
+      - name: Remove repair workflow and commit
+        run: |
+          rm .github/workflows/v9.30-readme-repair.yml
+          git config user.name 'github-actions[bot]'
+          git config user.email '41898282+github-actions[bot]@users.noreply.github.com'
+          git add -A
+          git commit -m 'fix: restore generated v9.30 README handoff'
+          git push origin HEAD:release/obol-v9.30
