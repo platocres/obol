@@ -11,6 +11,7 @@ const workPackagesFile = path.join(root, 'data', 'product-hardening', 'work-pack
 const noteIntegrationFile = path.join(root, 'data', 'note-integration.js');
 const noteReviewsFile = path.join(root, 'data', 'note-integration-reviews.js');
 const noteProgressFile = path.join(root, 'data', 'product-hardening', 'note-progress-current.js');
+const noteImpactFile = path.join(root, 'data', 'product-hardening', 'notes-impact-current.js');
 const readmeFile = path.join(root, 'README.md');
 const sandbox = { window: {}, globalThis: null };
 sandbox.globalThis = sandbox.window;
@@ -21,13 +22,19 @@ vm.runInContext(fs.readFileSync(workPackagesFile, 'utf8'), sandbox, { filename: 
 vm.runInContext(fs.readFileSync(noteIntegrationFile, 'utf8'), sandbox, { filename: noteIntegrationFile });
 if (fs.existsSync(noteReviewsFile)) vm.runInContext(fs.readFileSync(noteReviewsFile, 'utf8'), sandbox, { filename: noteReviewsFile });
 if (fs.existsSync(noteProgressFile)) vm.runInContext(fs.readFileSync(noteProgressFile, 'utf8'), sandbox, { filename: noteProgressFile });
+if (fs.existsSync(noteImpactFile)) vm.runInContext(fs.readFileSync(noteImpactFile, 'utf8'), sandbox, { filename: noteImpactFile });
 
 const q = sandbox.window.OBOL_PRODUCT_HARDENING;
 const workPackages = sandbox.window.OBOL_PRODUCT_HARDENING_WORK_PACKAGES;
+const noteImpact = sandbox.window.OBOL_PRODUCT_HARDENING_NOTES_IMPACT;
 if (!q) throw new Error('Product-hardening queue not exposed');
 if (!workPackages) throw new Error('Product-hardening work-package metadata not exposed');
 const packageFailures = workPackages.validate(q);
 if (packageFailures.length) throw new Error('Invalid product-hardening work packages:\n- ' + packageFailures.join('\n- '));
+if (noteImpact) {
+  const failures = noteImpact.validate();
+  if (failures.length) throw new Error('Invalid notes-impact projection:\n- ' + failures.join('\n- '));
+}
 
 function packageLines() {
   const rec = workPackages.recommend(q);
@@ -53,6 +60,17 @@ function packageLines() {
   ];
 }
 
+function noteImpactLines() {
+  if (!noteImpact) return [];
+  const r = noteImpact.review, o = noteImpact.outputCounts;
+  return [
+    '**Notes Integration:** ' + r.reviewed + '/' + r.total + ' reviewed — ' + r.modeled + ' modeled, ' + r.privateOnly + ' private-only, ' + r.pending + ' pending.',
+    '**Derived note outputs:** ' + o.fieldNotes + ' Field Notes · ' + o.toolIntegrated + ' tool-integrated · ' + o.pathIntegrated + ' Path-integrated · ' + o.evidenceIntegrated + ' Evidence · ' + o.reportIntegrated + ' Report.',
+    '**Latest mined themes:** ' + noteImpact.latestWave.themes.join(', ') + '.',
+    '**Notes impact contract:** `docs/NOTES-IMPACT.md`.'
+  ];
+}
+
 function block() {
   const totals = q.totals();
   const tracks = q.trackSummary();
@@ -64,6 +82,7 @@ function block() {
     '',
     '**Current product-hardening queue:** ' + totals.complete + '/' + totals.total + ' complete (' + totals.pct + '%), ' + totals.queued + ' queued, ' + totals.modeled + ' foundation items modeled.',
     '**Private notes source:** `' + q.notes.privateRepo + '` — ' + totals.notes + ' notes and ' + totals.resources + ' embedded resources accounted.',
+    ...noteImpactLines(),
     '',
     ...packageLines(),
     '',
