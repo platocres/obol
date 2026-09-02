@@ -61,9 +61,9 @@ Pinned Orange Cyber Defense mind map provenance remains `https://orange-cyberdef
 
 Product Build Next is the only active development queue. Its atomic item source of truth is `data/product-hardening/product-hardening-queue.js`; coherent multi-item package metadata lives in `data/product-hardening/work-packages.js`. The README and Product Hardening Dashboard consume both so the highest-priority item remains the entry point while agents are encouraged to burn down a meaningful same-ownership work package rather than nibbling one checkbox at a time.
 
-The 556-note disposition item is an umbrella requirement, not permission to perform anonymous review waves forever. Notes work should be organized as coherent subject packets and reported through the notes-to-product impact projection so the dashboard shows what was learned and what Tool, Path, Evidence, report, troubleshooting, or educational behavior changed.
+The 556-note disposition item is an umbrella requirement, not permission to perform anonymous review waves forever. Notes work should be organized as coherent subject packets and reported through the notes-to-product impact projection so the dashboard shows what was learned, where guidance is bound, what product mechanics actually changed, and what gaps remain.
 
-Historical runtime layers are also explicit product debt, not permanent architecture. Preserve the behavior they protect until a stable current owner has equivalence proof, then remove the obsolete live layer and retire implementation-shape tests that no longer protect a real contract.
+Historical runtime layers are explicit product debt, not permanent architecture. The current Dashboard route now owns its loading shell and render without allowing historical dashboard output to paint first. The next gate is real Playwright route coverage; only after that browser proof and existing equivalence checks pass should historical dashboard owners be physically removed from live startup.
 
 The completed Orange methodology/source queue is historical, regression-protected baseline material. Do not reopen it unless a real defect is found or the pinned upstream source is deliberately repinned. Detailed Orange accounting belongs in the North Star/source-depth docs above, not in this README.
 
@@ -73,7 +73,7 @@ The completed Orange methodology/source queue is historical, regression-protecte
 This block is generated from `data/product-hardening/product-hardening-queue.js`. Do not edit it manually.
 Recommended work-package metadata comes from `data/product-hardening/work-packages.js`.
 
-**Current product-hardening queue:** 117/634 complete (18%), 16 queued, 9 foundation items modeled.
+**Current product-hardening queue:** 119/634 complete (19%), 14 queued, 9 foundation items modeled.
 **Private notes source:** `platocres/obol-source-notes` — 556 notes and 1326 embedded resources accounted.
 **Notes Integration:** 55/556 reviewed — 43 modeled, 12 private-only, 501 pending.
 **Derived note guidance:** 24 Field Notes · 20 tool-bound · 22 Path-bound · 5 Evidence · 4 Report.
@@ -81,32 +81,31 @@ Recommended work-package metadata comes from `data/product-hardening/work-packag
 **Latest mined themes:** File upload, File inclusion, XSS / session hardening.
 **Notes impact contract:** `docs/NOTES-IMPACT.md`.
 
-**Recommended work package:** **Dashboard Runtime Compaction** — 3 live items / 3 tracked.
-**Work-package entry:** **Dashboard no-flash current route ownership**
+**Recommended work package:** **Dashboard Runtime Compaction** — 2 live items / 4 tracked.
+**Work-package entry:** **Playwright browser smoke tests**
 **Ownership area:** `runtime/dashboard-retirement`
-**Package guidance:** First stop historical dashboard paint, then remove old dashboard owners from live startup after equivalence proof, and codify the same current-owner/fixture/test-retirement lifecycle for the rest of the runtime.
+**Package guidance:** Keep the current no-flash route owner, add real browser smoke proof, then remove old dashboard owners from live startup after equivalence is proven. The same current-owner/fixture/test-retirement lifecycle applies to the rest of the runtime.
 **Package dependencies:** Runtime Consolidation Foundation
 
 **Live items in this package:**
-- **Dashboard no-flash current route ownership** — Make #/dashboard render only the current loading shell and current Product Hardening Dashboard; historical dashboard owners must not paint first.
-- **Retire historical dashboard runtime layers** — After route equivalence is proven, remove old dashboard data and presentation owners from live startup and preserve only useful historical fixtures.
-- **Runtime compaction and test-retirement policy** — Define and enforce the current-owner -> equivalence -> fixture -> live-layer removal -> obsolete-test retirement lifecycle for every runtime ownership area.
+- **Playwright browser smoke tests** — Open core routes, fail on console errors, and capture screenshots for Home, Targets, Evidence, Next Steps, Report, and Dashboard before historical dashboard layers are physically retired.
+- **Retire historical dashboard runtime layers** — After browser smoke and route equivalence are proven, remove old dashboard data and presentation owners from live startup and preserve only useful historical fixtures.
 
-**Related items to consider, not automatically in scope:** Dashboard ownership consolidation; No new layered queue architecture; Playwright browser smoke tests.
+**Related items to consider, not automatically in scope:** Dashboard ownership consolidation; No new layered queue architecture.
 
 **Highest-priority live items:**
-1. **Dashboard no-flash current route ownership** — Make #/dashboard render only the current loading shell and current Product Hardening Dashboard; historical dashboard owners must not paint first.
-2. **Retire historical dashboard runtime layers** — After route equivalence is proven, remove old dashboard data and presentation owners from live startup and preserve only useful historical fixtures.
-3. **Runtime compaction and test-retirement policy** — Define and enforce the current-owner -> equivalence -> fixture -> live-layer removal -> obsolete-test retirement lifecycle for every runtime ownership area.
-4. **Burn down all 556 note dispositions** — Umbrella disposition goal. Review work should be executed in themed packets and must record what each modeled note changed in Field Notes, tools, Path, Evidence, reports, troubleshooting, or product gaps.
-5. **Notes packet: web upload and inclusion** — Mine upload, traversal, LFI/RFI, wrapper, serving, interpretation, proof-chain, remediation, and tool/path implications as one coherent packet.
-6. **Notes packet: XSS and session impact** — Mine XSS, browser/session impact, cookie/CSP controls, request context, proof boundaries, remediation, and missing product branches.
-7. **Notes packet: credentials and authentication** — Mine credentials, hashes, tickets, certificates, validation boundaries, auth failure modes, tool options, and cross-tool/path handoffs.
-8. **Notes packet: Windows privilege escalation** — Mine Windows privilege-escalation discovery, evidence, tool options, failure modes, path branches, proof boundaries, and reporting guidance.
+1. **Playwright browser smoke tests** — Open core routes, fail on console errors, and capture screenshots for Home, Targets, Evidence, Next Steps, Report, and Dashboard before historical dashboard layers are physically retired.
+2. **Retire historical dashboard runtime layers** — After browser smoke and route equivalence are proven, remove old dashboard data and presentation owners from live startup and preserve only useful historical fixtures.
+3. **Burn down all 556 note dispositions** — Umbrella disposition goal. Review work should be executed in themed packets and must record what each modeled note changed in Field Notes, tools, Path, Evidence, reports, troubleshooting, or product gaps.
+4. **Notes packet: web upload and inclusion** — Mine upload, traversal, LFI/RFI, wrapper, serving, interpretation, proof-chain, remediation, and tool/path implications as one coherent packet.
+5. **Notes packet: XSS and session impact** — Mine XSS, browser/session impact, cookie/CSP controls, request context, proof boundaries, remediation, and missing product branches.
+6. **Notes packet: credentials and authentication** — Mine credentials, hashes, tickets, certificates, validation boundaries, auth failure modes, tool options, and cross-tool/path handoffs.
+7. **Notes packet: Windows privilege escalation** — Mine Windows privilege-escalation discovery, evidence, tool options, failure modes, path branches, proof boundaries, and reporting guidance.
+8. **Notes packet: Linux privilege escalation** — Mine Linux privilege-escalation discovery, evidence, tool options, failure modes, path branches, proof boundaries, and reporting guidance.
 
 **Track status:**
 - **Critical correctness:** 4/4 complete (100%), 0 modeled.
-- **Architecture / runtime:** 6/12 complete (50%), 3 modeled.
+- **Architecture / runtime:** 8/12 complete (67%), 3 modeled.
 - **UI / UX repair:** 7/8 complete (88%), 1 modeled.
 - **Tool GUI builders:** 18/18 complete (100%), 0 modeled.
 - **Credential modes:** 14/14 complete (100%), 0 modeled.
