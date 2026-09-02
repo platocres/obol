@@ -19,10 +19,19 @@ Sequence by user value per unit of review bandwidth, honoring the one-open-PR ru
 Highest leverage. Fix the engine before processing more notes.
 
 - `notes-conversion-rubric` — enforce mechanic-or-justified-reason in `tools/validate-notes-impact.js`.
-- `notes-mechanic-backfill` — re-mine the already-modeled notes for mechanics; convert guidance-only into declared product changes where warranted.
+- `notes-mechanic-backfill` — re-audit every note already processed under the old rubric (all 127 reviewed, not just the 95 modeled) and convert missed mechanics into declared product changes.
 - `notes-script-category` — add a `script` disposition kind so reusable scripts/one-liners are tracked outputs.
 
 These are live queue items in the `notes-impact-burn-down` package, sequenced immediately after the umbrella `notes-disposition-burn-down` entry.
+
+### Why re-audit, not just process the backlog
+
+The conversion defect lived in the review standard, not in individual notes: the old rubric let a note terminate as guidance-only by default, so mechanics were never sought. Every note already dispositioned under that standard is therefore suspect — including notes marked reviewed-but-not-modeled or private-only, which could hide the same missed tool toggles and Path branches as the guidance-only modeled notes. So the corrective pass has two distinct halves:
+
+1. **Re-audit** the 127 already-reviewed notes against the new rubric (`notes-mechanic-backfill`). This is a re-judgement, not a cold re-read — dispositions and rationales already exist — so it is cheaper than the original review.
+2. **First-pass** the 429 pending notes under the new bar (WS2 packets). These were never reviewed, so they are not a re-audit.
+
+Neither half is complete on review count alone; both report mechanics created or an explicit, justified guidance-only reason per note.
 
 ### WS2 — Finish the notes backlog under the new bar
 
