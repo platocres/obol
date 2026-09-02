@@ -71,5 +71,23 @@ base.contracts['runtime-test-retirement-policy']={
   'docs/v9.29.md'
  ]
 };
+base.contracts['qa-playwright-smoke']={
+ acceptance:[
+  'A real Chromium smoke gate opens Home, Targets, Evidence, Next Steps, Report, and Dashboard; fails on console errors, page errors, and failed same-origin requests; captures full-page screenshots; and records Dashboard paints through the historical timer window so any non-current dashboard owner fails CI.'
+ ],
+ validationCommands:[
+  'node tests/playwright-smoke.js',
+  'node tests/run-v9.29-tests.js'
+ ],
+ proofFiles:[
+  'tests/playwright-smoke.js',
+  '.github/workflows/browser-smoke.yml',
+  'assets/runtime-current.js',
+  'assets/dashboard-route-current.js',
+  'tests/run-v9.29-tests.js',
+  'docs/RUNTIME-COMPACTION.md',
+  'docs/v9.29.md'
+ ]
+};
 base.version='9.29.0';
 })(typeof window!=='undefined'?window:globalThis);
