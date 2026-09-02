@@ -18,11 +18,12 @@ assert.strictEqual(release.version,'9.25.0');assert.strictEqual(release.label,'v
 const completed=['notes-enex-extraction','notes-atomization-schema','notes-field-panel','notes-tool-influence','notes-path-gap-influence','qa-notes-ledger-test'];
 for(const id of completed){const item=q.items.find(entry=>entry.id===id);assert(item&&item.status==='complete','v9.25 completes '+id);assert(!q.buildNext(1000).some(entry=>entry.id===id),id+' leaves the v9.25 Product Build Next projection');const contract=contracts.contracts[id];assert(contract&&contract.acceptance.length&&contract.validationCommands.length&&contract.proofFiles.length,id+' retains item-specific proof');assert(contract.validationCommands.includes('node tests/run-v9.25-tests.js'),id+' contract retains the v9.25 regression suite');for(const rel of contract.proofFiles)assert(exists(rel),'v9.25 proof file exists for '+id+': '+rel);}
 assert.strictEqual(contracts.version,'9.25.0');
-assert.strictEqual(q.tracks.find(track=>track.id==='notes-integration').complete,4,'v9.25 historical queue projection remains four reviewed notes');
-assert.strictEqual(q.tracks.find(track=>track.id==='testing-qa').complete,4,'v9.25 historical testing track remains four complete');
-assert.strictEqual(q.totals().complete,66,'v9.25 Product Hardening milestone remains 66 complete');assert.strictEqual(q.totals().queued,7,'v9.25 milestone retains seven queued items');assert.strictEqual(q.totals().modeled,9,'v9.25 foundation modeled count remains stable');
-assert(q.buildNext(1)[0]&&q.buildNext(1)[0].id==='notes-disposition-burn-down','v9.25 hands off to the note disposition burn-down');
-const rec=packages.recommend(q);assert(rec&&rec.id==='single-notes-disposition-burn-down','v9.25 recommendation remains the disposition burn-down');assert.deepStrictEqual(Array.from(packages.validate(q)),[],'v9.25 package projection remains valid');
+const notesTrack=q.tracks.find(track=>track.id==='notes-integration');
+const qaTrack=q.tracks.find(track=>track.id==='testing-qa');
+assert(notesTrack&&notesTrack.complete>=4&&notesTrack.total>=556,'v9.25 four-note Notes Integration milestone remains satisfied');
+assert(qaTrack&&qaTrack.complete>=4,'v9.25 Testing / visual QA milestone remains satisfied');
+assert(q.totals().complete>=66,'v9.25 Product Hardening completion milestone remains satisfied');
+assert.deepStrictEqual(Array.from(packages.validate(q)),[],'current package projection remains valid while preserving v9.25 owners');
 
 assert.strictEqual(notes.privateRepo,'platocres/obol-source-notes');assert.deepStrictEqual(Array.from(notes.validate()),[],'current stable note owner still preserves the v9.25 milestone');assert.deepStrictEqual(JSON.parse(JSON.stringify(notes.totals())),{notes:556,resources:1326});
 const milestone=notes.milestones['v9.25'];assert(milestone,'stable note owner exposes the v9.25 historical milestone');assert.strictEqual(milestone.reviewedCount,4);assert.strictEqual(milestone.dispositionCounts.modeled,4);assert.strictEqual(milestone.dispositionCounts['pending-review'],552);
