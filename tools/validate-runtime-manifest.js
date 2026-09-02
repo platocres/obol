@@ -30,15 +30,20 @@ assert.strictEqual(hash(historicalStyles),fixture.styleOrderSha256,'historical s
 assert.strictEqual(hash(manifest.scripts),fixture.scriptOrderSha256,'historical script order fingerprint is preserved');
 assert.deepStrictEqual(manifest.styles,[manifest.compatibility.styleOwner],'current runtime exposes exactly one stable stylesheet owner');
 assert.strictEqual(manifest.compatibility.styleOwner,'assets/obol-current.css','stable current stylesheet owner is non-versioned');
-assert(Array.isArray(manifest.startupScripts)&&manifest.startupScripts.length<=manifest.scripts.length,'runtime manifest exposes a bounded startup script subset');
+assert(Array.isArray(manifest.startupScripts)&&manifest.startupScripts.length<=manifest.scripts.length,'runtime manifest exposes a bounded historical startup subset');
+assert(Array.isArray(manifest.currentScripts)&&manifest.currentScripts.length,'runtime manifest exposes stable non-versioned current owners separately from the frozen historical ledger');
+assert.deepStrictEqual(manifest.currentScripts,['assets/dashboard-route-current.js'],'dashboard route has exactly one stable current owner in v9.29');
 for(const src of manifest.startupScripts)assert(manifest.scripts.includes(src),'startup script falls outside the frozen compatibility ledger: '+src);
+for(const src of manifest.currentScripts)assert(!manifest.scripts.includes(src),'stable current owner must not be smuggled into the frozen historical compatibility ledger: '+src);
 unique('historical runtime styles',historicalStyles);
 unique('runtime scripts',manifest.scripts);
 unique('startup runtime scripts',manifest.startupScripts);
+unique('stable current-owner scripts',manifest.currentScripts);
 exists('current runtime styles',manifest.styles);
 exists('historical runtime styles',historicalStyles);
 exists('runtime scripts',manifest.scripts);
 exists('startup runtime scripts',manifest.startupScripts);
+exists('stable current-owner scripts',manifest.currentScripts);
 
 const css=read(manifest.compatibility.styleOwner).replace(/\r\n/g,'\n');
 const imported=[];
@@ -60,7 +65,7 @@ const flattened=[].concat(
  manifest.groups.intake,
  manifest.groups.app
 );
-assert.deepStrictEqual(flattened,manifest.scripts,'browser scripts are generated only from ordered manifest groups');
+assert.deepStrictEqual(flattened,manifest.scripts,'historical browser scripts are generated only from ordered manifest groups');
 assert.deepStrictEqual(manifest.node.core,manifest.groups.core,'Node core loading consumes the browser core manifest group');
 assert.deepStrictEqual(manifest.node.data,manifest.groups.domain.slice(0,manifest.node.data.length),'Node data loading is an explicit prefix of the browser domain group');
 assert.strictEqual(manifest.groups.domain.length-manifest.node.data.length,6,'browser-only domain extras remain explicit');
@@ -83,9 +88,13 @@ const projected=index.slice(startAt+projectionStart.length,endAt).split('\n').fi
 const expectedProjection=historicalStyles.concat(manifest.scripts).map(rel=>path.basename(rel));
 assert.deepStrictEqual(projected,expectedProjection,'legacy index observation projection preserves historical CSS/script order without becoming an executable owner');
 assert.strictEqual(new Set(projected).size,projected.length,'projected manifest basenames are unique');
+assert(!projected.includes('dashboard-route-current.js'),'stable current owners stay outside the inert historical projection');
 
 const loader=read('assets/runtime-current.js');
-for(const token of ['OBOL_RUNTIME_MANIFEST','writeStyles','writeScripts','document.write','manifest.styles','manifest.scripts','manifest.startupScripts||manifest.scripts'])assert(loader.includes(token),'current browser entrypoint missing '+token);
+for(const token of ['OBOL_RUNTIME_MANIFEST','writeStyles','writeScripts','document.write','manifest.styles','manifest.startupScripts||manifest.scripts','manifest.currentScripts','browserScriptList','currentOwnerList'])assert(loader.includes(token),'current browser entrypoint missing '+token);
+assert(loader.indexOf('startupList().concat(currentOwnerList())')>=0,'current owners are loaded after the historical startup compatibility chain');
+const dashboardOwner=read('assets/dashboard-route-current.js');
+for(const token of ['OBOL_CURRENT_DASHBOARD_ROUTE','MutationObserver','data-product-dashboard-owner="current-loading"','renderProductHardeningDashboard','__OBOL_CURRENT_DASHBOARD_ROUTE_OWNER__'])assert(dashboardOwner.includes(token),'stable dashboard route owner missing '+token);
 const nodeLoader=read('tools/current-runtime.js');
 assert(nodeLoader.includes('runtime-manifest.js'),'Node current-runtime loader consumes runtime manifest');
 assert(!/const\s+DATA\s*=\s*\[/.test(nodeLoader)&&!/const\s+CORE\s*=\s*\[/.test(nodeLoader),'Node loader no longer owns duplicate hand-maintained load arrays');
@@ -107,4 +116,4 @@ assert(loaded&&loaded.C&&loaded.lanes,'manifest-backed Node current runtime init
 assert.strictEqual(loaded.C.VERSION,'8.8.0','runtime consolidation preserves the v8.8 workspace schema identity');
 assert(loaded.project,'manifest-backed runtime preserves the current v8.8 project adapter');
 
-console.log('Runtime manifest valid: the full v9.5 compatibility order and CSS cascade remain frozen while the current startup subset is manifest-owned and bounded.');
+console.log('Runtime manifest valid: the frozen v9.5 compatibility ledger is unchanged and stable current owners load afterward as an explicit replacement boundary.');
