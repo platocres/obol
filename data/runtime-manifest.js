@@ -47,7 +47,9 @@ for(const major of [7,8]){
   domain.push('data/orange-fidelity-v'+v+'.js','data/methodology-v'+v+'.js','data/project-model-v'+v+'.js');
  }
 }
-const nodeData=domain.slice();
+const historicalNodeData=freeze(domain);
+const dashboardDataPattern=/^data\/dashboard-v[\d.]+\.js$/;
+const nodeData=freeze(['data/dashboard-compat-current.js',...historicalNodeData.filter(src=>!dashboardDataPattern.test(src))]);
 domain.push('data/lanes-notes.js','data/wordlists.js','data/scripts.js','data/scripts-v2.5.js','data/reportmeta.js','data/signatures.js');
 
 const vendor=['assets/jszip.min.js','assets/bh.js'];
@@ -80,7 +82,7 @@ const app=[
 const scripts=[...domain,...vendor,...core,...nmap,...report,...appPrelude,...intake,...app];
 const startupPreludeScripts=freeze(['data/dashboard-compat-current.js']);
 const currentScripts=freeze(['assets/dashboard-route-current.js']);
-const historicalDashboardData=freeze(domain.filter(src=>/^data\/dashboard-v[\d.]+\.js$/.test(src)));
+const historicalDashboardData=freeze(domain.filter(src=>dashboardDataPattern.test(src)));
 const retiredDashboardPresentation=freeze([
  ...vr('assets/app-v',5,seq(1,9),'.js'),
  ...vr('assets/app-v',6,[0,1,2,4,5],'.js')
@@ -132,7 +134,7 @@ const performance=Object.freeze({
 });
 
 return Object.freeze({
- schemaVersion:'1.6.1',
+ schemaVersion:'1.7.0',
  styles:freeze(styles),
  scripts:freeze(scripts),
  startupPreludeScripts,
@@ -142,7 +144,7 @@ return Object.freeze({
  historicalDashboardData,
  retiredStartupScripts:freeze([...historicalDashboardData,...retiredDashboardPresentation]),
  groups,
- node:Object.freeze({data:freeze(nodeData),core:groups.core}),
+ node:Object.freeze({data:nodeData,historicalData:historicalNodeData,core:groups.core}),
  lazy,
  deferredScriptGroups,
  routeLazy,
