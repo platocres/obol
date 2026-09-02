@@ -1,0 +1,46 @@
+name: v9.30 notes wave mutation
+
+on:
+  push:
+    branches:
+      - release/obol-v9.30
+    paths:
+      - 'tools/v9.30-notes-wave.js'
+      - '.github/workflows/v9.30-notes-wave.yml'
+
+permissions:
+  contents: write
+
+jobs:
+  apply:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout release branch
+        uses: actions/checkout@v4
+        with:
+          ref: release/obol-v9.30
+          fetch-depth: 1
+
+      - name: Set up Node
+        uses: actions/setup-node@v4
+        with:
+          node-version: 24
+
+      - name: Apply v9.30 note wave
+        run: node tools/v9.30-notes-wave.js
+
+      - name: Validate focused v9.30 work
+        run: |
+          node --check data/tool-builders.js
+          node --check data/note-integration-reviews.js
+          node tests/run-v9.29-tests.js
+          node tests/run-v9.30-tests.js
+          node tools/scope-check.js
+
+      - name: Commit generated release changes
+        run: |
+          git config user.name 'github-actions[bot]'
+          git config user.email '41898282+github-actions[bot]@users.noreply.github.com'
+          git add -A
+          git commit -m 'feat: mine web upload and inclusion note packet'
+          git push origin HEAD:release/obol-v9.30
