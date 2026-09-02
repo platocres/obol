@@ -27,7 +27,28 @@ function versionReport88(md){const i=identity88();return i&&typeof i.normalizeRe
 function installReleaseContracts88(){if(releaseContractsInstalled||!release88()||!identity88())return;releaseContractsInstalled=true;stampReleaseState88();if(C&&typeof C.sanitizedCopy==='function'&&!C.sanitizedCopy.__obolReleaseAuthority){const old=C.sanitizedCopy;const wrapped=function(s){const safe=old(s),i=identity88();return i&&typeof i.stampState==='function'?i.stampState(safe):safe;};wrapped.__obolReleaseAuthority=true;C.sanitizedCopy=wrapped;}const R=window.OBOL_REPORT_V2;if(R&&typeof R.generate==='function'&&!R.generate.__obolReleaseAuthority){const oldGenerate=R.generate;const generate=function(){return versionReport88(oldGenerate.apply(R,arguments));};generate.__obolReleaseAuthority=true;window.OBOL_REPORT_V2={...R,generate};}}
 function ensureRelease88(){if(release88()&&identity88()){installReleaseContracts88();return Promise.resolve(release88());}if(releaseLoading)return releaseLoading;releaseLoading=addScript88(RELEASE_SOURCE).then(()=>{if(!release88()||!identity88())throw new Error('current release authority did not initialize');installReleaseContracts88();return release88();});return releaseLoading;}
 function ensureWorkflow88(){return ensureRelease88().then(()=>{if(window.OBOL_CURRENT_WORKFLOW)return window.OBOL_CURRENT_WORKFLOW;if(workflowLoading)return workflowLoading;workflowLoading=addScript88(WORKFLOW_SOURCE).then(()=>window.OBOL_CURRENT_WORKFLOW);return workflowLoading;});}
-function ensureProductAssets88(){return ensureWorkflow88().then(()=>{if(window.renderProductHardeningDashboard&&window.OBOL_PRODUCT_HARDENING&&window.OBOL_PRODUCT_HARDENING_WORK_PACKAGES&&window.OBOL_PRODUCT_HARDENING_NOTE_PROGRESS)return window.OBOL_CURRENT_WORKFLOW;if(productAssetsLoading)return productAssetsLoading;addStyle88('assets/product-hardening-dashboard.css');productAssetsLoading=addScript88('data/product-hardening/product-hardening-queue.js').then(()=>addScript88('data/product-hardening/work-packages.js')).then(()=>addScript88('data/note-integration.js')).then(()=>addScript88('data/note-integration-reviews.js')).then(()=>addScript88('data/product-hardening/note-progress-current.js')).then(()=>addScript88('assets/product-hardening-dashboard.js')).then(()=>window.OBOL_CURRENT_WORKFLOW);return productAssetsLoading;});}
+function ensureProductAssets88(){return ensureWorkflow88().then(()=>{if(window.renderProductHardeningDashboard&&window.OBOL_PRODUCT_HARDENING&&window.OBOL_PRODUCT_HARDENING_WORK_PACKAGES&&window.OBOL_PRODUCT_HARDENING_NOTE_PROGRESS&&window.OBOL_PRODUCT_HARDENING_NOTES_IMPACT)return window.OBOL_CURRENT_WORKFLOW;if(productAssetsLoading)return productAssetsLoading;addStyle88('assets/product-hardening-dashboard.css');productAssetsLoading=addScript88('data/product-hardening/product-hardening-queue.js').then(()=>addScript88('data/product-hardening/work-packages.js')).then(()=>addScript88('data/note-integration.js')).then(()=>addScript88('data/note-integration-reviews.js')).then(()=>addScript88('data/product-hardening/note-progress-current.js')).then(()=>addScript88('data/product-hardening/notes-impact-current.js')).then(()=>addScript88('assets/product-hardening-dashboard.js')).then(()=>window.OBOL_CURRENT_WORKFLOW);return productAssetsLoading;});}
+function currentDashboardShell88(){
+ const view=document.getElementById('view');if(!view)return null;
+ if(view.querySelector('[data-product-dashboard-owner="current"]')||view.querySelector('[data-product-dashboard-owner="current-loading"]'))return view;
+ view.innerHTML='<div class="ph-shell" data-product-dashboard-owner="current-loading"><section class="ph-card"><h1>Obol Product Hardening</h1><p>Loading the current dashboard…</p></section></div>';
+ return view;
+}
+function renderCurrentDashboard88(){
+ if(page88()!=='dashboard')return Promise.resolve(false);
+ const view=currentDashboardShell88();if(!view)return Promise.resolve(false);
+ return ensureProductAssets88().then(()=>{
+  if(page88()!=='dashboard')return false;
+  installReleaseContracts88();setVisibleVersion88();
+  if(typeof window.renderProductHardeningDashboard!=='function')throw new Error('current product dashboard renderer did not initialize');
+  window.renderProductHardeningDashboard(view,{embedded:true});
+  window.__OBOL_CURRENT_DASHBOARD_ROUTE_OWNER__='assets/app-v8.8.js/current';
+  return true;
+ }).catch(err=>{
+  if(page88()==='dashboard')view.innerHTML='<div class="ph-shell" data-product-dashboard-owner="current-error"><section class="ph-card"><h1>Obol Product Hardening</h1><p>The current dashboard could not be loaded. Refresh the page and try again.</p></section></div>';
+  return false;
+ });
+}
 function currentNmapValues88(){
  const d=typeof state!=='undefined'&&state&&state.ui&&state.ui.discovery31&&typeof state.ui.discovery31==='object'?state.ui.discovery31:{};
  const values={profile:d.profile||'discover',target:d.target||'',output:d.output||'',ports:d.ports||'',timing:d.timing||'T4',minRate:d.minRate||'',maxRetries:d.maxRetries||'',reason:!!d.reason,version:!!d.version,scripts:!!d.scripts,os:!!d.os,resolveDns:!!d.resolveDns};
@@ -143,8 +164,8 @@ function decorateCurrentToolBuilders88(){
  }
 }
 function setVisibleVersion88(){const r=release88();if(!r)return;stampReleaseState88();const tag=document.querySelector('.tagline');if(tag)tag.textContent='Offensive Box Operations Ledger · '+r.label;const title='Obol '+r.label+' — '+r.phaseLabel;if(document.title!==title)document.title=title;const view=document.querySelector('#view');if(!view)return;view.querySelectorAll('.app-phase-badge88,.release-settings88,.product-home88').forEach(x=>x.remove());if(page88()==='settings'){const sub=view.querySelector('.subtitle')||view.querySelector('h2');if(sub)sub.insertAdjacentHTML('afterend','<p class="hint release-settings88">Current Obol release: <b>'+e88(r.label)+'</b> · workspace schema '+e88(C.VERSION)+'</p>');}}
-function decorate88(){if(!active88())return;const p=page88();const assets=p==='dashboard'?ensureProductAssets88():ensureWorkflow88();assets.then(()=>{installReleaseContracts88();setVisibleVersion88();const workflow=window.OBOL_CURRENT_WORKFLOW;if(workflow&&typeof workflow.decorateRoute==='function')workflow.decorateRoute();if(['card','path','tools'].includes(p))ensureFieldNotes88().then(ui=>{if(ui&&typeof ui.decorate==='function')ui.decorate();}).catch(()=>{});if(['boxes','card','tools'].includes(p))ensureToolBuilder88().then(()=>{if(p==='boxes')decorateNmapBuilder88();if(['card','tools'].includes(p))decorateCurrentToolBuilders88();}).catch(()=>{});}).catch(()=>{});}
-const oldRoute88=route;route=function(){oldRoute88();for(const t of [0,40,180,520,1200,2600,4200])setTimeout(decorate88,t);};
-window.addEventListener('hashchange',()=>{for(const t of [20,120,420,900,1800,3000])setTimeout(decorate88,t);});
-ensureResponsive88();ensureAccessibility88().catch(()=>{});ensureRelease88().catch(()=>{});ensureWorkflow88().catch(()=>{});for(const t of [50,350,760,1300,2200,3600,5200])setTimeout(decorate88,t);
+function decorate88(){if(!active88())return;const p=page88();if(p==='dashboard'){renderCurrentDashboard88();return;}ensureWorkflow88().then(()=>{installReleaseContracts88();setVisibleVersion88();const workflow=window.OBOL_CURRENT_WORKFLOW;if(workflow&&typeof workflow.decorateRoute==='function')workflow.decorateRoute();if(['card','path','tools'].includes(p))ensureFieldNotes88().then(ui=>{if(ui&&typeof ui.decorate==='function')ui.decorate();}).catch(()=>{});if(['boxes','card','tools'].includes(p))ensureToolBuilder88().then(()=>{if(p==='boxes')decorateNmapBuilder88();if(['card','tools'].includes(p))decorateCurrentToolBuilders88();}).catch(()=>{});}).catch(()=>{});}
+const oldRoute88=route;route=function(){if(page88()==='dashboard'){currentDashboardShell88();renderCurrentDashboard88();return;}oldRoute88();for(const t of [0,40,180,520,1200,2600,4200])setTimeout(decorate88,t);};
+window.addEventListener('hashchange',()=>{if(page88()==='dashboard'){currentDashboardShell88();renderCurrentDashboard88();return;}for(const t of [20,120,420,900,1800,3000])setTimeout(decorate88,t);});
+ensureResponsive88();ensureAccessibility88().catch(()=>{});ensureRelease88().catch(()=>{});ensureWorkflow88().catch(()=>{});if(page88()==='dashboard'){currentDashboardShell88();renderCurrentDashboard88();}else for(const t of [50,350,760,1300,2200,3600,5200])setTimeout(decorate88,t);
 })();
