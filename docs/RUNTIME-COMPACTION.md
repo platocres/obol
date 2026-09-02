@@ -62,15 +62,15 @@ Historical core overlays still need the metadata objects those old Dashboard dat
 
 The v6.5 audit was important because `data/dashboard-v6.5.js` also carried AD CS product mutations. Those behaviors already have the proper domain owner in `data/source-delivery-v6.5.js`, including the Certify/Certutil command variants, agent/target certificate artifact handoffs, and source-depth delivery metadata. The compact Dashboard seam therefore remains metadata-only rather than becoming a new hidden product-behavior layer.
 
-`runtime-dashboard-layer-retirement` remains queued only until the complete historical preservation chain finishes successfully on a head containing this physical compaction. The real browser gate, lightweight release smoke, Product Hardening preflight, dependency audit, and metadata-equivalence boundary already cover the current state. Queue completion must follow proof, not precede it.
+The exact-head preservation gate completed successfully after physical compaction: real browser smoke, lightweight release smoke, Product Hardening preflight, dependency audit, metadata equivalence, and the complete historical contract runner all passed together. `runtime-dashboard-layer-retirement` is therefore complete rather than left in a perpetual implemented-but-queued state.
 
-The Product Hardening Dashboard exposes this state directly: current script counts, historical Dashboard-data owners still live, real-browser proof status, the runtime queue, and an ownership-area retirement matrix for Dashboard, Home/Path, Tool Builders, Evidence, Reports, and CSS.
+The Product Hardening Dashboard exposes this state directly: current script counts, zero live historical Dashboard-data owners, real-browser proof status, the runtime queue, and an ownership-area retirement matrix for Dashboard, Home/Path, Tool Builders, Evidence, Reports, and CSS.
 
 ## Dependency and equivalence audits
 
 `node tools/audit-dashboard-runtime-dependencies.js` inventories every historical `data/dashboard-v*.js` file that participates in live startup, the `OBOL_DASHBOARD_*` globals it exports, live startup consumers of those globals, and detected domain-mutation signals inside the file.
 
-The physical retirement assertion is now enabled in Product Hardening preflight:
+The physical retirement assertion is enabled in Product Hardening preflight:
 
 ```bash
 node tools/audit-dashboard-runtime-dependencies.js --require-retired
@@ -94,7 +94,7 @@ Development should use the smallest test set that proves the current work packag
 
 - `node tools/scope-check.js` is the focused v9.29/current-work-package check.
 - release smoke remains the ordinary release-branch push gate.
-- preflight remains the coherent current-release gate and now includes Dashboard compatibility equivalence plus the hard retirement assertion.
+- preflight remains the coherent current-release gate and includes Dashboard compatibility equivalence plus the hard retirement assertion.
 - `node tools/run-historical-contracts.js` is the named complete historical regression gate used for final release confidence.
 - `.github/workflows/browser-smoke.yml` runs the real Chromium route smoke and uploads screenshots for the six primary surfaces.
 
@@ -124,4 +124,4 @@ Bad retirement:
 
 Runtime compaction is first-class Product Hardening work. The dashboard shows which ownership areas still execute historical layers, which have current owners, what proof exists, and whether obsolete historical tests have actually been retired. This matrix should be updated as each ownership area moves through current owner, equivalence, physical retirement, and test retirement rather than treating runtime debt as invisible background cleanup.
 
-Dashboard is the first ownership area to cross the physical-retirement boundary. Once its exact-head historical preservation gate closes, the same method should move to Home/Path and the other remaining live compatibility areas rather than rebuilding a new layered runtime around the current Dashboard.
+Dashboard is the first ownership area to cross and close the physical-retirement boundary. Future runtime compaction should apply the same method to Home/Path and the other remaining live compatibility areas, but Product Build Next can now return to the higher-priority packetized Notes Integration work instead of holding the release open on a completed Dashboard gate.
