@@ -118,17 +118,30 @@ async function installDashboardPaintObserver(page) {
         if (!first.release || first.markerRelease !== first.release) routeFailures.push('dashboard current-owner marker is not stamped with the authoritative release');
         if (!first.token) routeFailures.push('dashboard freshness token is missing after initial render');
 
-        await page.evaluate(() => {
+        const refreshed = await page.evaluate(async expected => {
           window.OBOL_CURRENT_RELEASE = { version: '0.0.0', label: 'v0.0', phaseLabel: 'Stale' };
           window.OBOL_PRODUCT_HARDENING_NOTES_IMPACT = { review: { reviewed: -1 } };
-          window.OBOL_CURRENT_DASHBOARD_ROUTE.activate();
-        });
-        await page.waitForFunction(expected => {
+          const route = window.OBOL_CURRENT_DASHBOARD_ROUTE;
+          const activated = !!(route && route.activate());
+          const rendered = route && typeof route.whenRendered === 'function' ? await route.whenRendered() : false;
           const marker = document.querySelector('[data-product-dashboard-owner="current"]');
           const current = window.__OBOL_CURRENT_DASHBOARD_FRESHNESS__ || {};
           const impact = window.OBOL_PRODUCT_HARDENING_NOTES_IMPACT || {};
-          return !!(marker && marker.dataset.dashboardRelease === expected.release && current.token && current.token !== expected.token && impact.review && impact.review.reviewed === expected.reviewed);
-        }, first, { timeout: 15000 });
+          return {
+            activated,
+            rendered,
+            markerRelease: marker && marker.dataset.dashboardRelease,
+            release: window.OBOL_CURRENT_RELEASE && window.OBOL_CURRENT_RELEASE.version,
+            reviewed: impact.review && impact.review.reviewed,
+            token: current.token || '',
+            routeError: window.__OBOL_CURRENT_DASHBOARD_ROUTE_ERROR__ || ''
+          };
+        }, first);
+        if (!refreshed.activated) routeFailures.push('dashboard current owner did not accept explicit re-activation');
+        if (!refreshed.rendered) routeFailures.push('dashboard re-activation did not complete a current render: ' + refreshed.routeError);
+        if (refreshed.release !== first.release || refreshed.markerRelease !== first.release) routeFailures.push('dashboard re-activation did not restore authoritative current-release data');
+        if (refreshed.reviewed !== first.reviewed) routeFailures.push('dashboard re-activation did not restore authoritative Notes Integration impact data');
+        if (!refreshed.token || refreshed.token === first.token) routeFailures.push('dashboard re-activation did not publish a distinct freshness generation');
 
         const resources = await page.evaluate(() => performance.getEntriesByType('resource').map(entry => entry.name));
         const dashboardFresh = resources.filter(name => /[?&]obol-dashboard=/.test(name));
