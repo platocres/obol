@@ -1,0 +1,42 @@
+name: v9.30 packet reconciliation
+
+on:
+  push:
+    branches:
+      - release/obol-v9.30
+    paths:
+      - 'tools/v9.30-reconcile-packet.js'
+      - '.github/workflows/v9.30-reconcile-packet.yml'
+
+permissions:
+  contents: write
+
+jobs:
+  reconcile:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout release branch
+        uses: actions/checkout@v4
+        with:
+          ref: release/obol-v9.30
+          fetch-depth: 1
+      - name: Set up Node
+        uses: actions/setup-node@v4
+        with:
+          node-version: 24
+      - name: Reconcile packet accounting
+        run: node tools/v9.30-reconcile-packet.js
+      - name: Validate packet projection
+        run: |
+          node tools/validate-note-integration.js
+          node tools/validate-notes-impact.js
+          node tests/run-v9.30-tests.js
+          node tools/sync-product-build-next.js --check
+          node tools/scope-check.js
+      - name: Commit reconciled packet state
+        run: |
+          git config user.name 'github-actions[bot]'
+          git config user.email '41898282+github-actions[bot]@users.noreply.github.com'
+          git add -A
+          git commit -m 'fix: reconcile v9.30 packet accounting'
+          git push origin HEAD:release/obol-v9.30
