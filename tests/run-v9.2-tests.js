@@ -29,7 +29,7 @@ const contract=contracts.contracts['cc-version-authority'];
 assert(contract&&contract.acceptance.length&&contract.validationCommands.length&&contract.proofFiles.length,'version authority has item-specific DoD contract');
 for(const rel of contract.proofFiles)assert(fs.existsSync(path.join(root,rel)),'version authority proof file exists: '+rel);
 
-const readme=read('README.md'),app=read('assets/app-v8.8.js'),dashboard=read('assets/product-hardening-dashboard.js'),standalone=read('product-hardening.html'),arch=read('docs/ARCHITECTURE.md'),releaseDoc=read('docs/v9.2.md'),core=read('assets/core-v8.8.js');
+const readme=read('README.md'),app=read('assets/app-v8.8.js'),dashboard=read('assets/product-hardening-dashboard.js'),standalone=read('product-hardening.html'),dashboardOwner=read('assets/dashboard-route-current.js'),arch=read('docs/ARCHITECTURE.md'),releaseDoc=read('docs/v9.2.md'),core=read('assets/core-v8.8.js');
 assert(/Current release: \*\*v9\.[0-9]+(?:\.[0-9]+)?\*\*/.test(readme),'README release identity remains a current v9 product-hardening release');
 assert(app.includes("RELEASE_SOURCE='data/current-release.js'"),'live app loads release authority');
 assert(app.includes('window.OBOL_CURRENT_RELEASE'),'live app consumes release authority');
@@ -37,7 +37,8 @@ assert(!/const PRODUCT_RELEASE=/.test(app),'live app has no competing current re
 assert(app.includes('Current Obol release: <b>'),'settings presentation still derives current product release identity');
 assert(app.includes('document.title=title'),'browser title still derives current product release identity');
 assert(app.includes('window.OBOL_RELEASE_IDENTITY')||app.includes('state.obolRelease=r.version'),'current release integration still owns state/export/report identity without requiring the original v9.2 implementation shape');
-assert(standalone.indexOf('data/current-release.js')<standalone.indexOf('assets/product-hardening-dashboard.js'),'standalone dashboard loads release authority before renderer');
+assert(standalone.includes('assets/dashboard-route-current.js?obol-current='),'standalone dashboard delegates current-state loading to the cache-busted Dashboard owner');
+assert(dashboardOwner.includes("'data/current-release.js'"),'current Dashboard owner freshness-loads release authority for standalone and embedded routes');
 assert(dashboard.includes('window.OBOL_CURRENT_RELEASE'),'product dashboard consumes release authority');
 assert(dashboard.includes("document.title='Obol '+r.label+' '+r.phaseLabel+' Dashboard'"),'standalone dashboard title derives from authority');
 assert(arch.includes('### Product release identity')&&arch.includes('data/current-release.js'),'architecture documents release identity ownership');
@@ -54,4 +55,4 @@ for(const command of [
  ['tools/validate-release-pr.js','--repo-only']
 ]){const result=run(command);assert.strictEqual(result.status,0,(result.stderr||result.stdout||'').trim());}
 
-console.log('v9.2 current-release authority milestone remains regression-protected without freezing mutable current implementation or queue state.');
+console.log('v9.2 current-release authority milestone remains regression-protected through the stable current Dashboard owner without freezing mutable implementation or queue state.');
