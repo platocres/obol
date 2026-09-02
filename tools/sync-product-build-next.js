@@ -10,6 +10,7 @@ const queueFile = path.join(root, 'data', 'product-hardening', 'product-hardenin
 const workPackagesFile = path.join(root, 'data', 'product-hardening', 'work-packages.js');
 const noteIntegrationFile = path.join(root, 'data', 'note-integration.js');
 const noteReviewsFile = path.join(root, 'data', 'note-integration-reviews.js');
+const notePacketsFile = path.join(root, 'data', 'note-integration-packets.js');
 const noteProgressFile = path.join(root, 'data', 'product-hardening', 'note-progress-current.js');
 const noteImpactFile = path.join(root, 'data', 'product-hardening', 'notes-impact-current.js');
 const readmeFile = path.join(root, 'README.md');
@@ -21,6 +22,7 @@ vm.runInContext(fs.readFileSync(queueFile, 'utf8'), sandbox, { filename: queueFi
 vm.runInContext(fs.readFileSync(workPackagesFile, 'utf8'), sandbox, { filename: workPackagesFile });
 vm.runInContext(fs.readFileSync(noteIntegrationFile, 'utf8'), sandbox, { filename: noteIntegrationFile });
 if (fs.existsSync(noteReviewsFile)) vm.runInContext(fs.readFileSync(noteReviewsFile, 'utf8'), sandbox, { filename: noteReviewsFile });
+if (fs.existsSync(notePacketsFile)) vm.runInContext(fs.readFileSync(notePacketsFile, 'utf8'), sandbox, { filename: notePacketsFile });
 if (fs.existsSync(noteProgressFile)) vm.runInContext(fs.readFileSync(noteProgressFile, 'utf8'), sandbox, { filename: noteProgressFile });
 if (fs.existsSync(noteImpactFile)) vm.runInContext(fs.readFileSync(noteImpactFile, 'utf8'), sandbox, { filename: noteImpactFile });
 

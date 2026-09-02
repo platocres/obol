@@ -8,16 +8,24 @@ const PRODUCT_SCRIPTS=[
  'data/product-hardening/work-packages.js',
  'data/note-integration.js',
  'data/note-integration-reviews.js',
+ 'data/note-integration-packets.js',
  'data/product-hardening/note-progress-current.js',
  'data/product-hardening/notes-impact-current.js',
  'assets/product-hardening-dashboard.js'
 ];
+function reviewSchemaAtLeast(major,minor){
+ const match=String(root.OBOL_NOTE_INTEGRATION&&root.OBOL_NOTE_INTEGRATION.schemaVersion||'').match(/^(\d+)\.(\d+)\./);
+ if(!match)return false;
+ const currentMajor=Number(match[1]),currentMinor=Number(match[2]);
+ return currentMajor>major||(currentMajor===major&&currentMinor>=minor);
+}
 const READY={
  'data/current-release.js':()=>!!(root.OBOL_CURRENT_RELEASE&&root.OBOL_RELEASE_IDENTITY),
  'data/product-hardening/product-hardening-queue.js':()=>!!root.OBOL_PRODUCT_HARDENING,
  'data/product-hardening/work-packages.js':()=>!!root.OBOL_PRODUCT_HARDENING_WORK_PACKAGES,
  'data/note-integration.js':()=>!!root.OBOL_NOTE_INTEGRATION,
- 'data/note-integration-reviews.js':()=>!!(root.OBOL_NOTE_INTEGRATION&&root.OBOL_NOTE_INTEGRATION.schemaVersion==='1.3.0'),
+ 'data/note-integration-reviews.js':()=>reviewSchemaAtLeast(1,3),
+ 'data/note-integration-packets.js':()=>reviewSchemaAtLeast(1,4),
  'data/product-hardening/note-progress-current.js':()=>!!root.OBOL_PRODUCT_HARDENING_NOTE_PROGRESS,
  'data/product-hardening/notes-impact-current.js':()=>!!root.OBOL_PRODUCT_HARDENING_NOTES_IMPACT,
  'assets/product-hardening-dashboard.js':()=>typeof root.renderProductHardeningDashboard==='function'
@@ -54,7 +62,7 @@ function waitForReady(src,timeoutMs){
  });
 }
 function ensureAssets(){
- if(root.renderProductHardeningDashboard&&root.OBOL_PRODUCT_HARDENING&&root.OBOL_PRODUCT_HARDENING_WORK_PACKAGES&&root.OBOL_PRODUCT_HARDENING_NOTE_PROGRESS&&root.OBOL_PRODUCT_HARDENING_NOTES_IMPACT)return Promise.resolve();
+ if(root.renderProductHardeningDashboard&&root.OBOL_PRODUCT_HARDENING&&root.OBOL_PRODUCT_HARDENING_WORK_PACKAGES&&root.OBOL_PRODUCT_HARDENING_NOTE_PROGRESS&&root.OBOL_PRODUCT_HARDENING_NOTES_IMPACT&&reviewSchemaAtLeast(1,4))return Promise.resolve();
  if(assetsLoading)return assetsLoading;
  addStyle(PRODUCT_STYLE);
  assetsLoading=PRODUCT_SCRIPTS.reduce((chain,src)=>chain.then(()=>waitForReady(src,8000)),Promise.resolve()).finally(()=>{if(!root.renderProductHardeningDashboard)assetsLoading=null;});

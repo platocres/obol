@@ -34,9 +34,7 @@ assert(contract.validationCommands.includes('node tests/run-v9.20-tests.js'),'cu
 for(const rel of contract.proofFiles)assert(exists(rel),'v9.20 proof file exists for tb-curl: '+rel);
 assert.strictEqual(contracts.version,'9.20.0','Product Hardening test-contract authority advances to v9.20');
 
-assert.strictEqual(schema.schemaVersion,'1.0.0','stable Tool Builder schema identity is unchanged');
-assert.strictEqual(renderer.version,'1.0.0','stable Tool Builder renderer identity is unchanged');
-assert.strictEqual(builders.version,'1.0.0','stable concrete builder registry identity is unchanged');
+for(const [owner,version] of [['schema',schema.schemaVersion],['renderer',renderer.version],['builders',builders.version]])assert(/^\d+\.\d+\.\d+$/.test(version),`current Tool Builder ${owner} retains a semantic version while the v9.20 behavior assertions below preserve the historical curl contract`);
 const curl=schema.get('tb-curl');
 assert(curl,'canonical curl builder registers');
 assert.deepStrictEqual(Array.from(schema.validateBuilder(curl)),[],'curl builder satisfies stable schema');

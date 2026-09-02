@@ -164,6 +164,29 @@ File-inclusion remediation favors fixed server-side mappings or strict allowlist
 
 `data/product-hardening/note-progress-current.js` now derives the live Notes Integration completion count from the current note ledger. README generation and both Product Hardening Dashboard entrypoints therefore consume actual reviewed-note progress rather than a hard-coded release threshold.
 
+## v9.30 themed packet burn-down
+
+v9.30 moves substantive review from anonymous waves to explicit subject packets under the 556-note umbrella. The first packet is **web upload and file inclusion**. Its private shortlist contains 47 candidates. Thirty-five were already terminal from earlier review waves, eleven more reached terminal dispositions in v9.30, and one cross-theme Linux credential-hunting source remains pending for the Linux privilege-escalation packet.
+
+The cumulative ledger is:
+
+```text
+v9.30 web upload / inclusion packet
+reviewed: 76
+modeled: 53
+private-reference-only: 19
+superseded: 4
+rejected: 0
+pending-review: 480
+total: 556
+```
+
+`data/note-integration-packets.js` is the current public-safe packet-accounting layer. It records packet candidate accounting, terminal/deferred state, normalized outputs, and closed product-mechanics gaps without copying private packet bodies into Obol. The web upload/inclusion packet is complete, while the umbrella and the XSS/session, credentials/authentication, Windows privilege escalation, Linux privilege escalation, and AD/pivoting packets remain live.
+
+The packet advances the public projection to 32 normalized Field Notes and records the first explicitly declared note-driven code change. The curl Tool Builder gains an opt-in **Preserve URL path (`--path-as-is`)** control when exact dot-segment transport matters to a path-resolution hypothesis. Other modeled sources explicitly record `guidanceOnlyReason` when contextual guidance is sufficient rather than inflating the product-mechanics count.
+
+Contextual Field Notes on Tool and Path routes now lazy-load the packet layer as well as the base and historical review layers. Dashboard, README generation, validators, and workflow-route guidance therefore consume the same current Notes Integration state instead of stopping at different review schemas.
+
 ## Dispositions
 
 Each note must eventually end in one of these terminal states:
@@ -196,13 +219,15 @@ A modeled source note is product-development lineage only. It does not establish
 
 - exact 556-note / 1,326-resource source accounting;
 - explicit terminal rows and rationale for every reviewed note;
-- current disposition reconciliation;
-- immutable historical v9.25, v9.26, and v9.27 milestones plus the current v9.28 milestone;
+- current disposition reconciliation and the 76-reviewed v9.30 packet baseline;
+- immutable historical milestones, including the frozen v9.28 55-note state and the first v9.30 65-note wave;
+- complete accounting of the 47-source web upload/inclusion packet, including its one explicit cross-theme deferral;
 - reciprocal modeled-source-to-public-output lineage;
+- explicit v9.29+ guidance-only versus code-level product-change decisions;
 - no output from non-modeled dispositions;
-- contextual Tool and Path bindings;
+- contextual Tool and Path bindings, including packet-derived Field Notes on workflow routes;
 - public-safe metadata atomization;
-- exclusion of raw source paths, ENEX markup, flags, lab targets, and copied private content;
+- exclusion of raw source paths, ENEX markup, flags, lab targets, copied private content, and packet review bodies;
 - the no-execution boundary.
 
 ## Rule against raw course dumping

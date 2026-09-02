@@ -20,10 +20,7 @@ const renderer=sandbox.window.OBOL_TOOL_BUILDER;
 const builders=sandbox.window.OBOL_TOOL_BUILDERS;
 const queue=sandbox.window.OBOL_PRODUCT_HARDENING;
 assert(schema&&inventory&&renderer&&builders&&queue,'Tool Builder platform owners must initialize');
-assert.strictEqual(schema.schemaVersion,'1.0.0');
-assert.strictEqual(inventory.schemaVersion,'1.0.0');
-assert.strictEqual(renderer.version,'1.0.0');
-assert.strictEqual(builders.version,'1.0.0');
+for(const [owner,version] of [['schema',schema.schemaVersion],['inventory',inventory.schemaVersion],['renderer',renderer.version],['builders',builders.version]])assert(/^\d+\.\d+\.\d+$/.test(version),`current Tool Builder ${owner} must expose a semantic version; behavior fixtures below own the durable v9.12 platform contract`);
 assert.deepStrictEqual(Array.from(inventory.validate()),[],'committed tool inventory must be internally valid');
 
 function cards(){return lanes.flatMap(lane=>Array.isArray(lane.cards)?lane.cards:[]);}
