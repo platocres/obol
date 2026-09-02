@@ -10,6 +10,7 @@ const queueFile = path.join(root, 'data', 'product-hardening', 'product-hardenin
 const workPackagesFile = path.join(root, 'data', 'product-hardening', 'work-packages.js');
 const contractsFile = path.join(root, 'data', 'product-hardening', 'item-test-contracts.js');
 const tunnelContractsFile = path.join(root, 'data', 'product-hardening', 'item-test-contracts-tunnels.js');
+const v929ContractsFile = path.join(root, 'data', 'product-hardening', 'item-test-contracts-v9.29.js');
 const sandbox = { window: {}, globalThis: null };
 sandbox.globalThis = sandbox.window;
 vm.createContext(sandbox);
@@ -18,6 +19,7 @@ vm.runInContext(fs.readFileSync(queueFile, 'utf8'), sandbox, { filename: queueFi
 if (fs.existsSync(workPackagesFile)) vm.runInContext(fs.readFileSync(workPackagesFile, 'utf8'), sandbox, { filename: workPackagesFile });
 if (fs.existsSync(contractsFile)) vm.runInContext(fs.readFileSync(contractsFile, 'utf8'), sandbox, { filename: contractsFile });
 if (fs.existsSync(tunnelContractsFile)) vm.runInContext(fs.readFileSync(tunnelContractsFile, 'utf8'), sandbox, { filename: tunnelContractsFile });
+if (fs.existsSync(v929ContractsFile)) vm.runInContext(fs.readFileSync(v929ContractsFile, 'utf8'), sandbox, { filename: v929ContractsFile });
 
 const q = sandbox.window.OBOL_PRODUCT_HARDENING;
 const workPackages = sandbox.window.OBOL_PRODUCT_HARDENING_WORK_PACKAGES;
@@ -50,7 +52,7 @@ function validateItemTestContracts() {
 
 function validateWorkPackages() {
   if (!workPackages) { fail('product-hardening work-package metadata missing'); return; }
-  if (workPackages.schemaVersion !== '1.0.0') fail('unexpected work-package schema version ' + workPackages.schemaVersion);
+  if (!['1.0.0','1.1.0'].includes(workPackages.schemaVersion)) fail('unexpected work-package schema version ' + workPackages.schemaVersion);
   if (!Array.isArray(workPackages.packages) || workPackages.packages.length < 8) fail('expected durable seeded work-package ledger');
   if (typeof workPackages.validate !== 'function' || typeof workPackages.recommend !== 'function') { fail('work-package helpers missing'); return; }
   for (const message of workPackages.validate(q)) fail(message);
@@ -80,7 +82,7 @@ if (q) {
     if (!trackIds.has(item.track)) fail('unknown item track ' + item.track);
     if (!['queued', 'modeled', 'complete', 'superseded', 'rejected'].includes(item.status)) fail('bad status ' + item.status + ' for ' + item.id);
   }
-  const requiredItems = ['cc-version-authority','cc-asset-validation','cc-report-version','cc-link-contrast','runtime-current-entry','runtime-no-layer-rule','ux-home-user-first','tb-schema','tb-nmap','tb-nxc','tb-hashcat','tb-secretsdump','cred-schema','cred-hash-routing','manual-schema','manual-success-unlocks','manual-proof-report','notes-private-source-pointer','notes-source-inventory','notes-disposition-burn-down','qa-dashboard-sync','qa-asset-test','qa-release-contract-v9'];
+  const requiredItems = ['cc-version-authority','cc-asset-validation','cc-report-version','cc-link-contrast','runtime-current-entry','runtime-no-layer-rule','runtime-dashboard-no-flash','runtime-dashboard-layer-retirement','runtime-test-retirement-policy','ux-home-user-first','tb-schema','tb-nmap','tb-nxc','tb-hashcat','tb-secretsdump','cred-schema','cred-hash-routing','manual-schema','manual-success-unlocks','manual-proof-report','notes-impact-dashboard','notes-private-source-pointer','notes-source-inventory','notes-disposition-burn-down','notes-packet-web-upload-inclusion','notes-packet-xss-session','notes-packet-credentials-auth','notes-packet-windows-privesc','notes-packet-linux-privesc','notes-packet-ad-pivoting','qa-dashboard-sync','qa-asset-test','qa-release-contract-v9'];
   const itemIds = new Set((q.items || []).map(i => i.id));
   for (const id of requiredItems) if (!itemIds.has(id)) fail('required queue item missing: ' + id);
   const notes = q.notes && Array.isArray(q.notes.sources) ? q.notes.sources : [];
