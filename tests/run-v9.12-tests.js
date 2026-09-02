@@ -34,7 +34,7 @@ assert(q.tracks.find(t=>t.id==='tool-builders').complete>=3,'Tool GUI builders t
 assert(q.tracks.find(t=>t.id==='testing-qa').complete>=3,'Testing / visual QA track retains the v9.12 builder contract completion');
 assert.strictEqual(schema.schemaVersion,'1.0.0','Tool Builder schema version remains stable');
 assert.strictEqual(inventory.schemaVersion,'1.0.0','Tool Builder inventory schema remains stable');
-assert.strictEqual(renderer.version,'1.0.0','Tool Builder renderer version remains stable');
+assert(/^\d+\.\d+\.\d+$/.test(renderer.version),'current Tool Builder renderer exposes a semantic version while the historical fixture below proves the v9.12 behavior contract');
 
 for(const tool of ['nmap','netexec','hashcat','john','ffuf','gobuster','feroxbuster','impacket-secretsdump','impacket-getnpusers','impacket-getuserspns','evilwinrm','certipy','sqlmap','curl','chisel','ssh','plink'])assert(inventory.get(tool),'representative tool remains explicitly inventoried: '+tool);
 assert.strictEqual(inventory.key('nxc'),'netexec','nxc alias remains normalized to NetExec');
