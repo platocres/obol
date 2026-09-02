@@ -65,7 +65,8 @@ function noteImpactLines() {
   const r = noteImpact.review, o = noteImpact.outputCounts;
   return [
     '**Notes Integration:** ' + r.reviewed + '/' + r.total + ' reviewed — ' + r.modeled + ' modeled, ' + r.privateOnly + ' private-only, ' + r.pending + ' pending.',
-    '**Derived note outputs:** ' + o.fieldNotes + ' Field Notes · ' + o.toolIntegrated + ' tool-integrated · ' + o.pathIntegrated + ' Path-integrated · ' + o.evidenceIntegrated + ' Evidence · ' + o.reportIntegrated + ' Report.',
+    '**Derived note guidance:** ' + o.fieldNotes + ' Field Notes · ' + o.toolContextBound + ' tool-bound · ' + o.pathGuidanceBound + ' Path-bound · ' + o.evidenceGuidance + ' Evidence · ' + o.reportGuidance + ' Report.',
+    '**Declared note-driven product mechanics:** ' + o.declaredProductChanges + ' total · ' + o.toolBuilderChanges + ' builder · ' + o.pathLogicChanges + ' Path logic · ' + o.evidenceParserChanges + ' Evidence parser · ' + o.reportGeneratorChanges + ' report generator · ' + o.workflowChanges + ' workflow.',
     '**Latest mined themes:** ' + noteImpact.latestWave.themes.join(', ') + '.',
     '**Notes impact contract:** `docs/NOTES-IMPACT.md`.'
   ];
