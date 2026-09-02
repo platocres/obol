@@ -23,7 +23,7 @@ const contract=contracts.contracts['tb-sqlmap'];
 assert(contract&&contract.acceptance.length,'sqlmap owns an item-specific Definition of Done');
 assert(contract.validationCommands.includes('node tests/run-v9.19-tests.js'),'sqlmap contract names the v9.19 regression suite');
 for(const rel of contract.proofFiles)assert(exists(rel),'v9.19 proof file exists for tb-sqlmap: '+rel);
-assert.strictEqual(schema.schemaVersion,'1.0.0');assert.strictEqual(renderer.version,'1.0.0');assert.strictEqual(builders.version,'1.0.0');
+for(const [owner,version] of [['schema',schema.schemaVersion],['renderer',renderer.version],['builders',builders.version]])assert(/^\d+\.\d+\.\d+$/.test(version),`current Tool Builder ${owner} retains a semantic version while the v9.19 behavior assertions below preserve the historical sqlmap contract`);
 const sqlmap=schema.get('tb-sqlmap');
 assert(sqlmap,'canonical sqlmap builder registers');
 assert.deepStrictEqual(Array.from(schema.validateBuilder(sqlmap)),[],'sqlmap builder satisfies stable schema');
