@@ -39,7 +39,7 @@ assert(credentialTrack&&credentialTrack.complete>=14&&credentialTrack.total>=14,
 assert(q.totals().complete>=53,'v9.23 Product Hardening completion milestone remains satisfied');
 assert.deepStrictEqual(Array.from(packages.validate(q)),[],'current work-package projection remains valid while preserving v9.23 owners');
 
-assert.strictEqual(modes.version,'1.0.0');assert.strictEqual(modes.coverage.length,9);assert.deepStrictEqual(Array.from(modes.validateBuilderCoverage()),[]);
+assert.strictEqual(modes.version,'1.0.0');assert(modes.coverage.length>=9,'v9.23 nine-mode coverage baseline remains present while later credential modes may extend it');assert.deepStrictEqual(Array.from(modes.validateBuilderCoverage()),[]);
 const lm='aad3b435b51404eeaad3b435b51404ee',nt='8846f7eaee8fb117ad06bdd830b7586c',pair=lm+':'+nt;
 assert.deepStrictEqual(JSON.parse(JSON.stringify(modes.parseNtlm(pair))),{kind:'lmnt',raw:pair,lm,nt,pair});
 const state={activeContext:{type:'global',id:'global'},ui:{},typedArtifacts:{secrets:[]},typedCompatibility:[]};
