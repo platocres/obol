@@ -13,21 +13,41 @@ When the disposition is `modeled`, the reviewer must decide which output classes
 | Output class | Meaning |
 | --- | --- |
 | Field Note | Contextual educational guidance shown only where relevant. |
-| Tool Builder Change | A command variant, switch, mode, preset, output option, warning, or failure lesson belongs in a relevant builder. |
-| Path Change | A new branch, blocker, unlock, next-step possibility, or decision rule belongs in Path. |
-| Evidence Change | Proof capture, parser expectations, or a proof boundary changes. |
-| Report Change | Reporting, remediation, or proof wording changes. |
+| Tool Builder Change | A command variant, switch, mode, preset, output option, warning, or failure behavior requires a code-level builder change. |
+| Path Change | A new branch, blocker, unlock, next-step possibility, or decision rule requires a code-level Path change. |
+| Evidence Change | Proof capture, parser expectations, or a proof boundary requires Evidence behavior to change. |
+| Report Change | Reporting, remediation, or proof wording requires report behavior to change. |
 | Private Only | The source remains useful for private lookup but should not create public product material. |
 
-A modeled note must not stop at a Field Note when the reviewed source clearly exposes a missing tool option, realistic Path branch, Evidence rule, or reporting improvement. If contextual guidance is sufficient, that decision should be visible from the resulting bindings and output kind rather than assumed.
+A modeled note must not stop at a Field Note when the reviewed source clearly exposes a missing tool option, realistic Path branch, Evidence rule, or reporting improvement. If contextual guidance is sufficient, that decision must be explicit rather than assumed.
+
+## Guidance bindings are not code changes
+
+The impact projection deliberately separates **where guidance is delivered** from **what product mechanics changed**.
+
+A Field Note with `toolIds: ['curl']` is tool-bound guidance. It means the lesson appears in curl context. It does **not** prove that the curl Tool Builder gained a switch, mode, preset, warning, or output option. Likewise, a `pathIds` binding means guidance is visible in Path context; it does not by itself prove the recommendation engine gained a new branch.
+
+Code-level changes must be declared separately on the reviewed disposition when they occur. The supported declarations are:
+
+- `tool-builder-change`
+- `path-logic-change`
+- `evidence-parser-change`
+- `report-generator-change`
+- `workflow-change`
+
+A declared product change must include proof references to the implementation/tests that changed. If no code-level change is declared, the dashboard should say so and describe the output as guidance/binding rather than implying a deeper integration.
+
+This distinction is important because the dashboard is supposed to tell the user what Obol actually gained, not inflate output counts by treating contextual placement as implementation work.
 
 ## Current projection
 
 `data/product-hardening/notes-impact-current.js` derives the current notes-to-product projection from the public-safe ledger and normalized Field Notes. It reports:
 
 - source review funnel: total, reviewed, modeled, private-only, superseded, rejected, and pending;
-- normalized public outputs;
-- Tool, Path, Evidence, Report, and troubleshooting impact;
+- normalized public Field Notes;
+- tool-bound and Path-bound contextual guidance;
+- Evidence, Report, troubleshooting, and cleanup guidance;
+- separately declared code-level product mechanics changes;
 - theme coverage;
 - latest review-wave impact;
 - open Notes Integration queue gaps.
@@ -48,7 +68,12 @@ Prefer packets such as:
 - Active Directory and pivoting;
 - web authorization and request manipulation.
 
-A packet is complete only when its useful lessons have been normalized and any resulting tool, Path, Evidence, report, or troubleshooting gaps have been acted on or deliberately left as explicit open gaps.
+A packet is complete only when its useful lessons have been normalized and any resulting tool, Path, Evidence, report, troubleshooting, or workflow gaps have been acted on or deliberately left as explicit open gaps.
+
+For every modeled source, the packet review must answer two separate questions:
+
+1. What normalized guidance/output did this source produce and where is it bound?
+2. Did it require a code-level product mechanics change? If yes, declare the change type and proof refs. If no, record that guidance is sufficient.
 
 ## Dashboard interpretation
 
@@ -56,11 +81,11 @@ The dashboard is meant to answer five questions at a glance:
 
 1. How much source material has been reviewed?
 2. What subject matter has been mined?
-3. What product outputs were created?
-4. Which Obol surfaces were actually improved?
+3. What normalized guidance was created and where is it delivered?
+4. Which Obol mechanics actually changed because of the notes?
 5. What did the notes reveal that Obol still cannot represent well?
 
-This is why `modeled` and `product-integrated` are not treated as synonyms.
+This is why `modeled`, `context-bound`, and `product-mechanics-changed` are separate concepts.
 
 ## Runtime compaction relationship
 
