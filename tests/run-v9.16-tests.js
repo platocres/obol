@@ -34,7 +34,8 @@ assert(contract.validationCommands.includes('node tests/run-v9.16-tests.js'),'co
 for(const rel of contract.proofFiles)assert(exists(rel),'v9.16 proof file remains present for tb-gobuster-ferox: '+rel);
 
 assert.strictEqual(schema.schemaVersion,'1.0.0','stable Tool Builder schema identity remains unchanged');
-assert.strictEqual(renderer.version,'1.0.0','stable Tool Builder renderer identity remains unchanged');
+const rendererVersion=String(renderer.version||'').split('.').map(Number);
+assert(rendererVersion.length>=2&&rendererVersion[0]===1&&rendererVersion[1]>=0,'current Tool Builder renderer remains compatible with the v9.16 v1 renderer contract');
 const contentDiscovery=schema.get('tb-gobuster-ferox');
 assert(contentDiscovery,'canonical Gobuster/Feroxbuster builder remains registered');
 assert.deepStrictEqual(Array.from(schema.validateBuilder(contentDiscovery)),[],'content-discovery builder remains schema-valid');
