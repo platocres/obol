@@ -29,14 +29,16 @@ const owners=[
 const normalize=value=>JSON.parse(JSON.stringify(value));
 
 // Execute the old owners only as a historical fixture. This is intentionally not the
-// live browser startup path: it exists to prove that the compact metadata seam retains
-// exactly the historical values still consumed by versioned core regression layers.
+// live browser/Node startup path: it proves the compact metadata seam retains exactly
+// the historical values still consumed by versioned core regression layers.
 global.window=globalThis;
 global.DOMParser=global.DOMParser||function DOMParser(){};
+const historicalNodeData=Array.from(manifest.node.historicalData||[]);
+assert(historicalNodeData.length,'runtime manifest exposes a frozen historical Node data ledger for fixture equivalence');
 const lastHistorical='data/dashboard-v6.5.js';
-const end=manifest.node.data.indexOf(lastHistorical);
+const end=historicalNodeData.indexOf(lastHistorical);
 assert(end>=0,'historical Node data ledger contains '+lastHistorical);
-for(const rel of manifest.node.data.slice(0,end+1))vm.runInThisContext(read(rel),{filename:rel});
+for(const rel of historicalNodeData.slice(0,end+1))vm.runInThisContext(read(rel),{filename:rel});
 const historical={};
 for(const [source,name] of owners){
  assert(manifest.historicalDashboardData.includes(source),'historical Dashboard ledger includes '+source);
