@@ -10,6 +10,7 @@ const run=args=>cp.spawnSync(process.execPath,args.map((part,idx)=>idx===0?path.
 const sandbox={window:{},globalThis:null};sandbox.globalThis=sandbox.window;vm.createContext(sandbox);
 for(const rel of ['data/current-release.js','data/product-hardening/product-hardening-queue.js','data/product-hardening/work-packages.js','data/note-integration.js','data/note-integration-reviews.js','data/product-hardening/note-progress-current.js','data/product-hardening/notes-impact-current.js'])vm.runInContext(read(rel),sandbox,{filename:rel});
 const release=sandbox.window.OBOL_CURRENT_RELEASE,q=sandbox.window.OBOL_PRODUCT_HARDENING,workPackages=sandbox.window.OBOL_PRODUCT_HARDENING_WORK_PACKAGES,impact=sandbox.window.OBOL_PRODUCT_HARDENING_NOTES_IMPACT;
+const runtimeManifest=require(path.join(root,'data','runtime-manifest.js'));
 assert(release&&q&&workPackages&&impact,'v9.29 current owners load');
 assert.strictEqual(release.version,'9.29.0');
 assert.strictEqual(release.label,'v9.29');
@@ -42,24 +43,29 @@ assert.deepStrictEqual(Array.from(recommended.liveItems).map(item=>item.id),['qa
 const workPackageSource=read('data/product-hardening/work-packages.js');
 assert(!workPackageSource.includes('function currentReleaseAtLeast'),'work-package owner no longer derives queue completion from release numbers');
 assert(!workPackageSource.includes('completed=new Set'),'work-package owner no longer carries hidden completion overlays');
+assert.deepStrictEqual(Array.from(runtimeManifest.currentScripts),['assets/dashboard-route-current.js'],'runtime manifest declares one stable current dashboard route owner');
+assert(!runtimeManifest.scripts.includes('assets/dashboard-route-current.js'),'stable dashboard owner stays outside the frozen historical compatibility ledger');
 const runtime=read('assets/runtime-current.js');
-for(const token of ['syncCurrentRouteOwnership','__OBOL_CURRENT_DASHBOARD_ROUTE_INTENT__','data-runtime-current-route-shell="dashboard"'])assert(runtime.includes(token),'current runtime claims Dashboard before compatibility startup: '+token);
+for(const token of ['syncCurrentRouteOwnership','__OBOL_CURRENT_DASHBOARD_ROUTE_INTENT__','data-runtime-current-route-shell="dashboard"','manifest.currentScripts','browserScriptList','startupList().concat(currentOwnerList())'])assert(runtime.includes(token),'current runtime claims Dashboard before compatibility startup and loads stable owner afterward: '+token);
 assert(/function writeScripts\(\)\{[\s\S]*syncCurrentRouteOwnership\(\);[\s\S]*browserScriptList\(\)/.test(runtime),'current Dashboard ownership is declared before compatibility scripts are written');
 const legacyDashboard=read('assets/app-v6.6.js');
 for(const token of ['currentDashboardOwned66','__OBOL_CURRENT_DASHBOARD_ROUTE_INTENT__'])assert(legacyDashboard.includes(token),'historical dashboard owner yields to current runtime: '+token);
 assert(/function viewDashboard66\(\)\{if\(page66\(\)!==['"]dashboard['"]\|\|currentDashboardOwned66\(\)\)return;/.test(legacyDashboard),'v6.6 direct Dashboard renderer cannot overwrite a current-owned Dashboard');
+const stableOwner=read('assets/dashboard-route-current.js');
+for(const token of ['OBOL_CURRENT_DASHBOARD_ROUTE','MutationObserver','scheduleRepair','root.route=ownedRoute','data-product-dashboard-owner="current-loading"','renderProductHardeningDashboard','__OBOL_CURRENT_DASHBOARD_ROUTE_OWNER__'])assert(stableOwner.includes(token),'stable current dashboard route owner includes '+token);
+assert(stableOwner.includes("if(!currentMarker(current)&&!transientMarker(current))scheduleRepair()"),'stable dashboard owner repairs delayed historical repaint');
 const app=read('assets/app-v8.8.js');
-for(const token of ['currentDashboardShell88','renderCurrentDashboard88','data-product-dashboard-owner="current-loading"','data/product-hardening/notes-impact-current.js'])assert(app.includes(token),'current dashboard bridge includes '+token);
-assert(/route=function\(\)\{if\(page88\(\)===['"]dashboard['"]\)\{currentDashboardShell88\(\);renderCurrentDashboard88\(\);return;\}oldRoute88\(\)/.test(app),'dashboard route is intercepted before historical route paint');
+for(const token of ['currentDashboardShell88','renderCurrentDashboard88','data-product-dashboard-owner="current-loading"','data/product-hardening/notes-impact-current.js'])assert(app.includes(token),'v8.8 compatibility bridge retains transitional Dashboard support: '+token);
 const browserSmoke=read('tests/playwright-smoke.js');
-for(const token of ['installDashboardPaintObserver','settleMs: 3200','historical dashboard painted before or after current owner','data-product-dashboard-owner="current"'])assert(browserSmoke.includes(token),'browser smoke protects current Dashboard persistence: '+token);
+for(const token of ['installDashboardPaintObserver','historical dashboard painted before or after current owner','data-product-dashboard-owner="current"','current-owner paint proof'])assert(browserSmoke.includes(token),'browser smoke protects current Dashboard persistence: '+token);
 const dashboard=read('assets/product-hardening-dashboard.js');
 for(const token of ['Notes Integration — notes to product','Tool-bound guidance','Declared product mechanics changes','Theme matrix','Latest review wave','Open gaps exposed by Notes Integration','Runtime compaction and layer retirement','OBOL_PRODUCT_HARDENING_NOTES_IMPACT'])assert(dashboard.includes(token),'dashboard includes '+token);
 const standalone=read('product-hardening.html');assert(standalone.includes('data/product-hardening/notes-impact-current.js'),'standalone dashboard loads notes impact');
-const manifest=read('data/runtime-manifest.js');for(const token of ['data/note-integration.js','data/note-integration-reviews.js','data/product-hardening/note-progress-current.js','data/product-hardening/notes-impact-current.js'])assert(manifest.includes(token),'runtime product-hardening owner loads '+token);
+const manifestSource=read('data/runtime-manifest.js');for(const token of ['data/note-integration.js','data/note-integration-reviews.js','data/product-hardening/note-progress-current.js','data/product-hardening/notes-impact-current.js','assets/dashboard-route-current.js','current-owner+route-lazy-data'])assert(manifestSource.includes(token),'runtime product-hardening owner contract includes '+token);
 const impactDoc=read('docs/NOTES-IMPACT.md');for(const token of ['Field Note','Tool Builder Change','Path Change','Evidence Change','Report Change','Guidance bindings are not code changes','Packet-based review','Runtime compaction relationship'])assert(impactDoc.includes(token),'notes impact contract includes '+token);
 const runtimeDoc=read('docs/RUNTIME-COMPACTION.md');for(const token of ['current owner','equivalence','fixture','retire'])assert(runtimeDoc.toLowerCase().includes(token.toLowerCase()),'runtime compaction contract includes '+token);
 const workflow=read('.github/workflows/tests.yml');assert(workflow.includes('node tools/run-historical-contracts.js'),'CI delegates the complete historical chain to the named historical contract runner');assert(!workflow.includes('while IFS= read -r file; do'),'CI no longer carries a second hand-maintained historical test loop');
+const browserWorkflow=read('.github/workflows/browser-smoke.yml');assert(browserWorkflow.includes('node tests/playwright-smoke.js'),'browser workflow executes real route/render proof');
 for(const forbidden of ['assets/obol-v9.29.css','assets/app-v9.29.js','assets/core-v9.29.js','data/project-model-v9.29.js'])assert(!fs.existsSync(path.join(root,forbidden)),'no fake v9.29 runtime layer: '+forbidden);
-for(const command of [['tools/validate-notes-impact.js'],['tools/validate-note-integration.js'],['tools/validate-product-hardening-queue.js'],['tools/validate-runtime-manifest.js'],['tools/validate-asset-references.js'],['tools/validate-release-pr.js']]){const result=run(command);assert.strictEqual(result.status,0,(result.stderr||result.stdout||'').trim());}
-console.log('v9.29 Notes Impact, No-Flash, and Runtime Retirement Governance regression tests passed.');
+for(const command of [['tools/validate-notes-impact.js'],['tools/validate-note-integration.js'],['tools/validate-product-hardening-queue.js'],['tools/validate-runtime-manifest.js'],['tools/validate-runtime-loading.js'],['tools/validate-asset-references.js'],['tools/validate-release-pr.js']]){const result=run(command);assert.strictEqual(result.status,0,(result.stderr||result.stdout||'').trim());}
+console.log('v9.29 Notes Impact, stable Dashboard Current Owner, and Runtime Retirement Governance regression tests passed.');
