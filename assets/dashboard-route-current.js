@@ -13,6 +13,7 @@ const PRODUCT_SCRIPTS=[
  'data/product-hardening/notes-impact-current.js',
  'assets/product-hardening-dashboard.js'
 ];
+const FRESH_QUERY='obol-dashboard';
 function reviewSchemaAtLeast(major,minor){
  const match=String(root.OBOL_NOTE_INTEGRATION&&root.OBOL_NOTE_INTEGRATION.schemaVersion||'').match(/^(\d+)\.(\d+)\./);
  if(!match)return false;
@@ -30,7 +31,7 @@ const READY={
  'data/product-hardening/notes-impact-current.js':()=>!!root.OBOL_PRODUCT_HARDENING_NOTES_IMPACT,
  'assets/product-hardening-dashboard.js':()=>typeof root.renderProductHardeningDashboard==='function'
 };
-let assetsLoading=null,observer=null,repairScheduled=false,renderGeneration=0;
+let assetsLoading=null,observer=null,repairScheduled=false,renderGeneration=0,assetSequence=0,activeAssetCycle=0;
 
 function routeName(){return ((root.location&&root.location.hash)||'#/home').replace(/^#\/?/,'').split('/').filter(Boolean)[0]||'home';}
 function dashboardActive(){return routeName()==='dashboard';}
@@ -38,34 +39,45 @@ function view(){return root.document&&root.document.getElementById('view');}
 function currentMarker(target){return target&&target.querySelector('[data-product-dashboard-owner="current"]');}
 function transientMarker(target){return target&&target.querySelector('[data-product-dashboard-owner="current-loading"]');}
 function sourceReady(src){try{return !!(READY[src]&&READY[src]());}catch(err){return false;}}
-function addStyle(href){
- if(root.document.querySelector('link[href="'+href+'"]'))return;
- const link=root.document.createElement('link');link.rel='stylesheet';link.href=href;link.dataset.obolCurrentOwner=OWNER;(root.document.head||root.document.documentElement).appendChild(link);
-}
-function waitForReady(src,timeoutMs){
- if(sourceReady(src))return Promise.resolve();
- const timeout=Number(timeoutMs||8000),started=Date.now();
+function nextAssetCycle(){assetSequence+=1;return assetSequence;}
+function freshUrl(src,token){return src+(src.includes('?')?'&':'?')+FRESH_QUERY+'='+encodeURIComponent(token);}
+function ownedNodes(tag,src){return Array.from(root.document.querySelectorAll(tag+'[data-obol-dashboard-src="'+src+'"]'));}
+function pruneOwned(tag,src,keep){for(const node of ownedNodes(tag,src))if(node!==keep)node.remove();}
+function loadFreshStyle(href,token,timeoutMs){
+ const timeout=Number(timeoutMs||8000);
  return new Promise((resolve,reject)=>{
-  let finished=false,timer=null;
-  const finish=(err)=>{if(finished)return;finished=true;if(timer)clearTimeout(timer);if(err)reject(err);else resolve();};
-  const check=()=>{
-   if(sourceReady(src)){finish();return;}
-   if(Date.now()-started>=timeout){finish(new Error('timed out waiting for '+src+' to initialize'));return;}
-   timer=setTimeout(check,20);
-  };
-  let script=root.document.querySelector('script[src="'+src+'"]');
-  if(!script){
-   script=root.document.createElement('script');script.src=src;script.async=false;script.dataset.obolCurrentOwner=OWNER;script.onerror=()=>finish(new Error('failed to load '+src));(root.document.head||root.document.documentElement).appendChild(script);
-  }else script.addEventListener('error',()=>finish(new Error('failed to load '+src)),{once:true});
-  script.addEventListener('load',check,{once:true});
-  check();
+  const link=root.document.createElement('link');let settled=false,timer=null;
+  const finish=(err)=>{if(settled)return;settled=true;if(timer)clearTimeout(timer);if(err){link.remove();reject(err);}else{pruneOwned('link',href,link);resolve();}};
+  link.rel='stylesheet';link.href=freshUrl(href,token);link.dataset.obolCurrentOwner=OWNER;link.dataset.obolDashboardSrc=href;
+  link.onload=()=>finish();link.onerror=()=>finish(new Error('failed to load '+href));
+  timer=setTimeout(()=>finish(new Error('timed out waiting for '+href+' to load')),timeout);
+  (root.document.head||root.document.documentElement).appendChild(link);
  });
 }
-function ensureAssets(){
- if(root.renderProductHardeningDashboard&&root.OBOL_PRODUCT_HARDENING&&root.OBOL_PRODUCT_HARDENING_WORK_PACKAGES&&root.OBOL_PRODUCT_HARDENING_NOTE_PROGRESS&&root.OBOL_PRODUCT_HARDENING_NOTES_IMPACT&&reviewSchemaAtLeast(1,4))return Promise.resolve();
+function loadFreshScript(src,token,timeoutMs){
+ const timeout=Number(timeoutMs||8000);
+ return new Promise((resolve,reject)=>{
+  const script=root.document.createElement('script');let settled=false,timer=null;
+  const finish=(err)=>{if(settled)return;settled=true;if(timer)clearTimeout(timer);if(err){script.remove();reject(err);}else{pruneOwned('script',src,script);resolve();}};
+  script.src=freshUrl(src,token);script.async=false;script.dataset.obolCurrentOwner=OWNER;script.dataset.obolDashboardSrc=src;
+  script.onload=()=>{if(sourceReady(src))finish();else finish(new Error(src+' loaded but did not initialize its current owner'));};
+  script.onerror=()=>finish(new Error('failed to load '+src));
+  timer=setTimeout(()=>finish(new Error('timed out waiting for '+src+' to initialize')),timeout);
+  (root.document.head||root.document.documentElement).appendChild(script);
+ });
+}
+function refreshAssets(cycle){
+ const requested=Number(cycle||nextAssetCycle());
  if(assetsLoading)return assetsLoading;
- addStyle(PRODUCT_STYLE);
- assetsLoading=PRODUCT_SCRIPTS.reduce((chain,src)=>chain.then(()=>waitForReady(src,8000)),Promise.resolve()).finally(()=>{if(!root.renderProductHardeningDashboard)assetsLoading=null;});
+ const token=Date.now().toString(36)+'-'+requested.toString(36);
+ assetsLoading=loadFreshStyle(PRODUCT_STYLE,token,8000)
+  .then(()=>PRODUCT_SCRIPTS.reduce((chain,src)=>chain.then(()=>loadFreshScript(src,token,8000)),Promise.resolve()))
+  .then(()=>{
+   activeAssetCycle=requested;
+   root.__OBOL_CURRENT_DASHBOARD_FRESHNESS__=Object.freeze({owner:OWNER,cycle:requested,token,release:String(root.OBOL_CURRENT_RELEASE&&root.OBOL_CURRENT_RELEASE.version||''),loadedAt:Date.now(),sources:Object.freeze(PRODUCT_SCRIPTS.slice())});
+   return root.__OBOL_CURRENT_DASHBOARD_FRESHNESS__;
+  })
+  .finally(()=>{assetsLoading=null;});
  return assetsLoading;
 }
 function stampRelease(){
@@ -77,17 +89,19 @@ function stampRelease(){
 function shell(force){
  const target=view();if(!target)return null;
  if(!force&&(currentMarker(target)||transientMarker(target)))return target;
- target.innerHTML='<div class="ph-shell" data-product-dashboard-owner="current-loading"><section class="ph-card"><h1>Obol Product Hardening</h1><p>Loading the current dashboard…</p></section></div>';
+ target.innerHTML='<div class="ph-shell" data-product-dashboard-owner="current-loading"><section class="ph-card"><h1>Obol Product Hardening</h1><p>Refreshing the current dashboard…</p></section></div>';
  return target;
 }
-function render(){
+function render(cycle){
  if(!dashboardActive())return Promise.resolve(false);
  const target=shell(false);if(!target)return Promise.resolve(false);
+ const assetCycle=Number(cycle||activeAssetCycle||nextAssetCycle());
  const generation=++renderGeneration;
- return ensureAssets().then(()=>{
+ return refreshAssets(assetCycle).then(freshness=>{
   if(!dashboardActive()||generation!==renderGeneration)return false;
   if(typeof root.renderProductHardeningDashboard!=='function')throw new Error('current product dashboard renderer did not initialize');
-  root.renderProductHardeningDashboard(target,{embedded:true});
+  root.renderProductHardeningDashboard(target,{embedded:true,freshness});
+  const marker=currentMarker(target);if(marker){marker.dataset.dashboardRelease=String(root.OBOL_CURRENT_RELEASE&&root.OBOL_CURRENT_RELEASE.version||'');marker.dataset.dashboardFreshness=String(freshness&&freshness.token||'');}
   stampRelease();
   root.__OBOL_CURRENT_DASHBOARD_ROUTE_OWNER__=OWNER;
   root.__OBOL_CURRENT_DASHBOARD_ROUTE_ERROR__=null;
@@ -103,7 +117,7 @@ function render(){
 function scheduleRepair(){
  if(repairScheduled||!dashboardActive())return;
  repairScheduled=true;
- setTimeout(()=>{repairScheduled=false;if(!dashboardActive())return;const target=view();if(!target||currentMarker(target)||transientMarker(target))return;shell(true);render();},0);
+ setTimeout(()=>{repairScheduled=false;if(!dashboardActive())return;const target=view();if(!target||currentMarker(target)||transientMarker(target))return;shell(true);render(activeAssetCycle||nextAssetCycle());},0);
 }
 function armGuard(){
  const target=view();if(!target||observer)return;
@@ -117,8 +131,10 @@ function armGuard(){
 function disarmGuard(){if(observer){observer.disconnect();observer=null;}repairScheduled=false;renderGeneration++;}
 function activate(){
  if(!dashboardActive()){disarmGuard();return false;}
- shell(true);armGuard();render();return true;
+ const cycle=nextAssetCycle();
+ shell(true);armGuard();render(cycle);return true;
 }
+function refresh(){return refreshAssets(nextAssetCycle());}
 
 const previousRoute=typeof root.route==='function'?root.route:null;
 if(previousRoute&&!previousRoute.__obolCurrentDashboardOwner){
@@ -130,5 +146,5 @@ if(previousRoute&&!previousRoute.__obolCurrentDashboardOwner){
 root.addEventListener('hashchange',()=>{if(dashboardActive())activate();else disarmGuard();});
 if(root.document.readyState==='loading')root.document.addEventListener('DOMContentLoaded',()=>{if(dashboardActive())activate();},{once:true});
 else setTimeout(()=>{if(dashboardActive())activate();},0);
-root.OBOL_CURRENT_DASHBOARD_ROUTE=Object.freeze({owner:OWNER,activate,render});
+root.OBOL_CURRENT_DASHBOARD_ROUTE=Object.freeze({owner:OWNER,activate,render,refreshAssets:refresh,freshUrl,assetSources:Object.freeze(PRODUCT_SCRIPTS.slice()),styleSource:PRODUCT_STYLE});
 })(typeof window!=='undefined'?window:globalThis);
