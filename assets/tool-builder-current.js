@@ -1,6 +1,17 @@
 'use strict';
 (function(root){
 function schema(){return root.OBOL_TOOL_BUILDER_SCHEMA||null;}
+function effectiveBuilder(builder){
+ if(!builder||builder.id!=='tb-curl'||(builder.fields||[]).some(field=>field.id==='pathAsIs'))return builder;
+ const fields=Array.from(builder.fields||[]).map(field=>({...field}));
+ const pathField={id:'pathAsIs',label:'Preserve URL path (--path-as-is)',type:'checkbox',help:'Keep dot-segments and encoded path structure intact instead of letting curl normalize the request path. Useful when testing traversal or path-resolution behavior.'};
+ const followIndex=fields.findIndex(field=>field.id==='followRedirects');
+ fields.splice(followIndex>=0?followIndex:fields.length,0,pathField);
+ const tokens=Array.from(builder.command&&builder.command.tokens||[]).map(token=>({...token}));
+ const urlIndex=tokens.findIndex(token=>token.kind==='field'&&token.field==='url');
+ tokens.splice(urlIndex>=0?urlIndex:tokens.length,0,{kind:'toggle',field:'pathAsIs',flag:'--path-as-is'});
+ return {...builder,fields,command:{...builder.command,tokens}};
+}
 function esc(v){return String(v==null?'':v).replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));}
 function shellQuote(v){
  const value=String(v==null?'':v);
@@ -22,6 +33,7 @@ function conditionMatches(condition,values){
  return false;
 }
 function normalizeValues(builder,values,context){
+ builder=effectiveBuilder(builder);
  const s=schema();
  if(!s)throw new Error('Tool Builder schema is not loaded');
  return s.autofill(builder,context||{},values||{});
@@ -69,6 +81,7 @@ function concatValue(token,values){
  return out;
 }
 function compile(builder,values,context){
+ builder=effectiveBuilder(builder);
  const s=schema();
  if(!s)throw new Error('Tool Builder schema is not loaded');
  const errors=s.validateBuilder(builder);
@@ -122,6 +135,7 @@ function fieldControl(builderId,field,value){
  return '<label for="'+esc(id)+'">'+esc(field.label)+'</label><input type="'+inputType+'"'+common+' value="'+esc(value==null?'':value)+'"'+(field.placeholder?' placeholder="'+esc(field.placeholder)+'"':'')+' autocomplete="'+(field.type==='secret'?'off':'on')+'">'+(field.help?'<small class="hint">'+esc(field.help)+'</small>':'');
 }
 function html(builder,context,values){
+ builder=effectiveBuilder(builder);
  const s=schema();
  if(!s)throw new Error('Tool Builder schema is not loaded');
  const errors=s.validateBuilder(builder);
@@ -154,6 +168,7 @@ function applyVisibility(form,builder,values){
  }
 }
 function mount(container,builder,context,values){
+ builder=effectiveBuilder(builder);
  if(!container)throw new Error('Tool Builder mount requires a container');
  container.innerHTML=html(builder,context,values);
  const shell=container.querySelector('[data-tool-builder="'+builder.id+'"]')||container.firstElementChild;
@@ -176,5 +191,5 @@ function mount(container,builder,context,values){
  refresh();
  return{shell,form,refresh,get command(){return code?code.textContent:'';},get values(){return collect(form,builder);}};
 }
-root.OBOL_TOOL_BUILDER=Object.freeze({version:'1.0.0',shellQuote,truthy,conditionMatches,commandExecutable,compile,html,mount,collect,normalizeValues});
+root.OBOL_TOOL_BUILDER=Object.freeze({version:'1.1.0',effectiveBuilder,shellQuote,truthy,conditionMatches,commandExecutable,compile,html,mount,collect,normalizeValues});
 })(typeof window!=='undefined'?window:globalThis);
