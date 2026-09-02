@@ -67,7 +67,7 @@ const reviewed=freezeList(Array.from(afterWebRows).concat(Array.from(XSS_ROWS)))
 const publicFieldNotes=freezeList(Array.from(afterWebNotes).concat(Array.from(XSS_NOTES)));
 const counts={'pending-review':0,modeled:0,superseded:0,rejected:0,'private-reference-only':0};
 for(const row of reviewed)counts[row.disposition]=(counts[row.disposition]||0)+1;
-counts['pending-review']=Math.max(0,base.totals().notes-reviewed.length-WEB_ROWS.length-XSS_ROWS.length);
+counts['pending-review']=Math.max(0,Number(base.totals().notes||0)-reviewed.length);
 const frozenCounts=Object.freeze({...counts});
 const webMilestone=Object.freeze({reviewedCount:afterWebRows.length,dispositionCounts:Object.freeze({modeled:53,'private-reference-only':19,superseded:4,rejected:0,'pending-review':480}),publicFieldNoteIds:freezeList(afterWebNotes.map(note=>note.id))});
 const xssMilestone=Object.freeze({reviewedCount:reviewed.length,dispositionCounts:frozenCounts,publicFieldNoteIds:freezeList(publicFieldNotes.map(note=>note.id))});
