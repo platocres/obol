@@ -50,11 +50,15 @@ The order matters: **current owner -> browser proof/equivalence -> dependency re
 
 ## Dashboard status after v9.29
 
-`#/dashboard` now bypasses the historical route renderer. `assets/app-v8.8.js` immediately installs a current Product Hardening loading shell, loads the current dashboard owners, and renders `assets/product-hardening-dashboard.js`. Historical dashboard presentation is therefore no longer allowed to paint first.
+`#/dashboard` is now protected as a current-owned route during compatibility startup. `assets/runtime-current.js` claims Dashboard intent, installs the current loading shell, blocks historical writes to the shared view while that intent is active, and `assets/dashboard-route-current.js` renders and guards the current Product Hardening Dashboard.
 
-That does not yet mean every historical dashboard file can safely leave startup. Historical core overlays still contain hard load-time dependencies on historical dashboard data. For example, `assets/core-v6.5.js` reads `OBOL_DASHBOARD_V65` during initialization and throws if that owner is absent. Some historical `data/dashboard-v*.js` owners also performed command/tool/path mutations while defining dashboard/source-accounting metadata. Removing those files blindly would trade visible layering for a boot or methodology regression.
+The real Chromium smoke gate is now green for Home, Targets, Evidence, Next Steps, Report, and Dashboard, including dashboard paint-history observation through the legacy timer window. `qa-playwright-smoke` is therefore complete.
 
-Accordingly, `runtime-dashboard-no-flash` is complete, while physical `runtime-dashboard-layer-retirement` remains queued. `qa-playwright-smoke` is intentionally the next gate. The physical-retirement item should only close when the browser proof is green and the remaining core/data dependencies have been decoupled or replaced by current/fixture-backed contracts.
+That browser proof does **not** mean every historical dashboard file can safely leave startup yet. Historical core overlays still contain hard load-time dependencies on historical dashboard data. For example, `assets/core-v6.5.js` reads `OBOL_DASHBOARD_V65` during initialization and throws if that owner is absent. Some historical `data/dashboard-v*.js` owners also performed command/tool/path mutations while defining dashboard/source-accounting metadata. Removing those files blindly would trade visible layering for a boot or methodology regression.
+
+Accordingly, `runtime-dashboard-no-flash` and `qa-playwright-smoke` are complete, while physical `runtime-dashboard-layer-retirement` is now the active compaction gate. That item should only close when remaining core/data dependencies have been decoupled or replaced by current/fixture-backed contracts and the historical dashboard owners have genuinely left live startup.
+
+The Product Hardening Dashboard exposes this debt directly: current script counts, historical dashboard-data owners still live, real-browser proof status, the runtime queue, and an ownership-area retirement matrix for Dashboard, Home/Path, Tool Builders, Evidence, Reports, and CSS.
 
 ## Dependency audit
 
@@ -112,4 +116,4 @@ Bad retirement:
 
 ## Dashboard visibility
 
-Runtime compaction is first-class Product Hardening work. The dashboard should make it obvious which ownership areas still execute historical layers, which have current owners, which have browser/equivalence proof, and which old layers/tests are now safe to retire.
+Runtime compaction is first-class Product Hardening work. The dashboard shows which ownership areas still execute historical layers, which have current owners, what proof exists, and whether obsolete historical tests have actually been retired. This matrix should be updated as each ownership area moves through current owner, equivalence, physical retirement, and test retirement rather than treating runtime debt as invisible background cleanup.
