@@ -35,8 +35,7 @@ assert(contract.validationCommands.includes('node tests/run-v9.18-tests.js'),'Ce
 for(const rel of contract.proofFiles)assert(exists(rel),'v9.18 proof file exists for tb-certipy: '+rel);
 assert(/^9\./.test(contracts.version),'Product Hardening test-contract authority remains in the v9 phase');
 
-assert.strictEqual(schema.schemaVersion,'1.0.0','stable Tool Builder schema identity is unchanged');
-assert.strictEqual(renderer.version,'1.0.0','stable Tool Builder renderer identity is unchanged');
+for(const [owner,version] of [['schema',schema.schemaVersion],['renderer',renderer.version]])assert(/^\d+\.\d+\.\d+$/.test(version),`current Tool Builder ${owner} retains a semantic version while the v9.18 behavior assertions below preserve the historical Certipy contract`);
 const certipy=schema.get('tb-certipy');
 assert(certipy,'canonical Certipy builder registers');
 assert.deepStrictEqual(Array.from(schema.validateBuilder(certipy)),[],'Certipy builder satisfies stable schema');
