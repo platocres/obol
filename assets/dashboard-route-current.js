@@ -9,6 +9,7 @@ if(root.document&&currentSrc&&!/[?&]obol-current=/.test(currentSrc)&&!root.__OBO
  freshSelf.src=OWNER+'?obol-current='+encodeURIComponent(Date.now().toString(36));freshSelf.async=false;freshSelf.dataset.obolCurrentOwnerBootstrap=OWNER;
  freshSelf.onload=()=>{root.__OBOL_CURRENT_DASHBOARD_SELF_REFRESHING__=false;};freshSelf.onerror=()=>{root.__OBOL_CURRENT_DASHBOARD_SELF_REFRESHING__=false;};
  (root.document.head||root.document.documentElement).appendChild(freshSelf);
+ return;
 }
 const INSTANCE=Date.now().toString(36)+'-'+Math.random().toString(36).slice(2,8);
 root.__OBOL_CURRENT_DASHBOARD_ROUTE_INSTANCE__=INSTANCE;
