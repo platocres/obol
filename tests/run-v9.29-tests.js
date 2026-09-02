@@ -42,9 +42,17 @@ assert.deepStrictEqual(Array.from(recommended.liveItems).map(item=>item.id),['qa
 const workPackageSource=read('data/product-hardening/work-packages.js');
 assert(!workPackageSource.includes('function currentReleaseAtLeast'),'work-package owner no longer derives queue completion from release numbers');
 assert(!workPackageSource.includes('completed=new Set'),'work-package owner no longer carries hidden completion overlays');
+const runtime=read('assets/runtime-current.js');
+for(const token of ['syncCurrentRouteOwnership','__OBOL_CURRENT_DASHBOARD_ROUTE_INTENT__','data-runtime-current-route-shell="dashboard"'])assert(runtime.includes(token),'current runtime claims Dashboard before compatibility startup: '+token);
+assert(/function writeScripts\(\)\{[\s\S]*syncCurrentRouteOwnership\(\);[\s\S]*browserScriptList\(\)/.test(runtime),'current Dashboard ownership is declared before compatibility scripts are written');
+const legacyDashboard=read('assets/app-v6.6.js');
+for(const token of ['currentDashboardOwned66','__OBOL_CURRENT_DASHBOARD_ROUTE_INTENT__'])assert(legacyDashboard.includes(token),'historical dashboard owner yields to current runtime: '+token);
+assert(/function viewDashboard66\(\)\{if\(page66\(\)!==['"]dashboard['"]\|\|currentDashboardOwned66\(\)\)return;/.test(legacyDashboard),'v6.6 direct Dashboard renderer cannot overwrite a current-owned Dashboard');
 const app=read('assets/app-v8.8.js');
 for(const token of ['currentDashboardShell88','renderCurrentDashboard88','data-product-dashboard-owner="current-loading"','data/product-hardening/notes-impact-current.js'])assert(app.includes(token),'current dashboard bridge includes '+token);
 assert(/route=function\(\)\{if\(page88\(\)===['"]dashboard['"]\)\{currentDashboardShell88\(\);renderCurrentDashboard88\(\);return;\}oldRoute88\(\)/.test(app),'dashboard route is intercepted before historical route paint');
+const browserSmoke=read('tests/playwright-smoke.js');
+for(const token of ['installDashboardPaintObserver','settleMs: 3200','historical dashboard painted before or after current owner','data-product-dashboard-owner="current"'])assert(browserSmoke.includes(token),'browser smoke protects current Dashboard persistence: '+token);
 const dashboard=read('assets/product-hardening-dashboard.js');
 for(const token of ['Notes Integration — notes to product','Tool-bound guidance','Declared product mechanics changes','Theme matrix','Latest review wave','Open gaps exposed by Notes Integration','Runtime compaction and layer retirement','OBOL_PRODUCT_HARDENING_NOTES_IMPACT'])assert(dashboard.includes(token),'dashboard includes '+token);
 const standalone=read('product-hardening.html');assert(standalone.includes('data/product-hardening/notes-impact-current.js'),'standalone dashboard loads notes impact');
