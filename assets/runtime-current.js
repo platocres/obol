@@ -31,9 +31,11 @@ function appendScripts(list){
  }));
  return chain;
 }
+function startupPreludeList(){return Array.isArray(manifest.startupPreludeScripts)?manifest.startupPreludeScripts:[];}
 function startupList(){return manifest.startupScripts||manifest.scripts;}
 function currentOwnerList(){return Array.isArray(manifest.currentScripts)?manifest.currentScripts:[];}
-function browserScriptList(){return startupList().concat(currentOwnerList());}
+function compatibilityScriptList(){return startupPreludeList().concat(startupList());}
+function browserScriptList(){return compatibilityScriptList().concat(currentOwnerList());}
 function routeName(){return typeof location==='undefined'?'home':((location.hash||'#/home').replace(/^#\/?/,'').split('/').filter(Boolean)[0]||'home');}
 function isDashboardRoute(){return routeName()==='dashboard';}
 function innerHtmlDescriptor(node){
@@ -85,12 +87,13 @@ function syncCurrentRouteOwnership(){
  return dashboard;
 }
 function ensureCompatibility(){
- if(compatibilityLoaded)return Promise.resolve(startupList().slice());
+ const compatibility=compatibilityScriptList();
+ if(compatibilityLoaded)return Promise.resolve(compatibility.slice());
  if(compatibilityLoad)return compatibilityLoad;
- compatibilityLoad=appendScripts(startupList()).then(list=>{
+ compatibilityLoad=appendScripts(compatibility).then(()=>{
   compatibilityLoaded=true;
   root.__OBOL_COMPATIBILITY_RUNTIME_LOADED__=true;
-  return list;
+  return compatibility.slice();
  }).finally(()=>{if(!compatibilityLoaded)compatibilityLoad=null;});
  return compatibilityLoad;
 }
@@ -186,10 +189,11 @@ function hydrateRoute(){
  return hydrateOperatorRoute(page);
 }
 function budgetSnapshot(){
+ const prelude=startupPreludeList();
  const startup=startupList();
  const current=currentOwnerList();
  const deferred=(manifest.deferredScriptGroups||[]).reduce((n,name)=>n+lazyGroup(name).length,0);
- return Object.freeze({startupHistoricalScripts:startup.length,currentOwnerScripts:current.length,deferredHistoricalScripts:deferred,baselineHistoricalScripts:manifest.scripts.length,compatibilityLoaded,loadedLazyGroups:[...groupLoads.keys()]});
+ return Object.freeze({startupCompatibilityPreludeScripts:prelude.length,startupHistoricalScripts:startup.length,currentOwnerScripts:current.length,deferredHistoricalScripts:deferred,baselineHistoricalScripts:manifest.scripts.length,compatibilityLoaded,loadedLazyGroups:[...groupLoads.keys()]});
 }
 
 if(typeof window!=='undefined'){
@@ -197,6 +201,6 @@ if(typeof window!=='undefined'){
  if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',()=>{syncCurrentRouteOwnership();hydrateRoute().catch(()=>{});},{once:true});
  else setTimeout(()=>{syncCurrentRouteOwnership();hydrateRoute().catch(()=>{});},0);
 }
-root.OBOL_RUNTIME_LOADER=Object.freeze({manifest,writeStyles,writeScripts,appendScripts,startupList,currentOwnerList,browserScriptList,ensureCompatibility,loadGroup,ensureRoute,routeName,isDashboardRoute,syncCurrentRouteOwnership,protectDashboardView,releaseDashboardViewGuard,loadCredentialMaterial,loadManualOutcomes,loadTunnelBuilders,hydrateRoute,budgetSnapshot});
+root.OBOL_RUNTIME_LOADER=Object.freeze({manifest,writeStyles,writeScripts,appendScripts,startupPreludeList,startupList,currentOwnerList,compatibilityScriptList,browserScriptList,ensureCompatibility,loadGroup,ensureRoute,routeName,isDashboardRoute,syncCurrentRouteOwnership,protectDashboardView,releaseDashboardViewGuard,loadCredentialMaterial,loadManualOutcomes,loadTunnelBuilders,hydrateRoute,budgetSnapshot});
 root.__OBOL_RUNTIME_ENTRYPOINT__='manifest-v1';
 })(typeof window!=='undefined'?window:globalThis);
