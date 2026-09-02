@@ -4,7 +4,7 @@ Obol is a static, browser-local workspace for OSCP-style labs, Active Directory 
 
 Live site: `https://platocres.github.io/obol/`
 
-Current release: **v9.33**
+Current release: **v9.34**
 
 Open `#/dashboard` for the active Product Hardening Dashboard and Product Build Next queue.
 
@@ -70,6 +70,8 @@ v9.31 starts the next slice outside the Dashboard: Path, Card, and Tools now hav
 v9.32 completes the XSS/session notes packet. The public product now carries normalized guidance for browser-execution proof, stored/reflected/DOM delivery and victim triggers, session-impact proof boundaries, and context-aware remediation without publishing raw private course material or payload catalogs.
 
 v9.33 completes the credentials/authentication notes packet. The public product now reinforces credential-material type and protocol scope, hash classification, lockout-aware password testing, protected-secret container boundaries, Basic-auth transport, Windows credential-source proof, per-service reuse validation, and the NetNTLM/pass-the-hash distinction while preserving the existing stable Credential Material and credential-mode mechanics.
+
+v9.34 hardens Dashboard freshness. Opening or re-opening the Product Hardening Dashboard now refreshes its current release, queue, work-package, notes-impact, renderer, and stylesheet owners through a cache-busted generation instead of trusting stale in-memory globals or recently cached static responses. The standalone Dashboard uses the same current owner, and browser smoke deliberately poisons Dashboard globals to prove the next activation restores authoritative current data.
 
 The completed Orange methodology/source queue is historical, regression-protected baseline material. Do not reopen it unless a real defect is found or the pinned upstream source is deliberately repinned. Detailed Orange accounting belongs in the North Star/source-depth docs above, not in this README.
 
@@ -147,7 +149,7 @@ The permanent notes-impact checks are:
 node tools/validate-notes-impact.js
 node tools/validate-note-integration.js
 node tools/sync-product-build-next.js --check
-node tests/run-v9.33-tests.js
+node tests/run-v9.34-tests.js
 ```
 
 ## GitHub Pages
