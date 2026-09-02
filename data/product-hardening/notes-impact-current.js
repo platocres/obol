@@ -16,6 +16,12 @@ const themeRules=[
 ];
 const allowedImpactTypes=Object.freeze(['field-note-only','tool-context-bound','path-guidance-bound','evidence-guidance','report-guidance','troubleshooting-guidance','cleanup-guidance']);
 const allowedProductChangeTypes=Object.freeze(['tool-builder-change','path-logic-change','evidence-parser-change','report-generator-change','workflow-change']);
+function reviewWaveAtLeast(value,major,minor){
+ const match=String(value||'').match(/^v(\d+)\.(\d+)/);
+ if(!match)return false;
+ const currentMajor=Number(match[1]),currentMinor=Number(match[2]);
+ return currentMajor>major||(currentMajor===major&&currentMinor>=minor);
+}
 function outputImpactTypes(note){
  const types=[];
  if((note.toolIds||[]).length)types.push('tool-context-bound');
@@ -41,6 +47,7 @@ const sourceDecisions=Object.freeze(rows.map(row=>{
  const impactTypes=row.disposition==='modeled'?unique(linked.flatMap(output=>output.impactTypes)):[row.disposition];
  const productChanges=productChangesFor(row);
  const guidanceOnly=row.disposition==='modeled'&&!productChanges.length;
+ const explicitGuidanceOnlyReason=typeof row.guidanceOnlyReason==='string'?row.guidanceOnlyReason.trim():'';
  return Object.freeze({
   noteId:row.noteId,
   disposition:row.disposition,
@@ -49,7 +56,9 @@ const sourceDecisions=Object.freeze(rows.map(row=>{
   impactTypes:Object.freeze(impactTypes),
   productChanges,
   rationale:row.rationale,
-  guidanceOnlyReason:guidanceOnly?'No code-level Tool Builder, Path logic, Evidence parser, report generator, or workflow change is explicitly declared for this reviewed source; its current product impact is the normalized guidance and contextual binding shown above.':null
+  guidanceOnly,
+  guidanceOnlyReason:guidanceOnly?(explicitGuidanceOnlyReason||null):null,
+  explicitDecisionRequired:row.disposition==='modeled'&&reviewWaveAtLeast(row.reviewWave,9,29)
  });
 }));
 const declaredProductChanges=Object.freeze(sourceDecisions.flatMap(decision=>decision.productChanges.map(change=>Object.freeze({noteId:decision.noteId,reviewWave:decision.reviewWave,type:change.type,proofRefs:change.proofRefs}))));
@@ -69,7 +78,8 @@ const outputCounts=Object.freeze({
  pathLogicChanges:declaredProductChanges.filter(change=>change.type==='path-logic-change').length,
  evidenceParserChanges:declaredProductChanges.filter(change=>change.type==='evidence-parser-change').length,
  reportGeneratorChanges:declaredProductChanges.filter(change=>change.type==='report-generator-change').length,
- workflowChanges:declaredProductChanges.filter(change=>change.type==='workflow-change').length
+ workflowChanges:declaredProductChanges.filter(change=>change.type==='workflow-change').length,
+ explicitGuidanceOnlyDecisions:sourceDecisions.filter(decision=>decision.guidanceOnlyReason).length
 });
 const themes=Object.freeze(themeRules.map(([name,tags])=>{
  const matched=outputs.filter(output=>output.tags.some(tag=>tags.includes(tag)));
@@ -84,7 +94,7 @@ const latestDecisions=sourceDecisions.filter(decision=>decision.reviewWave===lat
 const gaps=Object.freeze((q.items||[]).filter(item=>item.track==='notes-integration'&&item.status==='queued').map(item=>Object.freeze({id:item.id,label:item.label,detail:item.detail,status:item.status,priority:item.priority})));
 const review=Object.freeze({total:Number(notes.ledger.expectedNotes||0),reviewed:Number(notes.ledger.reviewedCount||0),pending:Number(counts['pending-review']||0),modeled:Number(counts.modeled||0),privateOnly:Number(counts['private-reference-only']||0),superseded:Number(counts.superseded||0),rejected:Number(counts.rejected||0)});
 const latestWave=Object.freeze({id:latestWaveId,reviewed:latestRows.length,modeled:latestRows.filter(row=>row.disposition==='modeled').length,privateOnly:latestRows.filter(row=>row.disposition==='private-reference-only').length,outputs:Object.freeze(latestOutputs.map(output=>output.id)),impactTypes:Object.freeze(unique(latestOutputs.flatMap(output=>output.impactTypes))),productChanges:Object.freeze(latestDecisions.flatMap(decision=>decision.productChanges)),themes:Object.freeze(unique(latestOutputs.flatMap(output=>themeRules.filter(([,tags])=>output.tags.some(tag=>tags.includes(tag))).map(([name])=>name))))});
-const summary=Object.freeze({reviewedLabel:review.reviewed+'/'+review.total+' reviewed',derivedOutputs:outputCounts.fieldNotes,toolBindings:outputCounts.toolContextBound,pathBindings:outputCounts.pathGuidanceBound,evidenceOutputs:outputCounts.evidenceGuidance,reportOutputs:outputCounts.reportGuidance,troubleshootingOutputs:outputCounts.troubleshootingGuidance,declaredProductChanges:outputCounts.declaredProductChanges,latestThemes:latestWave.themes});
+const summary=Object.freeze({reviewedLabel:review.reviewed+'/'+review.total+' reviewed',derivedOutputs:outputCounts.fieldNotes,toolBindings:outputCounts.toolContextBound,pathBindings:outputCounts.pathGuidanceBound,evidenceOutputs:outputCounts.evidenceGuidance,reportOutputs:outputCounts.reportGuidance,troubleshootingOutputs:outputCounts.troubleshootingGuidance,declaredProductChanges:outputCounts.declaredProductChanges,explicitGuidanceOnlyDecisions:outputCounts.explicitGuidanceOnlyDecisions,latestThemes:latestWave.themes});
 function validate(){
  const failures=[];
  if(review.reviewed!==rows.length)failures.push('notes impact reviewed count does not match ledger rows');
@@ -102,9 +112,10 @@ function validate(){
    if(!allowedProductChangeTypes.includes(change.type))failures.push('unknown declared product change '+change.type+' for '+decision.noteId);
    if(!change.proofRefs.length)failures.push('declared product change lacks proof refs '+change.type+' for '+decision.noteId);
   }
+  if(decision.explicitDecisionRequired&&decision.guidanceOnly&&!decision.guidanceOnlyReason)failures.push('v9.29+ modeled note must declare productChanges or an explicit guidanceOnlyReason '+decision.noteId);
  }
  if(latestWave.id&&latestWave.reviewed===0)failures.push('notes impact latest wave is empty');
  return failures;
 }
-root.OBOL_PRODUCT_HARDENING_NOTES_IMPACT=Object.freeze({schemaVersion:'1.2.0',review,outputCounts,outputs,sourceDecisions,declaredProductChanges,themes,latestWave,gaps,summary,allowedImpactTypes,allowedProductChangeTypes,validate});
+root.OBOL_PRODUCT_HARDENING_NOTES_IMPACT=Object.freeze({schemaVersion:'1.3.0',review,outputCounts,outputs,sourceDecisions,declaredProductChanges,themes,latestWave,gaps,summary,allowedImpactTypes,allowedProductChangeTypes,reviewWaveAtLeast,validate});
 })(typeof window!=='undefined'?window:globalThis);
