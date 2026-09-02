@@ -1,8 +1,8 @@
 'use strict';
 (function(root){
 const release=Object.freeze({
- version:'9.34.0',
- label:'v9.34',
+ version:'9.35.0',
+ label:'v9.35',
  phase:'product-hardening',
  phaseLabel:'Product Hardening',
  orangeBaseline:'v8.8'
