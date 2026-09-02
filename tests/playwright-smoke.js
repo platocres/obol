@@ -12,7 +12,8 @@ const routes = [
   { id: 'evidence', hash: '#/intake', marker: /evidence/i },
   { id: 'next-steps', hash: '#/path', marker: /(next|path|recommend)/i },
   { id: 'report', hash: '#/report', marker: /report/i },
-  { id: 'dashboard', hash: '#/dashboard', marker: /Product Hardening/i, currentDashboard: true, settleMs: 5200 }
+  { id: 'dashboard', hash: '#/dashboard', marker: /Product Hardening/i, currentDashboard: true, paintProof: true, settleMs: 5200 },
+  { id: 'standalone-dashboard', standaloneDashboard: true, viewSelector: '#product-hardening-dashboard', marker: /Product Hardening/i, currentDashboard: true, settleMs: 900 }
 ];
 
 fs.mkdirSync(outputDir, { recursive: true });
@@ -25,6 +26,11 @@ function localRequestFailure(url) {
   } catch (err) {
     return false;
   }
+}
+
+function routeUrl(route) {
+  if (route.standaloneDashboard) return new URL('product-hardening.html', baseUrl).toString();
+  return baseUrl + (route.hash || '');
 }
 
 async function installDashboardPaintObserver(page) {
@@ -64,6 +70,7 @@ async function installDashboardPaintObserver(page) {
     for (const route of routes) {
       const page = await context.newPage();
       const routeFailures = [];
+      const viewSelector = route.viewSelector || '#view';
 
       page.on('console', message => {
         if (message.type() === 'error') routeFailures.push('console error: ' + message.text());
@@ -75,42 +82,44 @@ async function installDashboardPaintObserver(page) {
         }
       });
 
-      if (route.currentDashboard) await installDashboardPaintObserver(page);
+      if (route.paintProof) await installDashboardPaintObserver(page);
 
-      const url = baseUrl + route.hash;
+      const url = routeUrl(route);
       const response = await page.goto(url, { waitUntil: 'domcontentloaded', timeout: 30000 });
       if (response && !response.ok()) routeFailures.push('navigation returned HTTP ' + response.status());
 
-      await page.waitForSelector('#view', { state: 'visible', timeout: 15000 });
-      await page.waitForFunction(() => {
-        const view = document.querySelector('#view');
+      await page.waitForSelector(viewSelector, { state: 'visible', timeout: 15000 });
+      await page.waitForFunction(selector => {
+        const view = document.querySelector(selector);
         return !!(view && view.innerText && view.innerText.trim().length > 20);
-      }, null, { timeout: 15000 });
+      }, viewSelector, { timeout: 15000 });
 
       if (route.currentDashboard) {
-        await page.waitForSelector('[data-product-dashboard-owner="current"]', { state: 'visible', timeout: 15000 });
+        await page.waitForSelector(viewSelector + ' [data-product-dashboard-owner="current"]', { state: 'visible', timeout: 15000 });
       }
 
       await page.waitForTimeout(route.settleMs || 700);
 
       if (route.currentDashboard) {
-        const currentOwner = await page.locator('[data-product-dashboard-owner="current"]').count();
-        if (!currentOwner) routeFailures.push('dashboard lost the current owner during the legacy timer window');
-        const oldOwner = await page.locator('[data-product-dashboard-owner]:not([data-product-dashboard-owner="current"])').count();
+        const currentOwner = await page.locator(viewSelector + ' [data-product-dashboard-owner="current"]').count();
+        if (!currentOwner) routeFailures.push('dashboard lost the current owner during the settle window');
+        const oldOwner = await page.locator(viewSelector + ' [data-product-dashboard-owner]:not([data-product-dashboard-owner="current"])').count();
         if (oldOwner) routeFailures.push('dashboard retained a non-current dashboard owner after render');
 
-        const paints = await page.evaluate(() => window.__OBOL_DASHBOARD_PAINTS__ || []);
-        const meaningful = paints.filter(paint => paint.owner || /dashboard|product hardening|build next|orange|source depth/i.test(paint.text));
-        if (!meaningful.length) routeFailures.push('dashboard paint observer captured no meaningful dashboard render');
-        for (const paint of meaningful) {
-          if (!['current-loading', 'current'].includes(paint.owner)) {
-            routeFailures.push('historical dashboard painted before or after current owner: ' + JSON.stringify(paint));
-            break;
+        if (route.paintProof) {
+          const paints = await page.evaluate(() => window.__OBOL_DASHBOARD_PAINTS__ || []);
+          const meaningful = paints.filter(paint => paint.owner || /dashboard|product hardening|build next|orange|source depth/i.test(paint.text));
+          if (!meaningful.length) routeFailures.push('dashboard paint observer captured no meaningful dashboard render');
+          for (const paint of meaningful) {
+            if (!['current-loading', 'current'].includes(paint.owner)) {
+              routeFailures.push('historical dashboard painted before or after current owner: ' + JSON.stringify(paint));
+              break;
+            }
           }
         }
 
-        const freshness = await page.evaluate(() => {
-          const marker = document.querySelector('[data-product-dashboard-owner="current"]');
+        const freshness = await page.evaluate(selector => {
+          const marker = document.querySelector(selector + ' [data-product-dashboard-owner="current"]');
           const release = window.OBOL_CURRENT_RELEASE || {};
           const impact = window.OBOL_PRODUCT_HARDENING_NOTES_IMPACT || {};
           const latest = impact.latestWave || {};
@@ -124,7 +133,7 @@ async function installDashboardPaintObserver(page) {
             refreshSources: Array.from(window.__OBOL_CURRENT_DASHBOARD_REFRESH_SOURCES__ || []),
             resources: performance.getEntriesByType('resource').map(entry => entry.name)
           };
-        });
+        }, viewSelector);
         if (!freshness.markerRefresh || freshness.markerRefresh !== freshness.refreshToken) routeFailures.push('dashboard current render lacks the active refresh token');
         if (!freshness.expectedRelease || freshness.markerRelease !== freshness.expectedRelease) routeFailures.push('dashboard visible release does not match refreshed current-release authority');
         if (freshness.markerNotesWave !== freshness.expectedNotesWave) routeFailures.push('dashboard visible latest notes wave does not match refreshed notes-impact authority');
@@ -149,7 +158,7 @@ async function installDashboardPaintObserver(page) {
         }
       }
 
-      const viewText = (await page.locator('#view').innerText()).trim();
+      const viewText = (await page.locator(viewSelector).innerText()).trim();
       if (!route.marker.test(viewText)) routeFailures.push('route marker did not match rendered content: ' + JSON.stringify(viewText.slice(0, 240)));
       if (/current dashboard could not be loaded/i.test(viewText)) routeFailures.push('dashboard error shell rendered');
       if (route.currentDashboard) {
@@ -177,5 +186,5 @@ async function installDashboardPaintObserver(page) {
     process.exit(1);
   }
 
-  console.log('Playwright browser smoke passed for Home, Targets, Evidence, Next Steps, Report, and Dashboard with current-owner paint proof plus cache-busted current dashboard data freshness.');
+  console.log('Playwright browser smoke passed for Home, Targets, Evidence, Next Steps, Report, in-app Dashboard, and standalone Dashboard with current-owner paint proof plus cache-busted current dashboard data freshness.');
 })();
