@@ -24,10 +24,13 @@ jobs:
         uses: actions/setup-node@v4
         with:
           node-version: '20'
+      - name: Repair transformer quoting
+        run: node tools/fix-v9.35-builder.js
       - name: Apply v9.35 transformation and focused validation
         run: node tools/apply-v9.35-build.js
       - name: Commit transformed release
         run: |
+          rm -f tools/fix-v9.35-builder.js
           git config user.name "github-actions[bot]"
           git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
           git add -A
