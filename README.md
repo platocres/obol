@@ -73,7 +73,7 @@ The completed Orange methodology/source queue is historical, regression-protecte
 This block is generated from `data/product-hardening/product-hardening-queue.js`. Do not edit it manually.
 Recommended work-package metadata comes from `data/product-hardening/work-packages.js`.
 
-**Current product-hardening queue:** 117/632 complete (19%), 16 queued, 9 foundation items modeled.
+**Current product-hardening queue:** 117/634 complete (18%), 16 queued, 9 foundation items modeled.
 **Private notes source:** `platocres/obol-source-notes` — 556 notes and 1326 embedded resources accounted.
 **Notes Integration:** 55/556 reviewed — 43 modeled, 12 private-only, 501 pending.
 **Derived note guidance:** 24 Field Notes · 20 tool-bound · 22 Path-bound · 5 Evidence · 4 Report.
@@ -106,7 +106,7 @@ Recommended work-package metadata comes from `data/product-hardening/work-packag
 
 **Track status:**
 - **Critical correctness:** 4/4 complete (100%), 0 modeled.
-- **Architecture / runtime:** 6/10 complete (60%), 3 modeled.
+- **Architecture / runtime:** 6/12 complete (50%), 3 modeled.
 - **UI / UX repair:** 7/8 complete (88%), 1 modeled.
 - **Tool GUI builders:** 18/18 complete (100%), 0 modeled.
 - **Credential modes:** 14/14 complete (100%), 0 modeled.
