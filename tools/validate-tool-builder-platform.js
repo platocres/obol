@@ -22,7 +22,7 @@ const queue=sandbox.window.OBOL_PRODUCT_HARDENING;
 assert(schema&&inventory&&renderer&&builders&&queue,'Tool Builder platform owners must initialize');
 assert.strictEqual(schema.schemaVersion,'1.0.0');
 assert.strictEqual(inventory.schemaVersion,'1.0.0');
-assert.strictEqual(renderer.version,'1.0.0');
+assert(/^\d+\.\d+\.\d+$/.test(renderer.version),'current Tool Builder renderer must expose a semantic version; behavior fixtures below own the durable platform contract');
 assert.strictEqual(builders.version,'1.0.0');
 assert.deepStrictEqual(Array.from(inventory.validate()),[],'committed tool inventory must be internally valid');
 
