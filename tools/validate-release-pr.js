@@ -30,7 +30,7 @@ if(!repoOnly&&eventName==='pull_request'){
     pr=event.pull_request||{};
     const head=pr.head&&pr.head.ref||'';
     const title=String(pr.title||'').trim();
-    const headMatch=head.match(new RegExp('^(?:release|build|staging)\\/obol-v'+VERSION_RE+'$','i'));
+    const headMatch=head.match(new RegExp('^(?:release|build|staging)\\/obol-v'+VERSION_RE+'(?:-merge-recovery)?$','i'));
     const titleMatch=title.match(new RegExp('^Obol v'+VERSION_RE+'\\b','i'));
     releaseIntent=!!(headMatch||titleMatch);
     if(headMatch&&titleMatch&&headMatch[1]!==titleMatch[1])fail.push(`release PR version mismatch: head v${headMatch[1]} vs title v${titleMatch[1]}`);
@@ -40,6 +40,7 @@ if(!repoOnly&&eventName==='pull_request'){
 
 const version=releaseOverride||eventVersion||currentVersion;
 const releaseBranch=`release/obol-v${version}`;
+const releaseRecoveryBranch=`${releaseBranch}-merge-recovery`;
 const releaseDocPath=`docs/v${version}.md`;
 const changelog=read('CHANGELOG.md');
 const releaseDoc=exists(releaseDocPath)?read(releaseDocPath):'';
@@ -98,7 +99,9 @@ if(pr&&releaseIntent){
   const head=pr.head&&pr.head.ref||'';
   const title=String(pr.title||'').trim();
   const body=String(pr.body||'').trim();
-  if(head!==releaseBranch)fail.push(`release PR head must be ${releaseBranch}, got ${head||'(empty)'}`);
+  const isMergeRecovery=head===releaseRecoveryBranch;
+  if(head!==releaseBranch&&!isMergeRecovery)fail.push(`release PR head must be ${releaseBranch} or ${releaseRecoveryBranch}, got ${head||'(empty)'}`);
+  if(isMergeRecovery&&!/merge(?:ability)?\s+recovery|mergeability|stuck/i.test(body))fail.push('release merge-recovery PR description must explain the mergeability recovery');
   if(!title.includes(`Obol v${version}`))fail.push(`release PR title must identify Obol v${version}`);
   if(body.length<700)fail.push('release PR description is missing or too short');
   const legacySections=[
