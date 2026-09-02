@@ -4,19 +4,43 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>Obol Product Hardening Dashboard</title>
-<link rel="stylesheet" href="assets/product-hardening-dashboard.css">
 </head>
 <body class="product-hardening-page">
-<main id="product-hardening-dashboard"></main>
-<script src="data/current-release.js"></script>
-<script src="data/product-hardening/product-hardening-queue.js"></script>
-<script src="data/product-hardening/work-packages.js"></script>
-<script src="data/note-integration.js"></script>
-<script src="data/note-integration-reviews.js"></script>
-<script src="data/note-integration-packets.js"></script>
-<script src="data/product-hardening/note-progress-current.js"></script>
-<script src="data/product-hardening/notes-impact-current.js"></script>
-<script src="assets/product-hardening-dashboard.js"></script>
-<script>window.renderProductHardeningDashboard(document.getElementById('product-hardening-dashboard'));</script>
+<main id="product-hardening-dashboard"><div class="ph-shell" data-product-dashboard-owner="current-loading"><section class="ph-card"><h1>Obol Product Hardening</h1><p>Loading the current dashboard…</p></section></div></main>
+<script>
+(function(root){
+'use strict';
+const REFRESH_PARAM='obol_dashboard_refresh';
+const STYLE='assets/product-hardening-dashboard.css';
+const SCRIPTS=[
+ 'data/current-release.js',
+ 'data/product-hardening/product-hardening-queue.js',
+ 'data/product-hardening/work-packages.js',
+ 'data/note-integration.js',
+ 'data/note-integration-reviews.js',
+ 'data/note-integration-packets.js',
+ 'data/product-hardening/note-progress-current.js',
+ 'data/product-hardening/notes-impact-current.js',
+ 'assets/product-hardening-dashboard.js'
+];
+const token=Date.now().toString(36)+'-standalone';
+const fresh=src=>src+(src.includes('?')?'&':'?')+REFRESH_PARAM+'='+encodeURIComponent(token);
+const head=document.head||document.documentElement;
+const style=document.createElement('link');style.rel='stylesheet';style.href=fresh(STYLE);style.dataset.obolDashboardStyle=STYLE;style.dataset.obolDashboardRefresh=token;head.appendChild(style);
+function load(src){return new Promise((resolve,reject)=>{const script=document.createElement('script');script.src=fresh(src);script.async=false;script.dataset.obolDashboardSource=src;script.dataset.obolDashboardRefresh=token;script.onload=resolve;script.onerror=()=>reject(new Error('failed to load '+src));head.appendChild(script);});}
+SCRIPTS.reduce((chain,src)=>chain.then(()=>load(src)),Promise.resolve()).then(()=>{
+ const target=document.getElementById('product-hardening-dashboard');
+ if(typeof root.renderProductHardeningDashboard!=='function')throw new Error('current product dashboard renderer did not initialize');
+ root.renderProductHardeningDashboard(target);
+ const marker=target.querySelector('[data-product-dashboard-owner="current"]'),release=root.OBOL_CURRENT_RELEASE||{},impact=root.OBOL_PRODUCT_HARDENING_NOTES_IMPACT||{},latest=impact.latestWave||{};
+ if(marker){marker.dataset.productDashboardRelease=String(release.label||'');marker.dataset.productDashboardNotesWave=String(latest.id||'');marker.dataset.productDashboardRefresh=token;}
+ root.__OBOL_CURRENT_DASHBOARD_REFRESH_TOKEN__=token;
+ root.__OBOL_CURRENT_DASHBOARD_REFRESH_SOURCES__=SCRIPTS.slice();
+}).catch(err=>{
+ root.__OBOL_CURRENT_DASHBOARD_ROUTE_ERROR__=String(err&&err.message||err||'dashboard load failed');
+ document.getElementById('product-hardening-dashboard').innerHTML='<div class="ph-shell" data-product-dashboard-owner="current-error"><section class="ph-card"><h1>Obol Product Hardening</h1><p>The current dashboard could not be loaded. Refresh the page and try again.</p></section></div>';
+});
+})(window);
+</script>
 </body>
 </html>
