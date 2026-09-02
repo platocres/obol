@@ -81,7 +81,7 @@ const scripts=[...domain,...vendor,...core,...nmap,...report,...appPrelude,...in
 const groups=Object.freeze({domain:freeze(domain),vendor:freeze(vendor),core:freeze(core),nmap:freeze(nmap),report:freeze(report),appPrelude:freeze(appPrelude),intake:freeze(intake),app:freeze(app)});
 
 const lazy=Object.freeze({
- productHardening:freeze(['data/current-release.js','data/product-hardening/product-hardening-queue.js','data/product-hardening/work-packages.js','assets/product-hardening-dashboard.css','assets/product-hardening-dashboard.js','assets/workflow-current.js']),
+ productHardening:freeze(['data/current-release.js','data/product-hardening/product-hardening-queue.js','data/product-hardening/work-packages.js','data/note-integration.js','data/note-integration-reviews.js','data/product-hardening/note-progress-current.js','data/product-hardening/notes-impact-current.js','assets/product-hardening-dashboard.css','assets/product-hardening-dashboard.js','assets/workflow-current.js']),
  accessibility:freeze(['assets/accessibility.css','assets/accessibility.js']),
  evidenceParsing:freeze([...vendor,'assets/bh-v2-patch.js',...intake]),
  nmap:freeze(nmap),
@@ -107,7 +107,7 @@ const routeLazy=Object.freeze({
  search:freeze([])
 });
 const surfacePolicy=Object.freeze({
- dashboard:Object.freeze({policy:'route-lazy',owner:'productHardening',reason:'Product-hardening queue, package, stylesheet, and renderer assets are loaded only for #/dashboard or the standalone dashboard entrypoint.'}),
+ dashboard:Object.freeze({policy:'route-lazy',owner:'productHardening',reason:'Product-hardening queue, package, notes-impact, stylesheet, and renderer assets are loaded only for #/dashboard or the standalone dashboard entrypoint.'}),
  methodology:Object.freeze({policy:'shared-core-eager',owner:'domain/core',reason:'Methodology data drives Home and Next Steps ranking, so route-only deferral would change operator behavior.'}),
  toolLibrary:Object.freeze({policy:'route-lazy',owner:'toolReferenceData',reason:'Wordlist and script reference payloads are route-local and load when Tools is opened.'}),
  lineage:Object.freeze({policy:'shared-core-eager',owner:'core/app',reason:'Artifact and activity lineage participates in Evidence, recommendation, and reporting semantics across primary workflow routes.'}),
@@ -123,7 +123,7 @@ const performance=Object.freeze({
 });
 
 return Object.freeze({
- schemaVersion:'1.1.0',
+ schemaVersion:'1.2.0',
  styles:freeze(styles),
  scripts:freeze(scripts),
  startupScripts,
