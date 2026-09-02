@@ -90,7 +90,7 @@ const retiredDashboardPresentation=freeze([
 const groups=Object.freeze({domain:freeze(domain),vendor:freeze(vendor),core:freeze(core),nmap:freeze(nmap),report:freeze(report),appPrelude:freeze(appPrelude),intake:freeze(intake),app:freeze(app)});
 
 const lazy=Object.freeze({
- productHardening:freeze(['data/current-release.js','data/product-hardening/product-hardening-queue.js','data/product-hardening/work-packages.js','data/note-integration.js','data/note-integration-reviews.js','data/product-hardening/note-progress-current.js','data/product-hardening/notes-impact-current.js','assets/product-hardening-dashboard.css','assets/product-hardening-dashboard.js','assets/workflow-current.js']),
+ productHardening:freeze(['data/current-release.js','data/product-hardening/product-hardening-queue.js','data/product-hardening/work-packages.js','data/note-integration.js','data/note-integration-reviews.js','data/note-integration-packets.js','data/product-hardening/note-progress-current.js','data/product-hardening/notes-impact-current.js','assets/product-hardening-dashboard.css','assets/product-hardening-dashboard.js','assets/workflow-current.js']),
  accessibility:freeze(['assets/accessibility.css','assets/accessibility.js']),
  evidenceParsing:freeze([...vendor,'assets/bh-v2-patch.js',...intake]),
  nmap:freeze(nmap),
@@ -134,7 +134,7 @@ const performance=Object.freeze({
 });
 
 return Object.freeze({
- schemaVersion:'1.7.0',
+ schemaVersion:'1.8.0',
  styles:freeze(styles),
  scripts:freeze(scripts),
  startupPreludeScripts,
