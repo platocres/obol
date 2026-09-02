@@ -27,6 +27,34 @@ function localRequestFailure(url) {
   }
 }
 
+async function installDashboardPaintObserver(page) {
+  await page.addInitScript(() => {
+    window.__OBOL_DASHBOARD_PAINTS__ = [];
+    const record = () => {
+      if (window.location.hash !== '#/dashboard') return;
+      const view = document.getElementById('view');
+      if (!view) return;
+      const text = (view.innerText || '').trim();
+      if (!text) return;
+      const owned = view.querySelector('[data-product-dashboard-owner]');
+      const sample = {
+        owner: owned ? owned.getAttribute('data-product-dashboard-owner') : '',
+        text: text.slice(0, 600)
+      };
+      const paints = window.__OBOL_DASHBOARD_PAINTS__;
+      const previous = paints[paints.length - 1];
+      if (!previous || previous.owner !== sample.owner || previous.text !== sample.text) paints.push(sample);
+    };
+    new MutationObserver(record).observe(document, {
+      subtree: true,
+      childList: true,
+      attributes: true,
+      attributeFilter: ['data-product-dashboard-owner']
+    });
+    document.addEventListener('DOMContentLoaded', record, { once: true });
+  });
+}
+
 (async () => {
   const browser = await chromium.launch({ headless: true });
   const context = await browser.newContext({ viewport: { width: 1440, height: 1000 } });
@@ -47,6 +75,8 @@ function localRequestFailure(url) {
         }
       });
 
+      if (route.currentDashboard) await installDashboardPaintObserver(page);
+
       const url = baseUrl + route.hash;
       const response = await page.goto(url, { waitUntil: 'domcontentloaded', timeout: 30000 });
       if (response && !response.ok()) routeFailures.push('navigation returned HTTP ' + response.status());
@@ -61,6 +91,16 @@ function localRequestFailure(url) {
         await page.waitForSelector('[data-product-dashboard-owner="current"]', { state: 'visible', timeout: 15000 });
         const oldOwner = await page.locator('[data-product-dashboard-owner]:not([data-product-dashboard-owner="current"])').count();
         if (oldOwner) routeFailures.push('dashboard retained a non-current dashboard owner after render');
+
+        const paints = await page.evaluate(() => window.__OBOL_DASHBOARD_PAINTS__ || []);
+        const meaningful = paints.filter(paint => paint.owner || /dashboard|product hardening|build next|orange|source depth/i.test(paint.text));
+        if (!meaningful.length) routeFailures.push('dashboard paint observer captured no meaningful dashboard render');
+        for (const paint of meaningful) {
+          if (!['current-loading', 'current'].includes(paint.owner)) {
+            routeFailures.push('historical dashboard painted before current owner: ' + JSON.stringify(paint));
+            break;
+          }
+        }
       }
 
       await page.waitForTimeout(700);
@@ -84,5 +124,5 @@ function localRequestFailure(url) {
     process.exit(1);
   }
 
-  console.log('Playwright browser smoke passed for Home, Targets, Evidence, Next Steps, Report, and Dashboard.');
+  console.log('Playwright browser smoke passed for Home, Targets, Evidence, Next Steps, Report, and Dashboard with current-owner paint proof.');
 })();
