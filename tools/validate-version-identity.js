@@ -58,6 +58,7 @@ const app=read('assets/app-v8.8.js');
 const readme=read('README.md');
 const dashboard=read('assets/product-hardening-dashboard.js');
 const standalone=read('product-hardening.html');
+const dashboardOwner=read('assets/dashboard-route-current.js');
 const core=read('assets/core-v8.8.js');
 const reportBase=read('assets/report-v2.js');
 const reportCurrentOverlay=read('assets/report-v3.5.js');
@@ -74,7 +75,8 @@ for(const token of [
 ])if(!app.includes(token))bad('live app version-trust integration missing token: '+token);
 if(!app.includes('window.OBOL_REPORT_V2={...R,generate}'))bad('final report generator is not wrapped by current release normalization');
 if(!dashboard.includes('window.OBOL_CURRENT_RELEASE'))bad('Product Hardening Dashboard does not consume current release authority');
-if(!standalone.includes('data/current-release.js'))bad('standalone dashboard does not load current release authority');
+if(!standalone.includes('assets/dashboard-route-current.js?obol-current='))bad('standalone dashboard does not delegate release loading to the cache-busted current Dashboard owner');
+if(!dashboardOwner.includes("'data/current-release.js'"))bad('current Dashboard owner does not freshness-load current release authority');
 if(!core.includes('C.VERSION=VERSION'))bad('workspace/runtime schema ownership changed unexpectedly');
 if(!reportBase.includes('state.obolVersion')||!reportBase.includes('C().VERSION'))bad('historical base report no longer exposes the workspace-derived identity fixture expected by current normalization');
 if(!reportCurrentOverlay.includes('function version35(state)'))bad('historical report overlay fixture changed unexpectedly');
@@ -84,4 +86,4 @@ if(fail.length){
   for(const item of fail)console.error('- '+item);
   process.exit(1);
 }
-console.log('Version identity valid:',release.label,'across visible UI, report metadata/footer normalization, and exported product metadata; workspace schema remains v8.8.');
+console.log('Version identity valid:',release.label,'across visible UI, current Dashboard ownership, report metadata/footer normalization, and exported product metadata; workspace schema remains v8.8.');
