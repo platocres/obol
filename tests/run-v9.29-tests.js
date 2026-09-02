@@ -34,13 +34,13 @@ for(const id of ['notes-disposition-burn-down','notes-packet-web-upload-inclusio
 assert.strictEqual(itemMap.get('runtime-dashboard-no-flash').status,'complete','dashboard no-flash owner is complete');
 assert.strictEqual(itemMap.get('runtime-test-retirement-policy').status,'complete','runtime test-retirement policy is complete');
 assert.strictEqual(itemMap.get('qa-playwright-smoke').status,'complete','real browser smoke proof is complete and item-tested');
-assert.strictEqual(itemMap.get('runtime-dashboard-layer-retirement').status,'queued','physical dashboard layer retirement stays queued until the compacted startup passes exact-head browser/regression proof');
-const architectureTrack=q.tracks.find(track=>track.id==='architecture-runtime');assert(architectureTrack&&architectureTrack.complete===8&&architectureTrack.total===12,'runtime-retirement work is represented in Architecture progress math');
+assert.strictEqual(itemMap.get('runtime-dashboard-layer-retirement').status,'complete','physical dashboard layer retirement is complete after exact-head browser/regression proof');
+const architectureTrack=q.tracks.find(track=>track.id==='architecture-runtime');assert(architectureTrack&&architectureTrack.complete===9&&architectureTrack.total===12,'proven runtime retirement is represented in Architecture progress math');
 const testingTrack=q.tracks.find(track=>track.id==='testing-qa');assert(testingTrack&&testingTrack.complete===5&&testingTrack.total===8,'browser smoke completion is represented in Testing progress math');
-assert.strictEqual(q.totals().complete,120);assert.strictEqual(q.totals().total,634);assert.strictEqual(q.totals().queued,13);
-assert.strictEqual(q.buildNext(1)[0].id,'runtime-dashboard-layer-retirement','physical dashboard retirement follows browser proof');
-const recommended=workPackages.recommend(q);assert(recommended&&recommended.id==='runtime-dashboard-retirement','next recommended package remains Dashboard Runtime Compaction');
-assert.deepStrictEqual(Array.from(recommended.liveItems).map(item=>item.id),['runtime-dashboard-layer-retirement'],'runtime package now exposes only physical layer retirement as live');
+assert.strictEqual(q.totals().complete,121);assert.strictEqual(q.totals().total,634);assert.strictEqual(q.totals().queued,12);
+assert.strictEqual(q.buildNext(1)[0].id,'notes-disposition-burn-down','Product Build Next returns to the packetized notes umbrella after dashboard retirement');
+const recommended=workPackages.recommend(q);assert(recommended&&recommended.id==='notes-impact-burn-down','next recommended package is Notes Impact and Themed Burn-down');
+assert.deepStrictEqual(Array.from(recommended.liveItems).map(item=>item.id),['notes-disposition-burn-down','notes-packet-web-upload-inclusion','notes-packet-xss-session','notes-packet-credentials-auth','notes-packet-windows-privesc','notes-packet-linux-privesc','notes-packet-ad-pivoting'],'notes package exposes the umbrella plus six themed packets');
 const workPackageSource=read('data/product-hardening/work-packages.js');
 assert(!workPackageSource.includes('function currentReleaseAtLeast'),'work-package owner no longer derives queue completion from release numbers');
 assert(!workPackageSource.includes('completed=new Set'),'work-package owner no longer carries hidden completion overlays');
@@ -81,4 +81,4 @@ const workflow=read('.github/workflows/tests.yml');assert(workflow.includes('nod
 const browserWorkflow=read('.github/workflows/browser-smoke.yml');assert(browserWorkflow.includes('node tests/playwright-smoke.js'),'browser workflow executes real route/render proof');
 for(const forbidden of ['assets/obol-v9.29.css','assets/app-v9.29.js','assets/core-v9.29.js','data/project-model-v9.29.js'])assert(!fs.existsSync(path.join(root,forbidden)),'no fake v9.29 runtime layer: '+forbidden);
 for(const command of [['tools/validate-notes-impact.js'],['tools/validate-note-integration.js'],['tools/validate-product-hardening-queue.js'],['tools/validate-runtime-manifest.js'],['tools/validate-runtime-loading.js'],['tools/validate-asset-references.js'],['tools/audit-dashboard-runtime-dependencies.js','--require-retired'],['tools/validate-release-pr.js']]){const result=run(command);assert.strictEqual(result.status,0,(result.stderr||result.stdout||'').trim());}
-console.log('v9.29 Notes Impact, stable Dashboard Current Owner, Browser Smoke, and physical Dashboard data retirement regression tests passed.');
+console.log('v9.29 Notes Impact, stable Dashboard Current Owner, Browser Smoke, and proven Dashboard runtime retirement regression tests passed.');
