@@ -5,9 +5,9 @@ function applyCurrentReleaseCompletions(){return root.OBOL_PRODUCT_HARDENING;}
 
 const packages=[
  {
-  id:'asset-integrity-browser-smoke',title:'Asset Integrity and Browser Smoke',priority:'critical',ownershipArea:'asset-loading/browser-smoke',
-  itemIds:['cc-asset-validation','qa-asset-test','qa-playwright-smoke'],dependencies:[],relatedItems:['runtime-data-manifest'],parallelSafe:false,recommendedBatch:true,
-  guidance:'Finish asset-reference correctness and its browser-level smoke coverage together when practical so future runtime work cannot reintroduce dead assets.'
+  id:'asset-integrity-browser-smoke',title:'Asset Integrity Foundation',priority:'critical',ownershipArea:'asset-loading/browser-smoke',
+  itemIds:['cc-asset-validation','qa-asset-test'],dependencies:[],relatedItems:['qa-playwright-smoke','runtime-data-manifest'],parallelSafe:false,recommendedBatch:true,
+  guidance:'Keep static asset-reference correctness and its contract test together; full browser smoke now sits with dashboard runtime retirement because it gates physical removal of historical live layers.'
  },
  {
   id:'version-trust',title:'Version Trust Surfaces',priority:'critical',ownershipArea:'release-identity/reporting',
@@ -26,8 +26,8 @@ const packages=[
  },
  {
   id:'runtime-dashboard-retirement',title:'Dashboard Runtime Compaction',priority:'critical',ownershipArea:'runtime/dashboard-retirement',
-  itemIds:['runtime-dashboard-no-flash','runtime-dashboard-layer-retirement','runtime-test-retirement-policy'],dependencies:['runtime-consolidation-foundation'],relatedItems:['runtime-dashboard-owner','runtime-no-layer-rule','qa-playwright-smoke'],parallelSafe:false,recommendedBatch:true,
-  guidance:'First stop historical dashboard paint, then remove old dashboard owners from live startup after equivalence proof, and codify the same current-owner/fixture/test-retirement lifecycle for the rest of the runtime.'
+  itemIds:['runtime-dashboard-no-flash','qa-playwright-smoke','runtime-dashboard-layer-retirement','runtime-test-retirement-policy'],dependencies:['runtime-consolidation-foundation'],relatedItems:['runtime-dashboard-owner','runtime-no-layer-rule'],parallelSafe:false,recommendedBatch:true,
+  guidance:'Keep the current no-flash route owner, add real browser smoke proof, then remove old dashboard owners from live startup after equivalence is proven. The same current-owner/fixture/test-retirement lifecycle applies to the rest of the runtime.'
  },
  {
   id:'dashboard-workflow-rebalance',title:'Dashboard and User Workflow Rebalance',priority:'high',ownershipArea:'dashboard/home/navigation',
@@ -76,8 +76,8 @@ const packages=[
  },
  {
   id:'notes-impact-burn-down',title:'Notes Impact and Themed Burn-down',priority:'high',ownershipArea:'notes/impact-packets',
-  itemIds:['notes-impact-dashboard','notes-disposition-burn-down','notes-packet-web-upload-inclusion','notes-packet-xss-session','notes-packet-credentials-auth','notes-packet-windows-privesc','notes-packet-linux-privesc','notes-packet-ad-pivoting'],dependencies:['notes-integration-platform'],relatedItems:['ux-progressive-notes','qa-playwright-smoke'],parallelSafe:false,recommendedBatch:true,
-  guidance:'Treat the 556-note disposition item as the umbrella. Burn notes down in coherent themed packets, and for every modeled source record which Field Note, tool option, Path branch, Evidence rule, report guidance, troubleshooting model, or explicit product gap it produced.'
+  itemIds:['notes-impact-dashboard','notes-disposition-burn-down','notes-packet-web-upload-inclusion','notes-packet-xss-session','notes-packet-credentials-auth','notes-packet-windows-privesc','notes-packet-linux-privesc','notes-packet-ad-pivoting'],dependencies:['notes-integration-platform'],relatedItems:['ux-progressive-notes'],parallelSafe:false,recommendedBatch:true,
+  guidance:'Treat the 556-note disposition item as the umbrella. Burn notes down in coherent themed packets, and for every modeled source record which Field Note, tool-bound or Path-bound guidance, Evidence/report/troubleshooting output, code-level product change, or explicit product gap it produced.'
  },
  {
   id:'offline-browser-platform',title:'Offline and Browser Performance Platform',priority:'normal',ownershipArea:'browser/offline-storage-workers',
