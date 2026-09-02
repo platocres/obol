@@ -78,7 +78,7 @@ Recommended work-package metadata comes from `data/product-hardening/work-packag
 **Notes Integration:** 55/556 reviewed — 43 modeled, 12 private-only, 501 pending.
 **Derived note guidance:** 24 Field Notes · 20 tool-bound · 22 Path-bound · 5 Evidence · 4 Report.
 **Declared note-driven product mechanics:** 0 total · 0 builder · 0 Path logic · 0 Evidence parser · 0 report generator · 0 workflow.
-**Latest mined themes:** File upload, File inclusion, XSS / session hardening.
+**Latest mined themes:** File upload, File inclusion, Content discovery, XSS / session hardening.
 **Notes impact contract:** `docs/NOTES-IMPACT.md`.
 
 **Recommended work package:** **Dashboard Runtime Compaction** — 1 live item / 4 tracked.
