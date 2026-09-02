@@ -52,7 +52,9 @@ v9.8 establishes `assets/workflow-current.js` as the stable non-versioned owner 
 
 `assets/product-hardening-dashboard.js` is the single current project/product progress renderer. The standalone `product-hardening.html` entrypoint and the in-app `#/dashboard` route use that same renderer. The embedded form returns to the Obol workspace instead of linking back to itself.
 
-Prime workflow screens are engagement-first. Home derives active context, Evidence counts, queued operator intent, latest Evidence attention, recommendation state, blockers, recent activity, and report proof readiness from existing core models. It does not derive Orange source-accounting totals or Product Hardening build totals. Next Steps continues using `C.nextStepsOverview34(...)`; the stable owner adds a compact decision brief for best move, unlocks, queued intent, and blockers without replacing the ranking model.
+Prime workflow screens are engagement-first. Home derives active context, Evidence counts, queued operator intent, latest Evidence attention, recommendation state, blockers, recent activity, and report proof readiness from existing core models. It does not derive Orange source-accounting totals or Product Hardening build totals.
+
+v9.31 adds `assets/operator-route-current.js` as the stable current owner for Path, Card, and Tools presentation. Path still uses `C.nextStepsOverview34(...)` for ranking semantics, but the visible route is now a current-owned decision screen rather than the old stacked panel sequence. Card and Tools surfaces keep current schema-driven builders first and collapse raw historical command blocks into supporting detail.
 
 The master Product Dashboard is exposed in secondary navigation so it is easy to find without changing the five-item primary operator loop: Home, Targets, Evidence, Next Steps, Report.
 

@@ -12,6 +12,7 @@ const contractsFile = path.join(root, 'data', 'product-hardening', 'item-test-co
 const tunnelContractsFile = path.join(root, 'data', 'product-hardening', 'item-test-contracts-tunnels.js');
 const v929ContractsFile = path.join(root, 'data', 'product-hardening', 'item-test-contracts-v9.29.js');
 const v930ContractsFile = path.join(root, 'data', 'product-hardening', 'item-test-contracts-v9.30.js');
+const v931ContractsFile = path.join(root, 'data', 'product-hardening', 'item-test-contracts-v9.31.js');
 const sandbox = { window: {}, globalThis: null };
 sandbox.globalThis = sandbox.window;
 vm.createContext(sandbox);
@@ -22,6 +23,7 @@ if (fs.existsSync(contractsFile)) vm.runInContext(fs.readFileSync(contractsFile,
 if (fs.existsSync(tunnelContractsFile)) vm.runInContext(fs.readFileSync(tunnelContractsFile, 'utf8'), sandbox, { filename: tunnelContractsFile });
 if (fs.existsSync(v929ContractsFile)) vm.runInContext(fs.readFileSync(v929ContractsFile, 'utf8'), sandbox, { filename: v929ContractsFile });
 if (fs.existsSync(v930ContractsFile)) vm.runInContext(fs.readFileSync(v930ContractsFile, 'utf8'), sandbox, { filename: v930ContractsFile });
+if (fs.existsSync(v931ContractsFile)) vm.runInContext(fs.readFileSync(v931ContractsFile, 'utf8'), sandbox, { filename: v931ContractsFile });
 
 const q = sandbox.window.OBOL_PRODUCT_HARDENING;
 const workPackages = sandbox.window.OBOL_PRODUCT_HARDENING_WORK_PACKAGES;
@@ -86,7 +88,7 @@ if (q) {
     if (!trackIds.has(item.track)) fail('unknown item track ' + item.track);
     if (!['queued', 'modeled', 'complete', 'superseded', 'rejected'].includes(item.status)) fail('bad status ' + item.status + ' for ' + item.id);
   }
-  const requiredItems = ['cc-version-authority','cc-asset-validation','cc-report-version','cc-link-contrast','runtime-current-entry','runtime-no-layer-rule','runtime-dashboard-no-flash','runtime-dashboard-layer-retirement','runtime-test-retirement-policy','ux-home-user-first','tb-schema','tb-nmap','tb-nxc','tb-hashcat','tb-secretsdump','cred-schema','cred-hash-routing','manual-schema','manual-success-unlocks','manual-proof-report','notes-impact-dashboard','notes-private-source-pointer','notes-source-inventory','notes-disposition-burn-down','notes-packet-web-upload-inclusion','notes-packet-xss-session','notes-packet-credentials-auth','notes-packet-windows-privesc','notes-packet-linux-privesc','notes-packet-ad-pivoting','qa-dashboard-sync','qa-asset-test','qa-release-contract-v9'];
+  const requiredItems = ['cc-version-authority','cc-asset-validation','cc-report-version','cc-link-contrast','runtime-current-entry','runtime-no-layer-rule','runtime-dashboard-no-flash','runtime-dashboard-layer-retirement','runtime-test-retirement-policy','runtime-operator-route-owner','ux-home-user-first','ux-next-step-tool-declutter','tb-schema','tb-nmap','tb-nxc','tb-hashcat','tb-secretsdump','tb-card-tool-presentation','cred-schema','cred-hash-routing','manual-schema','manual-success-unlocks','manual-proof-report','notes-impact-dashboard','notes-private-source-pointer','notes-source-inventory','notes-disposition-burn-down','notes-packet-web-upload-inclusion','notes-packet-xss-session','notes-packet-credentials-auth','notes-packet-windows-privesc','notes-packet-linux-privesc','notes-packet-ad-pivoting','qa-dashboard-sync','qa-asset-test','qa-release-contract-v9','qa-operator-route-ux-test'];
   const itemIds = new Set((q.items || []).map(i => i.id));
   for (const id of requiredItems) if (!itemIds.has(id)) fail('required queue item missing: ' + id);
   const notes = q.notes && Array.isArray(q.notes.sources) ? q.notes.sources : [];

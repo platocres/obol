@@ -75,6 +75,18 @@ This release establishes the UI/data boundary only. It does not claim `notes-ene
 
 `tools/validate-field-notes-ui.js` protects relevance matching, collapsed disclosure, route gating, and the private-source boundary.
 
+## v9.31 operator-route clarity baseline
+
+v9.31 starts retiring visible non-Dashboard layering without pretending the whole historical runtime can disappear in one pass.
+
+`assets/operator-route-current.js` is the stable current owner for Path, Card, and Tools presentation. It is lazy-loaded by the existing v8.8 bridge, so the work does not add another versioned `app-v9.31.js` layer. The historical route code remains available for compatibility while the current owner controls the operator-facing scan path.
+
+Path now renders a current-owned decision screen with best next move, unlocks, queued intent, blockers, and a compact recommendation list. The older Path panels are moved under supporting methodology detail instead of competing with the current decision surface.
+
+Card and Tools routes now put current schema-driven builders first. Additional builders collapse by default, and raw legacy command blocks move behind one **Raw legacy commands** disclosure. This preserves command content for regression and fallback while making the guided builder the primary thing the operator sees.
+
+Future route-retirement work should follow this pattern: current owner first, visible clutter collapsed, equivalence proven, then old live layers removed area by area.
+
 ## v9.11 responsive-density baseline
 
 v9.11 completes `ux-mobile-density` with a stable current responsive-layout owner rather than another historical stylesheet layer.
