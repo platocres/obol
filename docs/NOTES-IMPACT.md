@@ -21,6 +21,8 @@ When the disposition is `modeled`, the reviewer must decide which output classes
 
 A modeled note must not stop at a Field Note when the reviewed source clearly exposes a missing tool option, realistic Path branch, Evidence rule, or reporting improvement. If contextual guidance is sufficient, that decision must be explicit rather than assumed.
 
+Beginning with v9.29 review waves, every new modeled disposition must therefore contain either at least one `productChanges` declaration with implementation/test `proofRefs`, or a substantive `guidanceOnlyReason` explaining why the normalized Field Note/context binding is sufficient. The pre-v9.29 ledger is preserved as historical source-review evidence and is not retroactively rewritten to manufacture product-change claims that were not recorded at the time.
+
 ## Guidance bindings are not code changes
 
 The impact projection deliberately separates **where guidance is delivered** from **what product mechanics changed**.
@@ -73,7 +75,7 @@ A packet is complete only when its useful lessons have been normalized and any r
 For every modeled source, the packet review must answer two separate questions:
 
 1. What normalized guidance/output did this source produce and where is it bound?
-2. Did it require a code-level product mechanics change? If yes, declare the change type and proof refs. If no, record that guidance is sufficient.
+2. Did it require a code-level product mechanics change? If yes, declare the change type and proof refs. If no, record a `guidanceOnlyReason` explaining why guidance is sufficient.
 
 ## Dashboard interpretation
 
