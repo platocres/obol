@@ -53,7 +53,7 @@ const stableOwner=read('assets/dashboard-route-current.js');
 for(const token of ['OBOL_CURRENT_DASHBOARD_ROUTE','MutationObserver','scheduleRepair','renderProductHardeningDashboard','OBOL_PRODUCT_HARDENING_NOTE_PROGRESS'])assert(stableOwner.includes(token),'stable current dashboard route owner includes '+token);
 assert(!stableOwner.includes("schemaVersion==='1.3.0'"),'current Dashboard readiness is not pinned to the historical v9.28 note schema');
 const browserSmoke=read('tests/playwright-smoke.js');
-for(const token of ['installDashboardPaintObserver','historical dashboard painted before or after current owner','data-product-dashboard-owner="current"','current-owner paint proof'])assert(browserSmoke.includes(token),'browser smoke protects current Dashboard persistence: '+token);
+for(const token of ['installDashboardPaintObserver','historical dashboard painted before or after current owner','data-product-dashboard-owner="current"','dashboard re-activation did not complete a current render','dashboard re-activation did not publish a distinct freshness generation'])assert(browserSmoke.includes(token),'browser smoke protects current Dashboard persistence and freshness recovery: '+token);
 const impactDoc=read('docs/NOTES-IMPACT.md');
 for(const token of ['Field Note','Tool Builder Change','Path Change','Evidence Change','Report Change','Guidance bindings are not code changes','Packet-based review','Runtime compaction relationship'])assert(impactDoc.includes(token),'notes impact contract includes '+token);
 const runtimeDoc=read('docs/RUNTIME-COMPACTION.md');
