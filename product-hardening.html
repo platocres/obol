@@ -4,19 +4,29 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>Obol Product Hardening Dashboard</title>
-<link rel="stylesheet" href="assets/product-hardening-dashboard.css">
 </head>
 <body class="product-hardening-page">
 <main id="product-hardening-dashboard"></main>
-<script src="data/current-release.js"></script>
-<script src="data/product-hardening/product-hardening-queue.js"></script>
-<script src="data/product-hardening/work-packages.js"></script>
-<script src="data/note-integration.js"></script>
-<script src="data/note-integration-reviews.js"></script>
-<script src="data/note-integration-packets.js"></script>
-<script src="data/product-hardening/note-progress-current.js"></script>
-<script src="data/product-hardening/notes-impact-current.js"></script>
-<script src="assets/product-hardening-dashboard.js"></script>
-<script>window.renderProductHardeningDashboard(document.getElementById('product-hardening-dashboard'));</script>
+<script>
+(function(root){
+ const target=root.document.getElementById('product-hardening-dashboard');
+ const fail=message=>{target.innerHTML='<div class="ph-shell" data-product-dashboard-owner="current-error"><section class="ph-card"><h1>Obol Product Hardening</h1><p>'+String(message||'The current dashboard could not be loaded.')+'</p></section></div>';};
+ const owner=root.document.createElement('script');
+ owner.src='assets/dashboard-route-current.js?obol-current='+encodeURIComponent(Date.now().toString(36));
+ owner.async=false;
+ owner.onload=()=>{
+  const current=root.OBOL_CURRENT_DASHBOARD_ROUTE;
+  if(!current||typeof current.refreshAssets!=='function'){fail('The current dashboard loader did not initialize.');return;}
+  current.refreshAssets().then(freshness=>{
+   if(typeof root.renderProductHardeningDashboard!=='function'){fail('The current dashboard renderer did not initialize.');return;}
+   root.renderProductHardeningDashboard(target,{embedded:false,freshness});
+   const marker=target.querySelector('[data-product-dashboard-owner="current"]');
+   if(marker){marker.dataset.dashboardRelease=String(root.OBOL_CURRENT_RELEASE&&root.OBOL_CURRENT_RELEASE.version||'');marker.dataset.dashboardFreshness=String(freshness&&freshness.token||'');}
+  }).catch(err=>fail(err&&err.message||err));
+ };
+ owner.onerror=()=>fail('The current dashboard loader could not be fetched.');
+ (root.document.head||root.document.documentElement).appendChild(owner);
+})(window);
+</script>
 </body>
 </html>
