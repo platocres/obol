@@ -136,7 +136,10 @@ if (!northStar.includes('## Current v8.8 baseline') || !northStar.includes('cano
 if (readme.includes('<!-- OBOL-BUILD-NEXT:START -->')) fail('README must not restore the retired Orange Build Next block');
 
 const dashboard = read('product-hardening.html');
-for (const ref of ['data/current-release.js','data/product-hardening/product-hardening-queue.js','data/product-hardening/work-packages.js','assets/product-hardening-dashboard.js','assets/product-hardening-dashboard.css']) if (!dashboard.includes(ref)) fail('product-hardening.html is not wired to ' + ref);
+const dashboardRouteOwner = read('assets/dashboard-route-current.js');
+if (!dashboard.includes('assets/dashboard-route-current.js')) fail('product-hardening.html does not delegate to the stable current Dashboard route owner');
+if (!dashboard.includes('OBOL_CURRENT_DASHBOARD_ROUTE') || !dashboard.includes('refreshAssets()')) fail('product-hardening.html does not initialize Dashboard data through the current-owner freshness API');
+for (const ref of ['data/current-release.js','data/product-hardening/product-hardening-queue.js','data/product-hardening/work-packages.js','assets/product-hardening-dashboard.js','assets/product-hardening-dashboard.css']) if (!dashboardRouteOwner.includes(ref)) fail('current Dashboard route owner is not wired to ' + ref);
 
 const app = read('assets/app-v8.8.js');
 for (const token of ["RELEASE_SOURCE='data/current-release.js'",'window.OBOL_CURRENT_RELEASE','ensureProductAssets88','renderProductDashboard88','data/product-hardening/product-hardening-queue.js','data/product-hardening/work-packages.js','window.OBOL_PRODUCT_HARDENING_WORK_PACKAGES','assets/product-hardening-dashboard.js','active product-hardening queue surface']) if (!app.includes(token)) fail('app dashboard bridge missing token: ' + token);
