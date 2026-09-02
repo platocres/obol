@@ -4,6 +4,14 @@ This file is the release-history source for Obol. Future build work should revie
 
 The README is intentionally reserved for current project purpose, architecture, permanent requirements, a compact summary of only the latest three releases, and forward priorities.
 
+## v9.31 — operator route ownership and tool declutter
+
+- Added a stable current operator-route owner for Path, Card, and Tools instead of adding another versioned app layer.
+- Replaced the visible Path route stack with a compact current decision screen showing best next move, unlocks, queued intent, blockers, and ranked recommendations.
+- Made current schema-driven builders the primary Card/Tools surface and collapsed raw historical command blocks behind one supporting-detail disclosure.
+- Added Product Hardening queue/work-package entries and item-test contracts for operator route ownership, Next Step declutter, compact card tool presentation, and the focused UX regression.
+- Preserved the v9.30 notes ledger state while keeping notes burn-down as the highest-priority live Product Build Next item.
+
 ## v7.6 — admin source-depth completion
 
 - Atomized the pinned `admin.md` methodology family into twenty-five meaningful source-fidelity units spanning LSASS, SAM, LSA, DPAPI, token/session impersonation, RDP session transfer, user-profile discovery, KeePass credential recovery, and AD Connect synchronization-account recovery.

@@ -90,7 +90,7 @@ const retiredDashboardPresentation=freeze([
 const groups=Object.freeze({domain:freeze(domain),vendor:freeze(vendor),core:freeze(core),nmap:freeze(nmap),report:freeze(report),appPrelude:freeze(appPrelude),intake:freeze(intake),app:freeze(app)});
 
 const lazy=Object.freeze({
- productHardening:freeze(['data/current-release.js','data/product-hardening/product-hardening-queue.js','data/product-hardening/work-packages.js','data/note-integration.js','data/note-integration-reviews.js','data/note-integration-packets.js','data/product-hardening/note-progress-current.js','data/product-hardening/notes-impact-current.js','assets/product-hardening-dashboard.css','assets/product-hardening-dashboard.js','assets/workflow-current.js']),
+ productHardening:freeze(['data/current-release.js','data/product-hardening/product-hardening-queue.js','data/product-hardening/work-packages.js','data/note-integration.js','data/note-integration-reviews.js','data/note-integration-packets.js','data/product-hardening/note-progress-current.js','data/product-hardening/notes-impact-current.js','assets/product-hardening-dashboard.css','assets/product-hardening-dashboard.js','assets/workflow-current.js','assets/operator-route-current.css','assets/operator-route-current.js']),
  accessibility:freeze(['assets/accessibility.css','assets/accessibility.js']),
  evidenceParsing:freeze([...vendor,'assets/bh-v2-patch.js',...intake]),
  nmap:freeze(nmap),
@@ -119,6 +119,7 @@ const routeLazy=Object.freeze({
 });
 const surfacePolicy=Object.freeze({
  dashboard:Object.freeze({policy:'current-owner+retired-historical-data-and-presentation+route-lazy-data',owner:'assets/dashboard-route-current.js',compatibilityMetadataOwner:'data/dashboard-compat-current.js',reason:'The stable current route owner prevents historical paint. Versioned dashboard data owners and proven dashboard-only presentation overlays remain only in the frozen historical ledger; one data-only compatibility seam supplies the minimal metadata still consumed by historical core overlays on non-Dashboard routes.'}),
+ operatorRoutes:Object.freeze({policy:'current-owner+compatibility-decorated',owner:'assets/operator-route-current.js',reason:'Path, Card, and Tools keep historical compatibility code available while a current route owner replaces the visible Path decision screen and compacts Card/Tools command strata into one guided action stack.'}),
  methodology:Object.freeze({policy:'shared-core-eager',owner:'domain/core',reason:'Methodology data drives Home and Next Steps ranking, so route-only deferral would change operator behavior.'}),
  toolLibrary:Object.freeze({policy:'route-lazy',owner:'toolReferenceData',reason:'Wordlist and script reference payloads are route-local and load when Tools is opened.'}),
  lineage:Object.freeze({policy:'shared-core-eager',owner:'core/app',reason:'Artifact and activity lineage participates in Evidence, recommendation, and reporting semantics across primary workflow routes.'}),

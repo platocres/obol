@@ -15,13 +15,17 @@ if(!release||!q||!packages)bad('current release, queue, and work-package sources
 
 const app=read('assets/app-v8.8.js');
 const workflow=read('assets/workflow-current.js');
+const operator=read('assets/operator-route-current.js');
+const operatorCss=read('assets/operator-route-current.css');
 const dashboard=read('assets/product-hardening-dashboard.js');
 const core30=read('assets/core-v3.0.js');
 const manifest=require(path.join(root,'data','runtime-manifest.js'));
 
-for(const token of ["const WORKFLOW_SOURCE='assets/workflow-current.js'",'ensureProductAssets88()','workflow.decorateRoute()'])if(!app.includes(token))bad('v8.8 bridge does not delegate current workflow through token: '+token);
+for(const token of ["const WORKFLOW_SOURCE='assets/workflow-current.js'","const OPERATOR_SOURCE='assets/operator-route-current.js'",'ensureProductAssets88()','workflow.decorateRoute()','ensureOperatorRoutes88()','operator.decorateRoute()'])if(!app.includes(token))bad('v8.8 bridge does not delegate current workflow/operator route through token: '+token);
 for(const retired of ['function orangeSummary88','function productSummary88','function renderProductDashboardNow88','function decorateHome88'])if(app.includes(retired))bad('v8.8 bridge retains competing release-specific workflow owner: '+retired);
 if(!manifest.lazy||!manifest.lazy.productHardening||!manifest.lazy.productHardening.includes('assets/workflow-current.js'))bad('runtime manifest does not register stable current workflow as a lazy product asset');
+if(!manifest.lazy||!manifest.lazy.productHardening||!manifest.lazy.productHardening.includes('assets/operator-route-current.js'))bad('runtime manifest does not register stable current operator routes as lazy product assets');
+if(!manifest.surfacePolicy||!manifest.surfacePolicy.operatorRoutes||manifest.surfacePolicy.operatorRoutes.owner!=='assets/operator-route-current.js')bad('runtime manifest does not name the current operator route owner');
 
 for(const token of ['data-current-dashboard-nav','Product Dashboard','renderProductHardeningDashboard(v,{embedded:true})',"v.dataset.currentDashboardOwner='product-hardening'"])if(!workflow.includes(token))bad('single-dashboard workflow contract missing token: '+token);
 if(!dashboard.includes('data-product-dashboard-owner="current"'))bad('Product Hardening renderer does not identify itself as current dashboard owner');
@@ -37,8 +41,10 @@ if(!workflow.includes("link.href='#/dashboard'"))bad('Product Dashboard is not e
 if(workflow.includes("primary.push")||workflow.includes("NAVIGATION30.primary.push"))bad('current workflow must not add Product Dashboard to the five-item primary operator loop');
 
 for(const token of ['nextStepsOverview34','Best next move','Unlocks','Queued intent','Blockers','brokenPaths','unverifiedPaths','untestedCredentials'])if(!workflow.includes(token))bad('Path decision brief missing token: '+token);
+for(const token of ['data-operator-route-owner="path-current"','renderCurrentPath','compactToolPanels','operator-primary-action31','operator-legacy-commands31','MAX_PRIMARY_BUILDERS','Tool action stack'])if(!operator.includes(token))bad('current operator route owner missing token: '+token);
+for(const token of ['.operator-path31','.operator-tool-stack31','.operator-primary-action31','.operator-legacy-commands31'])if(!operatorCss.includes(token))bad('current operator route CSS missing token: '+token);
 
-for(const id of ['runtime-dashboard-owner','ux-home-user-first','ux-build-metrics-collapse','ux-nav-dashboard','ux-path-clarity']){
+for(const id of ['runtime-dashboard-owner','ux-home-user-first','ux-build-metrics-collapse','ux-nav-dashboard','ux-path-clarity','runtime-operator-route-owner','ux-next-step-tool-declutter','tb-card-tool-presentation','qa-operator-route-ux-test']){
  const item=q&&q.items.find(x=>x.id===id);
  if(!item||item.status!=='complete')bad(id+' is not complete in the Product Hardening queue');
 }

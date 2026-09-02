@@ -30,6 +30,11 @@ const packages=[
   guidance:'Keep the current no-flash route owner, add real browser smoke proof, then remove old dashboard owners from live startup after equivalence is proven. The same current-owner/fixture/test-retirement lifecycle applies to the rest of the runtime.'
  },
  {
+  id:'operator-route-declutter',title:'Operator Route Ownership and Tool Declutter',priority:'critical',ownershipArea:'runtime/operator-routes',
+  itemIds:['runtime-operator-route-owner','ux-next-step-tool-declutter','tb-card-tool-presentation','qa-operator-route-ux-test'],dependencies:['runtime-consolidation-foundation','tool-builder-platform'],relatedItems:['ux-path-clarity','runtime-dashboard-layer-retirement','runtime-test-retirement-policy'],parallelSafe:false,recommendedBatch:true,
+  guidance:'Claim Path, Card, and Tools through a current operator-route owner, keep guided builders as the primary action surface, collapse historical raw command blocks into supporting detail, and prove the cleanup without adding another versioned runtime layer.'
+ },
+ {
   id:'dashboard-workflow-rebalance',title:'Dashboard and User Workflow Rebalance',priority:'high',ownershipArea:'dashboard/home/navigation',
   itemIds:['runtime-dashboard-owner','ux-home-user-first','ux-build-metrics-collapse','ux-nav-dashboard','ux-path-clarity'],dependencies:[],relatedItems:['ux-build-next-top'],parallelSafe:false,recommendedBatch:true,
   guidance:'Keep project accounting in the dashboard while making Home, navigation, and Path visibly user-first.'

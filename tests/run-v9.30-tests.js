@@ -30,8 +30,9 @@ const builderUi=w.OBOL_TOOL_BUILDER;
 const builderSchema=w.OBOL_TOOL_BUILDER_SCHEMA;
 assert(release&&notes&&impact&&q&&builderUi&&builderSchema,'v9.30 current owners load');
 
-assert.strictEqual(release.version,'9.30.0');
-assert.strictEqual(release.label,'v9.30');
+const releaseParts=String(release.version||'').split('.').map(Number);
+assert(releaseParts[0]===9&&releaseParts[1]>=30,'v9.30 regression runs against current v9.30-or-later release identity');
+assert(/^v9\./.test(release.label),'v9.30 regression preserves v9 current-release label family');
 assert.strictEqual(notes.schemaVersion,'1.5.0');
 assert.deepStrictEqual(Array.from(notes.validate()),[],'v9.30 note integration self-validates');
 assert.deepStrictEqual(Array.from(impact.validate()),[],'v9.30 notes impact self-validates');
