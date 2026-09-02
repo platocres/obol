@@ -73,30 +73,35 @@ The completed Orange methodology/source queue is historical, regression-protecte
 This block is generated from `data/product-hardening/product-hardening-queue.js`. Do not edit it manually.
 Recommended work-package metadata comes from `data/product-hardening/work-packages.js`.
 
-**Current product-hardening queue:** 117/632 complete (19%), 7 queued, 9 foundation items modeled.
+**Current product-hardening queue:** 117/632 complete (19%), 16 queued, 9 foundation items modeled.
 **Private notes source:** `platocres/obol-source-notes` — 556 notes and 1326 embedded resources accounted.
 **Notes Integration:** 55/556 reviewed — 43 modeled, 12 private-only, 501 pending.
 **Derived note outputs:** 24 Field Notes · 20 tool-integrated · 22 Path-integrated · 5 Evidence · 4 Report.
 **Latest mined themes:** File upload, File inclusion, XSS / session hardening.
 **Notes impact contract:** `docs/NOTES-IMPACT.md`.
 
-**Recommended work package:** **Burn down all 556 note dispositions** — 1 live item / 1 tracked.
-**Work-package entry:** **Burn down all 556 note dispositions**
-**Ownership area:** `notes-integration`
-**Package guidance:** Complete the highest-priority item. Before stopping, inspect adjacent queue work for a coherent same-ownership package.
-**Package dependencies:** none.
+**Recommended work package:** **Dashboard Runtime Compaction** — 3 live items / 3 tracked.
+**Work-package entry:** **Dashboard no-flash current route ownership**
+**Ownership area:** `runtime/dashboard-retirement`
+**Package guidance:** First stop historical dashboard paint, then remove old dashboard owners from live startup after equivalence proof, and codify the same current-owner/fixture/test-retirement lifecycle for the rest of the runtime.
+**Package dependencies:** Runtime Consolidation Foundation
 
 **Live items in this package:**
-- **Burn down all 556 note dispositions** — Every note must end modeled, superseded, rejected, or private-reference-only with rationale.
+- **Dashboard no-flash current route ownership** — Make #/dashboard render only the current loading shell and current Product Hardening Dashboard; historical dashboard owners must not paint first.
+- **Retire historical dashboard runtime layers** — After route equivalence is proven, remove old dashboard data and presentation owners from live startup and preserve only useful historical fixtures.
+- **Runtime compaction and test-retirement policy** — Define and enforce the current-owner -> equivalence -> fixture -> live-layer removal -> obsolete-test retirement lifecycle for every runtime ownership area.
+
+**Related items to consider, not automatically in scope:** Dashboard ownership consolidation; No new layered queue architecture; Playwright browser smoke tests.
 
 **Highest-priority live items:**
-1. **Burn down all 556 note dispositions** — Every note must end modeled, superseded, rejected, or private-reference-only with rationale.
-2. **Quiet service worker caching** — Improve repeat-load and offline behavior without prompting users to install anything.
-3. **IndexedDB workspace storage** — Support durable larger local workspaces, multiple engagements, and cached indexes while remaining browser-local.
-4. **Web Workers for heavy tasks** — Move evidence parsing, search indexing, and report generation off the UI thread.
-5. **Non-intrusive update notice** — When cached app updates are available, notify users without install nagging.
-6. **Workspace storage migration safety** — Any storage refactor must preserve existing browser-local workspaces and sanitized exports.
-7. **Playwright browser smoke tests** — Open core routes, fail on console errors, and capture screenshots for Home, Targets, Evidence, Next Steps, Report, and Dashboard.
+1. **Dashboard no-flash current route ownership** — Make #/dashboard render only the current loading shell and current Product Hardening Dashboard; historical dashboard owners must not paint first.
+2. **Retire historical dashboard runtime layers** — After route equivalence is proven, remove old dashboard data and presentation owners from live startup and preserve only useful historical fixtures.
+3. **Runtime compaction and test-retirement policy** — Define and enforce the current-owner -> equivalence -> fixture -> live-layer removal -> obsolete-test retirement lifecycle for every runtime ownership area.
+4. **Burn down all 556 note dispositions** — Umbrella disposition goal. Review work should be executed in themed packets and must record what each modeled note changed in Field Notes, tools, Path, Evidence, reports, troubleshooting, or product gaps.
+5. **Notes packet: web upload and inclusion** — Mine upload, traversal, LFI/RFI, wrapper, serving, interpretation, proof-chain, remediation, and tool/path implications as one coherent packet.
+6. **Notes packet: XSS and session impact** — Mine XSS, browser/session impact, cookie/CSP controls, request context, proof boundaries, remediation, and missing product branches.
+7. **Notes packet: credentials and authentication** — Mine credentials, hashes, tickets, certificates, validation boundaries, auth failure modes, tool options, and cross-tool/path handoffs.
+8. **Notes packet: Windows privilege escalation** — Mine Windows privilege-escalation discovery, evidence, tool options, failure modes, path branches, proof boundaries, and reporting guidance.
 
 **Track status:**
 - **Critical correctness:** 4/4 complete (100%), 0 modeled.
