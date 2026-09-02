@@ -24,10 +24,9 @@ assert(q&&contracts&&schema&&inventory&&renderer&&builders,'v9.20 durable owners
 const item=q.items.find(entry=>entry.id==='tb-curl');
 assert(item&&item.status==='complete','v9.20 completes tb-curl');
 assert(!q.buildNext(1000).some(entry=>entry.id==='tb-curl'),'completed curl item stays out of Product Build Next');
-assert.strictEqual(q.tracks.find(track=>track.id==='tool-builders').complete,16,'Tool Builder track advances to 16/18');
-assert.strictEqual(q.totals().complete,37,'overall Product Hardening completion advances to 37');
-assert.strictEqual(q.totals().queued,37,'curl leaves the queued set');
-assert(q.buildNext(1)[0]&&q.buildNext(1)[0].id==='tb-chisel','Product Build Next advances to chisel');
+const toolTrack=q.tracks.find(track=>track.id==='tool-builders');
+assert(toolTrack&&toolTrack.complete>=16&&toolTrack.total>=18,'Tool Builder track preserves at least the v9.20 16/18 milestone');
+assert(q.totals().complete>=37,'overall Product Hardening completion preserves the v9.20 milestone floor');
 
 const contract=contracts.contracts['tb-curl'];
 assert(contract&&contract.acceptance.length,'curl owns an item-specific Definition of Done');

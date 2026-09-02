@@ -1,38 +1,13 @@
 'use strict';
 (function(root){
-function currentReleaseAtLeast(major,minor){
- const release=root.OBOL_CURRENT_RELEASE;
- const match=release&&String(release.version||'').match(/^(\d+)\.(\d+)/);
- if(!match)return false;
- const currentMajor=Number(match[1]),currentMinor=Number(match[2]);
- return currentMajor>major||(currentMajor===major&&currentMinor>=minor);
-}
-function applyCurrentReleaseCompletions(){
- const q=root.OBOL_PRODUCT_HARDENING;
- if(!q||!currentReleaseAtLeast(9,21))return q;
- const completed=new Set(['tb-chisel','tb-ssh-plink']);
- if(currentReleaseAtLeast(9,22))for(const id of ['cred-schema','cred-hash-routing','cred-cross-tool-handshake','cred-validation-boundary','cred-report-redaction'])completed.add(id);
- if(currentReleaseAtLeast(9,23))for(const id of ['cred-password','cred-ntlm','cred-netntlm','cred-kerberos-hashes','cred-mscache2','cred-ccache-kirbi','cred-pfx-cert','cred-ssh-key','cred-cookie-token'])completed.add(id);
- if(currentReleaseAtLeast(9,24))for(const id of ['manual-schema','manual-ui','manual-success-unlocks','manual-failure-triage','manual-proof-report','manual-queue-interaction','manual-tests','manual-all-cards'])completed.add(id);
- if(currentReleaseAtLeast(9,25))for(const id of ['notes-enex-extraction','notes-atomization-schema','notes-field-panel','notes-tool-influence','notes-path-gap-influence','qa-notes-ledger-test'])completed.add(id);
- for(const item of q.items||[])if(completed.has(item.id))item.status='complete';
- for(const trackId of ['tool-builders','credential-modes','manual-outcomes','testing-qa']){
-  const track=(q.tracks||[]).find(entry=>entry.id===trackId);
-  if(track)track.complete=(q.items||[]).filter(item=>item.track===trackId&&item.status==='complete').length;
- }
- if(currentReleaseAtLeast(9,25)){
-  const notesTrack=(q.tracks||[]).find(entry=>entry.id==='notes-integration');
-  if(notesTrack)notesTrack.complete=currentReleaseAtLeast(9,27)?41:(currentReleaseAtLeast(9,26)?15:4);
- }
- return q;
-}
-applyCurrentReleaseCompletions();
+/* Compatibility alias only. Queue state is owned directly by product-hardening-queue.js. */
+function applyCurrentReleaseCompletions(){return root.OBOL_PRODUCT_HARDENING;}
 
 const packages=[
  {
-  id:'asset-integrity-browser-smoke',title:'Asset Integrity and Browser Smoke',priority:'critical',ownershipArea:'asset-loading/browser-smoke',
-  itemIds:['cc-asset-validation','qa-asset-test','qa-playwright-smoke'],dependencies:[],relatedItems:['runtime-data-manifest'],parallelSafe:false,recommendedBatch:true,
-  guidance:'Finish asset-reference correctness and its browser-level smoke coverage together when practical so future runtime work cannot reintroduce dead assets.'
+  id:'asset-integrity-browser-smoke',title:'Asset Integrity Foundation',priority:'critical',ownershipArea:'asset-loading/browser-smoke',
+  itemIds:['cc-asset-validation','qa-asset-test'],dependencies:[],relatedItems:['qa-playwright-smoke','runtime-data-manifest'],parallelSafe:false,recommendedBatch:true,
+  guidance:'Keep static asset-reference correctness and its contract test together; full browser smoke now sits with dashboard runtime retirement because it gates physical removal of historical live layers.'
  },
  {
   id:'version-trust',title:'Version Trust Surfaces',priority:'critical',ownershipArea:'release-identity/reporting',
@@ -48,6 +23,11 @@ const packages=[
   id:'runtime-consolidation-foundation',title:'Runtime Consolidation Foundation',priority:'high',ownershipArea:'runtime/build-loading',
   itemIds:['runtime-current-entry','runtime-css-consolidation','runtime-data-manifest','runtime-historical-equivalence','runtime-lazy-load-plan','perf-bundle-budget'],dependencies:[],relatedItems:['runtime-no-layer-rule'],parallelSafe:false,recommendedBatch:true,
   guidance:'Treat the current entrypoint, active CSS ownership, generated asset manifest, equivalence harness, lazy-load boundary, and request budget as one consolidation area when the same runtime context is already loaded.'
+ },
+ {
+  id:'runtime-dashboard-retirement',title:'Dashboard Runtime Compaction',priority:'critical',ownershipArea:'runtime/dashboard-retirement',
+  itemIds:['runtime-dashboard-no-flash','qa-playwright-smoke','runtime-dashboard-layer-retirement','runtime-test-retirement-policy'],dependencies:['runtime-consolidation-foundation'],relatedItems:['runtime-dashboard-owner','runtime-no-layer-rule'],parallelSafe:false,recommendedBatch:true,
+  guidance:'Keep the current no-flash route owner, add real browser smoke proof, then remove old dashboard owners from live startup after equivalence is proven. The same current-owner/fixture/test-retirement lifecycle applies to the rest of the runtime.'
  },
  {
   id:'dashboard-workflow-rebalance',title:'Dashboard and User Workflow Rebalance',priority:'high',ownershipArea:'dashboard/home/navigation',
@@ -91,8 +71,13 @@ const packages=[
  },
  {
   id:'notes-integration-platform',title:'Notes Integration Foundation',priority:'normal',ownershipArea:'notes/ingestion-bindings',
-  itemIds:['notes-enex-extraction','notes-atomization-schema','notes-field-panel','notes-tool-influence','notes-path-gap-influence','qa-notes-ledger-test'],dependencies:[],relatedItems:['notes-disposition-burn-down','ux-progressive-notes'],parallelSafe:false,recommendedBatch:true,
+  itemIds:['notes-enex-extraction','notes-atomization-schema','notes-field-panel','notes-tool-influence','notes-path-gap-influence','qa-notes-ledger-test'],dependencies:[],relatedItems:['notes-impact-dashboard','notes-disposition-burn-down','ux-progressive-notes'],parallelSafe:false,recommendedBatch:true,
   guidance:'Build extraction, atomization, contextual display, tool/path influence, and ledger proof around the private notes source as one durable ingestion system.'
+ },
+ {
+  id:'notes-impact-burn-down',title:'Notes Impact and Themed Burn-down',priority:'high',ownershipArea:'notes/impact-packets',
+  itemIds:['notes-impact-dashboard','notes-disposition-burn-down','notes-packet-web-upload-inclusion','notes-packet-xss-session','notes-packet-credentials-auth','notes-packet-windows-privesc','notes-packet-linux-privesc','notes-packet-ad-pivoting'],dependencies:['notes-integration-platform'],relatedItems:['ux-progressive-notes'],parallelSafe:false,recommendedBatch:true,
+  guidance:'Treat the 556-note disposition item as the umbrella. Burn notes down in coherent themed packets, and for every modeled source record which Field Note, tool-bound or Path-bound guidance, Evidence/report/troubleshooting output, code-level product change, or explicit product gap it produced.'
  },
  {
   id:'offline-browser-platform',title:'Offline and Browser Performance Platform',priority:'normal',ownershipArea:'browser/offline-storage-workers',
@@ -129,5 +114,5 @@ function validate(q){
  if(top&&(!rec||!rec.entryItem||rec.entryItem.id!==top.id))failures.push('recommended work package does not begin with the highest-priority queued item');
  return failures;
 }
-root.OBOL_PRODUCT_HARDENING_WORK_PACKAGES={schemaVersion:'1.0.0',packages,packageForItem,liveItems,recommend,validate,applyCurrentReleaseCompletions};
+root.OBOL_PRODUCT_HARDENING_WORK_PACKAGES={schemaVersion:'1.1.0',packages,packageForItem,liveItems,recommend,validate,applyCurrentReleaseCompletions};
 })(typeof window!=='undefined'?window:globalThis);

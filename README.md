@@ -4,7 +4,7 @@ Obol is a static, browser-local workspace for OSCP-style labs, Active Directory 
 
 Live site: `https://platocres.github.io/obol/`
 
-Current release: **v9.28**
+Current release: **v9.29**
 
 Open `#/dashboard` for the active Product Hardening Dashboard and Product Build Next queue.
 
@@ -29,14 +29,16 @@ Before building:
 1. Read this README.
 2. Read [`BUILDING.md`](BUILDING.md) for release workflow, exact-head validation, and merge-readiness rules.
 3. Read [`docs/PRODUCT-HARDENING.md`](docs/PRODUCT-HARDENING.md) for the v9 product vision, queue rules, coherent work-package model, and Definition of Done.
-4. Open `#/dashboard` or inspect `data/product-hardening/product-hardening-queue.js` plus `data/product-hardening/work-packages.js` for Product Build Next.
-5. Confirm there is no open release/product-hardening PR. If one exists, continue it instead of opening another.
-6. If no release PR exists, create the release branch and open one normal, **non-draft** release PR as early as GitHub permits. Keep that same PR for the entire build. Required checks, not Draft status, prevent premature merge.
-7. Start with the highest-priority Product Build Next item unless the user directs otherwise. Treat it as the entry point into the recommended coherent work package, not as a one-item limit.
-8. Inspect related, adjacent, and dependency-linked items in the same ownership area. Complete as many as safely fit the same architectural context and blast radius. Do not stop merely because the first item's acceptance criteria are satisfied if closely related work can be completed and fully tested in the same PR.
-9. Keep queue-item accountability atomic. Every item advanced or closed still needs its own acceptance criteria, validation commands, proof files, and item-specific tests.
-10. Do not batch unrelated work. Stop expanding the package when the next item materially changes ownership area, architectural context, migration risk, or test strategy.
-11. Sync generated Product Build Next output, run the required validation, and keep the entire coherent work package in the one active release/product-hardening PR until the exact final head is green.
+4. If the work touches private-source notes, read [`docs/NOTES-INTEGRATION.md`](docs/NOTES-INTEGRATION.md) and [`docs/NOTES-IMPACT.md`](docs/NOTES-IMPACT.md) before reviewing a packet. Reviewed-note counts are not enough: modeled notes must declare the product output they created or why contextual guidance is sufficient.
+5. Open `#/dashboard` or inspect `data/product-hardening/product-hardening-queue.js` plus `data/product-hardening/work-packages.js` for Product Build Next.
+6. Confirm there is no open release/product-hardening PR. If one exists, continue it instead of opening another.
+7. If no release PR exists, create the release branch and open one normal, **non-draft** release PR as early as GitHub permits. Keep that same PR for the entire build. Required checks, not Draft status, prevent premature merge.
+8. Start with the highest-priority Product Build Next item unless the user directs otherwise. Treat it as the entry point into the recommended coherent work package, not as a one-item limit.
+9. Inspect related, adjacent, and dependency-linked items in the same ownership area. Complete as many as safely fit the same architectural context and blast radius. Do not stop merely because the first item's acceptance criteria are satisfied if closely related work can be completed and fully tested in the same PR.
+10. Keep queue-item accountability atomic. Every item advanced or closed still needs its own acceptance criteria, validation commands, proof files, and item-specific tests.
+11. Do not batch unrelated work. Stop expanding the package when the next item materially changes ownership area, architectural context, migration risk, or test strategy.
+12. Use `node tools/scope-check.js` while developing the current work package. The complete historical chain remains a final/main preservation gate rather than a manual per-edit checklist.
+13. Sync generated Product Build Next output, run the required validation, and keep the entire coherent work package in the one active release/product-hardening PR until the exact final head is green.
 
 There must be only one open release/product-hardening PR at a time. If one exists, continue it or close it as superseded before opening another. CI enforces this with `tools/validate-open-pr-uniqueness.js`. Do not use a Draft -> Ready transition as part of the release process and do not replace a healthy PR merely to change review state.
 
@@ -48,6 +50,7 @@ There must be only one open release/product-hardening PR at a time. If one exist
 - [`docs/PROOF-CONTRACT.md`](docs/PROOF-CONTRACT.md) - Evidence, proof boundaries, manual outcomes, and report readiness.
 - [`docs/TOOL-BUILDER-COVERAGE.md`](docs/TOOL-BUILDER-COVERAGE.md) - stable Tool Builder Platform, runnable-tool inventory, and representative-builder migration contract.
 - [`docs/NOTES-INTEGRATION.md`](docs/NOTES-INTEGRATION.md) - private source repo `platocres/obol-source-notes` and normalized public-output workflow.
+- [`docs/NOTES-IMPACT.md`](docs/NOTES-IMPACT.md) - required notes-to-product output decision, packet review model, dashboard interpretation, and runtime-compaction relationship.
 - [`docs/UX-QUALITY.md`](docs/UX-QUALITY.md) - UI/UX quality goals and seeded product defects.
 - [`docs/NORTH-STAR.md`](docs/NORTH-STAR.md) and [`docs/ORANGE-SOURCE-DEPTH.md`](docs/ORANGE-SOURCE-DEPTH.md) - completed Orange methodology/source accounting and historical regression baseline.
 - [`CHANGELOG.md`](CHANGELOG.md) - release history.
@@ -58,6 +61,10 @@ Pinned Orange Cyber Defense mind map provenance remains `https://orange-cyberdef
 
 Product Build Next is the only active development queue. Its atomic item source of truth is `data/product-hardening/product-hardening-queue.js`; coherent multi-item package metadata lives in `data/product-hardening/work-packages.js`. The README and Product Hardening Dashboard consume both so the highest-priority item remains the entry point while agents are encouraged to burn down a meaningful same-ownership work package rather than nibbling one checkbox at a time.
 
+The 556-note disposition item is an umbrella requirement, not permission to perform anonymous review waves forever. Notes work should be organized as coherent subject packets and reported through the notes-to-product impact projection so the dashboard shows what was learned, where guidance is bound, what product mechanics actually changed, and what gaps remain.
+
+Historical runtime layers are explicit product debt, not permanent architecture. The current Dashboard route owns its loading shell and render without allowing historical dashboard output to paint first, and the repository now has real Playwright coverage for the six core routes plus dashboard paint-history proof. The active compaction gate is therefore physical dashboard-layer retirement: decouple any live domain behavior from historical dashboard owners, remove those owners from startup, then retire tests that protected only the old delivery shape.
+
 The completed Orange methodology/source queue is historical, regression-protected baseline material. Do not reopen it unless a real defect is found or the pinned upstream source is deliberately repinned. Detailed Orange accounting belongs in the North Star/source-depth docs above, not in this README.
 
 ### Product Build Next
@@ -66,37 +73,45 @@ The completed Orange methodology/source queue is historical, regression-protecte
 This block is generated from `data/product-hardening/product-hardening-queue.js`. Do not edit it manually.
 Recommended work-package metadata comes from `data/product-hardening/work-packages.js`.
 
-**Current product-hardening queue:** 117/632 complete (19%), 7 queued, 9 foundation items modeled.
+**Current product-hardening queue:** 120/634 complete (19%), 13 queued, 9 foundation items modeled.
 **Private notes source:** `platocres/obol-source-notes` — 556 notes and 1326 embedded resources accounted.
+**Notes Integration:** 55/556 reviewed — 43 modeled, 12 private-only, 501 pending.
+**Derived note guidance:** 24 Field Notes · 20 tool-bound · 22 Path-bound · 5 Evidence · 4 Report.
+**Declared note-driven product mechanics:** 0 total · 0 builder · 0 Path logic · 0 Evidence parser · 0 report generator · 0 workflow.
+**Latest mined themes:** File upload, File inclusion, Content discovery, XSS / session hardening.
+**Notes impact contract:** `docs/NOTES-IMPACT.md`.
 
-**Recommended work package:** **Burn down all 556 note dispositions** — 1 live item / 1 tracked.
-**Work-package entry:** **Burn down all 556 note dispositions**
-**Ownership area:** `notes-integration`
-**Package guidance:** Complete the highest-priority item. Before stopping, inspect adjacent queue work for a coherent same-ownership package.
-**Package dependencies:** none.
+**Recommended work package:** **Dashboard Runtime Compaction** — 1 live item / 4 tracked.
+**Work-package entry:** **Retire historical dashboard runtime layers**
+**Ownership area:** `runtime/dashboard-retirement`
+**Package guidance:** Keep the current no-flash route owner, add real browser smoke proof, then remove old dashboard owners from live startup after equivalence is proven. The same current-owner/fixture/test-retirement lifecycle applies to the rest of the runtime.
+**Package dependencies:** Runtime Consolidation Foundation
 
 **Live items in this package:**
-- **Burn down all 556 note dispositions** — Every note must end modeled, superseded, rejected, or private-reference-only with rationale.
+- **Retire historical dashboard runtime layers** — After browser smoke and route equivalence are proven, remove old dashboard data and presentation owners from live startup and preserve only useful historical fixtures.
+
+**Related items to consider, not automatically in scope:** Dashboard ownership consolidation; No new layered queue architecture.
 
 **Highest-priority live items:**
-1. **Burn down all 556 note dispositions** — Every note must end modeled, superseded, rejected, or private-reference-only with rationale.
-2. **Quiet service worker caching** — Improve repeat-load and offline behavior without prompting users to install anything.
-3. **IndexedDB workspace storage** — Support durable larger local workspaces, multiple engagements, and cached indexes while remaining browser-local.
-4. **Web Workers for heavy tasks** — Move evidence parsing, search indexing, and report generation off the UI thread.
-5. **Non-intrusive update notice** — When cached app updates are available, notify users without install nagging.
-6. **Workspace storage migration safety** — Any storage refactor must preserve existing browser-local workspaces and sanitized exports.
-7. **Playwright browser smoke tests** — Open core routes, fail on console errors, and capture screenshots for Home, Targets, Evidence, Next Steps, Report, and Dashboard.
+1. **Retire historical dashboard runtime layers** — After browser smoke and route equivalence are proven, remove old dashboard data and presentation owners from live startup and preserve only useful historical fixtures.
+2. **Burn down all 556 note dispositions** — Umbrella disposition goal. Review work should be executed in themed packets and must record what each modeled note changed in Field Notes, tools, Path, Evidence, reports, troubleshooting, or product gaps.
+3. **Notes packet: web upload and inclusion** — Mine upload, traversal, LFI/RFI, wrapper, serving, interpretation, proof-chain, remediation, and tool/path implications as one coherent packet.
+4. **Notes packet: XSS and session impact** — Mine XSS, browser/session impact, cookie/CSP controls, request context, proof boundaries, remediation, and missing product branches.
+5. **Notes packet: credentials and authentication** — Mine credentials, hashes, tickets, certificates, validation boundaries, auth failure modes, tool options, and cross-tool/path handoffs.
+6. **Notes packet: Windows privilege escalation** — Mine Windows privilege-escalation discovery, evidence, tool options, failure modes, path branches, proof boundaries, and reporting guidance.
+7. **Notes packet: Linux privilege escalation** — Mine Linux privilege-escalation discovery, evidence, tool options, failure modes, path branches, proof boundaries, and reporting guidance.
+8. **Notes packet: AD and pivoting** — Mine Active Directory, lateral movement, tunneling, pivoting, routing, credential use, evidence boundaries, and missing workflow/tool options.
 
 **Track status:**
 - **Critical correctness:** 4/4 complete (100%), 0 modeled.
-- **Architecture / runtime:** 6/10 complete (60%), 3 modeled.
+- **Architecture / runtime:** 8/12 complete (67%), 3 modeled.
 - **UI / UX repair:** 7/8 complete (88%), 1 modeled.
 - **Tool GUI builders:** 18/18 complete (100%), 0 modeled.
 - **Credential modes:** 14/14 complete (100%), 0 modeled.
 - **Manual outcomes:** 8/8 complete (100%), 0 modeled.
 - **Notes integration:** 55/556 complete (10%), 2 modeled.
 - **Offline / performance:** 1/6 complete (17%), 0 modeled.
-- **Testing / visual QA:** 4/8 complete (50%), 3 modeled.
+- **Testing / visual QA:** 5/8 complete (63%), 3 modeled.
 
 Generated by `node tools/sync-product-build-next.js --write`. Verify with `node tools/sync-product-build-next.js --check`.
 <!-- OBOL-PRODUCT-BUILD-NEXT:END -->
@@ -109,58 +124,21 @@ Use `#/dashboard` for the active Product Hardening Dashboard or `product-hardeni
 
 ## Validation
 
-The exact required release flow is owned by [`BUILDING.md`](BUILDING.md). The core repository checks are:
+Use the focused current-work-package check during development:
 
 ```bash
-node tools/validate-historical-tests.js
-node tools/validate-release-pr.js
-node tools/validate-release-quality.js
-node tools/validate-product-hardening-queue.js
-node tools/validate-current-release.js
-node tools/validate-version-identity.js
-node tools/validate-accessibility-contract.js
-node tools/validate-responsive-layout.js
-node tools/validate-tool-builder-platform.js
-node tools/validate-current-workflow.js
-node tools/validate-field-notes-ui.js
+node tools/scope-check.js
+```
+
+Use [`BUILDING.md`](BUILDING.md) for preflight and release-final requirements. CI owns the complete historical regression chain on final release heads and `main`; agents should not manually copy and run every `run-vX.Y-tests.js` file for each small edit.
+
+The permanent notes-impact checks are:
+
+```bash
+node tools/validate-notes-impact.js
 node tools/validate-note-integration.js
-node tools/sync-current-styles.js --check
-node tools/validate-runtime-loading.js
-node tools/validate-runtime-manifest.js
-node tools/validate-asset-references.js
-node tools/sync-current-release.js --check
 node tools/sync-product-build-next.js --check
-node tools/validate-open-pr-uniqueness.js
-node tests/run-v9.0-tests.js
-node tests/run-v9.1-tests.js
-node tests/run-v9.1.1-tests.js
-node tests/run-v9.2-tests.js
-node tests/run-v9.3-tests.js
-node tests/run-v9.4-tests.js
-node tests/run-v9.5-tests.js
-node tests/run-v9.6-tests.js
-node tests/run-v9.7-tests.js
-node tests/run-v9.8-tests.js
-node tests/run-v9.9-tests.js
-node tests/run-v9.10-tests.js
-node tests/run-v9.11-tests.js
-node tests/run-v9.12-tests.js
-node tests/run-v9.13-tests.js
-node tests/run-v9.14-tests.js
-node tests/run-v9.15-tests.js
-node tests/run-v9.16-tests.js
-node tests/run-v9.17-tests.js
-node tests/run-v9.18-tests.js
-node tests/run-v9.19-tests.js
-node tests/run-v9.20-tests.js
-node tests/run-v9.21-tests.js
-node tests/run-v9.22-tests.js
-node tests/run-v9.23-tests.js
-node tests/run-v9.24-tests.js
-node tests/run-v9.25-tests.js
-node tests/run-v9.26-tests.js
-node tests/run-v9.27-tests.js
-node tests/run-v9.28-tests.js
+node tests/run-v9.29-tests.js
 ```
 
 ## GitHub Pages

@@ -2,6 +2,7 @@
 'use strict';
 (function(){
 function page66(){return (location.hash||'#/home').replace(/^#\/?/,'').split('/').filter(Boolean)[0]||'home';}
+function currentDashboardOwned66(){return page66()==='dashboard'&&!!window.__OBOL_CURRENT_DASHBOARD_ROUTE_INTENT__;}
 function model66(){try{return C.projectModel66(state,LANES,typeof ctx==='function'?ctx():undefined);}catch(e){return null;}}
 function e66(v){return typeof esc==='function'?esc(String(v==null?'':v)):String(v==null?'':v);}
 function stat66(label,value,detail){return '<div class="stat66"><span>'+e66(label)+'</span><b>'+e66(value)+'</b><small>'+e66(detail||'')+'</small></div>';}
@@ -26,12 +27,12 @@ function html66(p){
   '<details class="detail66"><summary><span><b>Full Build Next queue</b><small>'+e66(b.total)+' items, ordered by the repository model</small></span><span>Open</span></summary><div class="detail-body66"><div class="queue66 full66">'+queue66(b.rows,b.rows.length)+'</div></div></details>'+
   '<p class="foot66">The Dashboard and README consume the same current project model. Detailed diagnostics remain available without occupying the default scan path.</p></div>';
 }
-function viewDashboard66(){if(page66()!=='dashboard')return;const v=document.querySelector('#view');if(!v)return;const p=model66();v.innerHTML=html66(p);const details=v.querySelectorAll('.detail66');for(const el of details)el.addEventListener('toggle',()=>{try{if(state.ui&&state.ui.dashboard66){state.ui.dashboard66.detailsOpen=[...details].some(x=>x.open);save();}}catch(e){}});}
+function viewDashboard66(){if(page66()!=='dashboard'||currentDashboardOwned66())return;const v=document.querySelector('#view');if(!v)return;const p=model66();v.innerHTML=html66(p);const details=v.querySelectorAll('.detail66');for(const el of details)el.addEventListener('toggle',()=>{try{if(state.ui&&state.ui.dashboard66){state.ui.dashboard66.detailsOpen=[...details].some(x=>x.open);save();}}catch(e){}});}
 function homeHTML66(p){const c=p.canonical,s=p.source,b=p.buildNext,q=p.quality;return '<section class="northstar-home66"><div><span>Project status</span><h3>'+e66(c.implemented+'/'+c.total)+' implemented · '+e66(s.atomicComplete+'/'+s.atomicTotal)+' source fidelity · '+e66(b.total)+' queued</h3><p>'+e66(q.totalDebt===0?'No implemented-quality or mapped-delivery debt.':'Quality debt needs attention before expansion.')+' The Dashboard has the full progress model and drill-downs.</p></div><a class="btn" href="#/dashboard">Open dashboard</a></section>';}
 function decorateHome66(){if(page66()!=='home')return;const v=document.querySelector('#view'),p=model66();if(!v||!p)return;v.querySelectorAll('.northstar-home50,.northstar-home66').forEach(x=>x.remove());const anchor=v.querySelector('.subtitle')||v.querySelector('h2');if(anchor)anchor.insertAdjacentHTML('afterend',homeHTML66(p));}
-function syncVersion66(){const tag=document.querySelector('.tagline');if(tag)tag.textContent='Offensive Box Operations Ledger · v6.6';document.title='Obol v6.6 — Offensive Box Operations Ledger';if(page66()==='dashboard')viewDashboard66();else if(page66()==='home')decorateHome66();}
+function syncVersion66(){if(currentDashboardOwned66())return;const tag=document.querySelector('.tagline');if(tag)tag.textContent='Offensive Box Operations Ledger · v6.6';document.title='Obol v6.6 — Offensive Box Operations Ledger';if(page66()==='dashboard')viewDashboard66();else if(page66()==='home')decorateHome66();}
 const oldRoute66=route;
-route=function(){if(page66()==='dashboard'){viewDashboard66();syncVersion66();return;}oldRoute66();setTimeout(syncVersion66,0);};
+route=function(){if(page66()==='dashboard'){if(currentDashboardOwned66())return;viewDashboard66();syncVersion66();return;}oldRoute66();setTimeout(syncVersion66,0);};
 window.addEventListener('hashchange',()=>{for(const t of [30,240,760,1580,2380])setTimeout(syncVersion66,t);});
 for(const t of [420,720,1120,1520,2020,2520])setTimeout(syncVersion66,t);
 })();

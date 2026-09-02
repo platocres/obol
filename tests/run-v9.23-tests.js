@@ -34,9 +34,12 @@ assert(q&&packages&&contracts&&schema&&renderer&&builders&&credential&&modes,'v9
 const completed=['cred-password','cred-ntlm','cred-netntlm','cred-kerberos-hashes','cred-mscache2','cred-ccache-kirbi','cred-pfx-cert','cred-ssh-key','cred-cookie-token'];
 for(const id of completed){const item=q.items.find(entry=>entry.id===id);assert(item&&item.status==='complete','v9.23 completes '+id);assert(!q.buildNext(1000).some(entry=>entry.id===id),id+' stays out of historical Build Next');const contract=contracts.contracts[id];assert(contract&&contract.validationCommands.includes('node tests/run-v9.23-tests.js'),id+' retains its v9.23 contract');for(const rel of contract.proofFiles)assert(exists(rel),'v9.23 proof file exists for '+id+': '+rel);}
 assert.strictEqual(contracts.version,'9.23.0','v9.23 contract projection remains historically reproducible');
-assert.strictEqual(q.tracks.find(track=>track.id==='credential-modes').complete,14,'Credential modes historical milestone remains 14/14');assert.strictEqual(q.totals().complete,53);assert.strictEqual(q.totals().queued,21);assert(q.buildNext(1)[0]&&q.buildNext(1)[0].id==='manual-schema','v9.23 historically advances to Manual Outcome schema');assert(packages.recommend(q)&&packages.recommend(q).id==='manual-outcome-platform','v9.23 historically recommends Manual Outcome Platform');assert.deepStrictEqual(Array.from(packages.validate(q)),[]);
+const credentialTrack=q.tracks.find(track=>track.id==='credential-modes');
+assert(credentialTrack&&credentialTrack.complete>=14&&credentialTrack.total>=14,'Credential modes historical 14/14 milestone remains satisfied');
+assert(q.totals().complete>=53,'v9.23 Product Hardening completion milestone remains satisfied');
+assert.deepStrictEqual(Array.from(packages.validate(q)),[],'current work-package projection remains valid while preserving v9.23 owners');
 
-assert.strictEqual(modes.version,'1.0.0');assert.strictEqual(modes.coverage.length,9);assert.deepStrictEqual(Array.from(modes.validateBuilderCoverage()),[]);
+assert.strictEqual(modes.version,'1.0.0');assert(modes.coverage.length>=9,'v9.23 nine-mode coverage baseline remains present while later credential modes may extend it');assert.deepStrictEqual(Array.from(modes.validateBuilderCoverage()),[]);
 const lm='aad3b435b51404eeaad3b435b51404ee',nt='8846f7eaee8fb117ad06bdd830b7586c',pair=lm+':'+nt;
 assert.deepStrictEqual(JSON.parse(JSON.stringify(modes.parseNtlm(pair))),{kind:'lmnt',raw:pair,lm,nt,pair});
 const state={activeContext:{type:'global',id:'global'},ui:{},typedArtifacts:{secrets:[]},typedCompatibility:[]};

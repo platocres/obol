@@ -3,8 +3,9 @@
 const manifest=root.OBOL_RUNTIME_MANIFEST;
 if(!manifest)throw new Error('Obol runtime manifest must load before assets/runtime-current.js');
 let stylesWritten=false,scriptsWritten=false;
+let compatibilityLoaded=false,compatibilityLoad=null;
 const groupLoads=new Map();
-let tunnelBuilderLoad=null,credentialMaterialLoad=null,manualOutcomeLoad=null;
+let tunnelBuilderLoad=null,credentialMaterialLoad=null,manualOutcomeLoad=null,dashboardViewGuard=null;
 const esc=v=>String(v).replace(/&/g,'&amp;').replace(/"/g,'&quot;').replace(/</g,'&lt;');
 
 function canParserWrite(){return typeof document!=='undefined'&&document.readyState==='loading'&&typeof document.write==='function';}
@@ -30,11 +31,78 @@ function appendScripts(list){
  }));
  return chain;
 }
+function startupPreludeList(){return Array.isArray(manifest.startupPreludeScripts)?manifest.startupPreludeScripts:[];}
 function startupList(){return manifest.startupScripts||manifest.scripts;}
+function currentOwnerList(){return Array.isArray(manifest.currentScripts)?manifest.currentScripts:[];}
+function compatibilityScriptList(){return startupPreludeList().concat(startupList());}
+function browserScriptList(){return compatibilityScriptList().concat(currentOwnerList());}
+function routeName(){return typeof location==='undefined'?'home':((location.hash||'#/home').replace(/^#\/?/,'').split('/').filter(Boolean)[0]||'home');}
+function isDashboardRoute(){return routeName()==='dashboard';}
+function innerHtmlDescriptor(node){
+ let proto=node;
+ while(proto){
+  const descriptor=Object.getOwnPropertyDescriptor(proto,'innerHTML');
+  if(descriptor&&typeof descriptor.get==='function'&&typeof descriptor.set==='function')return descriptor;
+  proto=Object.getPrototypeOf(proto);
+ }
+ return null;
+}
+function releaseDashboardViewGuard(){
+ if(!dashboardViewGuard)return;
+ const {view}=dashboardViewGuard;
+ try{delete view.innerHTML;}catch(_err){}
+ dashboardViewGuard=null;
+ root.__OBOL_CURRENT_DASHBOARD_VIEW_GUARD__=false;
+}
+function protectDashboardView(){
+ if(typeof document==='undefined'||!isDashboardRoute())return null;
+ const view=document.getElementById('view');if(!view)return null;
+ if(dashboardViewGuard&&dashboardViewGuard.view===view)return view;
+ releaseDashboardViewGuard();
+ const descriptor=innerHtmlDescriptor(view);if(!descriptor)return view;
+ Object.defineProperty(view,'innerHTML',{
+  configurable:true,
+  enumerable:false,
+  get(){return descriptor.get.call(view);},
+  set(value){
+   const html=String(value==null?'':value);
+   const currentOwned=/data-product-dashboard-owner=(?:"|')(?:current|current-loading|current-error)(?:"|')/.test(html);
+   if(root.__OBOL_CURRENT_DASHBOARD_ROUTE_INTENT__&&!currentOwned)return;
+   descriptor.set.call(view,value);
+  }
+ });
+ dashboardViewGuard={view,descriptor};
+ root.__OBOL_CURRENT_DASHBOARD_VIEW_GUARD__=true;
+ return view;
+}
+function syncCurrentRouteOwnership(){
+ const dashboard=isDashboardRoute();
+ root.__OBOL_CURRENT_DASHBOARD_ROUTE_INTENT__=dashboard;
+ if(typeof document==='undefined')return dashboard;
+ if(!dashboard){releaseDashboardViewGuard();return false;}
+ const view=protectDashboardView();
+ if(view&&!view.querySelector('[data-product-dashboard-owner="current"],[data-product-dashboard-owner="current-loading"],[data-product-dashboard-owner="current-error"]')){
+  view.innerHTML='<div class="ph-shell" data-product-dashboard-owner="current-loading" data-runtime-current-route-shell="dashboard"><section class="ph-card"><h1>Obol Product Hardening</h1><p>Loading the current dashboard…</p></section></div>';
+ }
+ return dashboard;
+}
+function ensureCompatibility(){
+ const compatibility=compatibilityScriptList();
+ if(compatibilityLoaded)return Promise.resolve(compatibility.slice());
+ if(compatibilityLoad)return compatibilityLoad;
+ compatibilityLoad=appendScripts(compatibility).then(()=>{
+  compatibilityLoaded=true;
+  root.__OBOL_COMPATIBILITY_RUNTIME_LOADED__=true;
+  return compatibility.slice();
+ }).finally(()=>{if(!compatibilityLoaded)compatibilityLoad=null;});
+ return compatibilityLoad;
+}
 function writeScripts(){
  if(scriptsWritten)return Promise.resolve();
  scriptsWritten=true;
- const list=startupList();
+ const dashboard=syncCurrentRouteOwnership();
+ const list=dashboard?currentOwnerList():browserScriptList();
+ if(!dashboard){compatibilityLoaded=true;root.__OBOL_COMPATIBILITY_RUNTIME_LOADED__=true;}
  if(canParserWrite()){
   document.write(list.map(src=>'<script src="'+esc(src)+'"><\/script>').join(''));
   return Promise.resolve();
@@ -49,7 +117,6 @@ function loadGroup(name){
  groupLoads.set(name,p);
  return p;
 }
-function routeName(){return typeof location==='undefined'?'home':((location.hash||'#/home').replace(/^#\/?/,'').split('/').filter(Boolean)[0]||'home');}
 function ensureRoute(page){
  const names=(manifest.routeLazy&&manifest.routeLazy[page||routeName()])||[];
  return names.reduce((chain,name)=>chain.then(()=>loadGroup(name)),Promise.resolve()).then(()=>names.slice());
@@ -102,9 +169,12 @@ function loadTunnelBuilders(attempt){
  tunnelBuilderLoad=appendScripts(['data/tool-builders-tunnels.js']).then(()=>root.OBOL_TUNNEL_TOOL_BUILDERS?['data/tool-builders-tunnels.js']:[]).finally(()=>{if(!root.OBOL_TUNNEL_TOOL_BUILDERS)tunnelBuilderLoad=null;});
  return tunnelBuilderLoad;
 }
-function hydrateRoute(){
- const page=routeName();
- return ensureRoute(page).then(names=>loadCredentialMaterial(0).then(credentials=>loadManualOutcomes(0).then(manual=>{
+function hydrateDashboard(){
+ syncCurrentRouteOwnership();
+ return ensureRoute('dashboard');
+}
+function hydrateOperatorRoute(page){
+ return ensureCompatibility().then(()=>ensureRoute(page)).then(names=>loadCredentialMaterial(0).then(credentials=>loadManualOutcomes(0).then(manual=>{
   const toolBearing=['boxes','card','tools'].includes(page);
   return (toolBearing?loadTunnelBuilders(0):Promise.resolve([])).then(extra=>{
    if(names.length||extra.length||manual.length)rerenderAfterLazy();
@@ -112,17 +182,25 @@ function hydrateRoute(){
   });
  })));
 }
+function hydrateRoute(){
+ const page=routeName();
+ if(page==='dashboard')return hydrateDashboard();
+ syncCurrentRouteOwnership();
+ return hydrateOperatorRoute(page);
+}
 function budgetSnapshot(){
+ const prelude=startupPreludeList();
  const startup=startupList();
+ const current=currentOwnerList();
  const deferred=(manifest.deferredScriptGroups||[]).reduce((n,name)=>n+lazyGroup(name).length,0);
- return Object.freeze({startupHistoricalScripts:startup.length,deferredHistoricalScripts:deferred,baselineHistoricalScripts:manifest.scripts.length,loadedLazyGroups:[...groupLoads.keys()]});
+ return Object.freeze({startupCompatibilityPreludeScripts:prelude.length,startupHistoricalScripts:startup.length,currentOwnerScripts:current.length,deferredHistoricalScripts:deferred,baselineHistoricalScripts:manifest.scripts.length,compatibilityLoaded,loadedLazyGroups:[...groupLoads.keys()]});
 }
 
 if(typeof window!=='undefined'){
- window.addEventListener('hashchange',()=>{hydrateRoute().catch(()=>{});});
- if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',()=>{hydrateRoute().catch(()=>{});},{once:true});
- else setTimeout(()=>{hydrateRoute().catch(()=>{});},0);
+ window.addEventListener('hashchange',()=>{syncCurrentRouteOwnership();hydrateRoute().catch(()=>{});});
+ if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',()=>{syncCurrentRouteOwnership();hydrateRoute().catch(()=>{});},{once:true});
+ else setTimeout(()=>{syncCurrentRouteOwnership();hydrateRoute().catch(()=>{});},0);
 }
-root.OBOL_RUNTIME_LOADER=Object.freeze({manifest,writeStyles,writeScripts,appendScripts,loadGroup,ensureRoute,routeName,loadCredentialMaterial,loadManualOutcomes,loadTunnelBuilders,budgetSnapshot});
+root.OBOL_RUNTIME_LOADER=Object.freeze({manifest,writeStyles,writeScripts,appendScripts,startupPreludeList,startupList,currentOwnerList,compatibilityScriptList,browserScriptList,ensureCompatibility,loadGroup,ensureRoute,routeName,isDashboardRoute,syncCurrentRouteOwnership,protectDashboardView,releaseDashboardViewGuard,loadCredentialMaterial,loadManualOutcomes,loadTunnelBuilders,hydrateRoute,budgetSnapshot});
 root.__OBOL_RUNTIME_ENTRYPOINT__='manifest-v1';
 })(typeof window!=='undefined'?window:globalThis);

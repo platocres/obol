@@ -101,7 +101,7 @@ function validateRepository(root=DEFAULT_ROOT){
   try{
    delete require.cache[require.resolve(file)];
    const manifest=require(file);
-   const refs=[...(manifest.styles||[]),...(manifest.scripts||[])];
+   const refs=[...(manifest.styles||[]),...(manifest.scripts||[]),...(manifest.currentScripts||[])];
    for(const group of Object.values(manifest.lazy||{}))if(Array.isArray(group))refs.push(...group);
    for(const ref of refs)addReference(file,ref,'runtime manifest',root);
   }catch(err){failures.push('data/runtime-manifest.js could not be evaluated: '+err.message);}

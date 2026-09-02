@@ -47,7 +47,9 @@ for(const major of [7,8]){
   domain.push('data/orange-fidelity-v'+v+'.js','data/methodology-v'+v+'.js','data/project-model-v'+v+'.js');
  }
 }
-const nodeData=domain.slice();
+const historicalNodeData=freeze(domain);
+const dashboardDataPattern=/^data\/dashboard-v[\d.]+\.js$/;
+const nodeData=freeze(['data/dashboard-compat-current.js',...historicalNodeData.filter(src=>!dashboardDataPattern.test(src))]);
 domain.push('data/lanes-notes.js','data/wordlists.js','data/scripts.js','data/scripts-v2.5.js','data/reportmeta.js','data/signatures.js');
 
 const vendor=['assets/jszip.min.js','assets/bh.js'];
@@ -78,10 +80,17 @@ const app=[
 ];
 
 const scripts=[...domain,...vendor,...core,...nmap,...report,...appPrelude,...intake,...app];
+const startupPreludeScripts=freeze(['data/dashboard-compat-current.js']);
+const currentScripts=freeze(['assets/dashboard-route-current.js']);
+const historicalDashboardData=freeze(domain.filter(src=>dashboardDataPattern.test(src)));
+const retiredDashboardPresentation=freeze([
+ ...vr('assets/app-v',5,seq(1,9),'.js'),
+ ...vr('assets/app-v',6,[0,1,2,4,5],'.js')
+]);
 const groups=Object.freeze({domain:freeze(domain),vendor:freeze(vendor),core:freeze(core),nmap:freeze(nmap),report:freeze(report),appPrelude:freeze(appPrelude),intake:freeze(intake),app:freeze(app)});
 
 const lazy=Object.freeze({
- productHardening:freeze(['data/current-release.js','data/product-hardening/product-hardening-queue.js','data/product-hardening/work-packages.js','assets/product-hardening-dashboard.css','assets/product-hardening-dashboard.js','assets/workflow-current.js']),
+ productHardening:freeze(['data/current-release.js','data/product-hardening/product-hardening-queue.js','data/product-hardening/work-packages.js','data/note-integration.js','data/note-integration-reviews.js','data/product-hardening/note-progress-current.js','data/product-hardening/notes-impact-current.js','assets/product-hardening-dashboard.css','assets/product-hardening-dashboard.js','assets/workflow-current.js']),
  accessibility:freeze(['assets/accessibility.css','assets/accessibility.js']),
  evidenceParsing:freeze([...vendor,'assets/bh-v2-patch.js',...intake]),
  nmap:freeze(nmap),
@@ -90,7 +99,9 @@ const lazy=Object.freeze({
 });
 const deferredScriptGroups=freeze(['evidenceParsing','nmap','reportOverlays','toolReferenceData']);
 const deferredScriptSet=new Set(deferredScriptGroups.flatMap(name=>lazy[name]||[]));
-const startupScripts=freeze(scripts.filter(src=>!deferredScriptSet.has(src)));
+const retiredStartupSet=new Set([...historicalDashboardData,...retiredDashboardPresentation]);
+const liveHistoricalStartup=freeze(scripts.filter(src=>!deferredScriptSet.has(src)&&!retiredStartupSet.has(src)));
+const startupScripts=liveHistoricalStartup;
 const routeLazy=Object.freeze({
  home:freeze([]),
  boxes:freeze(['nmap']),
@@ -107,28 +118,33 @@ const routeLazy=Object.freeze({
  search:freeze([])
 });
 const surfacePolicy=Object.freeze({
- dashboard:Object.freeze({policy:'route-lazy',owner:'productHardening',reason:'Product-hardening queue, package, stylesheet, and renderer assets are loaded only for #/dashboard or the standalone dashboard entrypoint.'}),
+ dashboard:Object.freeze({policy:'current-owner+retired-historical-data-and-presentation+route-lazy-data',owner:'assets/dashboard-route-current.js',compatibilityMetadataOwner:'data/dashboard-compat-current.js',reason:'The stable current route owner prevents historical paint. Versioned dashboard data owners and proven dashboard-only presentation overlays remain only in the frozen historical ledger; one data-only compatibility seam supplies the minimal metadata still consumed by historical core overlays on non-Dashboard routes.'}),
  methodology:Object.freeze({policy:'shared-core-eager',owner:'domain/core',reason:'Methodology data drives Home and Next Steps ranking, so route-only deferral would change operator behavior.'}),
  toolLibrary:Object.freeze({policy:'route-lazy',owner:'toolReferenceData',reason:'Wordlist and script reference payloads are route-local and load when Tools is opened.'}),
  lineage:Object.freeze({policy:'shared-core-eager',owner:'core/app',reason:'Artifact and activity lineage participates in Evidence, recommendation, and reporting semantics across primary workflow routes.'}),
- historical:Object.freeze({policy:'compatibility-eager',owner:'scripts',reason:'Historical behavior overlays remain in the startup compatibility chain until a later compaction proves safe removal through the equivalence harness.'}),
+ historical:Object.freeze({policy:'compatibility-selective',owner:'scripts',reason:'The frozen historical script ledger remains available for fixtures/regression, while proven Dashboard data/presentation owners are retired from live startup. Other compatibility layers stay live only until their current owner and equivalence proof exist.'}),
  evidence:Object.freeze({policy:'route-lazy',owner:'evidenceParsing',reason:'BloodHound helpers and versioned Evidence parser overlays load when Evidence/Artifacts is opened.'}),
  report:Object.freeze({policy:'route-lazy',owner:'reportOverlays',reason:'The stable base report owner stays eager; historical report overlays load on Report.'})
 });
 const performance=Object.freeze({
  baseline:Object.freeze({historicalScripts:327,historicalStyles:69}),
- startup:Object.freeze({historicalScripts:startupScripts.length,maxHistoricalScripts:266,minDeferredHistoricalScripts:61}),
+ startup:Object.freeze({historicalScripts:liveHistoricalStartup.length,compatibilityPreludeScripts:startupPreludeScripts.length,totalScripts:startupPreludeScripts.length+liveHistoricalStartup.length,currentOwnerScripts:currentScripts.length,maxHistoricalScripts:236,minDeferredHistoricalScripts:61,retiredDashboardDataScripts:historicalDashboardData.length,retiredDashboardPresentationScripts:retiredDashboardPresentation.length}),
  styleRequests:Object.freeze({currentOwner:1,historicalImports:historicalStyles.length}),
  requiredDeferredGroups:deferredScriptGroups
 });
 
 return Object.freeze({
- schemaVersion:'1.1.0',
+ schemaVersion:'1.7.0',
  styles:freeze(styles),
  scripts:freeze(scripts),
+ startupPreludeScripts,
+ historicalStartupScripts:liveHistoricalStartup,
  startupScripts,
+ currentScripts,
+ historicalDashboardData,
+ retiredStartupScripts:freeze([...historicalDashboardData,...retiredDashboardPresentation]),
  groups,
- node:Object.freeze({data:freeze(nodeData),core:groups.core}),
+ node:Object.freeze({data:nodeData,historicalData:historicalNodeData,core:groups.core}),
  lazy,
  deferredScriptGroups,
  routeLazy,
