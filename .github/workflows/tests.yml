@@ -76,16 +76,7 @@ jobs:
             echo "Full regression gate runs on main, ready PRs, and [release-final] release pushes; no-op for this event."
             exit 0
           fi
-          find assets data tools tests -type f -name '*.js' -print0 | sort -z | xargs -0 -n1 node --check
-          node tools/validate-historical-tests.js
-          node tools/validate-release-pr.js
-          node tests/run-tests.js
-          while IFS= read -r file; do
-            node "$file"
-          done < <(find tests -maxdepth 1 -type f -name 'run-v*-tests.js' -print | sort -V)
-          node tools/validate-release-quality.js
-          node tools/sync-readme-build-next.js --check
-          node tools/sync-product-build-next.js --check
+          node tools/run-historical-contracts.js
 
 # Tiered release validation keeps incremental development visible without turning every
 # work-in-progress commit into a full regression event. Ordinary release pushes run smoke;
