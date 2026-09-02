@@ -108,11 +108,58 @@ async function installDashboardPaintObserver(page) {
             break;
           }
         }
+
+        const freshness = await page.evaluate(() => {
+          const marker = document.querySelector('[data-product-dashboard-owner="current"]');
+          const release = window.OBOL_CURRENT_RELEASE || {};
+          const impact = window.OBOL_PRODUCT_HARDENING_NOTES_IMPACT || {};
+          const latest = impact.latestWave || {};
+          return {
+            markerRelease: marker ? marker.getAttribute('data-product-dashboard-release') : '',
+            markerNotesWave: marker ? marker.getAttribute('data-product-dashboard-notes-wave') : '',
+            markerRefresh: marker ? marker.getAttribute('data-product-dashboard-refresh') : '',
+            expectedRelease: String(release.label || ''),
+            expectedNotesWave: String(latest.id || ''),
+            refreshToken: String(window.__OBOL_CURRENT_DASHBOARD_REFRESH_TOKEN__ || ''),
+            refreshSources: Array.from(window.__OBOL_CURRENT_DASHBOARD_REFRESH_SOURCES__ || []),
+            resources: performance.getEntriesByType('resource').map(entry => entry.name)
+          };
+        });
+        if (!freshness.markerRefresh || freshness.markerRefresh !== freshness.refreshToken) routeFailures.push('dashboard current render lacks the active refresh token');
+        if (!freshness.expectedRelease || freshness.markerRelease !== freshness.expectedRelease) routeFailures.push('dashboard visible release does not match refreshed current-release authority');
+        if (freshness.markerNotesWave !== freshness.expectedNotesWave) routeFailures.push('dashboard visible latest notes wave does not match refreshed notes-impact authority');
+        const requiredFreshSources = [
+          'data/current-release.js',
+          'data/product-hardening/product-hardening-queue.js',
+          'data/note-integration-packets.js',
+          'data/product-hardening/notes-impact-current.js',
+          'assets/product-hardening-dashboard.js'
+        ];
+        for (const source of requiredFreshSources) {
+          if (!freshness.refreshSources.includes(source)) routeFailures.push('dashboard refresh ledger omits current source: ' + source);
+          const requestedFresh = freshness.resources.some(raw => {
+            try {
+              const resource = new URL(raw);
+              return resource.pathname.endsWith('/' + source) && resource.searchParams.get('obol_dashboard_refresh') === freshness.refreshToken;
+            } catch (err) {
+              return false;
+            }
+          });
+          if (!requestedFresh) routeFailures.push('dashboard did not request cache-busted current source: ' + source);
+        }
       }
 
       const viewText = (await page.locator('#view').innerText()).trim();
       if (!route.marker.test(viewText)) routeFailures.push('route marker did not match rendered content: ' + JSON.stringify(viewText.slice(0, 240)));
       if (/current dashboard could not be loaded/i.test(viewText)) routeFailures.push('dashboard error shell rendered');
+      if (route.currentDashboard) {
+        const visible = await page.evaluate(() => ({
+          release: String((window.OBOL_CURRENT_RELEASE || {}).label || ''),
+          notesWave: String((((window.OBOL_PRODUCT_HARDENING_NOTES_IMPACT || {}).latestWave || {}).id) || '')
+        }));
+        if (visible.release && !viewText.includes(visible.release)) routeFailures.push('dashboard text omits the current release label ' + visible.release);
+        if (visible.notesWave && !viewText.includes(visible.notesWave)) routeFailures.push('dashboard text omits the latest notes wave ' + visible.notesWave);
+      }
 
       await page.screenshot({ path: path.join(outputDir, route.id + '.png'), fullPage: true });
       await page.close();
@@ -130,5 +177,5 @@ async function installDashboardPaintObserver(page) {
     process.exit(1);
   }
 
-  console.log('Playwright browser smoke passed for Home, Targets, Evidence, Next Steps, Report, and Dashboard with current-owner paint proof through the full legacy timer window.');
+  console.log('Playwright browser smoke passed for Home, Targets, Evidence, Next Steps, Report, and Dashboard with current-owner paint proof plus cache-busted current dashboard data freshness.');
 })();
