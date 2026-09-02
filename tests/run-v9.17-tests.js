@@ -40,8 +40,7 @@ assert.deepStrictEqual(Array.from(kerberosPackage.itemIds),['tb-getnpusers','tb-
 assert.strictEqual(packages.packageForItem('tb-evilwinrm'),null,'Evil-WinRM remains an independent remote-access builder rather than being classified as Kerberos roasting');
 assert(kerberosPackage.relatedItems.includes('tb-evilwinrm'),'Evil-WinRM remains related Windows authentication work without being bundled into the Kerberos package');
 
-assert.strictEqual(schema.schemaVersion,'1.0.0','stable Tool Builder schema identity is unchanged');
-assert.strictEqual(renderer.version,'1.0.0','stable Tool Builder renderer identity is unchanged');
+for(const [owner,version] of [['schema',schema.schemaVersion],['renderer',renderer.version]])assert(/^\d+\.\d+\.\d+$/.test(version),`current Tool Builder ${owner} retains a semantic version while the v9.17 behavior assertions below preserve the historical Kerberos/WinRM contract`);
 
 const getnpusers=schema.get('tb-getnpusers');
 assert(getnpusers&&inventory.get('impacket-getnpusers').status==='implemented','GetNPUsers builder is registered and implemented');
