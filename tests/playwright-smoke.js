@@ -12,7 +12,7 @@ const routes = [
   { id: 'evidence', hash: '#/intake', marker: /evidence/i },
   { id: 'next-steps', hash: '#/path', marker: /(next|path|recommend)/i },
   { id: 'report', hash: '#/report', marker: /report/i },
-  { id: 'dashboard', hash: '#/dashboard', marker: /Product Hardening/i, currentDashboard: true, settleMs: 3200 }
+  { id: 'dashboard', hash: '#/dashboard', marker: /Product Hardening/i, currentDashboard: true, settleMs: 5200 }
 ];
 
 fs.mkdirSync(outputDir, { recursive: true });
@@ -130,5 +130,5 @@ async function installDashboardPaintObserver(page) {
     process.exit(1);
   }
 
-  console.log('Playwright browser smoke passed for Home, Targets, Evidence, Next Steps, Report, and Dashboard with current-owner paint proof through the legacy timer window.');
+  console.log('Playwright browser smoke passed for Home, Targets, Evidence, Next Steps, Report, and Dashboard with current-owner paint proof through the full legacy timer window.');
 })();
