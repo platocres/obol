@@ -33,13 +33,16 @@ for(const token of [
   'instanceCurrent',
   'obol-current=',
   'dataset.obolDashboardInstance=INSTANCE',
-  'data-product-dashboard-owner="current-loading"'
+  'data-product-dashboard-owner="current-loading"',
+  'whenRendered'
 ])assert(owner.includes(token),'Dashboard freshness owner missing durable token: '+token);
 
 assert(!owner.includes('if(sourceReady(src))return Promise.resolve()'),'Dashboard must not accept an already-present global as proof of freshness');
 assert(/freshSelf\.src=OWNER\+'\?obol-current='/.test(owner),'stable Dashboard route owner must self-refresh through a cache-busted URL');
+assert(/appendChild\(freshSelf\);\s*return;\s*\}/.test(owner),'unversioned Dashboard owner must remain bootstrap-only and must not race the cache-busted current instance');
 assert(/if\(!instanceCurrent\(\)\)return root\.__OBOL_CURRENT_DASHBOARD_FRESHNESS__\|\|null;/.test(owner),'superseded Dashboard owner instances must not publish a competing freshness generation');
 assert(/root\.renderProductHardeningDashboard\(target,\{embedded:true,freshness\}\)/.test(owner),'embedded Dashboard render must receive freshness metadata');
+assert(/__OBOL_CURRENT_DASHBOARD_RENDER_PROMISE__=render\(cycle\)/.test(owner),'Dashboard activation must expose its current render completion promise');
 
 for(const token of ['assets/dashboard-route-current.js?obol-current=','OBOL_CURRENT_DASHBOARD_ROUTE','refreshAssets()','dataset.dashboardRelease','dataset.dashboardFreshness'])assert(standalone.includes(token),'standalone Dashboard does not converge on current freshness owner: '+token);
 for(const stale of [
@@ -54,8 +57,9 @@ for(const token of [
   'window.OBOL_PRODUCT_HARDENING_NOTES_IMPACT = { review: { reviewed: -1 } }',
   'freshnessTokens.size < 2',
   'current release authority was not freshness-loaded on both dashboard activations',
+  'route.whenRendered',
   'obol-current=',
   'dashboard-standalone'
 ])assert(smoke.includes(token),'browser smoke no longer proves Dashboard freshness behavior: '+token);
 
-console.log('Dashboard freshness contract valid: embedded and standalone Dashboard paths reload cache-busted current owners, reject stale-global readiness, isolate owner generations, and retain browser recovery proof.');
+console.log('Dashboard freshness contract valid: unversioned bootstrap cannot race the current owner; embedded and standalone Dashboard paths reload cache-busted current owners, reject stale-global readiness, isolate owner generations, and retain deterministic browser recovery proof.');
