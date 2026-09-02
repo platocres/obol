@@ -11,6 +11,7 @@ const workPackagesFile = path.join(root, 'data', 'product-hardening', 'work-pack
 const contractsFile = path.join(root, 'data', 'product-hardening', 'item-test-contracts.js');
 const tunnelContractsFile = path.join(root, 'data', 'product-hardening', 'item-test-contracts-tunnels.js');
 const v929ContractsFile = path.join(root, 'data', 'product-hardening', 'item-test-contracts-v9.29.js');
+const v930ContractsFile = path.join(root, 'data', 'product-hardening', 'item-test-contracts-v9.30.js');
 const sandbox = { window: {}, globalThis: null };
 sandbox.globalThis = sandbox.window;
 vm.createContext(sandbox);
@@ -20,6 +21,7 @@ if (fs.existsSync(workPackagesFile)) vm.runInContext(fs.readFileSync(workPackage
 if (fs.existsSync(contractsFile)) vm.runInContext(fs.readFileSync(contractsFile, 'utf8'), sandbox, { filename: contractsFile });
 if (fs.existsSync(tunnelContractsFile)) vm.runInContext(fs.readFileSync(tunnelContractsFile, 'utf8'), sandbox, { filename: tunnelContractsFile });
 if (fs.existsSync(v929ContractsFile)) vm.runInContext(fs.readFileSync(v929ContractsFile, 'utf8'), sandbox, { filename: v929ContractsFile });
+if (fs.existsSync(v930ContractsFile)) vm.runInContext(fs.readFileSync(v930ContractsFile, 'utf8'), sandbox, { filename: v930ContractsFile });
 
 const q = sandbox.window.OBOL_PRODUCT_HARDENING;
 const workPackages = sandbox.window.OBOL_PRODUCT_HARDENING_WORK_PACKAGES;
