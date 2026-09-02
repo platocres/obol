@@ -85,8 +85,17 @@ const flattened=[].concat(
 );
 assert.deepStrictEqual(flattened,manifest.scripts,'historical browser scripts are generated only from ordered manifest groups');
 assert.deepStrictEqual(manifest.node.core,manifest.groups.core,'Node core loading consumes the browser core manifest group');
-assert.deepStrictEqual(manifest.node.data,manifest.groups.domain.slice(0,manifest.node.data.length),'Node data loading remains an explicit historical prefix used by the regression harness');
-assert.strictEqual(manifest.groups.domain.length-manifest.node.data.length,6,'browser-only domain extras remain explicit');
+assert(Array.isArray(manifest.node.historicalData)&&manifest.node.historicalData.length,'Node historical data projection is explicit');
+assert.deepStrictEqual(manifest.node.historicalData,manifest.groups.domain.slice(0,manifest.node.historicalData.length),'Node historical data remains the frozen source-observation prefix');
+assert.strictEqual(manifest.groups.domain.length-manifest.node.historicalData.length,6,'browser-only domain extras remain explicit');
+assert.strictEqual(manifest.node.data[0],'data/dashboard-compat-current.js','Node current runtime loads the compact Dashboard compatibility seam first');
+assert.strictEqual(manifest.node.data.length,manifest.node.historicalData.length-manifest.historicalDashboardData.length+1,'Node current execution replaces sixteen Dashboard data owners with one compatibility seam');
+for(const src of manifest.historicalDashboardData)assert(!manifest.node.data.includes(src),'retired Dashboard data must not execute in Node current runtime: '+src);
+for(const src of manifest.node.historicalData.filter(src=>!manifest.historicalDashboardData.includes(src)))assert(manifest.node.data.includes(src),'Node current runtime lost durable historical domain owner: '+src);
+unique('Node current data',manifest.node.data);
+unique('Node historical data fixture',manifest.node.historicalData);
+exists('Node current data',manifest.node.data);
+exists('Node historical data fixture',manifest.node.historicalData);
 
 const index=read('index.html');
 assert(index.includes('<script src="data/runtime-manifest.js"></script>'),'index loads the stable runtime manifest');
@@ -125,15 +134,18 @@ const nodeEndAt=nodeLoader.indexOf(nodeProjectionEnd,nodeStartAt+nodeProjectionS
 assert(nodeStartAt>=0&&nodeEndAt>nodeStartAt,'Node loader exposes one inert manifest projection for historical source-observation regressions');
 assert.strictEqual(nodeLoader.indexOf(nodeProjectionStart,nodeStartAt+1),-1,'Node loader has only one manifest projection');
 const nodeProjected=nodeLoader.slice(nodeStartAt+nodeProjectionStart.length,nodeEndAt).split('\n').filter(Boolean);
-const expectedNodeProjection=manifest.node.data.concat(manifest.node.core).map(rel=>path.basename(rel));
-assert.deepStrictEqual(nodeProjected,expectedNodeProjection,'legacy Node source-observation projection is generated from manifest.node and cannot become a competing owner');
-assert.strictEqual(new Set(nodeProjected).size,nodeProjected.length,'projected Node manifest basenames are unique');
+const expectedNodeProjection=manifest.node.historicalData.concat(manifest.node.core).map(rel=>path.basename(rel));
+assert.deepStrictEqual(nodeProjected,expectedNodeProjection,'legacy Node source-observation projection remains tied to historical fixtures rather than current execution');
+assert.strictEqual(new Set(nodeProjected).size,nodeProjected.length,'projected Node historical manifest basenames are unique');
+assert(nodeProjected.includes('dashboard-v4.9.js')&&nodeProjected.includes('dashboard-v6.5.js'),'retired Dashboard data remains visible only in the inert Node historical projection');
+assert(!manifest.node.data.some(rel=>/^data\/dashboard-v[\d.]+\.js$/.test(rel)),'Node current execution contains no versioned Dashboard data owners');
 
-assert.deepStrictEqual(currentRuntime.DATA,manifest.node.data.map(rel=>rel.replace(/^data\//,'')),'legacy DATA export projects from runtime manifest');
+assert.deepStrictEqual(currentRuntime.DATA,manifest.node.data.map(rel=>rel.replace(/^data\//,'')),'legacy DATA export now projects the compact Node current execution list');
 assert.deepStrictEqual(currentRuntime.CORE,manifest.node.core.map(rel=>rel.replace(/^assets\//,'')),'legacy CORE export projects from runtime manifest');
 const loaded=currentRuntime.loadCurrent(root);
 assert(loaded&&loaded.C&&loaded.lanes,'manifest-backed Node current runtime initializes');
 assert.strictEqual(loaded.C.VERSION,'8.8.0','runtime consolidation preserves the v8.8 workspace schema identity');
 assert(loaded.project,'manifest-backed runtime preserves the current v8.8 project adapter');
+assert(global.OBOL_DASHBOARD_COMPAT_CURRENT,'Node current runtime initializes through the compact Dashboard metadata seam');
 
-console.log('Runtime manifest valid: frozen v9.5 history remains fixture-addressable while versioned Dashboard data/presentation owners are retired from live browser startup behind stable current seams.');
+console.log('Runtime manifest valid: frozen v9.5 history remains fixture-addressable while versioned Dashboard data/presentation owners are retired from live browser and Node current execution behind stable current seams.');
