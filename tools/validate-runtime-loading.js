@@ -15,12 +15,12 @@ assert.strictEqual(manifest.performance.baseline.historicalScripts,327,'frozen v
 assert.strictEqual(manifest.performance.baseline.historicalStyles,69,'frozen v9.5 historical stylesheet baseline stays 69');
 assert.strictEqual(manifest.scripts.length,327,'compatibility script ledger remains complete');
 assert(manifest.startupScripts.length<=manifest.performance.startup.maxHistoricalScripts,'startup historical script budget exceeded');
-assert.strictEqual(manifest.startupScripts.length,266,'pre-retirement historical startup target remains 266 until dashboard data retirement is proven');
+assert.strictEqual(manifest.startupScripts.length,266,'pre-retirement historical compatibility target remains 266 until physical layer retirement is proven');
 assert.strictEqual(manifest.currentScripts.length,1,'v9.29 introduces one stable current runtime owner');
 assert.strictEqual(manifest.currentScripts[0],'assets/dashboard-route-current.js','stable current owner is the dashboard route boundary');
 assert.strictEqual(manifest.performance.startup.currentOwnerScripts,1,'runtime budget separately accounts for stable current owners');
 const deferred=manifest.scripts.filter(src=>!manifest.startupScripts.includes(src));
-assert(deferred.length>=manifest.performance.startup.minDeferredHistoricalScripts,'not enough historical scripts are deferred from default startup');
+assert(deferred.length>=manifest.performance.startup.minDeferredHistoricalScripts,'not enough historical scripts are deferred from compatibility startup');
 assert.strictEqual(deferred.length,61,'v9.9 still defers exactly the reviewed 61 historical route-local scripts before physical dashboard retirement');
 assert.strictEqual(new Set(manifest.startupScripts).size,manifest.startupScripts.length,'startup script list contains duplicates');
 assert.strictEqual(new Set(manifest.currentScripts).size,manifest.currentScripts.length,'current-owner script list contains duplicates');
@@ -58,7 +58,11 @@ assert(/shared-core/.test(policies.lineage.policy),'lineage shared-core exceptio
 assert.strictEqual(policies.historical.policy,'compatibility-eager','remaining historical overlay exception must remain equivalence-gated');
 
 const loader=read('assets/runtime-current.js');
-for(const token of ['manifest.startupScripts||manifest.scripts','manifest.currentScripts','browserScriptList','startupList().concat(currentOwnerList())','function loadGroup','function ensureRoute','manifest.routeLazy','DOMContentLoaded','hashchange','budgetSnapshot'])assert(loader.includes(token),'runtime loader missing current/lazy contract token: '+token);
+for(const token of ['manifest.startupScripts||manifest.scripts','manifest.currentScripts','browserScriptList','startupList().concat(currentOwnerList())','function ensureCompatibility','compatibilityLoaded','function loadGroup','function ensureRoute','manifest.routeLazy','DOMContentLoaded','hashchange','budgetSnapshot'])assert(loader.includes(token),'runtime loader missing current/lazy contract token: '+token);
+assert(loader.includes("const list=dashboard?currentOwnerList():browserScriptList()"),'initial Dashboard boot must select only the stable current owner');
+assert(loader.includes("if(page==='dashboard')return hydrateDashboard()"),'Dashboard hydration must bypass compatibility runtime loading');
+assert(/function hydrateOperatorRoute\(page\)\{\s*return ensureCompatibility\(\)/.test(loader),'operator routes must restore compatibility on demand after a Dashboard-only boot');
+assert(loader.includes('__OBOL_COMPATIBILITY_RUNTIME_LOADED__'),'runtime exposes compatibility-load state for browser proof/debugging');
 const owner=read('assets/dashboard-route-current.js');
 for(const token of ['assets/dashboard-route-current.js','MutationObserver','scheduleRepair','root.route=ownedRoute','data-product-dashboard-owner="current-loading"','renderProductHardeningDashboard','data/product-hardening/notes-impact-current.js'])assert(owner.includes(token),'stable dashboard owner missing '+token);
 assert(owner.includes("if(!currentMarker(current)&&!transientMarker(current))scheduleRepair()"),'dashboard owner repairs delayed historical repaint');
@@ -66,4 +70,4 @@ const bridge=read('assets/app-v8.8.js');
 for(const token of ['function ensureWorkflow88','function ensureProductAssets88','ensureWorkflow88().catch(()=>{})'])assert(bridge.includes(token),'v8.8 compatibility bridge missing '+token);
 assert(!/ensureProductAssets88\(\)\.catch\(\(\)=>\{\}\)/.test(bridge),'Product Dashboard assets are still eagerly requested during ordinary startup');
 
-console.log('Runtime loading budget valid: 61/327 historical scripts remain route-deferred, one stable current dashboard owner loads after compatibility startup, and Product Hardening data stays dashboard-only.');
+console.log('Runtime loading budget valid: Dashboard boots from one stable current owner without historical startup; operator routes retain the 266-script compatibility boundary on demand, with 61/327 historical scripts route-deferred.');
