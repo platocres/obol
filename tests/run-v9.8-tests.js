@@ -67,8 +67,11 @@ assert(ux.includes('v9.8 user-first workflow baseline'),'UX owner doc records th
 assert(architecture.includes('Current dashboard and workflow ownership'),'architecture doc records stable workflow ownership');
 const readme=read('README.md');
 assert(/Current release: \*\*v9\.[0-9]+(?:\.[0-9]+)?\*\*/.test(readme),'README remains on a current v9 product-hardening release');
-assert(readme.includes('node tools/validate-current-workflow.js'),'README validation includes permanent workflow gate');
-assert(readme.includes('node tests/run-v9.8-tests.js'),'README validation keeps the v9.8 regression suite');
+// The README is the current handoff, not a permanent registry of every historical
+// validator or release suite. BUILDING.md owns the validation flow while preflight
+// above proves the durable workflow gate introduced by v9.8 remains active.
+assert(readme.includes('[`BUILDING.md`](BUILDING.md)'),'README delegates the current validation contract to BUILDING.md');
+assert(readme.includes('Product Build Next'),'README retains the active product-hardening handoff');
 for(const forbidden of ['data/project-model-v9.8.js','assets/core-v9.8.js','assets/app-v9.8.js','assets/obol-v9.8.css','assets/runtime-v9.8.js'])assert(!fs.existsSync(path.join(root,forbidden)),'no fake v9.8 runtime overlay: '+forbidden);
 
 for(const command of [
@@ -88,4 +91,4 @@ for(const command of [
  assert.strictEqual(result.status,0,(result.stderr||result.stdout||'').trim());
 }
 
-console.log('v9.8 Dashboard and User Workflow Rebalance milestone remains regression-protected without freezing mutable current queue or release state.');
+console.log('v9.8 Dashboard and User Workflow Rebalance milestone remains regression-protected without freezing mutable current queue or README layout.');
