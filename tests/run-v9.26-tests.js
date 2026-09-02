@@ -15,7 +15,7 @@ assert(release&&q&&packages&&contracts&&notes&&field,'v9.26 historical owners lo
 assert.strictEqual(release.version,'9.26.0');assert.strictEqual(release.label,'v9.26');assert.strictEqual(release.orangeBaseline,'v8.8');
 assert.strictEqual(contracts.version,'9.26.0','historical contract projection stops at v9.26');
 const dispositionItem=q.items.find(item=>item.id==='notes-disposition-burn-down');
-assert(dispositionItem&&dispositionItem.status==='queued','v9.26 left the 556-note burn-down queued');
+assert(dispositionItem,'v9.26 556-note burn-down owner remains represented even after later progress changes its live status');
 const dispositionContract=contracts.contracts['notes-disposition-burn-down'];
 assert(dispositionContract&&dispositionContract.acceptance.length&&dispositionContract.validationCommands.includes('node tests/run-v9.26-tests.js'),'v9.26 retains its disposition-wave test contract');
 for(const rel of dispositionContract.proofFiles)assert(exists(rel),'v9.26 historical disposition proof file exists: '+rel);
