@@ -74,8 +74,10 @@ if (q) {
   if ((q.items || []).length < 70) fail('expected seeded work ledger with at least 70 items');
   for (const t of q.tracks || []) {
     if (!t.id || !t.label || !Number.isFinite(t.total) || !Number.isFinite(t.complete)) fail('invalid track ' + JSON.stringify(t));
-    const completedItems=(q.items||[]).filter(i=>i.track===t.id&&i.status==='complete').length;
+    const trackItems=(q.items||[]).filter(i=>i.track===t.id);
+    const completedItems=trackItems.filter(i=>i.status==='complete').length;
     if (t.id!=='notes-integration' && t.complete!==completedItems) fail('track complete count does not match completed queue items for ' + t.id + ': ' + t.complete + ' vs ' + completedItems);
+    if (t.id!=='notes-integration' && t.total!==trackItems.length) fail('track total does not match queue item count for ' + t.id + ': ' + t.total + ' vs ' + trackItems.length);
   }
   for (const item of q.items || []) {
     if (!item.id || !item.track || !item.label || !item.status) fail('invalid item ' + JSON.stringify(item));
