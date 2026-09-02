@@ -9,11 +9,13 @@ const impact=sandbox.window.OBOL_PRODUCT_HARDENING_NOTES_IMPACT;
 if(!impact){console.error('Notes impact projection did not load.');process.exit(1);}
 const failures=Array.from(impact.validate());
 if(impact.review.total!==556)failures.push('notes impact total must remain 556');
-if(impact.review.reviewed!==55)failures.push('v9.29 must project the current 55 reviewed notes');
-if(impact.review.modeled!==43||impact.review.privateOnly!==12||impact.review.pending!==501)failures.push('notes impact funnel drifted from the current ledger');
-if(impact.outputCounts.fieldNotes!==24)failures.push('notes impact must project all 24 public Field Notes');
-if(!impact.themes.some(theme=>theme.name==='File inclusion'&&theme.evidenceImpact&&theme.reportImpact))failures.push('file-inclusion theme must expose Evidence and report impact');
-if(!impact.themes.some(theme=>theme.name==='File upload'&&theme.pathImpact&&theme.evidenceImpact&&theme.reportImpact))failures.push('file-upload theme must expose Path, Evidence, and report impact');
-if(!impact.latestWave||impact.latestWave.id!=='v9.28-wave-3')failures.push('latest wave must identify v9.28-wave-3');
+if(impact.review.reviewed<55)failures.push('notes impact must not regress below the v9.29 baseline of 55 reviewed notes');
+if(impact.review.reviewed!==impact.review.modeled+impact.review.privateOnly+impact.review.superseded+impact.review.rejected)failures.push('reviewed disposition counts do not reconcile');
+if(impact.review.pending!==impact.review.total-impact.review.reviewed)failures.push('pending count does not reconcile with reviewed count');
+if(impact.outputCounts.fieldNotes<24)failures.push('notes impact must not regress below the v9.29 baseline of 24 public Field Notes');
+if(!impact.themes.some(theme=>theme.name==='File inclusion'&&theme.evidenceImpact&&theme.reportImpact))failures.push('file-inclusion theme must preserve Evidence and report impact');
+if(!impact.themes.some(theme=>theme.name==='File upload'&&theme.pathImpact&&theme.evidenceImpact&&theme.reportImpact))failures.push('file-upload theme must preserve Path, Evidence, and report impact');
+const decisions=Array.from(impact.sourceDecisions||[]),expectedLatest=decisions.length?decisions[decisions.length-1].reviewWave:null;
+if(expectedLatest&&(!impact.latestWave||impact.latestWave.id!==expectedLatest))failures.push('latest wave must follow the newest reviewed disposition row');
 if(failures.length){console.error('Notes impact validation failed:');for(const failure of failures)console.error('- '+failure);process.exit(1);}
-console.log('Notes impact projection validated.');
+console.log('Notes impact projection validated:',impact.review.reviewed+'/'+impact.review.total,'reviewed;',impact.outputCounts.fieldNotes,'public outputs.');
