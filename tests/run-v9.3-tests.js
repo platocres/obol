@@ -41,14 +41,15 @@ assert.strictEqual(versionPackage.ownershipArea,'release-identity/reporting','Ve
 const rec=workPackages.recommend(q),top=q.buildNext(1)[0];
 if(top)assert(rec&&rec.entryItem&&rec.entryItem.id===top.id,'current package recommendation begins at the current highest-priority queued item');
 
-const readme=read('README.md'),building=read('BUILDING.md'),hardening=read('docs/PRODUCT-HARDENING.md'),dashboardRenderer=read('assets/product-hardening-dashboard.js'),dashboardHtml=read('product-hardening.html'),appBridge=read('assets/app-v8.8.js');
+const readme=read('README.md'),building=read('BUILDING.md'),hardening=read('docs/PRODUCT-HARDENING.md'),dashboardRenderer=read('assets/product-hardening-dashboard.js'),dashboardHtml=read('product-hardening.html'),dashboardOwner=read('assets/dashboard-route-current.js'),appBridge=read('assets/app-v8.8.js');
 assert(readme.includes('Treat it as the entry point into the recommended coherent work package, not as a one-item limit.'),'README tells future agents not to stop at one queue item');
 assert(readme.includes('Every item advanced or closed still needs its own acceptance criteria'),'README preserves atomic proof while batching work');
 assert(readme.includes('**Recommended work package:** **'),'generated README exposes the current recommended package without freezing v9.3 queue state');
 assert(building.includes('## Coherent work-package burn-down')&&building.includes('one PR -> one coherent engineering area -> potentially many queue items'),'BUILDING defines the multi-item release model');
 assert(hardening.includes('## Coherent work packages')&&hardening.includes('Work-package batching does not weaken this contract'),'product-hardening docs preserve item-level accountability');
-assert(dashboardHtml.includes('data/product-hardening/work-packages.js'),'standalone dashboard loads work-package metadata');
-assert(appBridge.includes("addScript88('data/product-hardening/work-packages.js')"),'in-app dashboard loads work-package metadata');
+assert(dashboardHtml.includes('assets/dashboard-route-current.js?obol-current='),'standalone dashboard delegates current metadata loading to the cache-busted Dashboard owner');
+assert(dashboardOwner.includes("'data/product-hardening/work-packages.js'"),'current Dashboard owner freshness-loads work-package metadata');
+assert(appBridge.includes("addScript88('data/product-hardening/work-packages.js')")||appBridge.includes('assets/dashboard-route-current.js'),'in-app dashboard reaches work-package metadata through the current Dashboard owner');
 assert(dashboardRenderer.includes('Recommended work package')&&dashboardRenderer.includes('wp.recommend(q)'),'dashboard displays recommended coherent package');
 
 const repoResult=assetValidator.validateRepository(root);
@@ -64,12 +65,7 @@ assert(repoResult.references.some(r=>r.resolved==='assets/product-hardening-dash
 const fixture=fs.mkdtempSync(path.join(os.tmpdir(),'obol-assets-'));
 try{
   for(const dir of ['assets','img','fonts','docs','workers'])fs.mkdirSync(path.join(fixture,dir),{recursive:true});
-  fs.writeFileSync(path.join(fixture,'index.html'),`<!doctype html>
-<link rel='stylesheet' href='assets/site.css?rev=1'>
-<script src=assets/app.js></script>
-<img src="img/a.png" srcset='img/a.png 1x, img/b.png 2x' style="background-image:url('img/c.png')">
-<object data='docs/help.svg'></object>
-<a href="#/home">Home</a><a href="https://example.test/remote.css">Remote</a>`);
+  fs.writeFileSync(path.join(fixture,'index.html'),`<!doctype html>\n<link rel='stylesheet' href='assets/site.css?rev=1'>\n<script src=assets/app.js></script>\n<img src="img/a.png" srcset='img/a.png 1x, img/b.png 2x' style="background-image:url('img/c.png')">\n<object data='docs/help.svg'></object>\n<a href="#/home">Home</a><a href="https://example.test/remote.css">Remote</a>`);
   fs.writeFileSync(path.join(fixture,'assets','site.css'),`@import './extra.css'; .hero{background:url('../img/bg.svg#shape')}`);
   fs.writeFileSync(path.join(fixture,'assets','extra.css'),`@font-face{src:url('../fonts/test.woff2')}`);
   fs.writeFileSync(path.join(fixture,'assets','app.js'),`const LAZY='assets/lazy.js';addScript88(LAZY);addStyle88("assets/lazy.css");new Worker('workers/parse.js');navigator.serviceWorker.register('sw.js');import('assets/module.mjs');`);
@@ -110,4 +106,4 @@ for(const command of [
   assert.strictEqual(result.status,0,(result.stderr||result.stdout||'').trim());
 }
 
-console.log('v9.3 asset-graph validation plus coherent multi-item work-package governance tests passed.');
+console.log('v9.3 asset-graph validation plus coherent multi-item work-package governance tests passed through the stable current Dashboard owner.');
