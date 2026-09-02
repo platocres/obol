@@ -33,9 +33,21 @@ function appendScripts(list){
 function startupList(){return manifest.startupScripts||manifest.scripts;}
 function currentOwnerList(){return Array.isArray(manifest.currentScripts)?manifest.currentScripts:[];}
 function browserScriptList(){return startupList().concat(currentOwnerList());}
+function routeName(){return typeof location==='undefined'?'home':((location.hash||'#/home').replace(/^#\/?/,'').split('/').filter(Boolean)[0]||'home');}
+function syncCurrentRouteOwnership(){
+ const dashboard=routeName()==='dashboard';
+ root.__OBOL_CURRENT_DASHBOARD_ROUTE_INTENT__=dashboard;
+ if(typeof document==='undefined')return dashboard;
+ const view=document.getElementById('view');
+ if(dashboard&&view&&!view.querySelector('[data-product-dashboard-owner="current"],[data-product-dashboard-owner="current-loading"],[data-product-dashboard-owner="current-error"]')){
+  view.innerHTML='<div class="ph-shell" data-product-dashboard-owner="current-loading" data-runtime-current-route-shell="dashboard"><section class="ph-card"><h1>Obol Product Hardening</h1><p>Loading the current dashboard…</p></section></div>';
+ }
+ return dashboard;
+}
 function writeScripts(){
  if(scriptsWritten)return Promise.resolve();
  scriptsWritten=true;
+ syncCurrentRouteOwnership();
  const list=browserScriptList();
  if(canParserWrite()){
   document.write(list.map(src=>'<script src="'+esc(src)+'"><\/script>').join(''));
@@ -51,7 +63,6 @@ function loadGroup(name){
  groupLoads.set(name,p);
  return p;
 }
-function routeName(){return typeof location==='undefined'?'home':((location.hash||'#/home').replace(/^#\/?/,'').split('/').filter(Boolean)[0]||'home');}
 function ensureRoute(page){
  const names=(manifest.routeLazy&&manifest.routeLazy[page||routeName()])||[];
  return names.reduce((chain,name)=>chain.then(()=>loadGroup(name)),Promise.resolve()).then(()=>names.slice());
@@ -122,10 +133,10 @@ function budgetSnapshot(){
 }
 
 if(typeof window!=='undefined'){
- window.addEventListener('hashchange',()=>{hydrateRoute().catch(()=>{});});
- if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',()=>{hydrateRoute().catch(()=>{});},{once:true});
- else setTimeout(()=>{hydrateRoute().catch(()=>{});},0);
+ window.addEventListener('hashchange',()=>{syncCurrentRouteOwnership();hydrateRoute().catch(()=>{});});
+ if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',()=>{syncCurrentRouteOwnership();hydrateRoute().catch(()=>{});},{once:true});
+ else setTimeout(()=>{syncCurrentRouteOwnership();hydrateRoute().catch(()=>{});},0);
 }
-root.OBOL_RUNTIME_LOADER=Object.freeze({manifest,writeStyles,writeScripts,appendScripts,loadGroup,ensureRoute,routeName,loadCredentialMaterial,loadManualOutcomes,loadTunnelBuilders,budgetSnapshot});
+root.OBOL_RUNTIME_LOADER=Object.freeze({manifest,writeStyles,writeScripts,appendScripts,loadGroup,ensureRoute,routeName,syncCurrentRouteOwnership,loadCredentialMaterial,loadManualOutcomes,loadTunnelBuilders,budgetSnapshot});
 root.__OBOL_RUNTIME_ENTRYPOINT__='manifest-v1';
 })(typeof window!=='undefined'?window:globalThis);
