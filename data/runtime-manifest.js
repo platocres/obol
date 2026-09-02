@@ -99,7 +99,7 @@ const deferredScriptGroups=freeze(['evidenceParsing','nmap','reportOverlays','to
 const deferredScriptSet=new Set(deferredScriptGroups.flatMap(name=>lazy[name]||[]));
 const retiredStartupSet=new Set([...historicalDashboardData,...retiredDashboardPresentation]);
 const liveHistoricalStartup=freeze(scripts.filter(src=>!deferredScriptSet.has(src)&&!retiredStartupSet.has(src)));
-const startupScripts=freeze([...startupPreludeScripts,...liveHistoricalStartup]);
+const startupScripts=liveHistoricalStartup;
 const routeLazy=Object.freeze({
  home:freeze([]),
  boxes:freeze(['nmap']),
@@ -126,13 +126,13 @@ const surfacePolicy=Object.freeze({
 });
 const performance=Object.freeze({
  baseline:Object.freeze({historicalScripts:327,historicalStyles:69}),
- startup:Object.freeze({historicalScripts:liveHistoricalStartup.length,compatibilityPreludeScripts:startupPreludeScripts.length,totalScripts:startupScripts.length,currentOwnerScripts:currentScripts.length,maxHistoricalScripts:236,minDeferredHistoricalScripts:61,retiredDashboardDataScripts:historicalDashboardData.length,retiredDashboardPresentationScripts:retiredDashboardPresentation.length}),
+ startup:Object.freeze({historicalScripts:liveHistoricalStartup.length,compatibilityPreludeScripts:startupPreludeScripts.length,totalScripts:startupPreludeScripts.length+liveHistoricalStartup.length,currentOwnerScripts:currentScripts.length,maxHistoricalScripts:236,minDeferredHistoricalScripts:61,retiredDashboardDataScripts:historicalDashboardData.length,retiredDashboardPresentationScripts:retiredDashboardPresentation.length}),
  styleRequests:Object.freeze({currentOwner:1,historicalImports:historicalStyles.length}),
  requiredDeferredGroups:deferredScriptGroups
 });
 
 return Object.freeze({
- schemaVersion:'1.6.0',
+ schemaVersion:'1.6.1',
  styles:freeze(styles),
  scripts:freeze(scripts),
  startupPreludeScripts,
