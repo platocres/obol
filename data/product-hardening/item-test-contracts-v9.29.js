@@ -91,10 +91,11 @@ base.contracts['qa-playwright-smoke']={
 };
 base.contracts['runtime-dashboard-layer-retirement']={
  acceptance:[
-  'All sixteen versioned data/dashboard-v* owners and the proven dashboard-only v5.1-v6.5 presentation overlays are absent from live browser startup while remaining fixture-addressable in the frozen historical ledger; historical core overlays receive only the metadata they still require through one stable data-only dashboard-compat-current.js prelude; v6.5 methodology/path mutations remain owned by source-delivery-v6.5.js; dependency audit reports zero live historical Dashboard data owners; and real browser smoke preserves Home, Targets, Evidence, Next Steps, Report, and current-only Dashboard rendering.'
+  'All sixteen versioned data/dashboard-v* owners and the proven dashboard-only v5.1-v6.5 presentation overlays are absent from live browser startup while remaining fixture-addressable in the frozen historical ledger; historical core overlays receive only metadata through one stable data-only dashboard-compat-current.js prelude; an isolated historical-fixture equivalence check proves that seam reproduces every retired Dashboard metadata object exactly; v6.5 methodology/path mutations remain owned by source-delivery-v6.5.js; dependency audit reports zero live historical Dashboard data owners; and real browser smoke preserves Home, Targets, Evidence, Next Steps, Report, and current-only Dashboard rendering.'
  ],
  validationCommands:[
   'node tools/audit-dashboard-runtime-dependencies.js --require-retired',
+  'node tools/validate-dashboard-compat-equivalence.js',
   'node tools/validate-runtime-manifest.js',
   'node tools/validate-runtime-loading.js',
   'node tools/validate-asset-references.js',
@@ -108,6 +109,7 @@ base.contracts['runtime-dashboard-layer-retirement']={
   'assets/runtime-current.js',
   'assets/dashboard-route-current.js',
   'tools/audit-dashboard-runtime-dependencies.js',
+  'tools/validate-dashboard-compat-equivalence.js',
   'tools/validate-runtime-manifest.js',
   'tests/run-v9.29-tests.js',
   'tests/playwright-smoke.js',
