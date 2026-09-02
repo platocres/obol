@@ -7,8 +7,10 @@ const checks=[
  ['tools/validate-note-integration.js'],
  ['tools/validate-product-hardening-queue.js'],
  ['tools/validate-runtime-manifest.js'],
+ ['tools/validate-runtime-loading.js'],
+ ['tools/validate-dashboard-compat-equivalence.js'],
  ['tools/validate-asset-references.js'],
- ['tools/audit-dashboard-runtime-dependencies.js'],
+ ['tools/audit-dashboard-runtime-dependencies.js','--require-retired'],
  ['tools/sync-current-release.js','--check'],
  ['tools/sync-product-build-next.js','--check'],
  ['tests/run-v9.29-tests.js']
