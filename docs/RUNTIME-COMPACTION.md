@@ -43,45 +43,50 @@ The first package is Dashboard retirement because the user could visibly see old
 2. Add Playwright browser smoke coverage for the core routes, including Dashboard, with console-error failure, dashboard paint-history proof, and representative screenshots.
 3. Prove the remaining historical dashboard data/presentation dependencies can be removed or decoupled without breaking mixed historical core/runtime owners.
 4. Remove only the historical dashboard owners whose live dependencies have been eliminated.
-5. Move the historical expectations that still matter to fixtures/current-owner tests and retire assertions that protected obsolete delivery shape.
+5. Move historical expectations that still matter to fixtures/current-owner tests and retire assertions that protected obsolete delivery shape.
 6. Apply the same retirement method to Home/Path, Tool Builders, Evidence, Reports, and CSS.
 
 The order matters: **current owner -> browser proof/equivalence -> dependency removal -> physical layer retirement -> obsolete-test retirement**.
 
-## Dashboard status after v9.29
+## Dashboard status in v9.29
 
-`#/dashboard` is now protected as a current-owned route during compatibility startup. `assets/runtime-current.js` claims Dashboard intent, installs the current loading shell, blocks historical writes to the shared view while that intent is active, and `assets/dashboard-route-current.js` renders and guards the current Product Hardening Dashboard.
+`#/dashboard` is protected as a current-owned route during compatibility startup. `assets/runtime-current.js` claims Dashboard intent, installs the current loading shell, blocks historical writes to the shared view while that intent is active, and `assets/dashboard-route-current.js` renders and guards the current Product Hardening Dashboard.
 
-The real Chromium smoke gate is now green for Home, Targets, Evidence, Next Steps, Report, and Dashboard, including dashboard paint-history observation through the legacy timer window. `qa-playwright-smoke` is therefore complete.
+The real Chromium smoke gate is green for Home, Targets, Evidence, Next Steps, Report, and Dashboard, including dashboard paint-history observation through the legacy timer window. `qa-playwright-smoke` is therefore complete.
 
-That browser proof does **not** mean every historical dashboard file can safely leave startup yet. Historical core overlays still contain hard load-time dependencies on historical dashboard data. For example, `assets/core-v6.5.js` reads `OBOL_DASHBOARD_V65` during initialization and throws if that owner is absent. Some historical `data/dashboard-v*.js` owners also performed command/tool/path mutations while defining dashboard/source-accounting metadata. Removing those files blindly would trade visible layering for a boot or methodology regression.
+The physical Dashboard compaction has also crossed the live-startup boundary. All sixteen versioned `data/dashboard-v*` owners are now absent from `startupScripts`, along with fourteen Dashboard-only v5.1-v6.5 presentation overlays. Those files remain available in the frozen historical ledger for regression/fixture history, but normal browser startup no longer executes them.
 
-Accordingly, `runtime-dashboard-no-flash` and `qa-playwright-smoke` are complete, while physical `runtime-dashboard-layer-retirement` is now the active compaction gate. That item should only close when remaining core/data dependencies have been decoupled or replaced by current/fixture-backed contracts and the historical dashboard owners have genuinely left live startup.
+Historical core overlays still need the metadata objects those old Dashboard data files exposed. Rather than keeping sixteen versioned owners live, `data/dashboard-compat-current.js` is the single stable, data-only compatibility seam loaded before the remaining historical core chain on operator routes. It reproduces the historical `OBOL_DASHBOARD_V49` through `OBOL_DASHBOARD_V65` metadata without owning command, tool, Path, Evidence, or reporting mutations.
 
-The Product Hardening Dashboard exposes this debt directly: current script counts, historical dashboard-data owners still live, real-browser proof status, the runtime queue, and an ownership-area retirement matrix for Dashboard, Home/Path, Tool Builders, Evidence, Reports, and CSS.
+`tools/validate-dashboard-compat-equivalence.js` executes the old Dashboard data owners only as a historical fixture and proves that the compact seam produces metadata-equivalent values for all sixteen owners. The validator is part of Product Hardening preflight.
 
-## Dependency audit
+The v6.5 audit was important because `data/dashboard-v6.5.js` also carried AD CS product mutations. Those behaviors already have the proper domain owner in `data/source-delivery-v6.5.js`, including the Certify/Certutil command variants, agent/target certificate artifact handoffs, and source-depth delivery metadata. The compact Dashboard seam therefore remains metadata-only rather than becoming a new hidden product-behavior layer.
 
-`node tools/audit-dashboard-runtime-dependencies.js` inventories every historical `data/dashboard-v*.js` file that still participates in live startup, the `OBOL_DASHBOARD_*` globals it exports, live startup consumers of those globals, and detected domain-mutation signals inside the file.
+`runtime-dashboard-layer-retirement` remains queued only until the complete historical preservation chain finishes successfully on a head containing this physical compaction. The real browser gate, lightweight release smoke, Product Hardening preflight, dependency audit, and metadata-equivalence boundary already cover the current state. Queue completion must follow proof, not precede it.
 
-Use it before each dashboard-compaction change. The audit makes the blocking work explicit rather than treating all dashboard files as interchangeable presentation assets.
+The Product Hardening Dashboard exposes this state directly: current script counts, historical Dashboard-data owners still live, real-browser proof status, the runtime queue, and an ownership-area retirement matrix for Dashboard, Home/Path, Tool Builders, Evidence, Reports, and CSS.
 
-Use:
+## Dependency and equivalence audits
 
-```bash
-node tools/audit-dashboard-runtime-dependencies.js
-node tools/audit-dashboard-runtime-dependencies.js --json
-```
+`node tools/audit-dashboard-runtime-dependencies.js` inventories every historical `data/dashboard-v*.js` file that participates in live startup, the `OBOL_DASHBOARD_*` globals it exports, live startup consumers of those globals, and detected domain-mutation signals inside the file.
 
-Once the decoupling work is actually complete, this becomes a retirement assertion:
+The physical retirement assertion is now enabled in Product Hardening preflight:
 
 ```bash
 node tools/audit-dashboard-runtime-dependencies.js --require-retired
 ```
 
-`--require-retired` must not be enabled in the ordinary release gate until the historical dashboard owners have genuinely left `startupScripts`. Its purpose is to become the final proof for `runtime-dashboard-layer-retirement`, not to create a fake green check while dependencies still exist.
+That command must continue to report zero historical Dashboard data owners in `startupScripts`.
 
-The desired replacement is not another stack of versioned compatibility shims. Historical dashboard-owned domain mutations that are still product behavior should move to the appropriate stable/current domain owner or a deliberately consolidated compatibility owner. Historical dashboard metrics needed only for regression history should move to fixtures/docs. Only then should the old dashboard file leave startup.
+The compact compatibility seam is separately proven against the frozen historical owners:
+
+```bash
+node tools/validate-dashboard-compat-equivalence.js
+```
+
+This distinction matters. The dependency audit proves the old files are not live. The equivalence validator proves the one remaining metadata seam still satisfies the historical core contracts that matter. Neither test permits Dashboard metadata to become an owner for operator-domain behavior.
+
+The desired replacement is not another stack of versioned compatibility shims. Historical Dashboard-owned domain mutations that remain product behavior belong in the appropriate methodology/source-delivery/current owner. Historical Dashboard metrics needed only for regression history belong in fixtures/docs. The same rule applies as other ownership areas are compacted.
 
 ## Test tiers
 
@@ -89,7 +94,7 @@ Development should use the smallest test set that proves the current work packag
 
 - `node tools/scope-check.js` is the focused v9.29/current-work-package check.
 - release smoke remains the ordinary release-branch push gate.
-- preflight remains the coherent current-release gate.
+- preflight remains the coherent current-release gate and now includes Dashboard compatibility equivalence plus the hard retirement assertion.
 - `node tools/run-historical-contracts.js` is the named complete historical regression gate used for final release confidence.
 - `.github/workflows/browser-smoke.yml` runs the real Chromium route smoke and uploads screenshots for the six primary surfaces.
 
@@ -105,15 +110,18 @@ Good retirement:
 
 - old dashboard test becomes a browser/current-dashboard behavior test plus a historical fixture where needed;
 - old README wording assertion is replaced by generated current README synchronization;
-- old runtime load-order assertion becomes a frozen fixture plus current manifest equivalence check.
+- old runtime load-order assertion becomes a frozen fixture plus current manifest equivalence check;
+- old Dashboard data metadata checks are preserved through `validate-dashboard-compat-equivalence.js` without requiring those sixteen owners to execute in live startup.
 
 Bad retirement:
 
 - deleting a test because it is slow without identifying what behavior it protected;
 - removing a historical layer before state migration, browser behavior, or observable equivalence is proven;
 - keeping a compatibility layer in live startup solely because a test references its filename;
-- deleting dashboard data that a still-live historical core owner requires at initialization.
+- moving real operator-domain behavior into a generic compatibility metadata shim.
 
 ## Dashboard visibility
 
 Runtime compaction is first-class Product Hardening work. The dashboard shows which ownership areas still execute historical layers, which have current owners, what proof exists, and whether obsolete historical tests have actually been retired. This matrix should be updated as each ownership area moves through current owner, equivalence, physical retirement, and test retirement rather than treating runtime debt as invisible background cleanup.
+
+Dashboard is the first ownership area to cross the physical-retirement boundary. Once its exact-head historical preservation gate closes, the same method should move to Home/Path and the other remaining live compatibility areas rather than rebuilding a new layered runtime around the current Dashboard.
