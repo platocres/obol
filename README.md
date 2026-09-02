@@ -63,7 +63,7 @@ Product Build Next is the only active development queue. Its atomic item source 
 
 The 556-note disposition item is an umbrella requirement, not permission to perform anonymous review waves forever. Notes work should be organized as coherent subject packets and reported through the notes-to-product impact projection so the dashboard shows what was learned, where guidance is bound, what product mechanics actually changed, and what gaps remain.
 
-Historical runtime layers are explicit product debt, not permanent architecture. The current Dashboard route owns its loading shell and render without allowing historical dashboard output to paint first, and the repository now has real Playwright coverage for the six core routes plus dashboard paint-history proof. The active compaction gate is therefore physical dashboard-layer retirement: decouple any live domain behavior from historical dashboard owners, remove those owners from startup, then retire tests that protected only the old delivery shape.
+Historical runtime layers are explicit product debt, not permanent architecture. Dashboard ownership is now the first physically retired runtime area: the current route owns its loading shell and render, real Playwright paint-history proof is green, all sixteen versioned Dashboard data owners and the proven Dashboard-only presentation overlays are out of live startup, and historical expectations are protected through the compact compatibility seam plus fixture/current-owner tests. The same retirement lifecycle remains available for other ownership areas when they become active queue work.
 
 The completed Orange methodology/source queue is historical, regression-protected baseline material. Do not reopen it unless a real defect is found or the pinned upstream source is deliberately repinned. Detailed Orange accounting belongs in the North Star/source-depth docs above, not in this README.
 
@@ -73,7 +73,7 @@ The completed Orange methodology/source queue is historical, regression-protecte
 This block is generated from `data/product-hardening/product-hardening-queue.js`. Do not edit it manually.
 Recommended work-package metadata comes from `data/product-hardening/work-packages.js`.
 
-**Current product-hardening queue:** 120/634 complete (19%), 13 queued, 9 foundation items modeled.
+**Current product-hardening queue:** 121/634 complete (19%), 12 queued, 9 foundation items modeled.
 **Private notes source:** `platocres/obol-source-notes` — 556 notes and 1326 embedded resources accounted.
 **Notes Integration:** 55/556 reviewed — 43 modeled, 12 private-only, 501 pending.
 **Derived note guidance:** 24 Field Notes · 20 tool-bound · 22 Path-bound · 5 Evidence · 4 Report.
@@ -81,30 +81,36 @@ Recommended work-package metadata comes from `data/product-hardening/work-packag
 **Latest mined themes:** File upload, File inclusion, Content discovery, XSS / session hardening.
 **Notes impact contract:** `docs/NOTES-IMPACT.md`.
 
-**Recommended work package:** **Dashboard Runtime Compaction** — 1 live item / 4 tracked.
-**Work-package entry:** **Retire historical dashboard runtime layers**
-**Ownership area:** `runtime/dashboard-retirement`
-**Package guidance:** Keep the current no-flash route owner, add real browser smoke proof, then remove old dashboard owners from live startup after equivalence is proven. The same current-owner/fixture/test-retirement lifecycle applies to the rest of the runtime.
-**Package dependencies:** Runtime Consolidation Foundation
+**Recommended work package:** **Notes Impact and Themed Burn-down** — 7 live items / 8 tracked.
+**Work-package entry:** **Burn down all 556 note dispositions**
+**Ownership area:** `notes/impact-packets`
+**Package guidance:** Treat the 556-note disposition item as the umbrella. Burn notes down in coherent themed packets, and for every modeled source record which Field Note, tool-bound or Path-bound guidance, Evidence/report/troubleshooting output, code-level product change, or explicit product gap it produced.
+**Package dependencies:** Notes Integration Foundation
 
 **Live items in this package:**
-- **Retire historical dashboard runtime layers** — After browser smoke and route equivalence are proven, remove old dashboard data and presentation owners from live startup and preserve only useful historical fixtures.
+- **Burn down all 556 note dispositions** — Umbrella disposition goal. Review work should be executed in themed packets and must record what each modeled note changed in Field Notes, tools, Path, Evidence, reports, troubleshooting, or product gaps.
+- **Notes packet: web upload and inclusion** — Mine upload, traversal, LFI/RFI, wrapper, serving, interpretation, proof-chain, remediation, and tool/path implications as one coherent packet.
+- **Notes packet: XSS and session impact** — Mine XSS, browser/session impact, cookie/CSP controls, request context, proof boundaries, remediation, and missing product branches.
+- **Notes packet: credentials and authentication** — Mine credentials, hashes, tickets, certificates, validation boundaries, auth failure modes, tool options, and cross-tool/path handoffs.
+- **Notes packet: Windows privilege escalation** — Mine Windows privilege-escalation discovery, evidence, tool options, failure modes, path branches, proof boundaries, and reporting guidance.
+- **Notes packet: Linux privilege escalation** — Mine Linux privilege-escalation discovery, evidence, tool options, failure modes, path branches, proof boundaries, and reporting guidance.
+- **Notes packet: AD and pivoting** — Mine Active Directory, lateral movement, tunneling, pivoting, routing, credential use, evidence boundaries, and missing workflow/tool options.
 
-**Related items to consider, not automatically in scope:** Dashboard ownership consolidation; No new layered queue architecture.
+**Related items to consider, not automatically in scope:** Design contextual field-notes disclosure.
 
 **Highest-priority live items:**
-1. **Retire historical dashboard runtime layers** — After browser smoke and route equivalence are proven, remove old dashboard data and presentation owners from live startup and preserve only useful historical fixtures.
-2. **Burn down all 556 note dispositions** — Umbrella disposition goal. Review work should be executed in themed packets and must record what each modeled note changed in Field Notes, tools, Path, Evidence, reports, troubleshooting, or product gaps.
-3. **Notes packet: web upload and inclusion** — Mine upload, traversal, LFI/RFI, wrapper, serving, interpretation, proof-chain, remediation, and tool/path implications as one coherent packet.
-4. **Notes packet: XSS and session impact** — Mine XSS, browser/session impact, cookie/CSP controls, request context, proof boundaries, remediation, and missing product branches.
-5. **Notes packet: credentials and authentication** — Mine credentials, hashes, tickets, certificates, validation boundaries, auth failure modes, tool options, and cross-tool/path handoffs.
-6. **Notes packet: Windows privilege escalation** — Mine Windows privilege-escalation discovery, evidence, tool options, failure modes, path branches, proof boundaries, and reporting guidance.
-7. **Notes packet: Linux privilege escalation** — Mine Linux privilege-escalation discovery, evidence, tool options, failure modes, path branches, proof boundaries, and reporting guidance.
-8. **Notes packet: AD and pivoting** — Mine Active Directory, lateral movement, tunneling, pivoting, routing, credential use, evidence boundaries, and missing workflow/tool options.
+1. **Burn down all 556 note dispositions** — Umbrella disposition goal. Review work should be executed in themed packets and must record what each modeled note changed in Field Notes, tools, Path, Evidence, reports, troubleshooting, or product gaps.
+2. **Notes packet: web upload and inclusion** — Mine upload, traversal, LFI/RFI, wrapper, serving, interpretation, proof-chain, remediation, and tool/path implications as one coherent packet.
+3. **Notes packet: XSS and session impact** — Mine XSS, browser/session impact, cookie/CSP controls, request context, proof boundaries, remediation, and missing product branches.
+4. **Notes packet: credentials and authentication** — Mine credentials, hashes, tickets, certificates, validation boundaries, auth failure modes, tool options, and cross-tool/path handoffs.
+5. **Notes packet: Windows privilege escalation** — Mine Windows privilege-escalation discovery, evidence, tool options, failure modes, path branches, proof boundaries, and reporting guidance.
+6. **Notes packet: Linux privilege escalation** — Mine Linux privilege-escalation discovery, evidence, tool options, failure modes, path branches, proof boundaries, and reporting guidance.
+7. **Notes packet: AD and pivoting** — Mine Active Directory, lateral movement, tunneling, pivoting, routing, credential use, evidence boundaries, and missing workflow/tool options.
+8. **Quiet service worker caching** — Improve repeat-load and offline behavior without prompting users to install anything.
 
 **Track status:**
 - **Critical correctness:** 4/4 complete (100%), 0 modeled.
-- **Architecture / runtime:** 8/12 complete (67%), 3 modeled.
+- **Architecture / runtime:** 9/12 complete (75%), 3 modeled.
 - **UI / UX repair:** 7/8 complete (88%), 1 modeled.
 - **Tool GUI builders:** 18/18 complete (100%), 0 modeled.
 - **Credential modes:** 14/14 complete (100%), 0 modeled.
