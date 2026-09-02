@@ -29,18 +29,24 @@ base.contracts['notes-impact-dashboard']={
 };
 base.contracts['runtime-dashboard-no-flash']={
  acceptance:[
-  '#/dashboard is intercepted before the historical route renderer can paint; the user sees a current Product Hardening loading shell followed by the current dashboard renderer; dashboard assets include the notes-impact owner; non-dashboard routes retain the historical route path until their own current owners are compacted.'
+  '#/dashboard intent is claimed before historical compatibility startup can render a dashboard; historical direct dashboard renderers yield to that intent; a stable non-versioned current route owner loads after the compatibility chain, renders the current Product Hardening shell/dashboard, and repairs any delayed historical repaint during the legacy timer window; real browser smoke records dashboard paints and rejects every historical owner.'
  ],
  validationCommands:[
   'node tools/validate-current-workflow.js',
   'node tools/validate-runtime-manifest.js',
+  'node tools/validate-runtime-loading.js',
   'node tools/validate-asset-references.js',
   'node tests/run-v9.29-tests.js'
  ],
  proofFiles:[
+  'assets/runtime-current.js',
+  'assets/dashboard-route-current.js',
+  'assets/app-v6.6.js',
   'assets/app-v8.8.js',
   'assets/product-hardening-dashboard.js',
   'data/runtime-manifest.js',
+  'tests/playwright-smoke.js',
+  '.github/workflows/browser-smoke.yml',
   'tests/run-v9.29-tests.js',
   'docs/RUNTIME-COMPACTION.md',
   'docs/v9.29.md'
