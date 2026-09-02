@@ -115,6 +115,8 @@ const standalone=read('product-hardening.html');
 assert(standalone.includes('data/note-integration-packets.js'),'standalone dashboard loads packetized note state');
 const manifest=read('data/runtime-manifest.js');
 assert(manifest.includes("'data/note-integration-packets.js'"),'runtime manifest includes packetized notes in Product Hardening assets');
+const fieldNotesUi=read('assets/field-notes.js');
+for(const token of ["PACKETS='data/note-integration-packets.js'",'schemaAtLeast(n.schemaVersion,1,5)','obolFieldNotesPackets'])assert(fieldNotesUi.includes(token),'workflow Field Notes lazy loader preserves current packet state: '+token);
 
 const reviewSource=read('data/note-integration-reviews.js')+'\n'+read('data/note-integration-packets.js');
 for(const forbidden of ['OS{','PEN-200.enex','HTB - Penetration Tester.enex','review_text'])assert(!reviewSource.includes(forbidden),'public review owners exclude raw/private source material: '+forbidden);
@@ -124,4 +126,4 @@ assert.strictEqual(q.buildNext(1)[0].id,'notes-disposition-burn-down','umbrella 
 
 const releasePr=cp.spawnSync(process.execPath,[path.join(root,'tools','validate-release-pr.js')],{cwd:root,encoding:'utf8',env:process.env});
 assert.strictEqual(releasePr.status,0,(releasePr.stderr||releasePr.stdout||'release PR validation failed').trim());
-console.log('v9.30 completed web Notes packet and note-driven curl path-preservation regression tests passed.');
+console.log('v9.30 completed web Notes packet, current Field Notes loading, and note-driven curl path-preservation regression tests passed.');
