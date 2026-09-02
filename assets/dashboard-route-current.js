@@ -1,6 +1,8 @@
 'use strict';
 (function(root){
 const OWNER='assets/dashboard-route-current.js';
+const INSTANCE=Date.now().toString(36)+'-'+Math.random().toString(36).slice(2,8);
+root.__OBOL_CURRENT_DASHBOARD_ROUTE_INSTANCE__=INSTANCE;
 const PRODUCT_STYLE='assets/product-hardening-dashboard.css';
 const PRODUCT_SCRIPTS=[
  'data/current-release.js',
@@ -14,6 +16,7 @@ const PRODUCT_SCRIPTS=[
  'assets/product-hardening-dashboard.js'
 ];
 const FRESH_QUERY='obol-dashboard';
+function instanceCurrent(){return root.__OBOL_CURRENT_DASHBOARD_ROUTE_INSTANCE__===INSTANCE;}
 function reviewSchemaAtLeast(major,minor){
  const match=String(root.OBOL_NOTE_INTEGRATION&&root.OBOL_NOTE_INTEGRATION.schemaVersion||'').match(/^(\d+)\.(\d+)\./);
  if(!match)return false;
@@ -67,6 +70,7 @@ function loadFreshScript(src,token,timeoutMs){
  });
 }
 function refreshAssets(cycle){
+ if(!instanceCurrent())return Promise.resolve(root.__OBOL_CURRENT_DASHBOARD_FRESHNESS__||null);
  const requested=Number(cycle||nextAssetCycle());
  if(assetsLoading)return assetsLoading;
  const token=Date.now().toString(36)+'-'+requested.toString(36);
@@ -74,7 +78,7 @@ function refreshAssets(cycle){
   .then(()=>PRODUCT_SCRIPTS.reduce((chain,src)=>chain.then(()=>loadFreshScript(src,token,8000)),Promise.resolve()))
   .then(()=>{
    activeAssetCycle=requested;
-   root.__OBOL_CURRENT_DASHBOARD_FRESHNESS__=Object.freeze({owner:OWNER,cycle:requested,token,release:String(root.OBOL_CURRENT_RELEASE&&root.OBOL_CURRENT_RELEASE.version||''),loadedAt:Date.now(),sources:Object.freeze(PRODUCT_SCRIPTS.slice())});
+   root.__OBOL_CURRENT_DASHBOARD_FRESHNESS__=Object.freeze({owner:OWNER,instance:INSTANCE,cycle:requested,token,release:String(root.OBOL_CURRENT_RELEASE&&root.OBOL_CURRENT_RELEASE.version||''),loadedAt:Date.now(),sources:Object.freeze(PRODUCT_SCRIPTS.slice())});
    return root.__OBOL_CURRENT_DASHBOARD_FRESHNESS__;
   })
   .finally(()=>{assetsLoading=null;});
@@ -93,12 +97,12 @@ function shell(force){
  return target;
 }
 function render(cycle){
- if(!dashboardActive())return Promise.resolve(false);
+ if(!instanceCurrent()||!dashboardActive())return Promise.resolve(false);
  const target=shell(false);if(!target)return Promise.resolve(false);
  const assetCycle=Number(cycle||activeAssetCycle||nextAssetCycle());
  const generation=++renderGeneration;
  return refreshAssets(assetCycle).then(freshness=>{
-  if(!dashboardActive()||generation!==renderGeneration)return false;
+  if(!instanceCurrent()||!dashboardActive()||generation!==renderGeneration)return false;
   if(typeof root.renderProductHardeningDashboard!=='function')throw new Error('current product dashboard renderer did not initialize');
   root.renderProductHardeningDashboard(target,{embedded:true,freshness});
   const marker=currentMarker(target);if(marker){marker.dataset.dashboardRelease=String(root.OBOL_CURRENT_RELEASE&&root.OBOL_CURRENT_RELEASE.version||'');marker.dataset.dashboardFreshness=String(freshness&&freshness.token||'');}
@@ -108,21 +112,21 @@ function render(cycle){
   return true;
  }).catch(err=>{
   root.__OBOL_CURRENT_DASHBOARD_ROUTE_ERROR__=String(err&&err.message||err||'dashboard load failed');
-  if(dashboardActive()&&generation===renderGeneration){
+  if(instanceCurrent()&&dashboardActive()&&generation===renderGeneration){
    target.innerHTML='<div class="ph-shell" data-product-dashboard-owner="current-error"><section class="ph-card"><h1>Obol Product Hardening</h1><p>The current dashboard could not be loaded. Refresh the page and try again.</p></section></div>';
   }
   return false;
  });
 }
 function scheduleRepair(){
- if(repairScheduled||!dashboardActive())return;
+ if(!instanceCurrent()||repairScheduled||!dashboardActive())return;
  repairScheduled=true;
- setTimeout(()=>{repairScheduled=false;if(!dashboardActive())return;const target=view();if(!target||currentMarker(target)||transientMarker(target))return;shell(true);render(activeAssetCycle||nextAssetCycle());},0);
+ setTimeout(()=>{repairScheduled=false;if(!instanceCurrent()||!dashboardActive())return;const target=view();if(!target||currentMarker(target)||transientMarker(target))return;shell(true);render(activeAssetCycle||nextAssetCycle());},0);
 }
 function armGuard(){
  const target=view();if(!target||observer)return;
  observer=new MutationObserver(()=>{
-  if(!dashboardActive())return;
+  if(!instanceCurrent()||!dashboardActive())return;
   const current=view();if(!current)return;
   if(!currentMarker(current)&&!transientMarker(current))scheduleRepair();
  });
@@ -130,21 +134,23 @@ function armGuard(){
 }
 function disarmGuard(){if(observer){observer.disconnect();observer=null;}repairScheduled=false;renderGeneration++;}
 function activate(){
+ if(!instanceCurrent())return false;
  if(!dashboardActive()){disarmGuard();return false;}
  const cycle=nextAssetCycle();
  shell(true);armGuard();render(cycle);return true;
 }
 function refresh(){return refreshAssets(nextAssetCycle());}
 
-const previousRoute=typeof root.route==='function'?root.route:null;
-if(previousRoute&&!previousRoute.__obolCurrentDashboardOwner){
+const routeCandidate=typeof root.route==='function'?root.route:null;
+const previousRoute=routeCandidate&&routeCandidate.__obolCurrentDashboardOwner&&routeCandidate.__obolPreviousRoute?routeCandidate.__obolPreviousRoute:routeCandidate;
+if(previousRoute){
  const ownedRoute=function(){if(activate())return;return previousRoute.apply(this,arguments);};
  ownedRoute.__obolCurrentDashboardOwner=true;
  ownedRoute.__obolPreviousRoute=previousRoute;
  root.route=ownedRoute;
 }
-root.addEventListener('hashchange',()=>{if(dashboardActive())activate();else disarmGuard();});
-if(root.document.readyState==='loading')root.document.addEventListener('DOMContentLoaded',()=>{if(dashboardActive())activate();},{once:true});
-else setTimeout(()=>{if(dashboardActive())activate();},0);
-root.OBOL_CURRENT_DASHBOARD_ROUTE=Object.freeze({owner:OWNER,activate,render,refreshAssets:refresh,freshUrl,assetSources:Object.freeze(PRODUCT_SCRIPTS.slice()),styleSource:PRODUCT_STYLE});
+root.addEventListener('hashchange',()=>{if(!instanceCurrent())return;if(dashboardActive())activate();else disarmGuard();});
+if(root.document.readyState==='loading')root.document.addEventListener('DOMContentLoaded',()=>{if(instanceCurrent()&&dashboardActive())activate();},{once:true});
+else setTimeout(()=>{if(instanceCurrent()&&dashboardActive())activate();},0);
+root.OBOL_CURRENT_DASHBOARD_ROUTE=Object.freeze({owner:OWNER,instance:INSTANCE,activate,render,refreshAssets:refresh,freshUrl,assetSources:Object.freeze(PRODUCT_SCRIPTS.slice()),styleSource:PRODUCT_STYLE});
 })(typeof window!=='undefined'?window:globalThis);
