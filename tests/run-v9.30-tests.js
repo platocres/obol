@@ -3,6 +3,7 @@ const assert=require('assert');
 const fs=require('fs');
 const path=require('path');
 const vm=require('vm');
+const cp=require('child_process');
 const root=path.join(__dirname,'..');
 const read=rel=>fs.readFileSync(path.join(root,rel),'utf8');
 const sandbox={window:{},globalThis:null};sandbox.globalThis=sandbox.window;vm.createContext(sandbox);
@@ -99,4 +100,6 @@ const notesTrack=q.tracks.find(track=>track.id==='notes-integration');
 assert(notesTrack&&notesTrack.complete===65&&notesTrack.total===556,'Notes Integration track derives 65/556 from the current ledger');
 assert.strictEqual(q.buildNext(1)[0].id,'notes-disposition-burn-down','umbrella note burn-down remains the next queue entry until every note is terminal');
 
+const releasePr=cp.spawnSync(process.execPath,[path.join(root,'tools','validate-release-pr.js')],{cwd:root,encoding:'utf8',env:process.env});
+assert.strictEqual(releasePr.status,0,(releasePr.stderr||releasePr.stdout||'release PR validation failed').trim());
 console.log('v9.30 themed Notes Integration and note-driven curl path-preservation regression tests passed.');
