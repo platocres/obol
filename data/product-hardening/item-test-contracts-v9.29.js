@@ -89,5 +89,31 @@ base.contracts['qa-playwright-smoke']={
   'docs/v9.29.md'
  ]
 };
+base.contracts['runtime-dashboard-layer-retirement']={
+ acceptance:[
+  'All sixteen versioned data/dashboard-v* owners and the proven dashboard-only v5.1-v6.5 presentation overlays are absent from live browser startup while remaining fixture-addressable in the frozen historical ledger; historical core overlays receive only the metadata they still require through one stable data-only dashboard-compat-current.js prelude; v6.5 methodology/path mutations remain owned by source-delivery-v6.5.js; dependency audit reports zero live historical Dashboard data owners; and real browser smoke preserves Home, Targets, Evidence, Next Steps, Report, and current-only Dashboard rendering.'
+ ],
+ validationCommands:[
+  'node tools/audit-dashboard-runtime-dependencies.js --require-retired',
+  'node tools/validate-runtime-manifest.js',
+  'node tools/validate-runtime-loading.js',
+  'node tools/validate-asset-references.js',
+  'node tests/run-v9.29-tests.js',
+  'node tests/playwright-smoke.js'
+ ],
+ proofFiles:[
+  'data/dashboard-compat-current.js',
+  'data/runtime-manifest.js',
+  'data/source-delivery-v6.5.js',
+  'assets/runtime-current.js',
+  'assets/dashboard-route-current.js',
+  'tools/audit-dashboard-runtime-dependencies.js',
+  'tools/validate-runtime-manifest.js',
+  'tests/run-v9.29-tests.js',
+  'tests/playwright-smoke.js',
+  'docs/RUNTIME-COMPACTION.md',
+  'docs/v9.29.md'
+ ]
+};
 base.version='9.29.0';
 })(typeof window!=='undefined'?window:globalThis);
