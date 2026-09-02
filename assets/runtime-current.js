@@ -31,10 +31,12 @@ function appendScripts(list){
  return chain;
 }
 function startupList(){return manifest.startupScripts||manifest.scripts;}
+function currentOwnerList(){return Array.isArray(manifest.currentScripts)?manifest.currentScripts:[];}
+function browserScriptList(){return startupList().concat(currentOwnerList());}
 function writeScripts(){
  if(scriptsWritten)return Promise.resolve();
  scriptsWritten=true;
- const list=startupList();
+ const list=browserScriptList();
  if(canParserWrite()){
   document.write(list.map(src=>'<script src="'+esc(src)+'"><\/script>').join(''));
   return Promise.resolve();
@@ -114,8 +116,9 @@ function hydrateRoute(){
 }
 function budgetSnapshot(){
  const startup=startupList();
+ const current=currentOwnerList();
  const deferred=(manifest.deferredScriptGroups||[]).reduce((n,name)=>n+lazyGroup(name).length,0);
- return Object.freeze({startupHistoricalScripts:startup.length,deferredHistoricalScripts:deferred,baselineHistoricalScripts:manifest.scripts.length,loadedLazyGroups:[...groupLoads.keys()]});
+ return Object.freeze({startupHistoricalScripts:startup.length,currentOwnerScripts:current.length,deferredHistoricalScripts:deferred,baselineHistoricalScripts:manifest.scripts.length,loadedLazyGroups:[...groupLoads.keys()]});
 }
 
 if(typeof window!=='undefined'){
