@@ -15,6 +15,7 @@ if(impact.review.pending!==impact.review.total-impact.review.reviewed)failures.p
 if(impact.outputCounts.fieldNotes<32)failures.push('notes impact must not regress below the v9.30 completed web-packet baseline of 32 public Field Notes');
 if(!impact.themes.some(theme=>theme.name==='File inclusion'&&theme.evidenceImpact&&theme.reportImpact))failures.push('file-inclusion theme must preserve Evidence and report impact');
 if(!impact.themes.some(theme=>theme.name==='File upload'&&theme.pathImpact&&theme.evidenceImpact&&theme.reportImpact))failures.push('file-upload theme must preserve Path, Evidence, and report impact');
+if(impact.review.reviewed>=127&&!impact.themes.some(theme=>theme.name==='Windows local privilege escalation'&&theme.pathImpact&&theme.evidenceImpact))failures.push('Windows local privilege-escalation theme must preserve Path and Evidence impact after the v9.35 packet');
 const decisions=Array.from(impact.sourceDecisions||[]),expectedLatest=decisions.length?decisions[decisions.length-1].reviewWave:null;
 if(expectedLatest&&(!impact.latestWave||impact.latestWave.id!==expectedLatest))failures.push('latest wave must follow the newest reviewed disposition row');
 if(expectedLatest==='v9.30-web-upload-inclusion-2'&&impact.latestWave.reviewed!==11)failures.push('completed web packet closeout wave must expose eleven newly terminal source decisions');

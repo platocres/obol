@@ -5,6 +5,7 @@ if(!q||!notes||!notes.ledger)return;
 const rows=Array.from(notes.reviewedDispositions||[]),publicNotes=Array.from(notes.publicFieldNotes||[]),counts=notes.ledger.dispositionCounts||{};
 const unique=list=>Array.from(new Set((list||[]).filter(Boolean)));
 const themeRules=[
+ ['Windows local privilege escalation',['windows-privesc','windows-service','scheduled-task','dll-hijack','uac','access-token','local-exploit']],
  ['File upload',['file-upload']],
  ['File inclusion',['file-inclusion','lfi','rfi','path-traversal']],
  ['Command injection',['command-injection']],
@@ -117,5 +118,5 @@ function validate(){
  if(latestWave.id&&latestWave.reviewed===0)failures.push('notes impact latest wave is empty');
  return failures;
 }
-root.OBOL_PRODUCT_HARDENING_NOTES_IMPACT=Object.freeze({schemaVersion:'1.3.0',review,outputCounts,outputs,sourceDecisions,declaredProductChanges,themes,latestWave,gaps,summary,allowedImpactTypes,allowedProductChangeTypes,reviewWaveAtLeast,validate});
+root.OBOL_PRODUCT_HARDENING_NOTES_IMPACT=Object.freeze({schemaVersion:'1.4.0',review,outputCounts,outputs,sourceDecisions,declaredProductChanges,themes,latestWave,gaps,summary,allowedImpactTypes,allowedProductChangeTypes,reviewWaveAtLeast,validate});
 })(typeof window!=='undefined'?window:globalThis);
