@@ -20,5 +20,11 @@ const decisions=Array.from(impact.sourceDecisions||[]),expectedLatest=decisions.
 if(expectedLatest&&(!impact.latestWave||impact.latestWave.id!==expectedLatest))failures.push('latest wave must follow the newest reviewed disposition row');
 if(expectedLatest==='v9.30-web-upload-inclusion-2'&&impact.latestWave.reviewed!==11)failures.push('completed web packet closeout wave must expose eleven newly terminal source decisions');
 if(impact.outputCounts.declaredProductChanges<1||impact.outputCounts.toolBuilderChanges<1)failures.push('note-driven curl path-preservation product change must remain declared');
+if(!impact.rubric){failures.push('notes conversion rubric projection missing');}
+else{
+ if(impact.rubric.compliant+impact.rubric.unjustifiedGuidanceOnly!==impact.rubric.modeled)failures.push('conversion rubric counts do not reconcile with modeled total');
+ if(impact.rubric.mechanicBacked<1)failures.push('at least one modeled note must declare a product mechanic');
+ if(impact.rubric.unjustifiedGuidanceOnly>impact.rubric.backlogCeiling)failures.push('unjustified guidance-only modeled notes ('+impact.rubric.unjustifiedGuidanceOnly+') exceed the ratchet ceiling ('+impact.rubric.backlogCeiling+'): declare a product mechanic or an explicit guidanceOnlyReason, and never raise the ceiling');
+}
 if(failures.length){console.error('Notes impact validation failed:');for(const failure of failures)console.error('- '+failure);process.exit(1);}
-console.log('Notes impact projection validated:',impact.review.reviewed+'/'+impact.review.total,'reviewed;',impact.outputCounts.fieldNotes,'public outputs.');
+console.log('Notes impact projection validated:',impact.review.reviewed+'/'+impact.review.total,'reviewed;',impact.outputCounts.fieldNotes,'public outputs; mechanic conversion',impact.rubric.mechanicBacked+'/'+impact.rubric.modeled,'('+impact.rubric.mechanicConversionPct+'%); guidance-only backlog',impact.rubric.unjustifiedGuidanceOnly+'/'+impact.rubric.backlogCeiling+' ceiling.');

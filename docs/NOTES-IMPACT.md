@@ -41,6 +41,23 @@ A declared product change must include proof references to the implementation/te
 
 This distinction is important because the dashboard is supposed to tell the user what Obol actually gained, not inflate output counts by treating contextual placement as implementation work.
 
+## Conversion rubric and guidance-only ratchet
+
+The primary notes metric is mechanic conversion, not review count. `data/product-hardening/notes-impact-current.js` exposes a `rubric` projection over modeled notes:
+
+- `mechanicBacked` — modeled notes with at least one declared product change;
+- `justifiedGuidanceOnly` — modeled notes that are guidance-only **and** carry an explicit `guidanceOnlyReason`;
+- `unjustifiedGuidanceOnly` — modeled notes carrying neither (the backlog);
+- `mechanicConversionPct` — `mechanicBacked / modeled`, the headline number.
+
+`tools/validate-notes-impact.js` enforces the rubric so guidance-only is a justified exception rather than the default:
+
+1. modeled notes reviewed in wave v9.29+ must declare a product change or an explicit `guidanceOnlyReason` (per-note rule);
+2. the `unjustifiedGuidanceOnly` backlog must never exceed a frozen ceiling (`backlogCeiling`, currently 43), which is the pre-v9.29 debt. New modeled notes cannot raise it because rule 1 already blocks them; `notes-mechanic-backfill` re-audits the backlog and **lowers the ceiling** as notes are converted, so the ratchet only tightens;
+3. at least one modeled note must declare a real product mechanic.
+
+Reducing review count is not progress if it grows the backlog; the ratchet makes that impossible and keeps the dashboard honest about what Obol actually gained.
+
 ## Current projection
 
 `data/product-hardening/notes-impact-current.js` derives the current notes-to-product projection from the public-safe ledger and normalized Field Notes. It reports:

@@ -82,6 +82,23 @@ const outputCounts=Object.freeze({
  workflowChanges:declaredProductChanges.filter(change=>change.type==='workflow-change').length,
  explicitGuidanceOnlyDecisions:sourceDecisions.filter(decision=>decision.guidanceOnlyReason).length
 });
+const modeledDecisions=sourceDecisions.filter(decision=>decision.disposition==='modeled');
+const rubricMechanicBacked=modeledDecisions.filter(decision=>decision.productChanges.length).length;
+const rubricJustifiedGuidanceOnly=modeledDecisions.filter(decision=>decision.guidanceOnly&&decision.guidanceOnlyReason).length;
+const rubricUnjustifiedGuidanceOnly=modeledDecisions.filter(decision=>decision.guidanceOnly&&!decision.guidanceOnlyReason).length;
+// Ratchet ceiling for modeled notes reviewed under the pre-v9.29 rubric that carry neither a
+// product mechanic nor an explicit guidance-only reason. New modeled notes cannot raise it (the
+// per-note explicitDecisionRequired rule blocks that); notes-mechanic-backfill lowers it toward 0.
+const GUIDANCE_ONLY_BACKLOG_CEILING=43;
+const rubric=Object.freeze({
+ modeled:modeledDecisions.length,
+ mechanicBacked:rubricMechanicBacked,
+ justifiedGuidanceOnly:rubricJustifiedGuidanceOnly,
+ unjustifiedGuidanceOnly:rubricUnjustifiedGuidanceOnly,
+ compliant:rubricMechanicBacked+rubricJustifiedGuidanceOnly,
+ mechanicConversionPct:modeledDecisions.length?Math.round((rubricMechanicBacked/modeledDecisions.length)*100):0,
+ backlogCeiling:GUIDANCE_ONLY_BACKLOG_CEILING
+});
 const themes=Object.freeze(themeRules.map(([name,tags])=>{
  const matched=outputs.filter(output=>output.tags.some(tag=>tags.includes(tag)));
  const sourceRefs=unique(matched.flatMap(output=>output.sourceRefs));
@@ -95,7 +112,7 @@ const latestDecisions=sourceDecisions.filter(decision=>decision.reviewWave===lat
 const gaps=Object.freeze((q.items||[]).filter(item=>item.track==='notes-integration'&&item.status==='queued').map(item=>Object.freeze({id:item.id,label:item.label,detail:item.detail,status:item.status,priority:item.priority})));
 const review=Object.freeze({total:Number(notes.ledger.expectedNotes||0),reviewed:Number(notes.ledger.reviewedCount||0),pending:Number(counts['pending-review']||0),modeled:Number(counts.modeled||0),privateOnly:Number(counts['private-reference-only']||0),superseded:Number(counts.superseded||0),rejected:Number(counts.rejected||0)});
 const latestWave=Object.freeze({id:latestWaveId,reviewed:latestRows.length,modeled:latestRows.filter(row=>row.disposition==='modeled').length,privateOnly:latestRows.filter(row=>row.disposition==='private-reference-only').length,outputs:Object.freeze(latestOutputs.map(output=>output.id)),impactTypes:Object.freeze(unique(latestOutputs.flatMap(output=>output.impactTypes))),productChanges:Object.freeze(latestDecisions.flatMap(decision=>decision.productChanges)),themes:Object.freeze(unique(latestOutputs.flatMap(output=>themeRules.filter(([,tags])=>output.tags.some(tag=>tags.includes(tag))).map(([name])=>name))))});
-const summary=Object.freeze({reviewedLabel:review.reviewed+'/'+review.total+' reviewed',derivedOutputs:outputCounts.fieldNotes,toolBindings:outputCounts.toolContextBound,pathBindings:outputCounts.pathGuidanceBound,evidenceOutputs:outputCounts.evidenceGuidance,reportOutputs:outputCounts.reportGuidance,troubleshootingOutputs:outputCounts.troubleshootingGuidance,declaredProductChanges:outputCounts.declaredProductChanges,explicitGuidanceOnlyDecisions:outputCounts.explicitGuidanceOnlyDecisions,latestThemes:latestWave.themes});
+const summary=Object.freeze({reviewedLabel:review.reviewed+'/'+review.total+' reviewed',derivedOutputs:outputCounts.fieldNotes,toolBindings:outputCounts.toolContextBound,pathBindings:outputCounts.pathGuidanceBound,evidenceOutputs:outputCounts.evidenceGuidance,reportOutputs:outputCounts.reportGuidance,troubleshootingOutputs:outputCounts.troubleshootingGuidance,declaredProductChanges:outputCounts.declaredProductChanges,explicitGuidanceOnlyDecisions:outputCounts.explicitGuidanceOnlyDecisions,mechanicConversionPct:rubric.mechanicConversionPct,guidanceOnlyBacklog:rubric.unjustifiedGuidanceOnly,guidanceOnlyBacklogCeiling:rubric.backlogCeiling,latestThemes:latestWave.themes});
 function validate(){
  const failures=[];
  if(review.reviewed!==rows.length)failures.push('notes impact reviewed count does not match ledger rows');
@@ -118,5 +135,5 @@ function validate(){
  if(latestWave.id&&latestWave.reviewed===0)failures.push('notes impact latest wave is empty');
  return failures;
 }
-root.OBOL_PRODUCT_HARDENING_NOTES_IMPACT=Object.freeze({schemaVersion:'1.4.0',review,outputCounts,outputs,sourceDecisions,declaredProductChanges,themes,latestWave,gaps,summary,allowedImpactTypes,allowedProductChangeTypes,reviewWaveAtLeast,validate});
+root.OBOL_PRODUCT_HARDENING_NOTES_IMPACT=Object.freeze({schemaVersion:'1.5.0',review,outputCounts,rubric,outputs,sourceDecisions,declaredProductChanges,themes,latestWave,gaps,summary,allowedImpactTypes,allowedProductChangeTypes,reviewWaveAtLeast,validate});
 })(typeof window!=='undefined'?window:globalThis);

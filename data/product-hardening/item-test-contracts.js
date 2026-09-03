@@ -1,6 +1,11 @@
 'use strict';
 (function(root){
 const contracts={
+ 'notes-conversion-rubric':{
+  acceptance:['The notes-impact validator enforces that guidance-only is a justified exception: it exposes the mechanic-conversion ratio and the unjustified guidance-only backlog (modeled notes carrying neither a declared product mechanic nor an explicit guidance-only reason), requires at least one declared product mechanic, and ratchets the backlog against a frozen ceiling so new modeled notes can never raise it while notes-mechanic-backfill lowers it toward zero.'],
+  validationCommands:['node tools/validate-notes-impact.js','node tools/scope-check.js','node tools/sync-product-build-next.js --check'],
+  proofFiles:['tools/validate-notes-impact.js','data/product-hardening/notes-impact-current.js','docs/NOTES-IMPACT.md','README.md']
+ },
  'cc-version-authority':{
   acceptance:['One stable current-release authority drives the live header, browser title, settings identity, report preview/footer metadata, export metadata, README current release, and Product Hardening Dashboard without changing the v8.8 workspace schema version.'],
   validationCommands:['node tools/validate-current-release.js','node tools/sync-current-release.js --check','node tests/run-v9.2-tests.js'],
