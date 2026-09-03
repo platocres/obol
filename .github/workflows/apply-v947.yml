@@ -29,6 +29,9 @@ jobs:
           node tools/sync-app-current.js --write
           node tools/sync-current-release.js --write
           node tools/sync-product-build-next.js --write
+          # GITHUB_TOKEN may not update workflow files. Commit code/data/docs here;
+          # browser-smoke wiring is applied separately through the GitHub API.
+          git checkout -- .github/workflows/browser-smoke.yml
 
       - name: Commit generated migration
         run: |
