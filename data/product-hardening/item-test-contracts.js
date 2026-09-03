@@ -1,6 +1,11 @@
 'use strict';
 (function(root){
 const contracts={
+ 'notes-script-category':{
+  acceptance:['A first-class script disposition kind exists end to end: the note-integration atom kinds and the public field-notes data contract both accept a script kind, the notes-impact projection maps it to a script-guidance impact type in the allowed set and counts it, and the field-notes UI contract requires the kind, so reusable one-liners and scripts derived from notes are tracked outputs rather than folded into tool-guidance or dropped.'],
+  validationCommands:['node tools/validate-field-notes-ui.js','node tools/validate-notes-impact.js','node tools/validate-note-integration.js'],
+  proofFiles:['data/note-integration.js','data/field-notes.js','data/product-hardening/notes-impact-current.js','tools/validate-field-notes-ui.js','docs/NOTES-INTEGRATION.md']
+ },
  'notes-conversion-rubric':{
   acceptance:['The notes-impact validator enforces that guidance-only is a justified exception: it exposes the mechanic-conversion ratio and the unjustified guidance-only backlog (modeled notes carrying neither a declared product mechanic nor an explicit guidance-only reason), requires at least one declared product mechanic, and ratchets the backlog against a frozen ceiling so new modeled notes can never raise it while notes-mechanic-backfill lowers it toward zero.'],
   validationCommands:['node tools/validate-notes-impact.js','node tools/scope-check.js','node tools/sync-product-build-next.js --check'],

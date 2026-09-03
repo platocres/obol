@@ -4,6 +4,13 @@ This file is the release-history source for Obol. Future build work should revie
 
 The README is intentionally reserved for current product purpose, permanent operating and build requirements, current architecture/state, and forward priorities. Release narratives and historical implementation summaries belong here, not in README.
 
+## v9.36 — Notes conversion rubric and script disposition
+
+- Enforced the notes conversion rubric (`notes-conversion-rubric`): the notes-impact projection exposes a `rubric` over modeled notes (mechanic-backed, justified guidance-only, unjustified guidance-only, compliant, and `mechanicConversionPct`), and `tools/validate-notes-impact.js` ratchets the unjustified guidance-only backlog against a frozen ceiling so it can only shrink. Mechanic conversion, not review count, is the primary notes metric (current state: 1/95, backlog 43/43).
+- Added the script-bound note disposition (`notes-script-category`): a first-class `script` kind now runs end to end across the note-integration atom kinds, the public field-notes contract, the notes-impact `script-guidance` impact type and count, and the field-notes UI validator.
+- Encoded the corrective-plan queue (`docs/CORRECTIVE-PLAN.md`) into Product Build Next: conversion rubric, re-audit backfill, script category, Path three-mode, and a UI audit rubric; de-brittled the v9.31 queue-total and v6.6 README-size assertions.
+- Established the release cadence rule: every build bumps `data/current-release.js`, adds a `docs/vX.Y.md` and `tests/run-vX.Y-tests.js`, records a CHANGELOG entry, and syncs the README.
+
 ## v9.35 — Windows privilege-escalation notes and README history ownership
 
 - Completed the Windows privilege-escalation notes packet after substantive review of 32 private metadata candidates and 95 private full-text candidates, curating 16 reusable subject sources.

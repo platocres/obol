@@ -15,7 +15,7 @@ const themeRules=[
  ['Web proxy / request controls',['web-proxy','http-method','client-side']],
  ['Content discovery',['fuzzing','content-discovery']]
 ];
-const allowedImpactTypes=Object.freeze(['field-note-only','tool-context-bound','path-guidance-bound','evidence-guidance','report-guidance','troubleshooting-guidance','cleanup-guidance']);
+const allowedImpactTypes=Object.freeze(['field-note-only','tool-context-bound','path-guidance-bound','evidence-guidance','report-guidance','troubleshooting-guidance','cleanup-guidance','script-guidance']);
 const allowedProductChangeTypes=Object.freeze(['tool-builder-change','path-logic-change','evidence-parser-change','report-generator-change','workflow-change']);
 function reviewWaveAtLeast(value,major,minor){
  const match=String(value||'').match(/^v(\d+)\.(\d+)/);
@@ -31,6 +31,7 @@ function outputImpactTypes(note){
  if(note.kind==='report')types.push('report-guidance');
  if(note.kind==='troubleshooting')types.push('troubleshooting-guidance');
  if(note.kind==='cleanup')types.push('cleanup-guidance');
+ if(note.kind==='script')types.push('script-guidance');
  if(!types.length)types.push('field-note-only');
  return Object.freeze(unique(types));
 }
@@ -72,6 +73,7 @@ const outputCounts=Object.freeze({
  reportGuidance:outputs.filter(o=>o.impactTypes.includes('report-guidance')).length,
  troubleshootingGuidance:outputs.filter(o=>o.impactTypes.includes('troubleshooting-guidance')).length,
  cleanupGuidance:outputs.filter(o=>o.impactTypes.includes('cleanup-guidance')).length,
+ scriptGuidance:outputs.filter(o=>o.impactTypes.includes('script-guidance')).length,
  toolOwners:unique(outputs.flatMap(o=>o.toolIds)).length,
  pathOwners:unique(outputs.flatMap(o=>o.pathIds)).length,
  declaredProductChanges:declaredProductChanges.length,
