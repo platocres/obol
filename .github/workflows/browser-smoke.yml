@@ -62,6 +62,11 @@ jobs:
           OBOL_SMOKE_BASE_URL: http://127.0.0.1:4173/index.html
         run: node tools/validate-style-visual-equivalence.js
 
+      - name: Prove the v9.46 single-paint current boot in a browser
+        env:
+          OBOL_SMOKE_BASE_URL: http://127.0.0.1:4173/index.html
+        run: node tools/validate-single-paint-boot-browser.js
+
       - name: Upload browser screenshots
         if: always()
         uses: actions/upload-artifact@v4
