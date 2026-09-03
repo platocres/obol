@@ -4,6 +4,13 @@ This file is the release-history source for Obol. Future build work should revie
 
 The README is intentionally reserved for current product purpose, permanent operating and build requirements, current architecture/state, and forward priorities. Release narratives and historical implementation summaries belong here, not in README.
 
+## v9.43 — Application ownership area flattening
+
+- Retired the 21 superseded release-wave application overlays (`assets/app-v6.7.js` … `assets/app-v8.7.js`) from live startup, shrinking the application ownership area from 64 exact-owned fragments to 43 while keeping every retired file in the frozen historical ledger.
+- Added `tools/validate-app-current-equivalence.js`, which proves each retired overlay is structurally inert under the shipped runtime: its entire contribution is gated on a stale `C.VERSION`, and its only top-level effects are a pass-through `route` wrapper plus schedules of that permanently short-circuited decorator.
+- Added `tools/validate-app-dom-equivalence.js`, a browser-level proof that every operator route renders byte-identical DOM with and without the retired overlays; the browser smoke workflow now runs it alongside the request-budget smoke.
+- Updated the runtime manifest, consolidation projection, dashboard, and README so the retired ledger reports 51 fragments and the application owner reports its post-retirement fragment count.
+
 ## v9.42 — Core ownership flattening
 
 - Replaced the live core owner’s 69-fragment ordered execution chain with a generated semantic delta replay in `assets/obol-core-current.js`, while preserving the historical files as the frozen equivalence ledger.
