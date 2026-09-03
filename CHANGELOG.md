@@ -4,6 +4,10 @@ This file is the release-history source for Obol. Future build work should revie
 
 The README is intentionally reserved for current product purpose, permanent operating and build requirements, current architecture/state, and forward priorities. Release narratives and historical implementation summaries belong here, not in README.
 
+## v9.44 — Evidence parsing ownership area flattening
+
+- Release scaffold. The Evidence parsing flattening narrative is written on this release head.
+
 ## v9.43 — Application ownership area flattening
 
 - Retired the 21 superseded release-wave application overlays (`assets/app-v6.7.js` … `assets/app-v8.7.js`) from live startup, shrinking the application ownership area from 64 exact-owned fragments to 43 while keeping every retired file in the frozen historical ledger. `assets/obol-app-current.js` drops from 412 KB to 361 KB, so every operator page load parses ~50 KB less JavaScript.
