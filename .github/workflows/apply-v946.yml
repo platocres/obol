@@ -1,5 +1,5 @@
 name: Apply Obol v9.46 release changes
-# retry 6: preserve pre-synchronized release helper
+# retry 7: skip already-applied release-sync block
 
 on:
   push:
