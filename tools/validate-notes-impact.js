@@ -4,8 +4,9 @@ const path=require('path');
 const vm=require('vm');
 const root=path.join(__dirname,'..');
 const sandbox={window:{},globalThis:null};sandbox.globalThis=sandbox.window;vm.createContext(sandbox);
-for(const rel of ['data/current-release.js','data/product-hardening/product-hardening-queue.js','data/product-hardening/work-packages.js','data/note-integration.js','data/note-integration-reviews.js','data/note-integration-packets.js','data/product-hardening/note-progress-current.js','data/product-hardening/notes-impact-current.js'])vm.runInContext(fs.readFileSync(path.join(root,rel),'utf8'),sandbox,{filename:rel});
+for(const rel of ['data/current-release.js','data/product-hardening/product-hardening-queue.js','data/product-hardening/work-packages.js','data/note-integration.js','data/note-integration-reviews.js','data/note-integration-packets.js','data/product-hardening/note-mechanic-backfill-v9.38.js','data/product-hardening/note-progress-current.js','data/product-hardening/notes-impact-current.js'])vm.runInContext(fs.readFileSync(path.join(root,rel),'utf8'),sandbox,{filename:rel});
 const impact=sandbox.window.OBOL_PRODUCT_HARDENING_NOTES_IMPACT;
+const backfill=sandbox.window.OBOL_NOTE_MECHANIC_BACKFILL_V938;
 if(!impact){console.error('Notes impact projection did not load.');process.exit(1);}
 const failures=Array.from(impact.validate());
 if(impact.review.total!==556)failures.push('notes impact total must remain 556');
@@ -26,5 +27,12 @@ else{
  if(impact.rubric.mechanicBacked<1)failures.push('at least one modeled note must declare a product mechanic');
  if(impact.rubric.unjustifiedGuidanceOnly>impact.rubric.backlogCeiling)failures.push('unjustified guidance-only modeled notes ('+impact.rubric.unjustifiedGuidanceOnly+') exceed the ratchet ceiling ('+impact.rubric.backlogCeiling+'): declare a product mechanic or an explicit guidanceOnlyReason, and never raise the ceiling');
 }
+if(backfill){
+ const summary=backfill.summarize();
+ if(impact.outputCounts.backfillAudited!==summary.audited)failures.push('notes impact backfill audit count does not match the v9.38 ledger');
+ if(impact.outputCounts.declaredProductChanges<2||impact.outputCounts.toolBuilderChanges<2)failures.push('v9.38 backfill must expose both note-driven Tool Builder mechanics');
+ if(impact.rubric.mechanicBacked<2)failures.push('v9.38 backfill mechanic must be reflected in the conversion rubric');
+ if(impact.rubric.unjustifiedGuidanceOnly!==32||impact.rubric.backlogCeiling!==32)failures.push('v9.38 first backfill pass must ratchet the unjustified guidance-only backlog to 32');
+}
 if(failures.length){console.error('Notes impact validation failed:');for(const failure of failures)console.error('- '+failure);process.exit(1);}
-console.log('Notes impact projection validated:',impact.review.reviewed+'/'+impact.review.total,'reviewed;',impact.outputCounts.fieldNotes,'public outputs; mechanic conversion',impact.rubric.mechanicBacked+'/'+impact.rubric.modeled,'('+impact.rubric.mechanicConversionPct+'%); guidance-only backlog',impact.rubric.unjustifiedGuidanceOnly+'/'+impact.rubric.backlogCeiling+' ceiling.');
+console.log('Notes impact projection validated:',impact.review.reviewed+'/'+impact.review.total,'reviewed;',impact.outputCounts.fieldNotes,'public outputs; mechanic conversion',impact.rubric.mechanicBacked+'/'+impact.rubric.modeled,'('+impact.rubric.mechanicConversionPct+'%); guidance-only backlog',impact.rubric.unjustifiedGuidanceOnly+'/'+impact.rubric.backlogCeiling+' ceiling; backfill audited',impact.outputCounts.backfillAudited+'.');

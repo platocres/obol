@@ -2,15 +2,27 @@
 (function(root){
 function schema(){return root.OBOL_TOOL_BUILDER_SCHEMA||null;}
 function effectiveBuilder(builder){
- if(!builder||builder.id!=='tb-curl'||(builder.fields||[]).some(field=>field.id==='pathAsIs'))return builder;
- const fields=Array.from(builder.fields||[]).map(field=>({...field}));
- const pathField={id:'pathAsIs',label:'Preserve URL path (--path-as-is)',type:'checkbox',help:'Keep dot-segments and encoded path structure intact instead of letting curl normalize the request path. Useful when testing traversal or path-resolution behavior.'};
- const followIndex=fields.findIndex(field=>field.id==='followRedirects');
- fields.splice(followIndex>=0?followIndex:fields.length,0,pathField);
- const tokens=Array.from(builder.command&&builder.command.tokens||[]).map(token=>({...token}));
- const urlIndex=tokens.findIndex(token=>token.kind==='field'&&token.field==='url');
- tokens.splice(urlIndex>=0?urlIndex:tokens.length,0,{kind:'toggle',field:'pathAsIs',flag:'--path-as-is'});
- return {...builder,fields,command:{...builder.command,tokens}};
+ if(!builder)return builder;
+ let fields=Array.from(builder.fields||[]).map(field=>({...field}));
+ let tokens=Array.from(builder.command&&builder.command.tokens||[]).map(token=>({...token}));
+ let changed=false;
+ if(builder.id==='tb-curl'&&!fields.some(field=>field.id==='pathAsIs')){
+  const pathField={id:'pathAsIs',label:'Preserve URL path (--path-as-is)',type:'checkbox',help:'Keep dot-segments and encoded path structure intact instead of letting curl normalize the request path. Useful when testing traversal or path-resolution behavior.'};
+  const followIndex=fields.findIndex(field=>field.id==='followRedirects');
+  fields.splice(followIndex>=0?followIndex:fields.length,0,pathField);
+  const urlIndex=tokens.findIndex(token=>token.kind==='field'&&token.field==='url');
+  tokens.splice(urlIndex>=0?urlIndex:tokens.length,0,{kind:'toggle',field:'pathAsIs',flag:'--path-as-is'});
+  changed=true;
+ }
+ if(builder.id==='tb-ffuf'&&!fields.some(field=>field.id==='autoCalibration')){
+  const calibrationField={id:'autoCalibration',label:'Auto-calibrate baseline noise (-ac)',type:'checkbox',help:'Ask ffuf to establish recurring baseline responses before widening filters. Review the calibration and distinct result rows instead of treating request volume as proof.'};
+  const matchIndex=fields.findIndex(field=>field.id==='matchCodes');
+  fields.splice(matchIndex>=0?matchIndex:fields.length,0,calibrationField);
+  const matchTokenIndex=tokens.findIndex(token=>token.field==='matchCodes');
+  tokens.splice(matchTokenIndex>=0?matchTokenIndex:tokens.length,0,{kind:'toggle',field:'autoCalibration',flag:'-ac'});
+  changed=true;
+ }
+ return changed?{...builder,fields,command:{...builder.command,tokens}}:builder;
 }
 function esc(v){return String(v==null?'':v).replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));}
 function shellQuote(v){
@@ -191,5 +203,5 @@ function mount(container,builder,context,values){
  refresh();
  return{shell,form,refresh,get command(){return code?code.textContent:'';},get values(){return collect(form,builder);}};
 }
-root.OBOL_TOOL_BUILDER=Object.freeze({version:'1.1.0',effectiveBuilder,shellQuote,truthy,conditionMatches,commandExecutable,compile,html,mount,collect,normalizeValues});
+root.OBOL_TOOL_BUILDER=Object.freeze({version:'1.2.0',effectiveBuilder,shellQuote,truthy,conditionMatches,commandExecutable,compile,html,mount,collect,normalizeValues});
 })(typeof window!=='undefined'?window:globalThis);
