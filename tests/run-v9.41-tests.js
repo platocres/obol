@@ -72,7 +72,7 @@ test('v9.41 runtime projection and dashboard report mixed ownership accurately',
  const dashboard=read('assets/product-hardening-dashboard.js');
  for(const token of ['Current runtime ownership','rc.flattenedHistoricalFragments','rc.liveHistoricalFragments','rc.liveStartupHistoricalFragments','semantic current snapshot'])assert(dashboard.includes(token),'dashboard reports '+token);
  const readme=read('README.md');
- assert(/\*\*Current runtime ownership areas:\*\* 7 owners account for 297 historical fragments — \d+ semantically flattened, \d+ still exact-owned; 30 fragments stay retired in the frozen ledger\./.test(readme),'README Product Build Next reports mixed ownership');
+ assert(/\*\*Current runtime ownership areas:\*\* 7 owners account for \d+ historical fragments — \d+ semantically flattened, \d+ still exact-owned; \d+ fragments stay retired in the frozen ledger\./.test(readme),'README Product Build Next reports mixed ownership');
 });
 
 test('v9.41 queue and item contract close runtime-domain-flattening',()=>{
@@ -82,7 +82,9 @@ test('v9.41 queue and item contract close runtime-domain-flattening',()=>{
  const rec=packages.recommend(q);
  assert(rec&&rec.id==='runtime-layer-consolidation','remaining runtime flattening stays the recommended work package');
  assert(!rec.liveItems.some(item=>item.id==='runtime-domain-flattening'),'completed domain flattening is not still listed as live work');
- for(const id of ['runtime-app-flattening','runtime-evidence-flattening','runtime-style-flattening'])assert(q.items.find(item=>item.id===id&&item.status==='queued'),id+' remains queued for a separate pass');
+ /* Demoted in v9.43: these areas are flattened one release at a time, so v9.41 owns
+    only that each stays tracked as its own pass, not that it is still unstarted. */
+ for(const id of ['runtime-app-flattening','runtime-evidence-flattening','runtime-style-flattening'])assert(q.items.find(item=>item.id===id&&['queued','complete'].includes(item.status)),id+' remains tracked as a separate pass');
 });
 
 test('v9.41 validators prove semantic and exact ownership',()=>{

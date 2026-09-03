@@ -95,7 +95,11 @@ test('v9.40 queue leads Product Build Next with the runtime consolidation packag
  assert.deepStrictEqual(Array.from(packages.validate(q)),[],'work-package metadata remains valid');
  const rec=packages.recommend(q);
  assert(rec&&rec.id==='runtime-layer-consolidation','runtime consolidation is the recommended work package');
- assert(rec.liveItems.length>=3,'remaining ownership areas are queued separately');
+ /* Demoted in v9.43: this is a burn-down counter, not a v9.40 contract. Each
+    ownership area is flattened in its own release, so the live count only falls.
+    What v9.40 owns is that the remaining areas stay tracked as separate items. */
+ assert(rec.liveItems.length>=1,'remaining ownership areas are still queued separately');
+ for(const id of ['runtime-app-flattening','runtime-evidence-flattening','runtime-style-flattening'])assert(q.items.find(i=>i.id===id),id+' remains its own tracked ownership-area pass');
  for(const id of ['runtime-area-consolidation','runtime-consolidation-sync','qa-runtime-request-budget','runtime-domain-flattening']){
   assert(q.items.find(i=>i.id===id&&i.status==='complete'),id+' is complete');
  }

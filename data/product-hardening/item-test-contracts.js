@@ -277,6 +277,17 @@ contracts['runtime-core-flattening']={
  validationCommands:['node tools/sync-core-current.js --check','node tools/validate-core-current-equivalence.js','node tools/sync-runtime-bundles.js --check','node tools/validate-runtime-bundles.js','node tools/validate-runtime-manifest.js','node tools/validate-runtime-loading.js','node tools/validate-runtime-consolidation-sync.js','node tests/run-v9.42-tests.js'],
  proofFiles:['data/runtime-manifest.js','data/runtime-consolidation-current.js','assets/obol-core-current.js','tools/sync-core-current.js','tools/validate-core-current-equivalence.js','tools/sync-runtime-bundles.js','tools/validate-runtime-bundles.js','tools/validate-runtime-manifest.js','tools/validate-runtime-loading.js','tools/validate-runtime-consolidation-sync.js','assets/runtime-current.js','assets/product-hardening-dashboard.js','README.md','CHANGELOG.md','docs/v9.42.md','docs/RUNTIME-COMPACTION.md','docs/ARCHITECTURE.md','docs/PRODUCT-HARDENING.md','tests/run-v9.42-tests.js']
 };
+contracts['runtime-app-flattening']={
+ acceptance:[
+  'The application ownership area owns only the fragments that still contribute observable behavior: the 21 release-wave overlays whose whole contribution is gated on a stale C.VERSION leave live startup, taking the area from 64 exact-owned fragments to 43, and data/runtime-manifest.js declares that retirement plus the validators that prove it.',
+  'tools/validate-app-current-equivalence.js proves the retirement structurally rather than by assertion: it reads the live C.VERSION out of the generated current core owner, requires every retired overlay to be gated on a different value, requires assets/app-v8.8.js (the one overlay matching the live identity) to stay live, and requires every top-level statement in every retired overlay to be a pass-through route wrapper or a schedule of its short-circuited decorator.',
+  'tools/validate-app-dom-equivalence.js proves the retirement empirically: every operator route plus Home, Guide, methodology, and Dashboard render identical DOM, title, and tagline with and without the retired overlays, and the retirement introduces no console or page error the pre-retirement chain did not already produce.',
+  'The retired fragments stay on disk and in the frozen historical ledger; retirement removes them from live startup only, so the 327-fragment v9.5 ledger, workspace migration, Evidence semantics, command behavior, recommendation logic, and report lineage are unchanged.',
+  'README, the Product Hardening Dashboard, the runtime consolidation projection, and the release docs all report the post-retirement figures from the one projection owner.'
+ ],
+ validationCommands:['node tools/validate-app-current-equivalence.js','node tools/validate-app-dom-equivalence.js','node tools/sync-runtime-bundles.js --check','node tools/validate-runtime-bundles.js','node tools/validate-runtime-manifest.js','node tools/validate-runtime-loading.js','node tools/validate-runtime-consolidation-sync.js','node tests/run-v9.43-tests.js'],
+ proofFiles:['data/runtime-manifest.js','data/runtime-consolidation-current.js','assets/obol-app-current.js','tools/validate-app-current-equivalence.js','tools/validate-app-dom-equivalence.js','tools/sync-runtime-bundles.js','tools/validate-runtime-bundles.js','tools/validate-runtime-loading.js','tools/validate-runtime-consolidation-sync.js','tools/scope-check.js','.github/workflows/browser-smoke.yml','assets/product-hardening-dashboard.js','README.md','CHANGELOG.md','docs/v9.43.md','docs/RUNTIME-COMPACTION.md','docs/ARCHITECTURE.md','docs/PRODUCT-HARDENING.md','tests/run-v9.43-tests.js']
+};
 contracts['runtime-consolidation-sync']={
  acceptance:[
   'data/runtime-consolidation-current.js is the single projection for runtime consolidation figures and derives everything except the recorded browser measurement from data/runtime-manifest.js.',
@@ -296,5 +307,5 @@ contracts['qa-runtime-request-budget']={
  proofFiles:['tests/playwright-smoke.js','.github/workflows/browser-smoke.yml','tests/run-v9.40-tests.js','docs/v9.40.md']
 };
 const requiredForStatuses=['modeled','complete','superseded','rejected'];
-root.OBOL_PRODUCT_HARDENING_TEST_CONTRACTS={version:'9.42.0',requiredForStatuses,contracts};
+root.OBOL_PRODUCT_HARDENING_TEST_CONTRACTS={version:'9.43.0',requiredForStatuses,contracts};
 })(typeof window!=='undefined'?window:globalThis);
