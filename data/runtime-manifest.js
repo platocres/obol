@@ -87,6 +87,19 @@ const retiredDashboardPresentation=freeze([
  ...vr('assets/app-v',5,seq(1,9),'.js'),
  ...vr('assets/app-v',6,[0,1,2,4,5],'.js')
 ]);
+/* v9.43 application-area retirement. Each of these overlays gates its entire
+   contribution on a stale workspace/runtime schema identity (`C.VERSION`), which
+   has been 8.8.0 since v8.8. Their decorators therefore return before touching the
+   DOM, leaving only a pass-through `route` wrapper and schedules of that
+   short-circuited decorator. tools/validate-app-current-equivalence.js re-derives
+   that inertness from source, and tools/validate-app-dom-equivalence.js proves it
+   in a browser. assets/app-v8.8.js is deliberately excluded: it is the one overlay
+   whose gate matches the live identity. */
+const retiredReleaseWaveOverlays=freeze([
+ ...vr('assets/app-v',6,[7,8,9],'.js'),
+ ...vr('assets/app-v',7,seq(0,9),'.js'),
+ ...vr('assets/app-v',8,seq(0,7),'.js')
+]);
 const groups=Object.freeze({domain:freeze(domain),vendor:freeze(vendor),core:freeze(core),nmap:freeze(nmap),report:freeze(report),appPrelude:freeze(appPrelude),intake:freeze(intake),app:freeze(app)});
 
 const lazy=Object.freeze({
@@ -99,7 +112,7 @@ const lazy=Object.freeze({
 });
 const deferredScriptGroups=freeze(['evidenceParsing','nmap','reportOverlays','toolReferenceData']);
 const deferredScriptSet=new Set(deferredScriptGroups.flatMap(name=>lazy[name]||[]));
-const retiredStartupSet=new Set([...historicalDashboardData,...retiredDashboardPresentation]);
+const retiredStartupSet=new Set([...historicalDashboardData,...retiredDashboardPresentation,...retiredReleaseWaveOverlays]);
 const liveHistoricalStartup=freeze(scripts.filter(src=>!deferredScriptSet.has(src)&&!retiredStartupSet.has(src)));
 const startupScripts=liveHistoricalStartup;
 const routeLazy=Object.freeze({
@@ -123,7 +136,7 @@ const surfacePolicy=Object.freeze({
  methodology:Object.freeze({policy:'semantic-current-owner-eager',owner:'assets/obol-domain-current.js',reason:'Methodology data drives Home and Next Steps ranking, so the semantic current-domain owner remains eager while the 103 versioned sources are retained only as the equivalence ledger.'}),
  toolLibrary:Object.freeze({policy:'route-lazy',owner:'toolReferenceData',reason:'Wordlist and script reference payloads are route-local and load when Tools is opened.'}),
  lineage:Object.freeze({policy:'shared-core-eager',owner:'core/app',reason:'Artifact and activity lineage participates in Evidence, recommendation, and reporting semantics across primary workflow routes.'}),
- historical:Object.freeze({policy:'compatibility-selective',owner:'scripts',reason:'The frozen historical script ledger remains available for fixtures/regression. Dashboard data/presentation owners plus the domain and core fragment chains no longer execute directly in the current runtime; other compatibility layers stay live only until their current owner and equivalence proof exist.'}),
+ historical:Object.freeze({policy:'compatibility-selective',owner:'scripts',reason:'The frozen historical script ledger remains available for fixtures/regression. Dashboard data/presentation owners, the stale-gated release-wave application overlays, and the domain and core fragment chains no longer execute directly in the current runtime; other compatibility layers stay live only until their current owner and equivalence proof exist.'}),
  evidence:Object.freeze({policy:'route-lazy',owner:'evidenceParsing',reason:'BloodHound helpers and versioned Evidence parser overlays load when Evidence/Artifacts is opened.'}),
  report:Object.freeze({policy:'route-lazy',owner:'reportOverlays',reason:'The stable base report owner stays eager; historical report overlays load on Report.'})
 });
@@ -173,6 +186,24 @@ const domainCurrent=Object.freeze({
  generator:'tools/sync-domain-current.js',
  equivalenceValidator:'tools/validate-domain-current-equivalence.js'
 });
+/* The application area stays an exact ordered concatenation of the fragments that
+   still contribute behavior. v9.43 flattened it by proving supersession instead of
+   by rewriting code: the stale-gated release-wave overlays left the live chain, and
+   the survivors are exact-owned so Evidence, command, recommendation, report, and
+   workspace semantics are untouched. */
+const appCurrent=Object.freeze({
+ owner:'assets/obol-app-current.js',
+ strategy:'ordered-fragment-concatenation',
+ sourceRelease:'v9.43',
+ historicalFragments:bundleAreas.find(area=>area.id==='app').fragments,
+ retiredFragments:retiredReleaseWaveOverlays,
+ retirementGate:'C.VERSION',
+ retirementGateValue:'8.8.0',
+ retainedGateOwner:'assets/app-v8.8.js',
+ generator:'tools/sync-runtime-bundles.js',
+ equivalenceValidator:'tools/validate-app-current-equivalence.js',
+ domEquivalenceValidator:'tools/validate-app-dom-equivalence.js'
+});
 const coreCurrent=Object.freeze({
  owner:'assets/obol-core-current.js',
  strategy:'semantic-delta-replay',
@@ -184,14 +215,14 @@ const coreCurrent=Object.freeze({
 
 const performance=Object.freeze({
  baseline:Object.freeze({historicalScripts:327,historicalStyles:69}),
- startup:Object.freeze({historicalScripts:liveHistoricalStartup.length,compatibilityPreludeScripts:startupPreludeScripts.length,totalScripts:startupPreludeScripts.length+liveHistoricalStartup.length,consolidatedStartupRequests:startupPreludeScripts.length+startupBundleScripts.length,startupBundles:startupBundleScripts.length,currentOwnerScripts:currentScripts.length,maxHistoricalScripts:236,minDeferredHistoricalScripts:61,retiredDashboardDataScripts:historicalDashboardData.length,retiredDashboardPresentationScripts:retiredDashboardPresentation.length}),
+ startup:Object.freeze({historicalScripts:liveHistoricalStartup.length,compatibilityPreludeScripts:startupPreludeScripts.length,totalScripts:startupPreludeScripts.length+liveHistoricalStartup.length,consolidatedStartupRequests:startupPreludeScripts.length+startupBundleScripts.length,startupBundles:startupBundleScripts.length,currentOwnerScripts:currentScripts.length,maxHistoricalScripts:215,minDeferredHistoricalScripts:61,retiredDashboardDataScripts:historicalDashboardData.length,retiredDashboardPresentationScripts:retiredDashboardPresentation.length,retiredReleaseWaveScripts:retiredReleaseWaveOverlays.length}),
  styleRequests:Object.freeze({currentOwner:1,historicalFragments:historicalStyles.length}),
  consolidation:Object.freeze({bundleAreas:bundleAreas.length,startupAreas:startupBundleScripts.length,lazyAreas:bundleAreas.length-startupBundleScripts.length,consolidatedFragments:bundleAreas.reduce((n,area)=>n+area.fragments.length,0)}),
  requiredDeferredGroups:deferredScriptGroups
 });
 
 return Object.freeze({
- schemaVersion:'1.10.0',
+ schemaVersion:'1.11.0',
  styles:freeze(styles),
  scripts:freeze(scripts),
  startupPreludeScripts,
@@ -199,13 +230,16 @@ return Object.freeze({
  startupScripts,
  currentScripts,
  historicalDashboardData,
- retiredStartupScripts:freeze([...historicalDashboardData,...retiredDashboardPresentation]),
+ retiredDashboardPresentation,
+ retiredReleaseWaveOverlays,
+ retiredStartupScripts:freeze([...historicalDashboardData,...retiredDashboardPresentation,...retiredReleaseWaveOverlays]),
  groups,
  node:Object.freeze({data:freeze(['data/dashboard-compat-current.js',domainCurrent.owner]),historicalData:historicalNodeData,core:freeze([coreCurrent.owner]),historicalCore:groups.core}),
  lazy,
  bundles,
  domainCurrent,
  coreCurrent,
+ appCurrent,
  startupBundleScripts,
  lazyBundles,
  deferredScriptGroups,

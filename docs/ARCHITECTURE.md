@@ -54,7 +54,7 @@ v9.40 applies the same request-consolidation rule to JavaScript. v9.41 starts se
 | --- | --- | --- | --- | --- |
 | Domain data | 103 | `assets/obol-domain-current.js` | semantic snapshot | operator startup |
 | Core state and derivation | 69 | `assets/obol-core-current.js` | semantic delta replay | operator startup |
-| Report base and application UI | 64 | `assets/obol-app-current.js` | exact concatenation | operator startup |
+| Report base and application UI | 43 | `assets/obol-app-current.js` | exact concatenation | operator startup |
 | Evidence parsing | 41 | `assets/obol-evidence-current.js` | exact concatenation | route-lazy |
 | Nmap builders | 3 | `assets/obol-nmap-current.js` | exact concatenation | route-lazy |
 | Report overlays | 14 | `assets/obol-report-overlays-current.js` | exact concatenation | route-lazy |
@@ -62,7 +62,9 @@ v9.40 applies the same request-consolidation rule to JavaScript. v9.41 starts se
 
 `data/runtime-manifest.js` owns the area definitions. `tools/sync-domain-current.js` generates the semantic domain owner and `tools/validate-domain-current-equivalence.js` proves it against the frozen historical domain graph. `tools/sync-core-current.js` generates the semantic core owner by preserving the shared v2 base scope and replaying the surviving release deltas inside isolated lexical blocks; `tools/validate-core-current-equivalence.js` proves the exported roots, `C.*` surface, migration helpers, workspace coercion, Evidence application, recommendation ranking, report readiness, project-model, search, network, sanitized-export, and Nmap-builder behavior. `tools/sync-runtime-bundles.js` generates the remaining exact-concatenation owners, and `tools/validate-runtime-bundles.js` proves their delivery-shape hazards and observable equivalence. The fragments remain on disk as the frozen regression ledger.
 
-This remains per-area work. Domain and core are flattened; app, Evidence parsing, and stylesheet flattening are still queued separately because each has a different equivalence and workspace-migration surface.
+v9.43 adds the application area's own proof pair. `tools/validate-app-current-equivalence.js` proves from source that the 21 retired release-wave overlays cannot execute — each gates its whole contribution on a `C.VERSION` the current core owner no longer ships — and `tools/validate-app-dom-equivalence.js` proves in Chromium that removing them leaves every route's DOM unchanged. The surviving 43 fragments stay byte-identical inside the owner.
+
+This remains per-area work. Domain and core are flattened semantically and the application area is flattened by retirement; Evidence parsing and stylesheet flattening are still queued separately because each has a different equivalence and workspace-migration surface.
 
 `data/runtime-consolidation-current.js` is the single projection for consolidation figures; the Product Hardening Dashboard and the generated README block both read it, and `tools/validate-runtime-consolidation-sync.js` fails when they drift apart.
 

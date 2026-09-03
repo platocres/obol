@@ -52,6 +52,11 @@ jobs:
           OBOL_SMOKE_OUTPUT: artifacts/playwright-smoke
         run: node tests/playwright-smoke.js
 
+      - name: Prove the v9.43 application retirement in a browser
+        env:
+          OBOL_SMOKE_BASE_URL: http://127.0.0.1:4173/index.html
+        run: node tools/validate-app-dom-equivalence.js
+
       - name: Upload browser screenshots
         if: always()
         uses: actions/upload-artifact@v4

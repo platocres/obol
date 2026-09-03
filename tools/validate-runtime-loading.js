@@ -15,7 +15,7 @@ assert.strictEqual(manifest.performance.baseline.historicalScripts,327,'frozen v
 assert.strictEqual(manifest.performance.baseline.historicalStyles,69,'frozen v9.5 historical stylesheet baseline stays 69');
 assert.strictEqual(manifest.scripts.length,327,'compatibility script ledger remains complete');
 assert(manifest.startupScripts.length<=manifest.performance.startup.maxHistoricalScripts,'startup historical script budget exceeded');
-assert.strictEqual(manifest.startupScripts.length,236,'dashboard data and presentation retirement reduces operator historical startup from 266 to 236 scripts');
+assert.strictEqual(manifest.startupScripts.length,215,'dashboard and v9.43 release-wave retirement reduces operator historical startup from 266 to 215 scripts');
 assert.deepStrictEqual(manifest.startupPreludeScripts,['data/dashboard-compat-current.js'],'one stable data-only compatibility seam precedes historical core startup');
 assert.strictEqual(manifest.performance.startup.compatibilityPreludeScripts,1,'runtime budget accounts for the compatibility prelude separately from historical scripts');
 assert.strictEqual(manifest.currentScripts.length,1,'v9.29 introduces one stable current runtime owner');
@@ -27,18 +27,28 @@ const expectedDashboardPresentation=[
  ...Array.from({length:9},(_,i)=>'assets/app-v5.'+(i+1)+'.js'),
  ...['6.0','6.1','6.2','6.4','6.5'].map(v=>'assets/app-v'+v+'.js')
 ];
+/* v9.43: release-wave overlays gated on a stale C.VERSION. app-v8.8.js is excluded
+   because its gate matches the live workspace/runtime schema identity. */
+const expectedReleaseWaveOverlays=[
+ ...['6.7','6.8','6.9'].map(v=>'assets/app-v'+v+'.js'),
+ ...Array.from({length:10},(_,i)=>'assets/app-v7.'+i+'.js'),
+ ...Array.from({length:8},(_,i)=>'assets/app-v8.'+i+'.js')
+];
 const retired=manifest.retiredStartupScripts||[];
 assert.deepStrictEqual(manifest.historicalDashboardData,expectedDashboardData,'all sixteen historical dashboard data owners are explicitly inventoried');
-assert.deepStrictEqual(retired,expectedDashboardData.concat(expectedDashboardPresentation),'retired live-layer ledger contains dashboard data first and dashboard-only presentation overlays second');
+assert.deepStrictEqual(retired,expectedDashboardData.concat(expectedDashboardPresentation,expectedReleaseWaveOverlays),'retired live-layer ledger contains dashboard data, dashboard-only presentation overlays, then the stale-gated release-wave overlays');
+assert.deepStrictEqual(Array.from(manifest.retiredReleaseWaveOverlays),expectedReleaseWaveOverlays,'all twenty-one stale-gated release-wave overlays are explicitly inventoried');
+assert(!expectedReleaseWaveOverlays.includes('assets/app-v8.8.js'),'the overlay gated on the live schema identity is never retired');
 assert.strictEqual(manifest.performance.startup.retiredDashboardDataScripts,16,'runtime budget accounts for retired historical dashboard data owners');
 assert.strictEqual(manifest.performance.startup.retiredDashboardPresentationScripts,14,'runtime budget accounts for retired dashboard presentation overlays');
+assert.strictEqual(manifest.performance.startup.retiredReleaseWaveScripts,21,'runtime budget accounts for retired release-wave application overlays');
 assert.strictEqual(new Set(retired).size,retired.length,'retired startup script list contains duplicates');
 for(const src of retired){assert(manifest.scripts.includes(src),'retired dashboard layer must remain in the frozen historical fixture ledger: '+src);assert(!manifest.startupScripts.includes(src),'retired dashboard layer leaked back into live startup: '+src);}
 for(const src of manifest.startupPreludeScripts){assert(!manifest.scripts.includes(src),'stable compatibility prelude must stay outside frozen historical ledger: '+src);assert(exists(src),'compatibility prelude is missing: '+src);}
 
 const excluded=manifest.scripts.filter(src=>!manifest.startupScripts.includes(src));
 assert(excluded.length>=manifest.performance.startup.minDeferredHistoricalScripts,'not enough historical scripts are excluded from compatibility startup');
-assert.strictEqual(excluded.length,91,'61 route-deferred scripts plus 30 retired dashboard layers must stay out of historical startup');
+assert.strictEqual(excluded.length,112,'61 route-deferred scripts plus 51 retired dashboard and release-wave layers must stay out of historical startup');
 assert.strictEqual(new Set(manifest.startupScripts).size,manifest.startupScripts.length,'startup script list contains duplicates');
 assert.strictEqual(new Set(manifest.currentScripts).size,manifest.currentScripts.length,'current-owner script list contains duplicates');
 for(const src of manifest.startupScripts)assert(manifest.scripts.includes(src),'startup asset is outside the frozen compatibility script ledger: '+src);
@@ -57,10 +67,11 @@ assert.strictEqual(new Set(flatDeferred).size,flatDeferred.length,'deferred scri
 for(const src of retired)assert(!flatDeferred.includes(src),'retired dashboard layer must not masquerade as a route-lazy group: '+src);
 assert.deepStrictEqual(new Set(excluded),new Set(flatDeferred.concat(retired)),'historical startup exclusions must be explained by route deferral or explicit live-layer retirement');
 
-/* Consolidation budget: the historical fragment ledger stays 236 scripts deep, but the
+/* Consolidation budget: the live historical fragment ledger is 215 scripts deep, and the
    browser must fetch one current owner per ownership area rather than one file per
    fragment. Domain is a semantic graph snapshot, core is a semantic delta replay,
-   and app remains an exact concatenation. */
+   and app remains an exact concatenation of the fragments that still contribute
+   behavior. */
 const startupBundles=manifest.startupBundleScripts||[];
 assert.strictEqual(startupBundles.length,3,'operator startup consolidates into three ownership-area bundles');
 assert.deepStrictEqual(startupBundles,['assets/obol-domain-current.js','assets/obol-core-current.js','assets/obol-app-current.js'],'startup bundle owners are stable, non-versioned, and ordered domain -> core -> app');
@@ -78,6 +89,12 @@ assert(manifest.coreCurrent&&manifest.coreCurrent.owner===coreArea.owner,'core s
 assert.strictEqual(manifest.coreCurrent.generator,'tools/sync-core-current.js','core semantic owner declares its generator');
 assert.strictEqual(manifest.coreCurrent.equivalenceValidator,'tools/validate-core-current-equivalence.js','core semantic owner declares its equivalence validator');
 for(const area of (manifest.bundles.areas||[]).filter(area=>!['domain','core'].includes(area.id)))assert.strictEqual(area.strategy,'ordered-fragment-concatenation',area.id+' remains an exact concatenation owner');
+const appArea=(manifest.bundles.areas||[]).find(area=>area.id==='app');
+assert(appArea&&manifest.appCurrent&&manifest.appCurrent.owner===appArea.owner,'application owner metadata must name the startup owner');
+assert.strictEqual(manifest.appCurrent.equivalenceValidator,'tools/validate-app-current-equivalence.js','application owner declares its retirement validator');
+assert.strictEqual(manifest.appCurrent.domEquivalenceValidator,'tools/validate-app-dom-equivalence.js','application owner declares its browser-level validator');
+assert.strictEqual(appArea.fragments.length,43,'the application owner keeps only the fragments that still contribute behavior');
+for(const rel of manifest.appCurrent.retiredFragments)assert(!appArea.fragments.includes(rel),'a retired release-wave overlay leaked back into the application owner: '+rel);
 assert.strictEqual(manifest.styles.length,1,'the browser fetches exactly one stylesheet');
 assert(!/@import/.test(read(manifest.styles[0]).replace(/^\/\*[\s\S]*?\*\/\n/,'')),'the single stylesheet owner no longer chains fragment requests');
 const lazyBundles=manifest.lazyBundles||{};
@@ -126,4 +143,4 @@ const bridge=read('assets/app-v8.8.js');
 for(const token of ['function ensureWorkflow88','function ensureProductAssets88','ensureWorkflow88().catch(()=>{})'])assert(bridge.includes(token),'v8.8 compatibility bridge missing '+token);
 assert(!/ensureProductAssets88\(\)\.catch\(\(\)=>\{\}\)/.test(bridge),'Product Dashboard assets are still eagerly requested during ordinary startup');
 
-console.log('Runtime loading budget valid: Dashboard uses one current owner; operator routes load one stable metadata prelude plus '+startupBundles.length+' startup owners covering '+manifest.startupScripts.length+' historical scripts (domain semantic, core semantic replay, app exact), with 61 route-deferred fragments behind '+Object.keys(lazyBundles).length+' owners and 30 Dashboard data/presentation layers retired to the frozen fixture ledger.');
+console.log('Runtime loading budget valid: Dashboard uses one current owner; operator routes load one stable metadata prelude plus '+startupBundles.length+' startup owners covering '+manifest.startupScripts.length+' historical scripts (domain semantic, core semantic replay, app exact), with 61 route-deferred fragments behind '+Object.keys(lazyBundles).length+' owners and '+retired.length+' Dashboard data/presentation and stale-gated release-wave layers retired to the frozen fixture ledger.');

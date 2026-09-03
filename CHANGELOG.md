@@ -6,7 +6,7 @@ The README is intentionally reserved for current product purpose, permanent oper
 
 ## v9.43 — Application ownership area flattening
 
-- Retired the 21 superseded release-wave application overlays (`assets/app-v6.7.js` … `assets/app-v8.7.js`) from live startup, shrinking the application ownership area from 64 exact-owned fragments to 43 while keeping every retired file in the frozen historical ledger.
+- Retired the 21 superseded release-wave application overlays (`assets/app-v6.7.js` … `assets/app-v8.7.js`) from live startup, shrinking the application ownership area from 64 exact-owned fragments to 43 while keeping every retired file in the frozen historical ledger. `assets/obol-app-current.js` drops from 412 KB to 361 KB, so every operator page load parses ~50 KB less JavaScript.
 - Added `tools/validate-app-current-equivalence.js`, which proves each retired overlay is structurally inert under the shipped runtime: its entire contribution is gated on a stale `C.VERSION`, and its only top-level effects are a pass-through `route` wrapper plus schedules of that permanently short-circuited decorator.
 - Added `tools/validate-app-dom-equivalence.js`, a browser-level proof that every operator route renders byte-identical DOM with and without the retired overlays; the browser smoke workflow now runs it alongside the request-budget smoke.
 - Updated the runtime manifest, consolidation projection, dashboard, and README so the retired ledger reports 51 fragments and the application owner reports its post-retirement fragment count.

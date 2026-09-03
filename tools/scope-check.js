@@ -14,6 +14,7 @@ const checks=[
  ['tools/sync-core-current.js','--check'],
  ['tools/validate-core-current-equivalence.js'],
  ['tools/sync-runtime-bundles.js','--check'],
+ ['tools/validate-app-current-equivalence.js'],
  ['tools/validate-runtime-bundles.js'],
  ['tools/validate-runtime-consolidation-sync.js'],
  ['tools/validate-dashboard-compat-equivalence.js'],
@@ -25,7 +26,9 @@ const checks=[
  ['tests/run-v9.29-tests.js'],
  ['tests/run-v9.31-tests.js'],
  ['tests/run-v9.40-tests.js'],
- ['tests/run-v9.41-tests.js']
+ ['tests/run-v9.41-tests.js'],
+ ['tests/run-v9.42-tests.js'],
+ ['tests/run-v9.43-tests.js']
 ];
 for(const args of checks){
  const result=cp.spawnSync(process.execPath,args.map((part,idx)=>idx===0?path.join(root,part):part),{cwd:root,encoding:'utf8'});
