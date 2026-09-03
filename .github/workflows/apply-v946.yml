@@ -1,5 +1,5 @@
 name: Apply Obol v9.46 release changes
-# retry 3: resilient runtime anchor
+# retry 4: fixed helper rewrite newlines
 
 on:
   push:
