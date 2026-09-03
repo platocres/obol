@@ -4,7 +4,7 @@ Obol is a static, browser-local workspace for OSCP-style labs, Active Directory 
 
 Live site: `https://platocres.github.io/obol/`
 
-Current release: **v9.36**
+Current release: **v9.37**
 
 Open `#/dashboard` for the active Product Hardening Dashboard and Product Build Next queue.
 
@@ -70,7 +70,7 @@ Queue tracks, work-package rules, notes-integration policy, and runtime-compacti
 This block is generated from `data/product-hardening/product-hardening-queue.js`. Do not edit it manually.
 Recommended work-package metadata comes from `data/product-hardening/work-packages.js`.
 
-**Current product-hardening queue:** 197/640 complete (31%), 11 queued, 9 foundation items modeled.
+**Current product-hardening queue:** 198/640 complete (31%), 10 queued, 9 foundation items modeled.
 **Private notes source:** `platocres/obol-source-notes` — 556 notes and 1326 embedded resources accounted.
 **Notes Integration:** 127/556 reviewed — 95 modeled, 27 private-only, 429 pending.
 **Derived note guidance:** 48 Field Notes · 43 tool-bound · 45 Path-bound · 14 Evidence · 5 Report.
@@ -97,15 +97,15 @@ Recommended work-package metadata comes from `data/product-hardening/work-packag
 2. **Re-audit all reviewed notes for missed mechanics** — Re-audit every note already processed under the old rubric — all 127 reviewed, not only the 95 modeled — because the defect was the review standard itself. Re-judge modeled, guidance-only, reviewed-not-modeled, and private-only dispositions against the new bar and convert to declared product changes (tool toggle, Path branch, evidence rule, report/workflow change) wherever one was missed. Cheaper than fresh review since rationales already exist; distinct from the first-pass review of the 429 pending notes.
 3. **Notes packet: Linux privilege escalation** — Mine Linux privilege-escalation discovery, evidence, tool options, failure modes, path branches, proof boundaries, and reporting guidance.
 4. **Notes packet: AD and pivoting** — Mine Active Directory, lateral movement, tunneling, pivoting, routing, credential use, evidence boundaries, and missing workflow/tool options.
-5. **Path three-mode rendering over one graph** — Render checklist, simplified, and live-map views as three renderers over the existing nextStepsOverview34 graph. Add the pan/zoom SVG map renderer and explicit view-mode switching on assets/operator-route-current.js so a technique authored once updates every view.
-6. **UI quality audit rubric** — Add a fixed per-screen audit checklist under docs/visual-qa/ (hierarchy, density, consistency, affordance, state feedback, accessibility). Run once per primary screen and file each finding as its own queue item instead of ad-hoc fixes.
-7. **Quiet service worker caching** — Improve repeat-load and offline behavior without prompting users to install anything.
-8. **IndexedDB workspace storage** — Support durable larger local workspaces, multiple engagements, and cached indexes while remaining browser-local.
+5. **UI quality audit rubric** — Add a fixed per-screen audit checklist under docs/visual-qa/ (hierarchy, density, consistency, affordance, state feedback, accessibility). Run once per primary screen and file each finding as its own queue item instead of ad-hoc fixes.
+6. **Quiet service worker caching** — Improve repeat-load and offline behavior without prompting users to install anything.
+7. **IndexedDB workspace storage** — Support durable larger local workspaces, multiple engagements, and cached indexes while remaining browser-local.
+8. **Web Workers for heavy tasks** — Move evidence parsing, search indexing, and report generation off the UI thread.
 
 **Track status:**
 - **Critical correctness:** 4/4 complete (100%), 0 modeled.
 - **Architecture / runtime:** 10/13 complete (77%), 3 modeled.
-- **UI / UX repair:** 8/10 complete (80%), 1 modeled.
+- **UI / UX repair:** 9/10 complete (90%), 1 modeled.
 - **Tool GUI builders:** 19/19 complete (100%), 0 modeled.
 - **Credential modes:** 14/14 complete (100%), 0 modeled.
 - **Manual outcomes:** 8/8 complete (100%), 0 modeled.

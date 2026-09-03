@@ -87,6 +87,18 @@ Card and Tools routes now put current schema-driven builders first. Additional b
 
 Future route-retirement work should follow this pattern: current owner first, visible clutter collapsed, equivalence proven, then old live layers removed area by area.
 
+## v9.37 Path three-mode baseline
+
+v9.37 keeps the v9.31 current route owner and adds three explicit Path views without adding another historical runtime layer.
+
+`assets/operator-route-current.js` now derives one normalized model from `C.nextStepsOverview34(...)`. Simplified, Checklist, and Live Map all render from that model so a ranked technique, planned state, or unlock relationship is authored once and reflected everywhere.
+
+The view switch is a labeled button group with `aria-pressed` state, and the selected view persists in browser-local workspace UI state. Simplified remains the compact next-move scan path. Checklist expands the same recommendations into an ordered work list with status, lane, reason, unlock impact, and planning/open actions. Live Map renders the same action-to-unlock relationships as SVG nodes and edges with clickable technique links, explicit pan/zoom controls, pointer drag, and wheel zoom.
+
+The map does not create a proof source. Evidence review, manual outcomes, queued intent, and report proof readiness remain owned by the existing workflow mechanics.
+
+`tools/validate-path-views.js` protects the shared-model renderer contract, CSS affordances, queue completion, no-fake-layer rule, and SVG pan/zoom wiring.
+
 ## v9.11 responsive-density baseline
 
 v9.11 completes `ux-mobile-density` with a stable current responsive-layout owner rather than another historical stylesheet layer.

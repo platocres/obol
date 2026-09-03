@@ -4,6 +4,12 @@ This file is the release-history source for Obol. Future build work should revie
 
 The README is intentionally reserved for current product purpose, permanent operating and build requirements, current architecture/state, and forward priorities. Release narratives and historical implementation summaries belong here, not in README.
 
+## v9.37 — Path three-mode rendering
+
+- Completed `ux-path-three-mode`: Next Steps now renders Simplified, Checklist, and Live Map views from one normalized `C.nextStepsOverview34(...)` model.
+- Added browser-local view-mode persistence plus SVG Live Map pan/zoom controls, pointer drag, wheel zoom, action links, and planned-work actions without adding a versioned runtime layer.
+- Added `tools/validate-path-views.js`, wired it into current workflow validation, scope check, release preflight, and the v9.37 regression suite.
+
 ## v9.36 — Notes conversion rubric and script disposition
 
 - Enforced the notes conversion rubric (`notes-conversion-rubric`): the notes-impact projection exposes a `rubric` over modeled notes (mechanic-backed, justified guidance-only, unjustified guidance-only, compliant, and `mechanicConversionPct`), and `tools/validate-notes-impact.js` ratchets the unjustified guidance-only backlog against a frozen ceiling so it can only shrink. Mechanic conversion, not review count, is the primary notes metric (current state: 1/95, backlog 43/43).

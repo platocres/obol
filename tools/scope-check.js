@@ -9,6 +9,7 @@ const checks=[
  ['tools/validate-runtime-manifest.js'],
  ['tools/validate-runtime-loading.js'],
  ['tools/validate-dashboard-compat-equivalence.js'],
+ ['tools/validate-path-views.js'],
  ['tools/validate-asset-references.js'],
  ['tools/audit-dashboard-runtime-dependencies.js','--require-retired'],
  ['tools/sync-current-release.js','--check'],
@@ -21,4 +22,4 @@ for(const args of checks){
  process.stdout.write(result.stdout||'');process.stderr.write(result.stderr||'');
  if(result.status!==0)process.exit(result.status||1);
 }
-console.log('Current v9.31 scope check passed.');
+console.log('Current product-hardening scope check passed.');
