@@ -4,7 +4,7 @@ Obol is a static, browser-local workspace for OSCP-style labs, Active Directory 
 
 Live site: `https://platocres.github.io/obol/`
 
-Current release: **v9.44**
+Current release: **v9.45**
 
 Open `#/dashboard` for the active Product Hardening Dashboard and Product Build Next queue.
 
@@ -72,7 +72,7 @@ This block is generated from `data/product-hardening/product-hardening-queue.js`
 Recommended work-package metadata comes from `data/product-hardening/work-packages.js`.
 Runtime consolidation figures come from `data/runtime-consolidation-current.js`, the same projection the Product Hardening Dashboard renders.
 
-**Current product-hardening queue:** 205/649 complete (32%), 12 queued, 9 foundation items modeled.
+**Current product-hardening queue:** 206/649 complete (32%), 11 queued, 9 foundation items modeled.
 **Private notes source:** `platocres/obol-source-notes` — 556 notes and 1326 embedded resources accounted.
 **Notes Integration:** 127/556 reviewed — 95 modeled, 27 private-only, 429 pending.
 **Derived note guidance:** 48 Field Notes · 43 tool-bound · 45 Path-bound · 14 Evidence · 5 Report.
@@ -85,30 +85,28 @@ Runtime consolidation figures come from `data/runtime-consolidation-current.js`,
 **Measured in Chromium (v9.40):** Home 321→19 · Next Steps 329→27 · Evidence 365→21 · Report 335→20 JavaScript/CSS requests.
 **Runtime compaction contract:** `docs/RUNTIME-COMPACTION.md`.
 
-**Recommended work package:** **Runtime Layer Consolidation** — 1 live item / 8 tracked.
-**Work-package entry:** **Flatten the stylesheet ownership area**
-**Ownership area:** `runtime/ownership-areas`
-**Package guidance:** Request consolidation is done: every ownership area now loads one generated owner instead of one request per historical fragment, proven equivalent and enforced by a browser request budget. What remains is semantic flattening, one ownership area at a time. For each area, prove which fragments still encode unique behavior, move that behavior onto the current owner, retire the superseded fragments from the frozen ledger, and retire the assertions that only protected their delivery shape. Do not flatten two areas in one pass — each has its own equivalence and migration surface.
-**Package dependencies:** Runtime Consolidation Foundation, Dashboard Runtime Compaction
+**Recommended work package:** **Restore the broken Evidence overlay chain** — 1 live item / 1 tracked.
+**Work-package entry:** **Restore the broken Evidence overlay chain**
+**Ownership area:** `critical-correctness`
+**Package guidance:** Complete the highest-priority item. Before stopping, inspect adjacent queue work for a coherent same-ownership package.
+**Package dependencies:** none.
 
 **Live items in this package:**
-- **Flatten the stylesheet ownership area** — The single stylesheet owner is a flat concatenation of 69 fragments that still override each other. Collapse dead and superseded rules into an authored current stylesheet once visual regression proof exists.
-
-**Related items to consider, not automatically in scope:** Runtime compaction and test-retirement policy; No new layered queue architecture; Bundle and request budget.
+- **Restore the broken Evidence overlay chain** — intake-v7.7 hooks a predecessor global that never exposes analyzeTerminal, so intake-v7.7/v7.8/v7.9/v8.2 never ran in production. The no-credentials poisoning/coercion (beyond v7.6), relay-SOCKS, WebDAV coercion, Windows local-exploit, and offline-cracking Evidence they were written to add is therefore missing. Re-home that conservative Evidence onto the live chain (correct the hook target or re-author onto OBOL_INTAKE_V21) with proof boundaries intact, and add regression coverage that would have caught the broken link.
 
 **Highest-priority live items:**
-1. **Flatten the stylesheet ownership area** — The single stylesheet owner is a flat concatenation of 69 fragments that still override each other. Collapse dead and superseded rules into an authored current stylesheet once visual regression proof exists.
-2. **Restore the broken Evidence overlay chain** — intake-v7.7 hooks a predecessor global that never exposes analyzeTerminal, so intake-v7.7/v7.8/v7.9/v8.2 never ran in production. The no-credentials poisoning/coercion (beyond v7.6), relay-SOCKS, WebDAV coercion, Windows local-exploit, and offline-cracking Evidence they were written to add is therefore missing. Re-home that conservative Evidence onto the live chain (correct the hook target or re-author onto OBOL_INTAKE_V21) with proof boundaries intact, and add regression coverage that would have caught the broken link.
-3. **Burn down all 556 note dispositions** — Umbrella disposition goal. Review work should be executed in themed packets and must record what each modeled note changed in Field Notes, tools, Path, Evidence, reports, troubleshooting, or product gaps.
-4. **Re-audit all reviewed notes for missed mechanics** — Re-audit every note already processed under the old rubric — all 127 reviewed, not only the 95 modeled — because the defect was the review standard itself. Re-judge modeled, guidance-only, reviewed-not-modeled, and private-only dispositions against the new bar and convert to declared product changes (tool toggle, Path branch, evidence rule, report/workflow change) wherever one was missed. Cheaper than fresh review since rationales already exist; distinct from the first-pass review of the 429 pending notes.
-5. **Notes packet: Linux privilege escalation** — Mine Linux privilege-escalation discovery, evidence, tool options, failure modes, path branches, proof boundaries, and reporting guidance.
-6. **Notes packet: AD and pivoting** — Mine Active Directory, lateral movement, tunneling, pivoting, routing, credential use, evidence boundaries, and missing workflow/tool options.
-7. **UI quality audit rubric** — Add a fixed per-screen audit checklist under docs/visual-qa/ (hierarchy, density, consistency, affordance, state feedback, accessibility). Run once per primary screen and file each finding as its own queue item instead of ad-hoc fixes.
-8. **Quiet service worker caching** — Improve repeat-load and offline behavior without prompting users to install anything.
+1. **Restore the broken Evidence overlay chain** — intake-v7.7 hooks a predecessor global that never exposes analyzeTerminal, so intake-v7.7/v7.8/v7.9/v8.2 never ran in production. The no-credentials poisoning/coercion (beyond v7.6), relay-SOCKS, WebDAV coercion, Windows local-exploit, and offline-cracking Evidence they were written to add is therefore missing. Re-home that conservative Evidence onto the live chain (correct the hook target or re-author onto OBOL_INTAKE_V21) with proof boundaries intact, and add regression coverage that would have caught the broken link.
+2. **Burn down all 556 note dispositions** — Umbrella disposition goal. Review work should be executed in themed packets and must record what each modeled note changed in Field Notes, tools, Path, Evidence, reports, troubleshooting, or product gaps.
+3. **Re-audit all reviewed notes for missed mechanics** — Re-audit every note already processed under the old rubric — all 127 reviewed, not only the 95 modeled — because the defect was the review standard itself. Re-judge modeled, guidance-only, reviewed-not-modeled, and private-only dispositions against the new bar and convert to declared product changes (tool toggle, Path branch, evidence rule, report/workflow change) wherever one was missed. Cheaper than fresh review since rationales already exist; distinct from the first-pass review of the 429 pending notes.
+4. **Notes packet: Linux privilege escalation** — Mine Linux privilege-escalation discovery, evidence, tool options, failure modes, path branches, proof boundaries, and reporting guidance.
+5. **Notes packet: AD and pivoting** — Mine Active Directory, lateral movement, tunneling, pivoting, routing, credential use, evidence boundaries, and missing workflow/tool options.
+6. **UI quality audit rubric** — Add a fixed per-screen audit checklist under docs/visual-qa/ (hierarchy, density, consistency, affordance, state feedback, accessibility). Run once per primary screen and file each finding as its own queue item instead of ad-hoc fixes.
+7. **Quiet service worker caching** — Improve repeat-load and offline behavior without prompting users to install anything.
+8. **IndexedDB workspace storage** — Support durable larger local workspaces, multiple engagements, and cached indexes while remaining browser-local.
 
 **Track status:**
 - **Critical correctness:** 4/5 complete (80%), 0 modeled.
-- **Architecture / runtime:** 16/20 complete (80%), 3 modeled.
+- **Architecture / runtime:** 17/20 complete (85%), 3 modeled.
 - **UI / UX repair:** 9/10 complete (90%), 1 modeled.
 - **Tool GUI builders:** 19/19 complete (100%), 0 modeled.
 - **Credential modes:** 14/14 complete (100%), 0 modeled.

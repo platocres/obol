@@ -37,13 +37,19 @@ test('v9.40 gives every runtime ownership area exactly one consolidated owner',(
  assert.strictEqual(manifest.compatibility.historicalStyles.length,fixture.styleCount,'frozen historical stylesheet ledger is untouched');
 });
 
-test('v9.40 stylesheet owner is one flattened cascade rather than an import chain',()=>{
+test('v9.40 stylesheet owner remains one request over the frozen compatibility ledger',()=>{
  assert.deepStrictEqual(Array.from(manifest.styles),['assets/obol-current.css'],'one stable stylesheet owner');
+ assert.strictEqual(manifest.compatibility.historicalStyles.length,69,'frozen stylesheet ledger remains explicit');
  const css=read('assets/obol-current.css').replace(/\r\n/g,'\n');
- const body=css.replace(/^\/\*[\s\S]*?\*\/\n/,'');
- assert(!/@import/.test(body),'the stylesheet owner no longer chains fragment fetches');
- const markers=[...css.matchAll(/\/\* obol-style-fragment: ([^ ]+) \*\//g)].map(m=>m[1]);
- assert.deepStrictEqual(markers,Array.from(manifest.compatibility.historicalStyles),'flattened cascade preserves exact fragment order');
+ assert(!/@import\b/.test(css),'the stylesheet owner no longer chains fragment fetches');
+ if(manifest.styleCurrent&&manifest.styleCurrent.strategy==='semantic-cascade-snapshot'){
+  assert(css.includes('semantic cascade snapshot'),'later semantic flattening may replace the exact v9.40 delivery shape');
+  assert(!/obol-style-fragment:/.test(css),'later semantic owner no longer needs fragment markers');
+  assert.deepStrictEqual(Array.from(manifest.styleCurrent.historicalFragments),Array.from(manifest.compatibility.historicalStyles),'semantic owner still points at the v9.40 frozen ledger');
+ }else{
+  const markers=[...css.matchAll(/\/\* obol-style-fragment: ([^ ]+) \*\//g)].map(m=>m[1]);
+  assert.deepStrictEqual(markers,Array.from(manifest.compatibility.historicalStyles),'v9.40 exact owner preserves fragment order');
+ }
 });
 
 test('v9.40 browser loads consolidated owners and keeps the fragment ledger reachable',()=>{

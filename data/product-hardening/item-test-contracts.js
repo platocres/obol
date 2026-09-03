@@ -299,6 +299,17 @@ contracts['runtime-evidence-flattening']={
  validationCommands:['node tools/validate-evidence-current-equivalence.js','node tools/sync-runtime-bundles.js --check','node tools/validate-runtime-bundles.js','node tools/validate-runtime-manifest.js','node tools/validate-runtime-loading.js','node tools/validate-runtime-consolidation-sync.js','node tests/run-v9.44-tests.js'],
  proofFiles:['data/runtime-manifest.js','data/runtime-consolidation-current.js','assets/obol-evidence-current.js','tools/validate-evidence-current-equivalence.js','tools/sync-runtime-bundles.js','tools/validate-runtime-bundles.js','tools/validate-runtime-loading.js','tools/validate-runtime-consolidation-sync.js','tools/scope-check.js','assets/product-hardening-dashboard.js','README.md','CHANGELOG.md','docs/v9.44.md','docs/RUNTIME-COMPACTION.md','docs/ARCHITECTURE.md','tests/run-v9.44-tests.js']
 };
+contracts['runtime-style-flattening']={
+ acceptance:[
+  'assets/obol-current.css remains the one stable non-versioned live stylesheet owner, while data/runtime-manifest.js declares it as a semantic-cascade-snapshot generated from the complete frozen 69-fragment compatibility ledger rather than an exact fragment concatenation.',
+  'tools/style-cascade-current.js removes only provably superseded declarations for the exact same selector/property/grouping-at-rule context, preserves important precedence and conservative vendor/fallback chains, and tools/validate-style-current-equivalence.js mutation-tests those safety boundaries while requiring deterministic regeneration.',
+  'tools/validate-style-visual-equivalence.js independently proves the semantic snapshot in Chromium by comparing layout geometry and computed styles for every rendered element and visible pseudo-element against the exact historical cascade across representative operator routes at desktop and mobile widths.',
+  'The frozen stylesheet files, v9.5 order/cardinality fingerprint, one-request runtime budget, accessibility owners, responsive behavior, browser-local workspace state, Evidence/proof semantics, command generation, recommendation logic, and reporting remain intact.',
+  'The Product Hardening queue, Dashboard, README handoff, architecture/runtime docs, and release history report stylesheet flattening complete, so Runtime Layer Consolidation has no live items and Product Build Next advances to the queued Evidence correctness defect.'
+ ],
+ validationCommands:['node tools/sync-current-styles.js --check','node tools/validate-style-current-equivalence.js','node tools/validate-style-visual-equivalence.js','node tools/validate-runtime-manifest.js','node tools/validate-runtime-loading.js','node tests/run-v9.45-tests.js'],
+ proofFiles:['data/runtime-manifest.js','assets/obol-current.css','tools/style-cascade-current.js','tools/sync-current-styles.js','tools/validate-style-current-equivalence.js','tools/validate-style-visual-equivalence.js','.github/workflows/browser-smoke.yml','assets/product-hardening-dashboard.js','data/product-hardening/product-hardening-queue.js','README.md','CHANGELOG.md','docs/v9.45.md','docs/RUNTIME-COMPACTION.md','docs/ARCHITECTURE.md','docs/PRODUCT-HARDENING.md','tests/run-v9.45-tests.js']
+};
 contracts['runtime-consolidation-sync']={
  acceptance:[
   'data/runtime-consolidation-current.js is the single projection for runtime consolidation figures and derives everything except the recorded browser measurement from data/runtime-manifest.js.',
@@ -318,5 +329,5 @@ contracts['qa-runtime-request-budget']={
  proofFiles:['tests/playwright-smoke.js','.github/workflows/browser-smoke.yml','tests/run-v9.40-tests.js','docs/v9.40.md']
 };
 const requiredForStatuses=['modeled','complete','superseded','rejected'];
-root.OBOL_PRODUCT_HARDENING_TEST_CONTRACTS={version:'9.44.0',requiredForStatuses,contracts};
+root.OBOL_PRODUCT_HARDENING_TEST_CONTRACTS={version:'9.45.0',requiredForStatuses,contracts};
 })(typeof window!=='undefined'?window:globalThis);

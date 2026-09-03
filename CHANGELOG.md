@@ -4,6 +4,14 @@ This file is the release-history source for Obol. Future build work should revie
 
 The README is intentionally reserved for current product purpose, permanent operating and build requirements, current architecture/state, and forward priorities. Release narratives and historical implementation summaries belong here, not in README.
 
+## v9.45 — Stylesheet ownership area flattening
+
+- Replaced the live 69-fragment exact CSS concatenation with a generated semantic cascade snapshot in `assets/obol-current.css` while retaining every historical stylesheet file and the frozen v9.5 order fingerprint as the compatibility ledger.
+- Added `tools/style-cascade-current.js`; the conservative reducer removes only declarations superseded under exact selector/property/grouping-context identity, taking 1,817 source style rules / 5,524 declarations to 1,809 rules / 5,496 declarations while preserving important precedence, fallback-sensitive chains, unknown at-rules, and non-identical contexts.
+- Added `tools/validate-style-current-equivalence.js` for deterministic regeneration plus mutation-tested cascade safety boundaries, and `tools/validate-style-visual-equivalence.js` for an independent Chromium comparison against the exact historical cascade across seven routes at desktop and mobile widths.
+- Currentized the v9.40 historical stylesheet assertion so it keeps protecting the frozen ledger and one-request owner without forcing exact-fragment delivery shape back into the current runtime.
+- Closed `runtime-style-flattening`, completing the Runtime Layer Consolidation package and advancing Product Build Next to `cc-evidence-chain-restore`.
+
 ## v9.44 — Evidence parsing ownership area flattening
 
 - Retired four Intake parser overlays (`assets/intake-v7.7.js`, `assets/intake-v7.8.js`, `assets/intake-v7.9.js`, `assets/intake-v8.2.js`) from the live runtime, shrinking the route-lazy Evidence ownership area from 41 exact-owned fragments to 37 while keeping every retired file in the frozen historical ledger. `assets/obol-evidence-current.js` drops from ~355 KB to ~339 KB, so the first Evidence/Artifacts open parses ~16 KB less JavaScript.

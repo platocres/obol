@@ -7,6 +7,8 @@ const checks=[
  ['tools/validate-note-integration.js'],
  ['tools/validate-note-mechanic-backfill.js'],
  ['tools/validate-product-hardening-queue.js'],
+ ['tools/sync-current-styles.js','--check'],
+ ['tools/validate-style-current-equivalence.js'],
  ['tools/validate-runtime-manifest.js'],
  ['tools/validate-runtime-loading.js'],
  ['tools/sync-domain-current.js','--check'],
@@ -30,7 +32,8 @@ const checks=[
  ['tests/run-v9.41-tests.js'],
  ['tests/run-v9.42-tests.js'],
  ['tests/run-v9.43-tests.js'],
- ['tests/run-v9.44-tests.js']
+ ['tests/run-v9.44-tests.js'],
+ ['tests/run-v9.45-tests.js']
 ];
 for(const args of checks){
  const result=cp.spawnSync(process.execPath,args.map((part,idx)=>idx===0?path.join(root,part):part),{cwd:root,encoding:'utf8'});

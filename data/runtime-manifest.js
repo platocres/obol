@@ -19,6 +19,15 @@ const historicalStyles=[
  ...vr('assets/obol-v',8,seq(0,8),'.css')
 ];
 const styles=['assets/obol-current.css'];
+const styleCurrent=Object.freeze({
+ owner:'assets/obol-current.css',
+ strategy:'semantic-cascade-snapshot',
+ sourceRelease:'v9.45',
+ historicalFragments:freeze(historicalStyles),
+ generator:'tools/sync-current-styles.js',
+ equivalenceValidator:'tools/validate-style-current-equivalence.js',
+ visualEquivalenceValidator:'tools/validate-style-visual-equivalence.js'
+});
 
 const domain=[
  'data/lanes.js','data/methodology-v2.2.js','data/methodology-v2.3.js','data/methodology-v2.5.js','data/tools-v2.2.js',
@@ -260,8 +269,9 @@ const performance=Object.freeze({
 });
 
 return Object.freeze({
- schemaVersion:'1.12.0',
+ schemaVersion:'1.13.0',
  styles:freeze(styles),
+ styleCurrent,
  scripts:freeze(scripts),
  startupPreludeScripts,
  historicalStartupScripts:liveHistoricalStartup,

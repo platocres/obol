@@ -64,18 +64,26 @@ assert(!/addCommand\s*\(|addTool\s*\(|\.produces\.push|\.prereq\s*=/.test(dashbo
 const sourceDelivery65=read('data/source-delivery-v6.5.js');
 for(const token of ['Certify.exe find /vulnerable','certutil -v -dsTemplate','adcs.agent_certificate','adcs.target_certificate','sourceDepthAudit62'])assert(sourceDelivery65.includes(token),'v6.5 product behavior remains owned by source-delivery-v6.5.js after Dashboard data retirement: '+token);
 
-/* The single stylesheet owner is now a flattened cascade rather than an @import chain:
-   same fragments, same order, one request instead of seventy. */
-const css=read(manifest.compatibility.styleOwner).replace(/\r\n/g,'\n');
-const styleMarkers=[...css.matchAll(/\/\* obol-style-fragment: ([^ ]+) \*\//g)].map(m=>m[1]);
-assert.deepStrictEqual(styleMarkers,historicalStyles,'current stylesheet flattens historical fragments in exact cascade order');
-const cssBody=css.replace(/^\/\*[\s\S]*?\*\/\n/,'');
-assert(!/@import/.test(cssBody),'flattened stylesheet owner costs one request and no longer chains @import fetches');
-assert.strictEqual(
- cssBody.replace(/\/\* obol-style-fragment: [^\n]*\*\/\n/g,''),
- historicalStyles.map(rel=>read(rel).replace(/\r\n/g,'\n').replace(/\s+$/,'')+'\n').join(''),
- 'current stylesheet owner is a pure generated cascade projection, not a competing style layer'
-);
+/* v9.45 keeps one stable stylesheet owner but retires the exact 69-fragment
+   concatenation shape. The historical list/order fingerprint above remains frozen;
+   tools/sync-current-styles.js now derives the semantic cascade snapshot and a real
+   browser proof compares it with the exact historical cascade. */
+const styleMeta=manifest.styleCurrent;
+assert(styleMeta&&styleMeta.owner===manifest.compatibility.styleOwner,'runtime manifest declares stylesheet current-owner metadata');
+assert.strictEqual(styleMeta.strategy,'semantic-cascade-snapshot','stylesheet current owner is semantic rather than historical-fragment concatenation');
+assert.strictEqual(styleMeta.sourceRelease,'v9.45','stylesheet semantic owner records the flattening release');
+assert.strictEqual(styleMeta.generator,'tools/sync-current-styles.js','stylesheet semantic owner declares its generator');
+assert.strictEqual(styleMeta.equivalenceValidator,'tools/validate-style-current-equivalence.js','stylesheet semantic owner declares its static proof');
+assert.strictEqual(styleMeta.visualEquivalenceValidator,'tools/validate-style-visual-equivalence.js','stylesheet semantic owner declares its browser proof');
+assert.deepStrictEqual(Array.from(styleMeta.historicalFragments),Array.from(historicalStyles),'stylesheet semantic metadata preserves the frozen historical ledger');
+const css=read(styleMeta.owner).replace(/\r\n/g,'\n');
+assert(css.includes('Obol current stylesheet — semantic cascade snapshot.'),'current stylesheet identifies semantic cascade ownership');
+assert(!/obol-style-fragment:/.test(css),'semantic stylesheet no longer embeds historical-fragment delivery markers');
+assert(!/@import\b/i.test(css),'semantic stylesheet remains a one-request owner');
+const styleSync=require('./sync-current-styles');
+assert.strictEqual(css,styleSync.expected(),'current stylesheet is exactly reproducible from the frozen ledger through the semantic generator');
+const styleStats=styleSync.projection().stats;
+assert(styleStats.removedDeclarations>0&&styleStats.removedRules>0,'semantic stylesheet must prove real cascade retirement rather than a renamed concatenation');
 
 const flattened=[].concat(
  manifest.groups.domain,

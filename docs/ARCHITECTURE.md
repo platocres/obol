@@ -44,7 +44,7 @@ The source of truth for historical cascade order remains `data/runtime-manifest.
 
 This deliberately separated **ownership consolidation** from **performance consolidation**. The historical CSS fragments still exist and still execute through the stable owner, preserving regression behavior and an easy rollback boundary.
 
-v9.40 closes the delivery half. `assets/obol-current.css` is now the flattened ordered concatenation of the same 69 fragments rather than an `@import` chain, so the cascade is byte-for-byte what it was while costing one request instead of seventy. `tools/sync-current-styles.js` still generates it; the owner still adds no rules of its own; `tools/validate-runtime-manifest.js` still verifies exact fragment order against the frozen v9.5 fixture.
+v9.40 closed the delivery half by flattening the same 69 fragments into one exact-concatenation request. v9.45 closes semantic stylesheet flattening: `assets/obol-current.css` is now a generated semantic cascade snapshot rather than a historical-fragment delivery container. `tools/style-cascade-current.js` removes only superseded declarations for an identical selector/property/grouping context, while `tools/validate-style-current-equivalence.js` proves deterministic source transformation and `tools/validate-style-visual-equivalence.js` compares the semantic owner with the exact frozen cascade in Chromium across desktop/mobile operator surfaces. The 69 historical styles and their v9.5 order fingerprint remain the regression ledger.
 
 ### Consolidated runtime ownership
 
@@ -66,7 +66,7 @@ v9.43 adds the application area's own proof pair. `tools/validate-app-current-eq
 
 v9.44 does the same for the Evidence parsing area, using reachability rather than a stale gate as the retirement proof. The Intake overlays form a decorator chain in which each overlay wraps the `analyzeTerminal` published by an earlier `OBOL_INTAKE_*` global. Four overlays (`intake-v7.7.js`, `intake-v7.8.js`, `intake-v7.9.js`, `intake-v8.2.js`) hook a predecessor that never publishes `analyzeTerminal`, so each returns at its guard and breaks the next link — they are dead code, not superseded code. `tools/validate-evidence-current-equivalence.js` proves this by executing the whole frozen chain and confirming the four never publish or mutate `analyzeTerminal`, and by requiring the surviving 37-fragment chain to produce byte-identical globals and `analyzeTerminal` output to the full frozen chain over a fixed operator corpus. The Evidence those overlays were written to add never reached production and is tracked as the correctness item `cc-evidence-chain-restore`.
 
-This remains per-area work. Domain and core are flattened semantically and the application area is flattened by retirement; Evidence parsing and stylesheet flattening are still queued separately because each has a different equivalence and workspace-migration surface.
+The per-area flattening sequence is now complete. Domain and core use semantic owners, application and Evidence parsing were flattened by proven retirement, and v9.45 gives CSS its semantic cascade snapshot with independent Chromium visual proof. The frozen ledgers remain available for regression even though their delivery shape is no longer current architecture.
 
 `data/runtime-consolidation-current.js` is the single projection for consolidation figures; the Product Hardening Dashboard and the generated README block both read it, and `tools/validate-runtime-consolidation-sync.js` fails when they drift apart.
 
