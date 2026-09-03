@@ -38,8 +38,8 @@ jobs:
               'Domain executes a semantic current snapshot, core executes a semantic delta replay, and CSS is a semantic cascade snapshot.')
 
           replace('tests/run-v9.46-tests.js',
-              " const totals=q.totals();assert.strictEqual(totals.complete,207);assert.strictEqual(totals.total,650);assert(contracts.contracts['runtime-app-single-paint']);",
-              " const readme=read('README.md');assert(readme.includes('**Current product-hardening queue:** 207/650 complete'),'generated Product Build Next preserves additive overall accounting');assert(contracts.contracts['runtime-app-single-paint']);")
+              "const totals=q.totals();assert.strictEqual(totals.complete,207);assert.strictEqual(totals.total,650);assert(contracts.contracts['runtime-app-single-paint']);",
+              "const readme=read('README.md');assert(readme.includes('**Current product-hardening queue:** 207/650 complete'),'generated Product Build Next preserves additive overall accounting');assert(contracts.contracts['runtime-app-single-paint']);")
           PY
       - name: Commit repairs
         run: |
