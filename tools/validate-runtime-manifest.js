@@ -20,8 +20,8 @@ function exists(label,list){
 }
 
 assert(/^1\.\d+\.\d+$/.test(manifest.schemaVersion),'runtime manifest remains on compatible schema major 1');
-assert.strictEqual(manifest.compatibility.strategy,'domain-semantic-equivalence+script-exact-load-order+style-cascade-equivalence','runtime compatibility strategy protects domain semantic equivalence, script order, and CSS cascade equivalence');
-assert.strictEqual(manifest.compatibility.consolidation,'semantic-domain-snapshot+ordered-fragment-concatenation','current runtime owners record mixed semantic/exact-concatenation strategies');
+assert.strictEqual(manifest.compatibility.strategy,'domain-core-semantic-equivalence+script-exact-load-order+style-cascade-equivalence','runtime compatibility strategy protects domain/core semantic equivalence, script order, and CSS cascade equivalence');
+assert.strictEqual(manifest.compatibility.consolidation,'semantic-domain-snapshot+semantic-core-delta-replay+ordered-fragment-concatenation','current runtime owners record mixed semantic/exact-concatenation strategies');
 assert.strictEqual(fixture.release,manifest.compatibility.baselineRelease,'runtime manifest baseline release matches fixture');
 const historicalStyles=manifest.compatibility.historicalStyles;
 assert(Array.isArray(historicalStyles)&&historicalStyles.length,'historical stylesheet compatibility list is explicit');
@@ -88,7 +88,8 @@ const flattened=[].concat(
  manifest.groups.app
 );
 assert.deepStrictEqual(flattened,manifest.scripts,'historical browser scripts are generated only from ordered manifest groups');
-assert.deepStrictEqual(manifest.node.core,manifest.groups.core,'Node core loading consumes the browser core manifest group');
+assert.deepStrictEqual(manifest.node.core,[manifest.coreCurrent.owner],'Node current core loading executes the stable semantic core owner');
+assert.deepStrictEqual(manifest.node.historicalCore,manifest.groups.core,'Node historical core projection preserves the browser core manifest group');
 assert(Array.isArray(manifest.node.historicalData)&&manifest.node.historicalData.length,'Node historical data projection is explicit');
 assert.deepStrictEqual(manifest.node.historicalData,manifest.groups.domain.slice(0,manifest.node.historicalData.length),'Node historical data remains the frozen source-observation prefix');
 assert.strictEqual(manifest.groups.domain.length-manifest.node.historicalData.length,6,'browser-only domain extras remain explicit');
@@ -96,15 +97,18 @@ assert.strictEqual(manifest.node.data[0],'data/dashboard-compat-current.js','Nod
 assert.deepStrictEqual(manifest.node.data,['data/dashboard-compat-current.js',manifest.domainCurrent.owner],'Node current execution replaces versioned domain fragments with the compact Dashboard seam plus the semantic domain owner');
 for(const src of manifest.historicalDashboardData)assert(!manifest.node.data.includes(src),'retired Dashboard data must not execute in Node current runtime: '+src);
 for(const src of manifest.node.historicalData)assert(!manifest.node.data.includes(src),'Node current runtime no longer executes historical domain fragments directly: '+src);
+for(const src of manifest.node.historicalCore)assert(!manifest.node.core.includes(src),'Node current runtime no longer executes historical core fragments directly: '+src);
 unique('Node current data',manifest.node.data);
 unique('Node historical data fixture',manifest.node.historicalData);
+unique('Node historical core fixture',manifest.node.historicalCore);
 exists('Node current data',manifest.node.data);
 exists('Node historical data fixture',manifest.node.historicalData);
+exists('Node historical core fixture',manifest.node.historicalCore);
 
 /* Current ownership: the browser loads one owner per area instead of one request per
-   historical fragment. Domain is a semantic snapshot; the other six owners remain
-   exact concatenations. tools/validate-runtime-bundles.js and
-   tools/validate-domain-current-equivalence.js own the proof. */
+   historical fragment. Domain is a semantic graph snapshot, core is a semantic
+   delta replay, and the other five owners remain exact concatenations. Dedicated
+   validators own the proof for each strategy. */
 const bundleAreas=manifest.bundles&&manifest.bundles.areas;
 assert(Array.isArray(bundleAreas)&&bundleAreas.length,'runtime manifest declares consolidated ownership areas');
 assert.strictEqual(manifest.bundles.generator,'tools/sync-runtime-bundles.js','consolidated owners declare their generator');
@@ -116,7 +120,14 @@ assert.strictEqual(manifest.domainCurrent.generator,'tools/sync-domain-current.j
 assert.strictEqual(manifest.domainCurrent.equivalenceValidator,'tools/validate-domain-current-equivalence.js','domain semantic owner declares its equivalence validator');
 assert.deepStrictEqual(Array.from(manifest.domainCurrent.historicalFragments),Array.from(domainArea.fragments),'domain semantic metadata keeps the exact frozen historical ledger');
 assert.strictEqual(domainArea.fragments.length,103,'domain semantic owner flattens the 103-fragment methodology/source/project chain');
-for(const area of bundleAreas.filter(area=>area.id!=='domain'))assert.strictEqual(area.strategy,'ordered-fragment-concatenation','non-domain area remains an exact ordered concatenation: '+area.id);
+const coreArea=bundleAreas.find(area=>area.id==='core');
+assert(coreArea&&coreArea.strategy==='semantic-delta-replay','core area is flattened behind a semantic delta-replay current owner');
+assert(manifest.coreCurrent&&manifest.coreCurrent.owner===coreArea.owner,'core semantic owner metadata must name the startup owner');
+assert.strictEqual(manifest.coreCurrent.generator,'tools/sync-core-current.js','core semantic owner declares its generator');
+assert.strictEqual(manifest.coreCurrent.equivalenceValidator,'tools/validate-core-current-equivalence.js','core semantic owner declares its equivalence validator');
+assert.deepStrictEqual(Array.from(manifest.coreCurrent.historicalFragments),Array.from(coreArea.fragments),'core semantic metadata keeps the exact frozen historical ledger');
+assert.strictEqual(coreArea.fragments.length,69,'core semantic owner flattens the 69-fragment state/derivation chain');
+for(const area of bundleAreas.filter(area=>!['domain','core'].includes(area.id)))assert.strictEqual(area.strategy,'ordered-fragment-concatenation','non-domain/core area remains an exact ordered concatenation: '+area.id);
 assert.deepStrictEqual(
  bundleAreas.filter(area=>area.scope==='startup').flatMap(area=>area.fragments),
  Array.from(manifest.startupScripts),
@@ -169,19 +180,20 @@ const nodeEndAt=nodeLoader.indexOf(nodeProjectionEnd,nodeStartAt+nodeProjectionS
 assert(nodeStartAt>=0&&nodeEndAt>nodeStartAt,'Node loader exposes one inert manifest projection for historical source-observation regressions');
 assert.strictEqual(nodeLoader.indexOf(nodeProjectionStart,nodeStartAt+1),-1,'Node loader has only one manifest projection');
 const nodeProjected=nodeLoader.slice(nodeStartAt+nodeProjectionStart.length,nodeEndAt).split('\n').filter(Boolean);
-const expectedNodeProjection=manifest.node.historicalData.concat(manifest.node.core).map(rel=>path.basename(rel));
+const expectedNodeProjection=manifest.node.historicalData.concat(manifest.node.historicalCore).map(rel=>path.basename(rel));
 assert.deepStrictEqual(nodeProjected,expectedNodeProjection,'legacy Node source-observation projection remains tied to historical fixtures rather than current execution');
 assert.strictEqual(new Set(nodeProjected).size,nodeProjected.length,'projected Node historical manifest basenames are unique');
 assert(nodeProjected.includes('dashboard-v4.9.js')&&nodeProjected.includes('dashboard-v6.5.js'),'retired Dashboard data remains visible only in the inert Node historical projection');
 assert(!manifest.node.data.some(rel=>/^data\/dashboard-v[\d.]+\.js$/.test(rel)),'Node current execution contains no versioned Dashboard data owners');
 
 assert.deepStrictEqual(currentRuntime.DATA,manifest.node.data.map(rel=>rel.replace(/^data\//,'')),'legacy DATA export now projects the compact Node current execution list');
-assert.deepStrictEqual(currentRuntime.CORE,manifest.node.core.map(rel=>rel.replace(/^assets\//,'')),'legacy CORE export projects from runtime manifest');
+assert.deepStrictEqual(currentRuntime.CORE,manifest.node.core.map(rel=>rel.replace(/^assets\//,'')),'legacy CORE export projects from runtime manifest current execution');
 const loaded=currentRuntime.loadCurrent(root);
 assert(loaded&&loaded.C&&loaded.lanes,'manifest-backed Node current runtime initializes');
 assert.strictEqual(loaded.C.VERSION,'8.8.0','runtime consolidation preserves the v8.8 workspace schema identity');
 assert(loaded.project,'manifest-backed runtime preserves the current v8.8 project adapter');
 assert(global.OBOL_DASHBOARD_COMPAT_CURRENT,'Node current runtime initializes through the compact Dashboard metadata seam');
 assert(global.OBOL_METHODOLOGY_V47&&global.OBOL_SIGNATURES,'Node current runtime initializes through the semantic domain owner');
+assert(global.OBOL_CORE_V88&&global.OBOL_CORE_V2,'Node current runtime initializes through the semantic core owner');
 
-console.log('Runtime manifest valid: frozen v9.5 history remains fixture-addressable while current per-area owners replace '+manifest.startupScripts.length+' startup fragment requests with '+manifest.startupBundleScripts.length+' startup owners, including the 103-fragment semantic domain snapshot, and '+historicalStyles.length+' stylesheet fragments with one flattened cascade.');
+console.log('Runtime manifest valid: frozen v9.5 history remains fixture-addressable while current per-area owners replace '+manifest.startupScripts.length+' startup fragment requests with '+manifest.startupBundleScripts.length+' startup owners, including the 103-fragment semantic domain snapshot and 69-fragment semantic core replay, and '+historicalStyles.length+' stylesheet fragments with one flattened cascade.');

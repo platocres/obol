@@ -29,7 +29,8 @@ test('v9.40 gives every runtime ownership area exactly one consolidated owner',(
   for(const rel of area.fragments)assert(manifest.scripts.includes(rel),'fragment stays inside the frozen ledger: '+rel);
  }
  assert.strictEqual(areas.find(a=>a.id==='domain').strategy,'semantic-snapshot','later releases may flatten the domain owner semantically');
- for(const area of areas.filter(a=>a.id!=='domain'))assert.strictEqual(area.strategy,'ordered-fragment-concatenation',area.id+' remains an exact concatenation owner');
+ assert(['ordered-fragment-concatenation','semantic-delta-replay'].includes(areas.find(a=>a.id==='core').strategy),'later releases may flatten the core owner semantically');
+ for(const area of areas.filter(a=>!['domain','core'].includes(a.id)))assert.strictEqual(area.strategy,'ordered-fragment-concatenation',area.id+' remains an exact concatenation owner');
  // The frozen v9.5 history is the whole safety net; consolidation must not touch it.
  const fixture=require(path.join(root,'tests','fixtures','runtime-v9.5-load-order.json'));
  assert.strictEqual(manifest.scripts.length,fixture.scriptCount,'frozen historical script ledger is untouched');
@@ -94,7 +95,7 @@ test('v9.40 queue leads Product Build Next with the runtime consolidation packag
  assert.deepStrictEqual(Array.from(packages.validate(q)),[],'work-package metadata remains valid');
  const rec=packages.recommend(q);
  assert(rec&&rec.id==='runtime-layer-consolidation','runtime consolidation is the recommended work package');
- assert(rec.liveItems.length>=4,'remaining ownership areas are queued separately');
+ assert(rec.liveItems.length>=3,'remaining ownership areas are queued separately');
  for(const id of ['runtime-area-consolidation','runtime-consolidation-sync','qa-runtime-request-budget','runtime-domain-flattening']){
   assert(q.items.find(i=>i.id===id&&i.status==='complete'),id+' is complete');
  }

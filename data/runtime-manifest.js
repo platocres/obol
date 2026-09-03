@@ -123,7 +123,7 @@ const surfacePolicy=Object.freeze({
  methodology:Object.freeze({policy:'semantic-current-owner-eager',owner:'assets/obol-domain-current.js',reason:'Methodology data drives Home and Next Steps ranking, so the semantic current-domain owner remains eager while the 103 versioned sources are retained only as the equivalence ledger.'}),
  toolLibrary:Object.freeze({policy:'route-lazy',owner:'toolReferenceData',reason:'Wordlist and script reference payloads are route-local and load when Tools is opened.'}),
  lineage:Object.freeze({policy:'shared-core-eager',owner:'core/app',reason:'Artifact and activity lineage participates in Evidence, recommendation, and reporting semantics across primary workflow routes.'}),
- historical:Object.freeze({policy:'compatibility-selective',owner:'scripts',reason:'The frozen historical script ledger remains available for fixtures/regression. Dashboard data/presentation owners and the domain fragment chain no longer execute directly in the current runtime; other compatibility layers stay live only until their current owner and equivalence proof exist.'}),
+ historical:Object.freeze({policy:'compatibility-selective',owner:'scripts',reason:'The frozen historical script ledger remains available for fixtures/regression. Dashboard data/presentation owners plus the domain and core fragment chains no longer execute directly in the current runtime; other compatibility layers stay live only until their current owner and equivalence proof exist.'}),
  evidence:Object.freeze({policy:'route-lazy',owner:'evidenceParsing',reason:'BloodHound helpers and versioned Evidence parser overlays load when Evidence/Artifacts is opened.'}),
  report:Object.freeze({policy:'route-lazy',owner:'reportOverlays',reason:'The stable base report owner stays eager; historical report overlays load on Report.'})
 });
@@ -133,7 +133,7 @@ for(const area of Object.keys(bundleAreaGroups))for(const name of bundleAreaGrou
 const bundleSeparator='\n;\n';
 const startupBundleDefs=[
  ['domain','assets/obol-domain-current.js','Domain data','Lane, methodology, Orange source-fidelity, project-model, report-metadata, and signature owners.','semantic-snapshot'],
- ['core','assets/obol-core-current.js','Core state and derivation','Browser-local state, migrations, proof boundaries, applicability, ranking, progress, and report readiness.','ordered-fragment-concatenation'],
+ ['core','assets/obol-core-current.js','Core state and derivation','Browser-local state, migrations, proof boundaries, applicability, ranking, progress, and report readiness.','semantic-delta-replay'],
  ['app','assets/obol-app-current.js','Report base and application UI','Base report owner, application prelude, and historical workflow/UI overlays.','ordered-fragment-concatenation']
 ];
 const lazyBundleDefs=[
@@ -173,6 +173,14 @@ const domainCurrent=Object.freeze({
  generator:'tools/sync-domain-current.js',
  equivalenceValidator:'tools/validate-domain-current-equivalence.js'
 });
+const coreCurrent=Object.freeze({
+ owner:'assets/obol-core-current.js',
+ strategy:'semantic-delta-replay',
+ sourceRelease:'v9.41',
+ historicalFragments:bundleAreas.find(area=>area.id==='core').fragments,
+ generator:'tools/sync-core-current.js',
+ equivalenceValidator:'tools/validate-core-current-equivalence.js'
+});
 
 const performance=Object.freeze({
  baseline:Object.freeze({historicalScripts:327,historicalStyles:69}),
@@ -193,10 +201,11 @@ return Object.freeze({
  historicalDashboardData,
  retiredStartupScripts:freeze([...historicalDashboardData,...retiredDashboardPresentation]),
  groups,
- node:Object.freeze({data:freeze(['data/dashboard-compat-current.js',domainCurrent.owner]),historicalData:historicalNodeData,core:groups.core}),
+ node:Object.freeze({data:freeze(['data/dashboard-compat-current.js',domainCurrent.owner]),historicalData:historicalNodeData,core:freeze([coreCurrent.owner]),historicalCore:groups.core}),
  lazy,
  bundles,
  domainCurrent,
+ coreCurrent,
  startupBundleScripts,
  lazyBundles,
  deferredScriptGroups,
@@ -204,9 +213,9 @@ return Object.freeze({
  surfacePolicy,
  performance,
  compatibility:Object.freeze({
-  baselineRelease:'v9.5',
-  strategy:'domain-semantic-equivalence+script-exact-load-order+style-cascade-equivalence',
-  consolidation:'semantic-domain-snapshot+ordered-fragment-concatenation',
+ baselineRelease:'v9.5',
+  strategy:'domain-core-semantic-equivalence+script-exact-load-order+style-cascade-equivalence',
+  consolidation:'semantic-domain-snapshot+semantic-core-delta-replay+ordered-fragment-concatenation',
   fixture:'tests/fixtures/runtime-v9.5-load-order.json',
   styleOwner:'assets/obol-current.css',
   historicalStyles:freeze(historicalStyles)

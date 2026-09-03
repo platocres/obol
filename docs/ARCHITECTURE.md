@@ -48,21 +48,21 @@ v9.40 closes the delivery half. `assets/obol-current.css` is now the flattened o
 
 ### Consolidated runtime ownership
 
-v9.40 applies the same request-consolidation rule to JavaScript. v9.41 starts semantic flattening by replacing the domain area’s live 103-fragment chain with an authored current graph snapshot. Every historical ownership area still resolves to one stable, non-versioned owner, but strategies are now per-area:
+v9.40 applies the same request-consolidation rule to JavaScript. v9.41 starts semantic flattening by replacing the domain area’s live 103-fragment chain with an authored current graph snapshot. v9.42 follows with the core area: the live runtime now executes a generated semantic delta replay instead of replaying the 69-fragment core chain directly. Every historical ownership area still resolves to one stable, non-versioned owner, but strategies are now per-area:
 
 | Ownership area | Fragments | Owner | Strategy | Loading |
 | --- | --- | --- | --- | --- |
 | Domain data | 103 | `assets/obol-domain-current.js` | semantic snapshot | operator startup |
-| Core state and derivation | 69 | `assets/obol-core-current.js` | exact concatenation | operator startup |
+| Core state and derivation | 69 | `assets/obol-core-current.js` | semantic delta replay | operator startup |
 | Report base and application UI | 64 | `assets/obol-app-current.js` | exact concatenation | operator startup |
 | Evidence parsing | 41 | `assets/obol-evidence-current.js` | exact concatenation | route-lazy |
 | Nmap builders | 3 | `assets/obol-nmap-current.js` | exact concatenation | route-lazy |
 | Report overlays | 14 | `assets/obol-report-overlays-current.js` | exact concatenation | route-lazy |
 | Tool reference data | 3 | `assets/obol-tool-reference-current.js` | exact concatenation | route-lazy |
 
-`data/runtime-manifest.js` owns the area definitions. `tools/sync-domain-current.js` generates the semantic domain owner and `tools/validate-domain-current-equivalence.js` proves it against the frozen historical domain graph. `tools/sync-runtime-bundles.js` generates the six exact-concatenation owners, and `tools/validate-runtime-bundles.js` proves their delivery-shape hazards and observable equivalence. The fragments remain on disk as the frozen regression ledger.
+`data/runtime-manifest.js` owns the area definitions. `tools/sync-domain-current.js` generates the semantic domain owner and `tools/validate-domain-current-equivalence.js` proves it against the frozen historical domain graph. `tools/sync-core-current.js` generates the semantic core owner by preserving the shared v2 base scope and replaying the surviving release deltas inside isolated lexical blocks; `tools/validate-core-current-equivalence.js` proves the exported roots, `C.*` surface, migration helpers, workspace coercion, Evidence application, recommendation ranking, report readiness, project-model, search, network, sanitized-export, and Nmap-builder behavior. `tools/sync-runtime-bundles.js` generates the remaining exact-concatenation owners, and `tools/validate-runtime-bundles.js` proves their delivery-shape hazards and observable equivalence. The fragments remain on disk as the frozen regression ledger.
 
-This remains per-area work. Domain is flattened; core, app, Evidence parsing, and stylesheet flattening are still queued separately because each has a different equivalence and workspace-migration surface.
+This remains per-area work. Domain and core are flattened; app, Evidence parsing, and stylesheet flattening are still queued separately because each has a different equivalence and workspace-migration surface.
 
 `data/runtime-consolidation-current.js` is the single projection for consolidation figures; the Product Hardening Dashboard and the generated README block both read it, and `tools/validate-runtime-consolidation-sync.js` fails when they drift apart.
 

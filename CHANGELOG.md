@@ -6,9 +6,13 @@ The README is intentionally reserved for current product purpose, permanent oper
 
 ## v9.42 — Core ownership flattening
 
-- Started the scoped Runtime Layer Consolidation pass for `runtime-core-flattening`.
-- Added the v9.42 release scaffold, current-release authority bump, release note, and regression entrypoint before opening the release PR.
-- Preserved the one-open-release-PR workflow and kept the branch scoped to the core state and derivation ownership area.
+- Replaced the live core owner’s 69-fragment ordered execution chain with a generated semantic delta replay in `assets/obol-core-current.js`, while preserving the historical files as the frozen equivalence ledger.
+- Added `tools/sync-core-current.js`, which keeps the shared v2 core base scope intact and replays each surviving release delta in an isolated lexical block instead of embedding exact runtime-fragment concatenation markers.
+- Added `tools/validate-core-current-equivalence.js`, proving the generated owner exposes the same `OBOL_CORE` roots, `C.*` surface, helper globals, migration helpers, workspace migration/coercion, Evidence application, recommendation ranking, report readiness, project-model, search, network, sanitized-export, and Nmap-builder behavior as the historical chain.
+- Updated runtime manifest/projection metadata so browser and Node current runtime paths load the semantic core owner directly, while keeping the 69 historical core fragments available only as the frozen regression ledger.
+- Updated the Product Hardening Dashboard, README Product Build Next block, runtime docs, and queue contracts to report 172 semantically flattened fragments, 125 still exact-owned fragments, and 30 retired Dashboard fragments.
+- Closed `runtime-core-flattening` with an item-specific proof contract and v9.42 regression suite, while leaving application, Evidence, and stylesheet flattening queued as separate ownership-area passes.
+- Preserved the v8.8 workspace/runtime schema identity, browser-local and human-run constraints, conservative Evidence/report proof semantics, request budget, frozen v9.5 ledger, and exact-head release validation model.
 
 ## v9.41 — Domain ownership flattening
 
