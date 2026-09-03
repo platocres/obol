@@ -1,0 +1,12 @@
+'use strict';
+const fs=require('fs');
+const path=require('path');
+const file=path.join(__dirname,'apply-v947.js');
+let text=fs.readFileSync(file,'utf8');
+const from=`c(insertBefore('data/product-hardening/item-test-contracts.js',\" 'runtime-app-single-paint':{\",contract,\"'runtime-app-semantic-retirement':{\"));`;
+const to=`c(insertBefore('data/product-hardening/item-test-contracts.js',\"contracts['runtime-app-single-paint']={\",\"contracts['runtime-app-semantic-retirement']={\\n acceptance:[\\n  'The application ownership area uses a stable non-versioned semantic-delta-replay owner rather than an exact historical concatenation, while all 43 v9.43 surviving fragments remain traceable as the frozen semantic ledger.',\\n  'Historical application startup timers, intervals, hashchange listeners, MutationObservers, and delayed route repaint schedules are suppressed; one current router owns navigation and drains surviving historical decorator intent before current workflow/operator presentation commits.',\\n  'Cold boot and route navigation do not directly request versioned historical application files and do not expose a historical Home or Next Steps frame across the complete former timer horizon.',\\n  'README, Product Build Next, Dashboard, runtime consolidation projection, architecture guidance, and historical v9.43/v9.46 milestones distinguish request flattening, first-paint protection, and semantic application retirement without rewriting earlier completion counts.'\\n ],\\n validationCommands:['node tools/sync-app-current.js --check','node tools/validate-app-semantic-current.js','node tools/validate-app-current-equivalence.js','node tools/validate-app-dom-equivalence.js','node tools/validate-app-semantic-boot-browser.js','node tests/run-v9.47-tests.js'],\\n proofFiles:['data/runtime-manifest.js','assets/obol-app-current.js','tools/sync-app-current.js','tools/validate-app-semantic-current.js','tools/validate-app-semantic-boot-browser.js','data/product-hardening/product-hardening-queue.js','assets/product-hardening-dashboard.js','README.md','BUILDING.md','docs/RUNTIME-COMPACTION.md','docs/ARCHITECTURE.md','tests/run-v9.47-tests.js','docs/v9.47.md']\\n};\\n\",\"contracts['runtime-app-semantic-retirement']={\"));`;
+if(text.includes(to)){console.log('apply-v947 contract insertion already fixed');process.exit(0);}
+if(!text.includes(from))throw new Error('expected broken contract insertion was not found');
+text=text.replace(from,to);
+fs.writeFileSync(file,text);
+console.log('fixed apply-v947 contract insertion');
