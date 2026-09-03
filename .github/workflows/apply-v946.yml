@@ -1,5 +1,5 @@
 name: Apply Obol v9.46 release changes
-# retry 4: fixed helper rewrite newlines
+# retry 5: corrected release-sync regex
 
 on:
   push:
