@@ -303,8 +303,8 @@ return Object.freeze({
  performance,
  compatibility:Object.freeze({
  baselineRelease:'v9.5',
-  strategy:'domain-core-semantic-equivalence+script-exact-load-order+style-cascade-equivalence',
-  consolidation:'semantic-domain-snapshot+semantic-core-delta-replay+ordered-fragment-concatenation',
+  strategy:'domain-core-app-semantic-equivalence+script-exact-ledger+style-cascade-equivalence',
+  consolidation:'semantic-domain-snapshot+semantic-core-delta-replay+semantic-app-delta-replay+ordered-fragment-concatenation',
   fixture:'tests/fixtures/runtime-v9.5-load-order.json',
   styleOwner:'assets/obol-current.css',
   historicalStyles:freeze(historicalStyles)

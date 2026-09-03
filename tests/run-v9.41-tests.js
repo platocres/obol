@@ -34,7 +34,8 @@ test('v9.41 domain area is a semantic current owner',()=>{
  assert.deepStrictEqual(Array.from(manifest.domainCurrent.historicalFragments),Array.from(domain.fragments),'domainCurrent preserves the frozen historical ledger');
  const core=manifest.bundles.areas.find(area=>area.id==='core');
  assert(core&&['ordered-fragment-concatenation','semantic-delta-replay'].includes(core.strategy),'later releases may flatten the core owner semantically');
- for(const area of manifest.bundles.areas.filter(area=>!['domain','core'].includes(area.id)))assert.strictEqual(area.strategy,'ordered-fragment-concatenation',area.id+' remains exact-concatenated');
+ const app=manifest.bundles.areas.find(area=>area.id==='app');assert(app&&['ordered-fragment-concatenation','semantic-delta-replay'].includes(app.strategy),'later releases may semantically retire application execution without rewriting v9.41 domain ownership');
+ for(const area of manifest.bundles.areas.filter(area=>!['domain','core','app'].includes(area.id)))assert.strictEqual(area.strategy,'ordered-fragment-concatenation',area.id+' remains exact-owned route-lazy compatibility');
 });
 
 test('v9.41 browser and Node loaders execute the semantic owner directly',()=>{

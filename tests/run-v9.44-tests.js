@@ -98,13 +98,13 @@ test('v9.44 differential equivalence catches a dropped reachable overlay',()=>{
 test('v9.44 runtime projection, dashboard, and README report the retirement',()=>{
  assert.deepStrictEqual(Array.from(consolidation.validate()),[],'runtime consolidation projection validates');
  const p=consolidation.projection();
- assert.strictEqual(p.consolidatedFragments,272,'projection accounts for the live runtime ownership areas after retirement');
- assert.strictEqual(p.flattenedHistoricalFragments,172,'domain and core stay semantically flattened');
- assert.strictEqual(p.liveHistoricalFragments,100,'projection counts the remaining exact-owned historical fragments');
- assert.strictEqual(p.retiredFragments,55,'projection counts the grown retired ledger');
+ assert.strictEqual(p.consolidatedFragments,272,'v9.44 permanently reduces the non-retired runtime source ledger to 272 fragments');
+ assert(p.flattenedHistoricalFragments>=172,'later semantic ownership passes may grow the v9.44 domain+core flattened floor');
+ assert(p.liveHistoricalFragments<=100,'later semantic ownership passes may reduce the v9.44 exact-owned ceiling');
+ assert.strictEqual(p.retiredFragments,55,'v9.44 permanently grows the retired ledger to 55 fragments');
  assert.strictEqual(p.flattenedHistoricalFragments+p.liveHistoricalFragments+p.retiredFragments,p.ledgerFragments,'all frozen fragments are flattened, exact-owned, or retired');
  const readme=read('README.md');
- assert(readme.includes('**Current runtime ownership areas:** 7 owners account for 272 historical fragments — 172 semantically flattened, 100 still exact-owned; 55 fragments stay retired in the frozen ledger.'),'README Product Build Next reports the retirement');
+ assert(/\*\*Current runtime ownership areas:\*\* 7 owners account for 272 historical fragments — \d+ semantically flattened, \d+ still exact-owned; 55 fragments stay retired in the frozen ledger\./.test(readme),'README Product Build Next preserves v9.44 retirement while allowing later semantic ownership changes');
  assert(readme.includes('Evidence parsing (37, ordered-fragment-concatenation)'),'README reports the post-retirement Evidence owner');
 });
 
