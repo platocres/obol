@@ -1,0 +1,45 @@
+name: Obol v9.45 stylesheet snapshot
+
+on:
+  push:
+    branches:
+      - release/obol-v9.45
+
+permissions:
+  contents: write
+
+jobs:
+  generate:
+    if: contains(github.event.head_commit.message, '[generate-style]')
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout release branch
+        uses: actions/checkout@v4
+        with:
+          ref: release/obol-v9.45
+          fetch-depth: 0
+
+      - name: Set up Node
+        uses: actions/setup-node@v4
+        with:
+          node-version: '24'
+
+      - name: Generate semantic stylesheet snapshot
+        run: |
+          set -euo pipefail
+          node --check tools/style-cascade-current.js
+          node tools/sync-current-styles.js --write
+          node tools/sync-current-styles.js --check
+
+      - name: Commit generated owner
+        run: |
+          set -euo pipefail
+          if git diff --quiet -- assets/obol-current.css; then
+            echo 'No stylesheet change produced.'
+            exit 0
+          fi
+          git config user.name 'github-actions[bot]'
+          git config user.email '41898282+github-actions[bot]@users.noreply.github.com'
+          git add assets/obol-current.css
+          git commit -m 'Generate semantic current stylesheet owner'
+          git push origin HEAD:release/obol-v9.45
