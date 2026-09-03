@@ -59,7 +59,8 @@ assert.deepStrictEqual(new Set(excluded),new Set(flatDeferred.concat(retired)),'
 
 /* Consolidation budget: the historical fragment ledger stays 236 scripts deep, but the
    browser must fetch one current owner per ownership area rather than one file per
-   fragment. The domain owner is semantic; core/app remain exact concatenations. */
+   fragment. Domain is a semantic graph snapshot, core is a semantic delta replay,
+   and app remains an exact concatenation. */
 const startupBundles=manifest.startupBundleScripts||[];
 assert.strictEqual(startupBundles.length,3,'operator startup consolidates into three ownership-area bundles');
 assert.deepStrictEqual(startupBundles,['assets/obol-domain-current.js','assets/obol-core-current.js','assets/obol-app-current.js'],'startup bundle owners are stable, non-versioned, and ordered domain -> core -> app');
@@ -71,7 +72,12 @@ assert(domainArea&&domainArea.strategy==='semantic-snapshot','domain startup own
 assert(manifest.domainCurrent&&manifest.domainCurrent.owner===domainArea.owner,'domain semantic owner metadata must name the startup owner');
 assert.strictEqual(manifest.domainCurrent.generator,'tools/sync-domain-current.js','domain semantic owner declares its generator');
 assert.strictEqual(manifest.domainCurrent.equivalenceValidator,'tools/validate-domain-current-equivalence.js','domain semantic owner declares its equivalence validator');
-for(const area of (manifest.bundles.areas||[]).filter(area=>area.id!=='domain'))assert.strictEqual(area.strategy,'ordered-fragment-concatenation',area.id+' remains an exact concatenation owner');
+const coreArea=(manifest.bundles.areas||[]).find(area=>area.id==='core');
+assert(coreArea&&coreArea.strategy==='semantic-delta-replay','core startup owner must be a semantic delta replay');
+assert(manifest.coreCurrent&&manifest.coreCurrent.owner===coreArea.owner,'core semantic owner metadata must name the startup owner');
+assert.strictEqual(manifest.coreCurrent.generator,'tools/sync-core-current.js','core semantic owner declares its generator');
+assert.strictEqual(manifest.coreCurrent.equivalenceValidator,'tools/validate-core-current-equivalence.js','core semantic owner declares its equivalence validator');
+for(const area of (manifest.bundles.areas||[]).filter(area=>!['domain','core'].includes(area.id)))assert.strictEqual(area.strategy,'ordered-fragment-concatenation',area.id+' remains an exact concatenation owner');
 assert.strictEqual(manifest.styles.length,1,'the browser fetches exactly one stylesheet');
 assert(!/@import/.test(read(manifest.styles[0]).replace(/^\/\*[\s\S]*?\*\/\n/,'')),'the single stylesheet owner no longer chains fragment requests');
 const lazyBundles=manifest.lazyBundles||{};
@@ -101,6 +107,7 @@ assert.strictEqual(policies.methodology.policy,'semantic-current-owner-eager','m
 assert.strictEqual(policies.methodology.owner,'assets/obol-domain-current.js','methodology/domain policy names the semantic current owner');
 assert(/shared-core/.test(policies.lineage.policy),'lineage shared-core exception must remain explicit');
 assert.strictEqual(policies.historical.policy,'compatibility-selective','historical runtime policy must allow proven live-layer retirement while retaining frozen fixtures');
+assert(policies.historical.reason.includes('domain and core fragment chains no longer execute directly'),'historical policy must name the retired domain/core current execution boundary');
 
 const compat=read('data/dashboard-compat-current.js');
 for(const token of ['Stable compatibility seam','data-only','OBOL_DASHBOARD_COMPAT_CURRENT','OBOL_DASHBOARD_V49','OBOL_DASHBOARD_V65'])assert(compat.includes(token),'dashboard compatibility seam missing '+token);
@@ -119,4 +126,4 @@ const bridge=read('assets/app-v8.8.js');
 for(const token of ['function ensureWorkflow88','function ensureProductAssets88','ensureWorkflow88().catch(()=>{})'])assert(bridge.includes(token),'v8.8 compatibility bridge missing '+token);
 assert(!/ensureProductAssets88\(\)\.catch\(\(\)=>\{\}\)/.test(bridge),'Product Dashboard assets are still eagerly requested during ordinary startup');
 
-console.log('Runtime loading budget valid: Dashboard uses one current owner; operator routes load one stable metadata prelude plus '+startupBundles.length+' startup owners covering '+manifest.startupScripts.length+' historical scripts (domain semantic, core/app exact), with 61 route-deferred fragments behind '+Object.keys(lazyBundles).length+' owners and 30 Dashboard data/presentation layers retired to the frozen fixture ledger.');
+console.log('Runtime loading budget valid: Dashboard uses one current owner; operator routes load one stable metadata prelude plus '+startupBundles.length+' startup owners covering '+manifest.startupScripts.length+' historical scripts (domain semantic, core semantic replay, app exact), with 61 route-deferred fragments behind '+Object.keys(lazyBundles).length+' owners and 30 Dashboard data/presentation layers retired to the frozen fixture ledger.');

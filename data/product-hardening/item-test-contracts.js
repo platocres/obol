@@ -267,6 +267,16 @@ contracts['runtime-domain-flattening']={
  validationCommands:['node tools/sync-domain-current.js --check','node tools/validate-domain-current-equivalence.js','node tools/sync-runtime-bundles.js --check','node tools/validate-runtime-bundles.js','node tools/validate-runtime-manifest.js','node tools/validate-runtime-loading.js','node tools/validate-runtime-consolidation-sync.js','node tests/run-v9.41-tests.js'],
  proofFiles:['data/runtime-manifest.js','data/runtime-consolidation-current.js','assets/obol-domain-current.js','tools/sync-domain-current.js','tools/validate-domain-current-equivalence.js','tools/sync-runtime-bundles.js','tools/validate-runtime-bundles.js','tools/validate-runtime-manifest.js','tools/validate-runtime-loading.js','tools/validate-runtime-consolidation-sync.js','assets/runtime-current.js','assets/product-hardening-dashboard.js','README.md','CHANGELOG.md','docs/v9.41.md','docs/RUNTIME-COMPACTION.md','docs/ARCHITECTURE.md','docs/PRODUCT-HARDENING.md','tests/run-v9.41-tests.js']
 };
+contracts['runtime-core-flattening']={
+ acceptance:[
+  'The core ownership area declares a semantic-delta-replay strategy in data/runtime-manifest.js, and browser/Node current execution loads assets/obol-core-current.js instead of executing the 69 versioned core fragments directly.',
+  'tools/sync-core-current.js deterministically regenerates the current-core owner from the frozen historical ledger by preserving the shared v2 base scope and replaying each surviving release delta inside isolated lexical blocks rather than through exact runtime-fragment concatenation.',
+  'tools/validate-core-current-equivalence.js proves the generated owner exposes the same OBOL_CORE roots and C.* surface as the historical chain, preserves the classic-script helper globals, exercises every per-release ensure migration helper, and compares workspace migration/coercion, Evidence application, recommendation ranking, report readiness, project-model, search, network, sanitized-export, and Nmap-builder behavior.',
+  'The frozen v9.5/v9.41 historical core fragment ledger remains intact for fixture regression, while README, dashboard, runtime projection, and release docs report the core area as semantically flattened.'
+ ],
+ validationCommands:['node tools/sync-core-current.js --check','node tools/validate-core-current-equivalence.js','node tools/sync-runtime-bundles.js --check','node tools/validate-runtime-bundles.js','node tools/validate-runtime-manifest.js','node tools/validate-runtime-loading.js','node tools/validate-runtime-consolidation-sync.js','node tests/run-v9.42-tests.js'],
+ proofFiles:['data/runtime-manifest.js','data/runtime-consolidation-current.js','assets/obol-core-current.js','tools/sync-core-current.js','tools/validate-core-current-equivalence.js','tools/sync-runtime-bundles.js','tools/validate-runtime-bundles.js','tools/validate-runtime-manifest.js','tools/validate-runtime-loading.js','tools/validate-runtime-consolidation-sync.js','assets/runtime-current.js','assets/product-hardening-dashboard.js','README.md','CHANGELOG.md','docs/v9.42.md','docs/RUNTIME-COMPACTION.md','docs/ARCHITECTURE.md','docs/PRODUCT-HARDENING.md','tests/run-v9.42-tests.js']
+};
 contracts['runtime-consolidation-sync']={
  acceptance:[
   'data/runtime-consolidation-current.js is the single projection for runtime consolidation figures and derives everything except the recorded browser measurement from data/runtime-manifest.js.',
@@ -286,5 +296,5 @@ contracts['qa-runtime-request-budget']={
  proofFiles:['tests/playwright-smoke.js','.github/workflows/browser-smoke.yml','tests/run-v9.40-tests.js','docs/v9.40.md']
 };
 const requiredForStatuses=['modeled','complete','superseded','rejected'];
-root.OBOL_PRODUCT_HARDENING_TEST_CONTRACTS={version:'9.20.0',requiredForStatuses,contracts};
+root.OBOL_PRODUCT_HARDENING_TEST_CONTRACTS={version:'9.42.0',requiredForStatuses,contracts};
 })(typeof window!=='undefined'?window:globalThis);

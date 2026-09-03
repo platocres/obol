@@ -11,6 +11,8 @@ const checks=[
  ['tools/validate-runtime-loading.js'],
  ['tools/sync-domain-current.js','--check'],
  ['tools/validate-domain-current-equivalence.js'],
+ ['tools/sync-core-current.js','--check'],
+ ['tools/validate-core-current-equivalence.js'],
  ['tools/sync-runtime-bundles.js','--check'],
  ['tools/validate-runtime-bundles.js'],
  ['tools/validate-runtime-consolidation-sync.js'],

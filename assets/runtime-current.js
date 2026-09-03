@@ -33,7 +33,7 @@ function appendScripts(list){
 }
 function startupPreludeList(){return Array.isArray(manifest.startupPreludeScripts)?manifest.startupPreludeScripts:[];}
 function startupFragmentList(){return manifest.startupScripts||manifest.scripts;}
-/* Startup owners now mix a semantic domain snapshot with exact core/app concatenations.
+/* Startup owners now mix a semantic domain snapshot, a semantic core delta replay, and exact app concatenation.
    The historical fragment list stays reachable for regression and audit tooling. */
 function startupList(){return Array.isArray(manifest.startupBundleScripts)&&manifest.startupBundleScripts.length?manifest.startupBundleScripts:startupFragmentList();}
 function currentOwnerList(){return Array.isArray(manifest.currentScripts)?manifest.currentScripts:[];}

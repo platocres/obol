@@ -4,7 +4,7 @@ Obol is a static, browser-local workspace for OSCP-style labs, Active Directory 
 
 Live site: `https://platocres.github.io/obol/`
 
-Current release: **v9.41**
+Current release: **v9.42**
 
 Open `#/dashboard` for the active Product Hardening Dashboard and Product Build Next queue.
 
@@ -72,7 +72,7 @@ This block is generated from `data/product-hardening/product-hardening-queue.js`
 Recommended work-package metadata comes from `data/product-hardening/work-packages.js`.
 Runtime consolidation figures come from `data/runtime-consolidation-current.js`, the same projection the Product Hardening Dashboard renders.
 
-**Current product-hardening queue:** 202/648 complete (31%), 14 queued, 9 foundation items modeled.
+**Current product-hardening queue:** 203/648 complete (31%), 13 queued, 9 foundation items modeled.
 **Private notes source:** `platocres/obol-source-notes` — 556 notes and 1326 embedded resources accounted.
 **Notes Integration:** 127/556 reviewed — 95 modeled, 27 private-only, 429 pending.
 **Derived note guidance:** 48 Field Notes · 43 tool-bound · 45 Path-bound · 14 Evidence · 5 Report.
@@ -80,19 +80,18 @@ Runtime consolidation figures come from `data/runtime-consolidation-current.js`,
 **Latest mined themes:** Windows local privilege escalation.
 **Notes impact contract:** `docs/NOTES-IMPACT.md`.
 **Runtime consolidation:** 5 operator startup requests, down from 307 (98% fewer).
-**Current runtime ownership areas:** 7 owners account for 297 historical fragments — 103 semantically flattened, 194 still exact-owned; 30 fragments stay retired in the frozen ledger.
-**Runtime area owners:** Domain data (103, semantic-snapshot) · Core state and derivation (69, ordered-fragment-concatenation) · Report base and application UI (64, ordered-fragment-concatenation) · Evidence parsing (41, ordered-fragment-concatenation) · Nmap builders (3, ordered-fragment-concatenation) · Report overlays (14, ordered-fragment-concatenation) · Tool reference data (3, ordered-fragment-concatenation).
+**Current runtime ownership areas:** 7 owners account for 297 historical fragments — 172 semantically flattened, 125 still exact-owned; 30 fragments stay retired in the frozen ledger.
+**Runtime area owners:** Domain data (103, semantic-snapshot) · Core state and derivation (69, semantic-delta-replay) · Report base and application UI (64, ordered-fragment-concatenation) · Evidence parsing (41, ordered-fragment-concatenation) · Nmap builders (3, ordered-fragment-concatenation) · Report overlays (14, ordered-fragment-concatenation) · Tool reference data (3, ordered-fragment-concatenation).
 **Measured in Chromium (v9.40):** Home 321→19 · Next Steps 329→27 · Evidence 365→21 · Report 335→20 JavaScript/CSS requests.
 **Runtime compaction contract:** `docs/RUNTIME-COMPACTION.md`.
 
-**Recommended work package:** **Runtime Layer Consolidation** — 4 live items / 8 tracked.
-**Work-package entry:** **Flatten the core ownership area**
+**Recommended work package:** **Runtime Layer Consolidation** — 3 live items / 8 tracked.
+**Work-package entry:** **Flatten the application ownership area**
 **Ownership area:** `runtime/ownership-areas`
 **Package guidance:** Request consolidation is done: every ownership area now loads one generated owner instead of one request per historical fragment, proven equivalent and enforced by a browser request budget. What remains is semantic flattening, one ownership area at a time. For each area, prove which fragments still encode unique behavior, move that behavior onto the current owner, retire the superseded fragments from the frozen ledger, and retire the assertions that only protected their delivery shape. Do not flatten two areas in one pass — each has its own equivalence and migration surface.
 **Package dependencies:** Runtime Consolidation Foundation, Dashboard Runtime Compaction
 
 **Live items in this package:**
-- **Flatten the core ownership area** — The core owner still concatenates 69 versioned state and derivation overlays. Collapse overlapping migration, applicability, and ranking deltas into a current core owner once equivalence and browser-local workspace migration are proven per overlay.
 - **Flatten the application ownership area** — The application owner still concatenates 64 report-base, prelude, and UI overlays. Move surviving behavior onto the current workflow and operator-route owners, then retire the superseded presentation fragments.
 - **Flatten the Evidence parsing ownership area** — The route-lazy Evidence owner still concatenates 41 parser overlays. Consolidate the parser chain into a current Evidence owner without changing conservative interpretation or proof boundaries.
 - **Flatten the stylesheet ownership area** — The single stylesheet owner is a flat concatenation of 69 fragments that still override each other. Collapse dead and superseded rules into an authored current stylesheet once visual regression proof exists.
@@ -100,18 +99,18 @@ Runtime consolidation figures come from `data/runtime-consolidation-current.js`,
 **Related items to consider, not automatically in scope:** Runtime compaction and test-retirement policy; No new layered queue architecture; Bundle and request budget.
 
 **Highest-priority live items:**
-1. **Flatten the core ownership area** — The core owner still concatenates 69 versioned state and derivation overlays. Collapse overlapping migration, applicability, and ranking deltas into a current core owner once equivalence and browser-local workspace migration are proven per overlay.
-2. **Flatten the application ownership area** — The application owner still concatenates 64 report-base, prelude, and UI overlays. Move surviving behavior onto the current workflow and operator-route owners, then retire the superseded presentation fragments.
-3. **Flatten the Evidence parsing ownership area** — The route-lazy Evidence owner still concatenates 41 parser overlays. Consolidate the parser chain into a current Evidence owner without changing conservative interpretation or proof boundaries.
-4. **Flatten the stylesheet ownership area** — The single stylesheet owner is a flat concatenation of 69 fragments that still override each other. Collapse dead and superseded rules into an authored current stylesheet once visual regression proof exists.
-5. **Burn down all 556 note dispositions** — Umbrella disposition goal. Review work should be executed in themed packets and must record what each modeled note changed in Field Notes, tools, Path, Evidence, reports, troubleshooting, or product gaps.
-6. **Re-audit all reviewed notes for missed mechanics** — Re-audit every note already processed under the old rubric — all 127 reviewed, not only the 95 modeled — because the defect was the review standard itself. Re-judge modeled, guidance-only, reviewed-not-modeled, and private-only dispositions against the new bar and convert to declared product changes (tool toggle, Path branch, evidence rule, report/workflow change) wherever one was missed. Cheaper than fresh review since rationales already exist; distinct from the first-pass review of the 429 pending notes.
-7. **Notes packet: Linux privilege escalation** — Mine Linux privilege-escalation discovery, evidence, tool options, failure modes, path branches, proof boundaries, and reporting guidance.
-8. **Notes packet: AD and pivoting** — Mine Active Directory, lateral movement, tunneling, pivoting, routing, credential use, evidence boundaries, and missing workflow/tool options.
+1. **Flatten the application ownership area** — The application owner still concatenates 64 report-base, prelude, and UI overlays. Move surviving behavior onto the current workflow and operator-route owners, then retire the superseded presentation fragments.
+2. **Flatten the Evidence parsing ownership area** — The route-lazy Evidence owner still concatenates 41 parser overlays. Consolidate the parser chain into a current Evidence owner without changing conservative interpretation or proof boundaries.
+3. **Flatten the stylesheet ownership area** — The single stylesheet owner is a flat concatenation of 69 fragments that still override each other. Collapse dead and superseded rules into an authored current stylesheet once visual regression proof exists.
+4. **Burn down all 556 note dispositions** — Umbrella disposition goal. Review work should be executed in themed packets and must record what each modeled note changed in Field Notes, tools, Path, Evidence, reports, troubleshooting, or product gaps.
+5. **Re-audit all reviewed notes for missed mechanics** — Re-audit every note already processed under the old rubric — all 127 reviewed, not only the 95 modeled — because the defect was the review standard itself. Re-judge modeled, guidance-only, reviewed-not-modeled, and private-only dispositions against the new bar and convert to declared product changes (tool toggle, Path branch, evidence rule, report/workflow change) wherever one was missed. Cheaper than fresh review since rationales already exist; distinct from the first-pass review of the 429 pending notes.
+6. **Notes packet: Linux privilege escalation** — Mine Linux privilege-escalation discovery, evidence, tool options, failure modes, path branches, proof boundaries, and reporting guidance.
+7. **Notes packet: AD and pivoting** — Mine Active Directory, lateral movement, tunneling, pivoting, routing, credential use, evidence boundaries, and missing workflow/tool options.
+8. **UI quality audit rubric** — Add a fixed per-screen audit checklist under docs/visual-qa/ (hierarchy, density, consistency, affordance, state feedback, accessibility). Run once per primary screen and file each finding as its own queue item instead of ad-hoc fixes.
 
 **Track status:**
 - **Critical correctness:** 4/4 complete (100%), 0 modeled.
-- **Architecture / runtime:** 13/20 complete (65%), 3 modeled.
+- **Architecture / runtime:** 14/20 complete (70%), 3 modeled.
 - **UI / UX repair:** 9/10 complete (90%), 1 modeled.
 - **Tool GUI builders:** 19/19 complete (100%), 0 modeled.
 - **Credential modes:** 14/14 complete (100%), 0 modeled.
@@ -153,13 +152,15 @@ The permanent runtime-consolidation checks are:
 ```bash
 node tools/sync-domain-current.js --check
 node tools/validate-domain-current-equivalence.js
+node tools/sync-core-current.js --check
+node tools/validate-core-current-equivalence.js
 node tools/sync-runtime-bundles.js --check
 node tools/validate-runtime-bundles.js
 node tools/sync-current-styles.js --check
 node tools/validate-runtime-consolidation-sync.js
 ```
 
-Regenerate the semantic domain owner with `node tools/sync-domain-current.js --write`, the exact-concatenation runtime owners with `node tools/sync-runtime-bundles.js --write`, and the stylesheet owner with `node tools/sync-current-styles.js --write` after any change to the runtime manifest or a historical fragment. Never hand-edit a generated owner: `data/runtime-manifest.js` declares each area’s current-owner strategy, and the validators prove the semantic/exact boundaries.
+Regenerate the semantic domain owner with `node tools/sync-domain-current.js --write`, the semantic core owner with `node tools/sync-core-current.js --write`, the exact-concatenation runtime owners with `node tools/sync-runtime-bundles.js --write`, and the stylesheet owner with `node tools/sync-current-styles.js --write` after any change to the runtime manifest or a historical fragment. Never hand-edit a generated owner: `data/runtime-manifest.js` declares each area’s current-owner strategy, and the validators prove the semantic/exact boundaries.
 
 ## GitHub Pages
 

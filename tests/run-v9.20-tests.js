@@ -32,7 +32,8 @@ const contract=contracts.contracts['tb-curl'];
 assert(contract&&contract.acceptance.length,'curl owns an item-specific Definition of Done');
 assert(contract.validationCommands.includes('node tests/run-v9.20-tests.js'),'curl contract names the v9.20 regression suite');
 for(const rel of contract.proofFiles)assert(exists(rel),'v9.20 proof file exists for tb-curl: '+rel);
-assert.strictEqual(contracts.version,'9.20.0','Product Hardening test-contract authority advances to v9.20');
+const contractVersion=String(contracts.version||'').split('.').map(Number);
+assert(contractVersion[0]===9&&contractVersion[1]>=20,'Product Hardening test-contract authority preserves or advances the v9.20 milestone');
 
 for(const [owner,version] of [['schema',schema.schemaVersion],['renderer',renderer.version],['builders',builders.version]])assert(/^\d+\.\d+\.\d+$/.test(version),`current Tool Builder ${owner} retains a semantic version while the v9.20 behavior assertions below preserve the historical curl contract`);
 const curl=schema.get('tb-curl');

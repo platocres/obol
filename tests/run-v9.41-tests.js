@@ -12,10 +12,13 @@ function run(args){
  return (r.stdout||'')+(r.stderr||'');
 }
 
-test('v9.41 current release identity is documented',()=>{
- assert(release&&release.label==='v9.41'&&release.version==='9.41.0','current release authority is v9.41');
- assert(read('README.md').includes('Current release: **v9.41**'),'README exposes v9.41');
- assert(read('CHANGELOG.md').includes('## v9.41 '),'CHANGELOG documents v9.41');
+test('v9.41+ current release identity is documented',()=>{
+ assert(release&&manifest&&consolidation,'v9.41+ current owners load');
+ const rp=String(release.version).split('.').map(Number);assert(rp[0]===9&&rp[1]>=41,'v9.41+ current release required');
+ assert.strictEqual(release.label,'v'+rp[0]+'.'+rp[1]);
+ assert(/Current release: \*\*v9\.\d+(?:\.\d+)?\*\*/.test(read('README.md')),'README exposes a current v9 release');
+ assert(read('CHANGELOG.md').includes('## '+release.label+' '),'CHANGELOG documents the current release');
+ assert(read('CHANGELOG.md').includes('## v9.41 '),'CHANGELOG preserves the v9.41 release history');
  assert(read('docs/v9.41.md').includes('# Obol v9.41'),'release note exists for v9.41');
 });
 
@@ -29,7 +32,9 @@ test('v9.41 domain area is a semantic current owner',()=>{
  assert.strictEqual(manifest.domainCurrent.generator,'tools/sync-domain-current.js','semantic domain generator is declared');
  assert.strictEqual(manifest.domainCurrent.equivalenceValidator,'tools/validate-domain-current-equivalence.js','semantic domain validator is declared');
  assert.deepStrictEqual(Array.from(manifest.domainCurrent.historicalFragments),Array.from(domain.fragments),'domainCurrent preserves the frozen historical ledger');
- for(const area of manifest.bundles.areas.filter(area=>area.id!=='domain'))assert.strictEqual(area.strategy,'ordered-fragment-concatenation',area.id+' remains exact-concatenated');
+ const core=manifest.bundles.areas.find(area=>area.id==='core');
+ assert(core&&['ordered-fragment-concatenation','semantic-delta-replay'].includes(core.strategy),'later releases may flatten the core owner semantically');
+ for(const area of manifest.bundles.areas.filter(area=>!['domain','core'].includes(area.id)))assert.strictEqual(area.strategy,'ordered-fragment-concatenation',area.id+' remains exact-concatenated');
 });
 
 test('v9.41 browser and Node loaders execute the semantic owner directly',()=>{
@@ -39,7 +44,7 @@ test('v9.41 browser and Node loaders execute the semantic owner directly',()=>{
   assert(!manifest.node.data.includes(rel),'Node current runtime must not execute historical domain fragment directly: '+rel);
  }
  const loader=read('assets/runtime-current.js');
- assert(loader.includes('semantic domain snapshot with exact core/app concatenations'),'browser loader documents the mixed startup owner strategy');
+ assert(loader.includes('semantic domain snapshot'),'browser loader documents the semantic domain strategy');
  const currentRuntime=require(path.join(root,'tools','current-runtime.js'));
  const loaded=currentRuntime.loadCurrent(root);
  assert(loaded&&loaded.C&&loaded.lanes&&loaded.project,'manifest-backed Node runtime initializes through semantic domain + core');
@@ -60,24 +65,24 @@ test('v9.41 semantic domain asset is not a historical fragment concatenation',()
 test('v9.41 runtime projection and dashboard report mixed ownership accurately',()=>{
  assert.deepStrictEqual(Array.from(consolidation.validate()),[],'runtime consolidation projection validates');
  const p=consolidation.projection();
- assert.strictEqual(p.flattenedHistoricalFragments,103,'projection counts the semantically flattened domain fragments');
- assert.strictEqual(p.liveHistoricalFragments,194,'projection counts remaining exact-owned historical fragments');
- assert.strictEqual(p.liveStartupHistoricalFragments,133,'projection counts only core/app historical fragments as still executing at startup');
+ assert(p.flattenedHistoricalFragments>=103,'projection counts at least the semantically flattened domain fragments');
+ assert(p.liveHistoricalFragments<=194,'projection does not regress to more exact-owned historical fragments');
+ assert(p.liveStartupHistoricalFragments<=133,'projection does not regress to more exact-owned startup fragments');
  assert.strictEqual(p.flattenedHistoricalFragments+p.liveHistoricalFragments+p.retiredFragments,p.ledgerFragments,'all frozen fragments are flattened, exact-owned, or retired');
  const dashboard=read('assets/product-hardening-dashboard.js');
  for(const token of ['Current runtime ownership','rc.flattenedHistoricalFragments','rc.liveHistoricalFragments','rc.liveStartupHistoricalFragments','semantic current snapshot'])assert(dashboard.includes(token),'dashboard reports '+token);
  const readme=read('README.md');
- assert(readme.includes('**Current runtime ownership areas:** 7 owners account for 297 historical fragments — 103 semantically flattened, 194 still exact-owned; 30 fragments stay retired in the frozen ledger.'),'README Product Build Next reports mixed ownership');
+ assert(/\*\*Current runtime ownership areas:\*\* 7 owners account for 297 historical fragments — \d+ semantically flattened, \d+ still exact-owned; 30 fragments stay retired in the frozen ledger\./.test(readme),'README Product Build Next reports mixed ownership');
 });
 
-test('v9.41 queue and item contract close runtime-domain-flattening only',()=>{
+test('v9.41 queue and item contract close runtime-domain-flattening',()=>{
  const item=q.items.find(item=>item.id==='runtime-domain-flattening');
  assert(item&&item.status==='complete','runtime-domain-flattening is complete');
  assert(contracts.contracts['runtime-domain-flattening'],'runtime-domain-flattening has an item-specific test contract');
  const rec=packages.recommend(q);
  assert(rec&&rec.id==='runtime-layer-consolidation','remaining runtime flattening stays the recommended work package');
  assert(!rec.liveItems.some(item=>item.id==='runtime-domain-flattening'),'completed domain flattening is not still listed as live work');
- for(const id of ['runtime-core-flattening','runtime-app-flattening','runtime-evidence-flattening','runtime-style-flattening'])assert(q.items.find(item=>item.id===id&&item.status==='queued'),id+' remains queued for a separate pass');
+ for(const id of ['runtime-app-flattening','runtime-evidence-flattening','runtime-style-flattening'])assert(q.items.find(item=>item.id===id&&item.status==='queued'),id+' remains queued for a separate pass');
 });
 
 test('v9.41 validators prove semantic and exact ownership',()=>{

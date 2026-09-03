@@ -25,6 +25,7 @@ const measured=Object.freeze({
 
 function projection(){
  if(!manifest||!manifest.bundles)return null;
+ const generatedOwner=area=>area.id==='domain'&&manifest.domainCurrent?manifest.domainCurrent:area.id==='core'&&manifest.coreCurrent?manifest.coreCurrent:null;
  const areas=manifest.bundles.areas.map(area=>Object.freeze({
   id:area.id,
   scope:area.scope,
@@ -33,10 +34,10 @@ function projection(){
   owner:area.owner,
   description:area.description,
   fragments:area.fragments.length,
-  generator:area.id==='domain'&&manifest.domainCurrent?manifest.domainCurrent.generator:manifest.bundles.generator,
-  equivalenceValidator:area.id==='domain'&&manifest.domainCurrent?manifest.domainCurrent.equivalenceValidator:'tools/validate-runtime-bundles.js'
+  generator:generatedOwner(area)?generatedOwner(area).generator:manifest.bundles.generator,
+  equivalenceValidator:generatedOwner(area)?generatedOwner(area).equivalenceValidator:'tools/validate-runtime-bundles.js'
  }));
- const semanticFragments=areas.filter(area=>area.strategy==='semantic-snapshot').reduce((n,area)=>n+area.fragments,0);
+ const semanticFragments=areas.filter(area=>area.strategy!=='ordered-fragment-concatenation').reduce((n,area)=>n+area.fragments,0);
  const liveHistoricalFragments=areas.filter(area=>area.strategy==='ordered-fragment-concatenation').reduce((n,area)=>n+area.fragments,0);
  const preludeRequests=manifest.startupPreludeScripts.length;
  const startupFragments=manifest.startupScripts.length;
@@ -84,7 +85,7 @@ function validate(){
  for(const area of p.areas){
   if(!area.owner||!area.label||!area.fragments)failures.push('runtime consolidation area is incomplete: '+area.id);
   if(area.fragments<1)failures.push('runtime consolidation area owns no fragments: '+area.id);
-  if(!['semantic-snapshot','ordered-fragment-concatenation'].includes(area.strategy))failures.push('runtime consolidation area has an unknown strategy: '+area.id);
+  if(!['semantic-snapshot','semantic-delta-replay','ordered-fragment-concatenation'].includes(area.strategy))failures.push('runtime consolidation area has an unknown strategy: '+area.id);
  }
  if(p.flattenedHistoricalFragments+p.liveHistoricalFragments+p.retiredFragments!==p.ledgerFragments)failures.push('every frozen historical fragment must be semantically flattened, still exact-owned, or explicitly retired');
  if(p.startupRequests.after>=p.startupRequests.before)failures.push('runtime consolidation must reduce startup requests');
