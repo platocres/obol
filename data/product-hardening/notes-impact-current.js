@@ -6,6 +6,7 @@ const rows=Array.from(notes.reviewedDispositions||[]),publicNotes=Array.from(not
 const backfillRows=Array.from(backfill&&backfill.rows||[]),backfillMap=new Map(backfillRows.map(row=>[row.noteId,row]));
 const unique=list=>Array.from(new Set((list||[]).filter(Boolean)));
 const themeRules=[
+ ['Linux local privilege escalation',['linux-privesc','sudo','suid','capabilities','cron','kernel']],
  ['Windows local privilege escalation',['windows-privesc','windows-service','scheduled-task','dll-hijack','uac','access-token','local-exploit']],
  ['File upload',['file-upload']],
  ['File inclusion',['file-inclusion','lfi','rfi','path-traversal']],
@@ -94,9 +95,6 @@ const modeledDecisions=sourceDecisions.filter(decision=>decision.disposition==='
 const rubricMechanicBacked=modeledDecisions.filter(decision=>decision.productChanges.length).length;
 const rubricJustifiedGuidanceOnly=modeledDecisions.filter(decision=>decision.guidanceOnly&&decision.guidanceOnlyReason).length;
 const rubricUnjustifiedGuidanceOnly=modeledDecisions.filter(decision=>decision.guidanceOnly&&!decision.guidanceOnlyReason).length;
-// Ratchet ceiling for modeled notes reviewed under the pre-v9.29 rubric that carry neither a
-// product mechanic nor an explicit guidance-only reason. Historical projections that do not load
-// the v9.38 backfill retain the v9.36 ceiling; the current backfill-aware projection ratchets it down.
 const GUIDANCE_ONLY_BACKLOG_CEILING=backfillRows.length>=14?32:43;
 const rubric=Object.freeze({
  modeled:modeledDecisions.length,
@@ -144,5 +142,5 @@ function validate(){
  if(latestWave.id&&latestWave.reviewed===0)failures.push('notes impact latest wave is empty');
  return failures;
 }
-root.OBOL_PRODUCT_HARDENING_NOTES_IMPACT=Object.freeze({schemaVersion:'1.6.0',review,outputCounts,rubric,outputs,sourceDecisions,declaredProductChanges,themes,latestWave,gaps,summary,allowedImpactTypes,allowedProductChangeTypes,reviewWaveAtLeast,validate});
+root.OBOL_PRODUCT_HARDENING_NOTES_IMPACT=Object.freeze({schemaVersion:'1.7.0',review,outputCounts,rubric,outputs,sourceDecisions,declaredProductChanges,themes,latestWave,gaps,summary,allowedImpactTypes,allowedProductChangeTypes,reviewWaveAtLeast,validate});
 })(typeof window!=='undefined'?window:globalThis);
