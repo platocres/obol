@@ -4,6 +4,10 @@ This file is the release-history source for Obol. Future build work should revie
 
 The README is intentionally reserved for current product purpose, permanent operating and build requirements, current architecture/state, and forward priorities. Release narratives and historical implementation summaries belong here, not in README.
 
+## v9.37 — Path three-mode rendering
+
+- In progress: render Checklist, Simplified, and Live Map views from one evidence-ranked Next Steps graph while preserving the current operator-route owner and browser-local workflow.
+
 ## v9.36 — Notes conversion rubric and script disposition
 
 - Enforced the notes conversion rubric (`notes-conversion-rubric`): the notes-impact projection exposes a `rubric` over modeled notes (mechanic-backed, justified guidance-only, unjustified guidance-only, compliant, and `mechanicConversionPct`), and `tools/validate-notes-impact.js` ratchets the unjustified guidance-only backlog against a frozen ceiling so it can only shrink. Mechanic conversion, not review count, is the primary notes metric (current state: 1/95, backlog 43/43).
