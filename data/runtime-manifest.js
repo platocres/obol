@@ -127,15 +127,55 @@ const surfacePolicy=Object.freeze({
  evidence:Object.freeze({policy:'route-lazy',owner:'evidenceParsing',reason:'BloodHound helpers and versioned Evidence parser overlays load when Evidence/Artifacts is opened.'}),
  report:Object.freeze({policy:'route-lazy',owner:'reportOverlays',reason:'The stable base report owner stays eager; historical report overlays load on Report.'})
 });
+const bundleAreaGroups=Object.freeze({domain:['domain','vendor'],core:['core'],app:['report','appPrelude','intake','nmap','app']});
+const bundleAreaOwner=new Map();
+for(const area of Object.keys(bundleAreaGroups))for(const name of bundleAreaGroups[area])for(const src of groups[name])bundleAreaOwner.set(src,area);
+const bundleSeparator='\n;\n';
+const startupBundleDefs=[
+ ['domain','assets/obol-domain-current.js','Domain data','Lane, methodology, Orange source-fidelity, project-model, report-metadata, and signature owners.'],
+ ['core','assets/obol-core-current.js','Core state and derivation','Browser-local state, migrations, proof boundaries, applicability, ranking, progress, and report readiness.'],
+ ['app','assets/obol-app-current.js','Report base and application UI','Base report owner, application prelude, and historical workflow/UI overlays.']
+];
+const lazyBundleDefs=[
+ ['evidenceParsing','assets/obol-evidence-current.js','Evidence parsing','BloodHound helpers and historical Evidence parser overlays.'],
+ ['nmap','assets/obol-nmap-current.js','Nmap builders','Historical Nmap command-builder overlays.'],
+ ['reportOverlays','assets/obol-report-overlays-current.js','Report overlays','Historical report generation overlays.'],
+ ['toolReferenceData','assets/obol-tool-reference-current.js','Tool reference data','Wordlist and script reference payloads.']
+];
+const bundleAreas=freeze([
+ ...startupBundleDefs.map(([id,owner,label,description])=>Object.freeze({
+  id,scope:'startup',owner,label,description,
+  fragments:freeze(liveHistoricalStartup.filter(src=>bundleAreaOwner.get(src)===id))
+ })),
+ ...lazyBundleDefs.map(([id,owner,label,description])=>Object.freeze({
+  id,scope:'lazy',owner,label,description,
+  fragments:freeze(lazy[id]||[])
+ }))
+]);
+const startupBundleScripts=freeze(bundleAreas.filter(area=>area.scope==='startup').map(area=>area.owner));
+const lazyBundles=Object.freeze(Object.fromEntries(bundleAreas.filter(area=>area.scope==='lazy').map(area=>[area.id,area.owner])));
+const bundleFragments=Object.freeze(Object.fromEntries(bundleAreas.map(area=>[area.owner,area.fragments])));
+const bundles=Object.freeze({
+ schema:'ordered-fragment-concatenation',
+ separator:bundleSeparator,
+ generator:'tools/sync-runtime-bundles.js',
+ areas:bundleAreas,
+ owners:freeze(bundleAreas.map(area=>area.owner)),
+ fragments:bundleFragments,
+ startup:startupBundleScripts,
+ lazy:lazyBundles
+});
+
 const performance=Object.freeze({
  baseline:Object.freeze({historicalScripts:327,historicalStyles:69}),
- startup:Object.freeze({historicalScripts:liveHistoricalStartup.length,compatibilityPreludeScripts:startupPreludeScripts.length,totalScripts:startupPreludeScripts.length+liveHistoricalStartup.length,currentOwnerScripts:currentScripts.length,maxHistoricalScripts:236,minDeferredHistoricalScripts:61,retiredDashboardDataScripts:historicalDashboardData.length,retiredDashboardPresentationScripts:retiredDashboardPresentation.length}),
- styleRequests:Object.freeze({currentOwner:1,historicalImports:historicalStyles.length}),
+ startup:Object.freeze({historicalScripts:liveHistoricalStartup.length,compatibilityPreludeScripts:startupPreludeScripts.length,totalScripts:startupPreludeScripts.length+liveHistoricalStartup.length,consolidatedStartupRequests:startupPreludeScripts.length+startupBundleScripts.length,startupBundles:startupBundleScripts.length,currentOwnerScripts:currentScripts.length,maxHistoricalScripts:236,minDeferredHistoricalScripts:61,retiredDashboardDataScripts:historicalDashboardData.length,retiredDashboardPresentationScripts:retiredDashboardPresentation.length}),
+ styleRequests:Object.freeze({currentOwner:1,historicalFragments:historicalStyles.length}),
+ consolidation:Object.freeze({bundleAreas:bundleAreas.length,startupAreas:startupBundleScripts.length,lazyAreas:bundleAreas.length-startupBundleScripts.length,consolidatedFragments:bundleAreas.reduce((n,area)=>n+area.fragments.length,0)}),
  requiredDeferredGroups:deferredScriptGroups
 });
 
 return Object.freeze({
- schemaVersion:'1.8.0',
+ schemaVersion:'1.9.0',
  styles:freeze(styles),
  scripts:freeze(scripts),
  startupPreludeScripts,
@@ -147,13 +187,17 @@ return Object.freeze({
  groups,
  node:Object.freeze({data:nodeData,historicalData:historicalNodeData,core:groups.core}),
  lazy,
+ bundles,
+ startupBundleScripts,
+ lazyBundles,
  deferredScriptGroups,
  routeLazy,
  surfacePolicy,
  performance,
  compatibility:Object.freeze({
   baselineRelease:'v9.5',
-  strategy:'script-exact-load-order+style-import-equivalence',
+  strategy:'script-exact-load-order+style-cascade-equivalence',
+  consolidation:'ordered-fragment-concatenation',
   fixture:'tests/fixtures/runtime-v9.5-load-order.json',
   styleOwner:'assets/obol-current.css',
   historicalStyles:freeze(historicalStyles)

@@ -57,6 +57,24 @@ assert.strictEqual(new Set(flatDeferred).size,flatDeferred.length,'deferred scri
 for(const src of retired)assert(!flatDeferred.includes(src),'retired dashboard layer must not masquerade as a route-lazy group: '+src);
 assert.deepStrictEqual(new Set(excluded),new Set(flatDeferred.concat(retired)),'historical startup exclusions must be explained by route deferral or explicit live-layer retirement');
 
+/* Consolidation budget: the historical fragment ledger stays 236 scripts deep, but the
+   browser must fetch one owner per ownership area rather than one file per fragment. */
+const startupBundles=manifest.startupBundleScripts||[];
+assert.strictEqual(startupBundles.length,3,'operator startup consolidates into three ownership-area bundles');
+assert.deepStrictEqual(startupBundles,['assets/obol-domain-current.js','assets/obol-core-current.js','assets/obol-app-current.js'],'startup bundle owners are stable, non-versioned, and ordered domain -> core -> app');
+assert.strictEqual(manifest.performance.startup.consolidatedStartupRequests,4,'operator startup costs one compatibility prelude plus three consolidated bundles');
+assert(manifest.performance.startup.consolidatedStartupRequests<manifest.performance.startup.totalScripts/50,'consolidation must be a real request reduction, not a rename');
+for(const rel of startupBundles)assert(exists(rel),'consolidated startup owner is missing: '+rel);
+assert.strictEqual(manifest.styles.length,1,'the browser fetches exactly one stylesheet');
+assert(!/@import/.test(read(manifest.styles[0]).replace(/^\/\*[\s\S]*?\*\/\n/,'')),'the single stylesheet owner no longer chains fragment requests');
+const lazyBundles=manifest.lazyBundles||{};
+for(const group of manifest.deferredScriptGroups||[]){
+ assert(lazyBundles[group],'route-deferred group has a consolidated owner: '+group);
+ assert(exists(lazyBundles[group]),'consolidated route-deferred owner is missing: '+lazyBundles[group]);
+ assert(manifest.lazy[group].length>=1,'route-deferred group keeps its historical fragment ledger: '+group);
+}
+assert.strictEqual(Object.keys(lazyBundles).length,4,'every route-deferred group consolidates behind one owner');
+
 const routes=manifest.routeLazy||{};
 for(const [route,groups] of Object.entries({boxes:['nmap'],intake:['nmap','evidenceParsing'],artifacts:['nmap','evidenceParsing'],tools:['toolReferenceData'],report:['reportOverlays']})){
  assert(Array.isArray(routes[route]),'route lazy policy missing for '+route);
@@ -81,7 +99,7 @@ for(const token of ['Stable compatibility seam','data-only','OBOL_DASHBOARD_COMP
 for(const forbidden of ['.commands.push','.tools.push','addCommand(', 'addTool('])assert(!compat.includes(forbidden),'dashboard compatibility seam must remain metadata-only and cannot mutate operator domain: '+forbidden);
 
 const loader=read('assets/runtime-current.js');
-for(const token of ['manifest.startupPreludeScripts','startupPreludeList','compatibilityScriptList','manifest.startupScripts||manifest.scripts','manifest.currentScripts','browserScriptList','compatibilityScriptList().concat(currentOwnerList())','function ensureCompatibility','compatibilityLoaded','function loadGroup','function ensureRoute','manifest.routeLazy','DOMContentLoaded','hashchange','budgetSnapshot'])assert(loader.includes(token),'runtime loader missing current/lazy/compatibility contract token: '+token);
+for(const token of ['manifest.startupPreludeScripts','startupPreludeList','compatibilityScriptList','manifest.startupScripts||manifest.scripts','manifest.currentScripts','manifest.startupBundleScripts','manifest.lazyBundles','lazyOwnerList','browserScriptList','compatibilityScriptList().concat(currentOwnerList())','function ensureCompatibility','compatibilityLoaded','function loadGroup','function ensureRoute','manifest.routeLazy','DOMContentLoaded','hashchange','budgetSnapshot'])assert(loader.includes(token),'runtime loader missing current/lazy/compatibility contract token: '+token);
 assert(loader.includes("const list=dashboard?currentOwnerList():browserScriptList()"),'initial Dashboard boot must select only the stable current owner');
 assert(loader.includes("if(page==='dashboard')return hydrateDashboard()"),'Dashboard hydration must bypass compatibility runtime loading');
 assert(/function hydrateOperatorRoute\(page\)\{\s*return ensureCompatibility\(\)/.test(loader),'operator routes must restore compatibility on demand after a Dashboard-only boot');
@@ -93,4 +111,4 @@ const bridge=read('assets/app-v8.8.js');
 for(const token of ['function ensureWorkflow88','function ensureProductAssets88','ensureWorkflow88().catch(()=>{})'])assert(bridge.includes(token),'v8.8 compatibility bridge missing '+token);
 assert(!/ensureProductAssets88\(\)\.catch\(\(\)=>\{\}\)/.test(bridge),'Product Dashboard assets are still eagerly requested during ordinary startup');
 
-console.log('Runtime loading budget valid: Dashboard uses one current owner; operator routes load one stable metadata prelude plus 236 historical scripts, with 61 route-deferred and 30 historical Dashboard data/presentation layers retired to the frozen fixture ledger.');
+console.log('Runtime loading budget valid: Dashboard uses one current owner; operator routes load one stable metadata prelude plus '+startupBundles.length+' consolidated bundles covering '+manifest.startupScripts.length+' historical scripts, with 61 route-deferred fragments behind '+Object.keys(lazyBundles).length+' owners and 30 Dashboard data/presentation layers retired to the frozen fixture ledger.');

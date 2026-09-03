@@ -32,7 +32,11 @@ function appendScripts(list){
  return chain;
 }
 function startupPreludeList(){return Array.isArray(manifest.startupPreludeScripts)?manifest.startupPreludeScripts:[];}
-function startupList(){return manifest.startupScripts||manifest.scripts;}
+function startupFragmentList(){return manifest.startupScripts||manifest.scripts;}
+/* The consolidated startup bundles are the exact ordered concatenation of the historical
+   fragment chain, so the browser executes identical code in identical order from far
+   fewer requests. The fragment list stays reachable for regression and audit tooling. */
+function startupList(){return Array.isArray(manifest.startupBundleScripts)&&manifest.startupBundleScripts.length?manifest.startupBundleScripts:startupFragmentList();}
 function currentOwnerList(){return Array.isArray(manifest.currentScripts)?manifest.currentScripts:[];}
 function compatibilityScriptList(){return startupPreludeList().concat(startupList());}
 function browserScriptList(){return compatibilityScriptList().concat(currentOwnerList());}
@@ -110,9 +114,10 @@ function writeScripts(){
  return appendScripts(list);
 }
 function lazyGroup(name){return manifest.lazy&&Array.isArray(manifest.lazy[name])?manifest.lazy[name]:[];}
+function lazyOwnerList(name){const owner=manifest.lazyBundles&&manifest.lazyBundles[name];return owner?[owner]:lazyGroup(name);}
 function loadGroup(name){
  if(groupLoads.has(name))return groupLoads.get(name);
- const list=lazyGroup(name);
+ const list=lazyOwnerList(name);
  const p=appendScripts(list).then(()=>list.slice());
  groupLoads.set(name,p);
  return p;
@@ -193,7 +198,8 @@ function budgetSnapshot(){
  const startup=startupList();
  const current=currentOwnerList();
  const deferred=(manifest.deferredScriptGroups||[]).reduce((n,name)=>n+lazyGroup(name).length,0);
- return Object.freeze({startupCompatibilityPreludeScripts:prelude.length,startupHistoricalScripts:startup.length,currentOwnerScripts:current.length,deferredHistoricalScripts:deferred,baselineHistoricalScripts:manifest.scripts.length,compatibilityLoaded,loadedLazyGroups:[...groupLoads.keys()]});
+ const deferredRequests=(manifest.deferredScriptGroups||[]).reduce((n,name)=>n+lazyOwnerList(name).length,0);
+ return Object.freeze({startupCompatibilityPreludeScripts:prelude.length,startupHistoricalScripts:startupFragmentList().length,startupRequests:prelude.length+startup.length,startupBundles:startup.length,currentOwnerScripts:current.length,deferredHistoricalScripts:deferred,deferredRequests,baselineHistoricalScripts:manifest.scripts.length,compatibilityLoaded,loadedLazyGroups:[...groupLoads.keys()]});
 }
 
 if(typeof window!=='undefined'){
@@ -201,6 +207,7 @@ if(typeof window!=='undefined'){
  if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',()=>{syncCurrentRouteOwnership();hydrateRoute().catch(()=>{});},{once:true});
  else setTimeout(()=>{syncCurrentRouteOwnership();hydrateRoute().catch(()=>{});},0);
 }
-root.OBOL_RUNTIME_LOADER=Object.freeze({manifest,writeStyles,writeScripts,appendScripts,startupPreludeList,startupList,currentOwnerList,compatibilityScriptList,browserScriptList,ensureCompatibility,loadGroup,ensureRoute,routeName,isDashboardRoute,syncCurrentRouteOwnership,protectDashboardView,releaseDashboardViewGuard,loadCredentialMaterial,loadManualOutcomes,loadTunnelBuilders,hydrateRoute,budgetSnapshot});
+root.OBOL_RUNTIME_LOADER=Object.freeze({manifest,writeStyles,writeScripts,appendScripts,startupPreludeList,startupFragmentList,startupList,lazyOwnerList,currentOwnerList,compatibilityScriptList,browserScriptList,ensureCompatibility,loadGroup,ensureRoute,routeName,isDashboardRoute,syncCurrentRouteOwnership,protectDashboardView,releaseDashboardViewGuard,loadCredentialMaterial,loadManualOutcomes,loadTunnelBuilders,hydrateRoute,budgetSnapshot});
 root.__OBOL_RUNTIME_ENTRYPOINT__='manifest-v1';
+root.__OBOL_RUNTIME_CONSOLIDATED__=Array.isArray(manifest.startupBundleScripts)&&manifest.startupBundleScripts.length>0;
 })(typeof window!=='undefined'?window:globalThis);

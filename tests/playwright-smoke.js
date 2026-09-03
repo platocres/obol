@@ -6,14 +6,19 @@ const { chromium } = require('playwright');
 
 const baseUrl = process.env.OBOL_SMOKE_BASE_URL || 'http://127.0.0.1:4173/index.html';
 const outputDir = process.env.OBOL_SMOKE_OUTPUT || path.join(__dirname, '..', 'artifacts', 'playwright-smoke');
+// requestBudget is the real proof that runtime consolidation holds in a browser.
+// Before consolidation these routes each fetched 321-365 JavaScript/CSS files; the
+// ceilings below leave headroom for lazy route groups but fail loudly if the
+// historical fragment chain ever leaks back into live loading.
 const routes = [
-  { id: 'home', hash: '#/home', marker: /Home/i },
-  { id: 'targets', hash: '#/boxes', marker: /target/i },
-  { id: 'evidence', hash: '#/intake', marker: /evidence/i },
-  { id: 'next-steps', hash: '#/path', marker: /(next|path|recommend)/i },
-  { id: 'report', hash: '#/report', marker: /report/i },
-  { id: 'dashboard', hash: '#/dashboard', marker: /Product Hardening/i, currentDashboard: true, settleMs: 5200 }
+  { id: 'home', hash: '#/home', marker: /Home/i, requestBudget: 30 },
+  { id: 'targets', hash: '#/boxes', marker: /target/i, requestBudget: 40 },
+  { id: 'evidence', hash: '#/intake', marker: /evidence/i, requestBudget: 40 },
+  { id: 'next-steps', hash: '#/path', marker: /(next|path|recommend)/i, requestBudget: 40 },
+  { id: 'report', hash: '#/report', marker: /report/i, requestBudget: 40 },
+  { id: 'dashboard', hash: '#/dashboard', marker: /Product Hardening/i, currentDashboard: true, settleMs: 5200, requestBudget: 30 }
 ];
+const HISTORICAL_FRAGMENT = /\/(?:assets|data)\/(?:core|app|intake|report|nmap|review|methodology|orange-fidelity|project-model|dashboard|source-delivery|obol)-v[\d.]+[^/]*$/;
 
 fs.mkdirSync(outputDir, { recursive: true });
 
@@ -56,7 +61,10 @@ async function installDashboardPaintObserver(page) {
 }
 
 (async () => {
-  const browser = await chromium.launch({ headless: true });
+  // OBOL_SMOKE_BROWSER_PATH lets a sandbox with a pre-installed Chromium run this
+  // suite without re-downloading browsers. CI leaves it unset and uses the default.
+  const executablePath = process.env.OBOL_SMOKE_BROWSER_PATH || undefined;
+  const browser = await chromium.launch({ headless: true, executablePath });
   const context = await browser.newContext({ viewport: { width: 1440, height: 1000 } });
   const failures = [];
 
@@ -65,6 +73,11 @@ async function installDashboardPaintObserver(page) {
       const page = await context.newPage();
       const routeFailures = [];
 
+      const assetRequests = [];
+      page.on('request', request => {
+        const url = request.url();
+        if (localRequestFailure(url) && /\.(?:js|css)(?:[?#]|$)/.test(url)) assetRequests.push(url);
+      });
       page.on('console', message => {
         if (message.type() === 'error') routeFailures.push('console error: ' + message.text());
       });
@@ -92,6 +105,14 @@ async function installDashboardPaintObserver(page) {
       }
 
       await page.waitForTimeout(route.settleMs || 700);
+
+      const historical = assetRequests.filter(url => HISTORICAL_FRAGMENT.test(new URL(url).pathname));
+      if (historical.length) {
+        routeFailures.push('historical runtime fragment requested directly instead of through a consolidated owner: ' + historical.slice(0, 5).join(', ') + (historical.length > 5 ? ' (+' + (historical.length - 5) + ' more)' : ''));
+      }
+      if (route.requestBudget && assetRequests.length > route.requestBudget) {
+        routeFailures.push('runtime request budget exceeded: ' + assetRequests.length + ' JavaScript/CSS requests, budget ' + route.requestBudget);
+      }
 
       if (route.currentDashboard) {
         const currentOwner = await page.locator('[data-product-dashboard-owner="current"]').count();
