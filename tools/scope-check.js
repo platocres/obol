@@ -38,7 +38,8 @@ const checks=[
  ['tests/run-v9.44-tests.js'],
  ['tests/run-v9.45-tests.js'],
  ['tests/run-v9.46-tests.js'],
- ['tests/run-v9.47-tests.js']
+ ['tests/run-v9.47-tests.js'],
+ ['tests/run-v9.48-tests.js']
 ];
 for(const args of checks){
  const result=cp.spawnSync(process.execPath,args.map((part,idx)=>idx===0?path.join(root,part):part),{cwd:root,encoding:'utf8'});

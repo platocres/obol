@@ -350,6 +350,16 @@ contracts['runtime-app-single-paint']={
  validationCommands:['node tools/validate-current-boot.js','node tools/validate-single-paint-boot-browser.js','node tools/sync-current-release.js --check','node tests/run-v9.46-tests.js'],
  proofFiles:['index.html','assets/runtime-current.js','assets/workflow-current.js','tools/validate-current-boot.js','tools/validate-single-paint-boot-browser.js','.github/workflows/browser-smoke.yml','data/product-hardening/product-hardening-queue.js','assets/product-hardening-dashboard.js','README.md','docs/PRODUCT-HARDENING.md','docs/RUNTIME-COMPACTION.md','docs/ARCHITECTURE.md','docs/UX-QUALITY.md','tests/run-v9.46-tests.js','docs/v9.46.md']
 };
+contracts['cc-evidence-chain-restore']={
+ acceptance:[
+  'The conservative Evidence that intake-v7.7/v7.8/v7.9/v8.2 were written to add — no-credentials DHCPv6/ARP poisoning and unauthenticated coercion beyond v7.6, relay-SOCKS lateral movement, certificate movement, Windows local-exploit conditions, WebDAV coercion capture, and offline cracking — again reaches production. A stable current owner assets/intake-evidence-restore.js re-homes each overlay verbatim onto the live OBOL_INTAKE_V21 decorator chain, correcting the predecessor-global hook that made the originals return at their guard.',
+  'The fix does not revive the dead files or reopen the v9.44 retirement: the four overlays stay retired in the frozen 327-fragment ledger and the exact 37-fragment Evidence bundle is unchanged. The restoration loads route-lazily after the Evidence bundle on the Evidence/Artifacts routes (data/runtime-manifest.js evidenceRestore metadata plus the lazy.evidenceRestore group and routeLazy entries) so it wraps the fully assembled analyzeTerminal last.',
+  'tools/validate-evidence-current-equivalence.js proves the restoration two ways rather than by assertion: a reachability pass confirms the restoration owner replaces OBOL_INTAKE_V21.analyzeTerminal (the exact step the broken subchain skipped) while the retired intake-v7.7.js still cannot, and a differential pass over an unambiguous per-family operator corpus shows the restoration adds the intended conservative Evidence across all four families while keeping every outcome-fact proof boundary (no relay.success, credential.available, access.admin/system, remote.execution, objective.domain_admin, capability.dcsync, or credential.plaintext escalation).',
+  'The v9.44 retirement remains observably inert: the same validator still proves the four overlays never publish their global and never mutate analyzeTerminal in the frozen chain, and the frozen ledger, workspace migration, command behavior, recommendation logic, and report lineage are unchanged.'
+ ],
+ validationCommands:['node tools/validate-evidence-current-equivalence.js','node tools/validate-runtime-manifest.js','node tools/validate-runtime-loading.js','node tools/validate-asset-references.js','node tests/run-v9.48-tests.js','node tests/run-v9.44-tests.js'],
+ proofFiles:['assets/intake-evidence-restore.js','data/runtime-manifest.js','tools/validate-evidence-current-equivalence.js','data/product-hardening/product-hardening-queue.js','tests/run-v9.48-tests.js','README.md','CHANGELOG.md','docs/v9.48.md','docs/RUNTIME-COMPACTION.md']
+};
 const requiredForStatuses=['modeled','complete','superseded','rejected'];
-root.OBOL_PRODUCT_HARDENING_TEST_CONTRACTS={version:'9.47.0',requiredForStatuses,contracts};
+root.OBOL_PRODUCT_HARDENING_TEST_CONTRACTS={version:'9.48.0',requiredForStatuses,contracts};
 })(typeof window!=='undefined'?window:globalThis);

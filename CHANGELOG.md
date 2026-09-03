@@ -1,3 +1,12 @@
+## v9.48 — Evidence overlay chain restoration
+
+- Closed `cc-evidence-chain-restore`: the conservative Evidence that `intake-v7.7`/`v7.8`/`v7.9`/`v8.2` were written to add — no-credentials poisoning/coercion beyond v7.6, relay-SOCKS, certificate movement, Windows local-exploit conditions, WebDAV coercion, and offline cracking — again reaches production.
+- Root cause: those overlays hooked a predecessor `OBOL_INTAKE_*` global that only ever published helper functions, never `analyzeTerminal`, so each returned at its guard and broke the next link; they never ran in any load order the runtime produces.
+- Re-homed the same overlay logic verbatim onto the live `OBOL_INTAKE_V21` decorator chain through a stable current owner `assets/intake-evidence-restore.js`, loaded route-lazily after the Evidence bundle so it wraps `analyzeTerminal` last. Proof boundaries and conservative interpretation are unchanged.
+- Kept the four historical overlays retired in the frozen ledger: the v9.44 retirement stays observably inert and its reachability/differential proof is preserved. The frozen 327-fragment ledger and the 37-fragment Evidence bundle are unchanged.
+- Extended `tools/validate-evidence-current-equivalence.js` with a restoration proof — reachability that the current owner decorates `analyzeTerminal` (the step the broken subchain skipped) while the dead `intake-v7.7.js` still cannot, plus a per-family differential — and added `tests/run-v9.48-tests.js` as the regression that would have caught the broken link.
+- Moved Critical correctness to 5/5 and overall Product Hardening additively; added the `cc-evidence-chain-restore` item test contract.
+
 ## v9.46 — Single-paint current application boot
 
 - Added a current-route boot visibility barrier so historical application compatibility can initialize without replaying old Home/UI generations to the operator.
