@@ -105,6 +105,55 @@ test('v9.40 consolidation validators pass',()=>{
  }
 });
 
+test('v9.40 release contract accepts documented working-branch releases and still gates them',()=>{
+ // v9.39 and v9.40 both shipped from an agent working branch because the agent could not
+ // create release/obol-vX.Y. The contract now accepts that head shape instead of forcing
+ // a title convention that skipped release validation entirely.
+ const os=require('os');
+ const dir=fs.mkdtempSync(path.join(os.tmpdir(),'obol-v940-releasepr-'));
+ const sections=['Summary','README handoff','Product-hardening queue','Validation added','Compatibility']
+  .map(name=>'## '+name+'\n'+'x'.repeat(160)).join('\n\n');
+ const longBody='y'.repeat(700)+'\n\n'+sections;
+ const version=String(release.version).split('.').slice(0,2).join('.');
+ const payload=(title,head,body)=>{
+  const file=path.join(dir,'pr-'+Math.random().toString(36).slice(2)+'.json');
+  fs.writeFileSync(file,JSON.stringify({pull_request:{number:1,html_url:'https://example.invalid/pr/1',title,head:{ref:head},base:{ref:'main'},body}}));
+  return file;
+ };
+ const run=file=>cp.spawnSync(process.execPath,[path.join(root,'tools','validate-release-pr.js')],{cwd:root,encoding:'utf8',env:Object.assign({},process.env,{GITHUB_EVENT_NAME:'pull_request',GITHUB_EVENT_PATH:file})});
+
+ for(const [label,title,head] of [
+  ['working branch with a Release title','Release v'+version+': consolidation','claude/eloquent-gates-o83xnx'],
+  ['working branch with an Obol title','Obol v'+version+' — consolidation','claude/eloquent-gates-o83xnx'],
+  ['canonical release branch','Release v'+version+': consolidation','release/obol-v'+version]
+ ]){
+  const r=run(payload(title,head,longBody));
+  assert.strictEqual(r.status,0,label+' must pass: '+(r.stderr||r.stdout||'').trim());
+  assert(/release PR/.test(r.stdout),label+' must be validated as a release PR, not skipped');
+ }
+
+ const undocumented=run(payload('Release v'+version+': consolidation','feature/whatever',longBody));
+ assert.strictEqual(undocumented.status,1,'an undocumented branch is still rejected');
+ assert(/documented agent working branch/.test(undocumented.stderr),'rejection names the accepted head shapes');
+
+ const thin=run(payload('Release v'+version+': consolidation','claude/eloquent-gates-o83xnx','y'.repeat(700)));
+ assert.strictEqual(thin.status,1,'a working-branch release still needs the required sections');
+ assert(/missing section: Summary/.test(thin.stderr),'section requirements apply to working-branch releases');
+
+ // A working branch carries no version, so a stale title must not validate a past release.
+ const stale=run(payload('Release v9.39: stale','claude/eloquent-gates-o83xnx',longBody));
+ assert.strictEqual(stale.status,1,'a stale version in the title is rejected on a working branch');
+ assert(/but the repository ships/.test(stale.stderr),'stale-version rejection explains the mismatch');
+
+ fs.rmSync(dir,{recursive:true,force:true});
+
+ const uniqueness=read('tools/validate-open-pr-uniqueness.js');
+ assert(/\(\?:Obol\|Release\) v/.test(uniqueness),'one-open-PR rule recognizes working-branch release titles');
+ const building=read('BUILDING.md');
+ assert(building.includes('documented agent working branch'),'BUILDING.md documents the accepted release heads');
+ assert(building.includes('Do not retitle a release to dodge'),'BUILDING.md warns against retitling to skip the contract');
+});
+
 test('v9.40 adds no versioned runtime sediment',()=>{
  for(const forbidden of ['assets/app-v9.40.js','assets/core-v9.40.js','assets/obol-v9.40.css','data/project-model-v9.40.js','data/methodology-v9.40.js','assets/runtime-v9.40.js']){
   assert(!fs.existsSync(path.join(root,forbidden)),'no fake v9.40 runtime overlay: '+forbidden);

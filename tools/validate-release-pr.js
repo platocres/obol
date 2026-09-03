@@ -16,6 +16,19 @@ if(!current)throw new Error('Unable to determine current release from README.md'
 const currentVersion=current[1];
 const releaseOverride=(process.argv.find(a=>a.startsWith('--release-version='))||'').split('=')[1]||'';
 
+/*
+ * A release normally ships from `release/obol-vX.Y`. It may also ship from an agent
+ * working branch when the agent is pinned to one and cannot create a release branch —
+ * v9.39 and v9.40 both shipped that way. Both are legitimate release heads, so release
+ * intent is detected from either the head or a `Obol vX.Y` / `Release vX.Y` title, and
+ * the head check accepts either shape. Everything else in the release-PR contract
+ * (title carries the version, description length, required sections, open-PR
+ * uniqueness) applies identically to both.
+ */
+const RELEASE_BRANCH_RE=new RegExp('^(?:release|build|staging)\\/obol-v'+VERSION_RE+'$','i');
+const WORKING_BRANCH_RE=/^(?:claude|codex|agent|hardening)\/[A-Za-z0-9._-]+$/i;
+const RELEASE_TITLE_RE=new RegExp('^(?:Obol|Release) v'+VERSION_RE+'\\b','i');
+
 const repoOnly=process.argv.includes('--repo-only');
 const eventName=process.env.GITHUB_EVENT_NAME||'';
 const eventPath=process.env.GITHUB_EVENT_PATH||'';
@@ -30,8 +43,8 @@ if(!repoOnly&&eventName==='pull_request'){
     pr=event.pull_request||{};
     const head=pr.head&&pr.head.ref||'';
     const title=String(pr.title||'').trim();
-    const headMatch=head.match(new RegExp('^(?:release|build|staging)\\/obol-v'+VERSION_RE+'$','i'));
-    const titleMatch=title.match(new RegExp('^Obol v'+VERSION_RE+'\\b','i'));
+    const headMatch=head.match(RELEASE_BRANCH_RE);
+    const titleMatch=title.match(RELEASE_TITLE_RE);
     releaseIntent=!!(headMatch||titleMatch);
     if(headMatch&&titleMatch&&headMatch[1]!==titleMatch[1])fail.push(`release PR version mismatch: head v${headMatch[1]} vs title v${titleMatch[1]}`);
     eventVersion=(headMatch&&headMatch[1])||(titleMatch&&titleMatch[1])||'';
@@ -98,8 +111,15 @@ if(pr&&releaseIntent){
   const head=pr.head&&pr.head.ref||'';
   const title=String(pr.title||'').trim();
   const body=String(pr.body||'').trim();
-  if(head!==releaseBranch)fail.push(`release PR head must be ${releaseBranch}, got ${head||'(empty)'}`);
-  if(!title.includes(`Obol v${version}`))fail.push(`release PR title must identify Obol v${version}`);
+  const headIsWorkingBranch=head!==releaseBranch&&WORKING_BRANCH_RE.test(head);
+  if(head!==releaseBranch&&!headIsWorkingBranch)fail.push(`release PR head must be ${releaseBranch} or a documented agent working branch (claude/…, codex/…, agent/…, hardening/…), got ${head||'(empty)'}`);
+  /* A canonical release branch cross-checks the title's version against the branch name.
+     A working branch carries no version, so the title must agree with the release the
+     repository is actually shipping — otherwise a stale title silently validates the
+     wrong release. */
+  if(headIsWorkingBranch&&eventVersion&&eventVersion!==currentVersion)fail.push(`release PR title claims v${eventVersion} but the repository ships v${currentVersion}; a working-branch release must name the release it bumps`);
+  const versionToken=version.replace(/\./g,'\\.');
+  if(!new RegExp('\\b(?:Obol|Release) v'+versionToken+'\\b','i').test(title))fail.push(`release PR title must identify Obol v${version} or Release v${version}`);
   if(body.length<700)fail.push('release PR description is missing or too short');
   const legacySections=[
     ['Summary',/##\s+Summary\b/i],

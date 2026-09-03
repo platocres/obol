@@ -29,7 +29,9 @@ function isRelevant(pr) {
   const text = prText(pr);
   const head = (pr.head && pr.head.ref) || pr.head_ref || '';
   return /^release\/obol-v\d+(?:\.\d+){1,2}$/i.test(head)
-    || /^Obol v\d+(?:\.\d+){1,2}\b/i.test(pr.title || '')
+    // A release shipped from an agent working branch is titled "Release vX.Y: …";
+    // it is still a release PR for the one-open-PR rule.
+    || /^(?:Obol|Release) v\d+(?:\.\d+){1,2}\b/i.test(pr.title || '')
     || /product[- ]hardening/i.test(text)
     || /Product Build Next/i.test(text)
     || /burn[- ]down/i.test(text)
