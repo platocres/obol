@@ -41,10 +41,10 @@ if(!workflow.includes("link.href='#/dashboard'"))bad('Product Dashboard is not e
 if(workflow.includes("primary.push")||workflow.includes("NAVIGATION30.primary.push"))bad('current workflow must not add Product Dashboard to the five-item primary operator loop');
 
 for(const token of ['nextStepsOverview34','Best next move','Unlocks','Queued intent','Blockers','brokenPaths','unverifiedPaths','untestedCredentials'])if(!workflow.includes(token))bad('Path decision brief missing token: '+token);
-for(const token of ['data-operator-route-owner="path-current"','renderCurrentPath','compactToolPanels','operator-primary-action31','operator-legacy-commands31','MAX_PRIMARY_BUILDERS','Tool action stack'])if(!operator.includes(token))bad('current operator route owner missing token: '+token);
-for(const token of ['.operator-path31','.operator-tool-stack31','.operator-primary-action31','.operator-legacy-commands31'])if(!operatorCss.includes(token))bad('current operator route CSS missing token: '+token);
+for(const token of ['data-operator-route-owner="path-current"','renderCurrentPath','compactToolPanels','operator-primary-action31','operator-legacy-commands31','MAX_PRIMARY_BUILDERS','Tool action stack','buildPathModel','renderSimplified','renderChecklist','renderLiveMap','data-path-model-source="nextStepsOverview34"','data-operator-view31','data-path-map31','data-path-map-control31','mapZoom'])if(!operator.includes(token))bad('current operator route owner missing token: '+token);
+for(const token of ['.operator-path31','.operator-tool-stack31','.operator-primary-action31','.operator-legacy-commands31','.operator-path-modebar31','.operator-checklist31','.operator-map31','.operator-map-toolbar31','.operator-map-node31'])if(!operatorCss.includes(token))bad('current operator route CSS missing token: '+token);
 
-for(const id of ['runtime-dashboard-owner','ux-home-user-first','ux-build-metrics-collapse','ux-nav-dashboard','ux-path-clarity','runtime-operator-route-owner','ux-next-step-tool-declutter','tb-card-tool-presentation','qa-operator-route-ux-test']){
+for(const id of ['runtime-dashboard-owner','ux-home-user-first','ux-build-metrics-collapse','ux-nav-dashboard','ux-path-clarity','runtime-operator-route-owner','ux-next-step-tool-declutter','ux-path-three-mode','tb-card-tool-presentation','qa-operator-route-ux-test']){
  const item=q&&q.items.find(x=>x.id===id);
  if(!item||item.status!=='complete')bad(id+' is not complete in the Product Hardening queue');
 }

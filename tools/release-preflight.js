@@ -36,7 +36,7 @@ function run(label,args){
 
 const syntaxFiles=['tools/release-smoke.js','tools/validate-historical-tests.js','tools/sync-readme-build-next.js','tools/release-preflight.js','tools/validate-release-pr.js','tools/validate-release-quality.js',currentTest];
 if(isProductHardening){
-  syntaxFiles.push('data/current-release.js','data/runtime-manifest.js','assets/runtime-current.js','data/product-hardening/product-hardening-queue.js','data/product-hardening/item-test-contracts.js','data/tool-builder-schema.js','data/tool-builder-inventory.js','data/tool-builders.js','assets/tool-builder-current.js','tools/validate-current-release.js','tools/validate-version-identity.js','tools/validate-accessibility-contract.js','tools/validate-responsive-layout.js','tools/validate-tool-builder-platform.js','tools/validate-current-workflow.js','tools/validate-field-notes-ui.js','tools/validate-runtime-loading.js','tools/validate-runtime-manifest.js','tools/validate-dashboard-compat-equivalence.js','tools/validate-dashboard-freshness.js','tools/audit-dashboard-runtime-dependencies.js','tools/sync-current-styles.js','tools/sync-current-release.js','tools/validate-product-hardening-queue.js','tools/validate-asset-references.js','tools/sync-product-build-next.js','tools/validate-open-pr-uniqueness.js','tools/validate-readme-history-ownership.js');
+  syntaxFiles.push('data/current-release.js','data/runtime-manifest.js','assets/runtime-current.js','data/product-hardening/product-hardening-queue.js','data/product-hardening/item-test-contracts.js','data/tool-builder-schema.js','data/tool-builder-inventory.js','data/tool-builders.js','assets/tool-builder-current.js','tools/validate-current-release.js','tools/validate-version-identity.js','tools/validate-accessibility-contract.js','tools/validate-responsive-layout.js','tools/validate-tool-builder-platform.js','tools/validate-current-workflow.js','tools/validate-path-views.js','tools/validate-field-notes-ui.js','tools/validate-runtime-loading.js','tools/validate-runtime-manifest.js','tools/validate-dashboard-compat-equivalence.js','tools/validate-dashboard-freshness.js','tools/audit-dashboard-runtime-dependencies.js','tools/sync-current-styles.js','tools/sync-current-release.js','tools/validate-product-hardening-queue.js','tools/validate-asset-references.js','tools/sync-product-build-next.js','tools/validate-open-pr-uniqueness.js','tools/validate-readme-history-ownership.js');
 }else{
   for(const dir of ['data','assets']){
     for(const name of fs.readdirSync(path.join(root,dir))){if(name.endsWith(`-v${version}.js`))syntaxFiles.push(path.join(dir,name));}
@@ -65,6 +65,7 @@ if(isProductHardening){
   run('responsive density layout',['tools/validate-responsive-layout.js']);
   run('Tool Builder Platform',['tools/validate-tool-builder-platform.js']);
   run('current workflow ownership',['tools/validate-current-workflow.js']);
+  run('Path three-mode rendering',['tools/validate-path-views.js']);
   run('contextual field-notes contract',['tools/validate-field-notes-ui.js']);
   run('current stylesheet synchronization',['tools/sync-current-styles.js','--check']);
   run('runtime loading and request budget',['tools/validate-runtime-loading.js']);

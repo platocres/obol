@@ -101,6 +101,11 @@ const contracts={
   validationCommands:['node tools/validate-current-workflow.js','node tests/run-v9.8-tests.js'],
   proofFiles:['assets/workflow-current.js','assets/core-v3.4.js','assets/app-v3.4.js','tools/validate-current-workflow.js','tests/run-v9.8-tests.js','docs/UX-QUALITY.md','docs/v9.8.md']
  },
+ 'ux-path-three-mode':{
+  acceptance:['Next Steps normalizes one evidence-ranked model from C.nextStepsOverview34, then renders Simplified, Checklist, and Live Map views from that same model; the view switch persists in browser-local operator path UI state, the SVG Live Map supports pointer drag, wheel zoom, and explicit pan/zoom controls, technique links and planned-work actions remain available in every view, and the proof boundary remains evidence-review/manual-outcome owned rather than map-owned.'],
+  validationCommands:['node tools/validate-path-views.js','node tools/validate-current-workflow.js','node tools/validate-product-hardening-queue.js','node tests/run-v9.37-tests.js'],
+  proofFiles:['assets/operator-route-current.js','assets/operator-route-current.css','tools/validate-path-views.js','tools/validate-current-workflow.js','data/product-hardening/product-hardening-queue.js','tests/run-v9.37-tests.js','docs/UX-QUALITY.md','docs/v9.37.md']
+ },
  'ux-progressive-notes':{
   acceptance:['Normalized public field-note records use a stable typed data contract, are matched only to relevant card/tool/path context, render as collapsed expandable Field notes disclosure near the action context, remain absent when no relevant normalized guidance exists, and never require raw private ENEX content in the public repository.'],
   validationCommands:['node tools/validate-field-notes-ui.js','node tools/validate-asset-references.js','node tests/run-v9.10-tests.js'],

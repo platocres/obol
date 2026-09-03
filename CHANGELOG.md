@@ -6,7 +6,9 @@ The README is intentionally reserved for current product purpose, permanent oper
 
 ## v9.37 — Path three-mode rendering
 
-- In progress: render Checklist, Simplified, and Live Map views from one evidence-ranked Next Steps graph while preserving the current operator-route owner and browser-local workflow.
+- Completed `ux-path-three-mode`: Next Steps now renders Simplified, Checklist, and Live Map views from one normalized `C.nextStepsOverview34(...)` model.
+- Added browser-local view-mode persistence plus SVG Live Map pan/zoom controls, pointer drag, wheel zoom, action links, and planned-work actions without adding a versioned runtime layer.
+- Added `tools/validate-path-views.js`, wired it into current workflow validation, scope check, release preflight, and the v9.37 regression suite.
 
 ## v9.36 — Notes conversion rubric and script disposition
 
