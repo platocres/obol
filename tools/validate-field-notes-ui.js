@@ -12,7 +12,7 @@ vm.runInContext(read('data/field-notes.js'),sandbox,{filename:'data/field-notes.
 const api=sandbox.window.OBOL_FIELD_NOTES;
 assert(api,'field-notes data contract loads');
 assert.strictEqual(api.schemaVersion,'1.0.0','field-notes schema version is stable');
-for(const kind of ['lesson','tool-guidance','path-guidance','troubleshooting','evidence','report','cleanup'])assert(api.kinds.includes(kind),'field-notes kind exists: '+kind);
+for(const kind of ['lesson','tool-guidance','path-guidance','troubleshooting','evidence','report','cleanup','script'])assert(api.kinds.includes(kind),'field-notes kind exists: '+kind);
 assert(Array.isArray(api.entries),'field-notes entries are an array');
 
 const fixture=[

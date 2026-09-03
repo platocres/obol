@@ -1,6 +1,6 @@
 'use strict';
 (function(root){
-const KINDS=Object.freeze(['lesson','tool-guidance','path-guidance','troubleshooting','evidence','report','cleanup']);
+const KINDS=Object.freeze(['lesson','tool-guidance','path-guidance','troubleshooting','evidence','report','cleanup','script']);
 function cleanTags(v){return Array.isArray(v)?v.map(x=>String(x||'').trim()).filter(Boolean):[];}
 function sourceEntries(){const integration=root.OBOL_NOTE_INTEGRATION;return integration&&Array.isArray(integration.publicFieldNotes)?integration.publicFieldNotes:[];}
 function normalize(raw){

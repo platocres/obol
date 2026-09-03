@@ -38,7 +38,7 @@ A public field-note record must be rewritten as Obol-owned guidance and may cont
 
 - a stable Obol record ID;
 - a short title and derived guidance body;
-- a normalized kind such as lesson, tool guidance, path guidance, troubleshooting, Evidence, report, or cleanup;
+- a normalized kind such as lesson, tool guidance, path guidance, troubleshooting, Evidence, report, cleanup, or script (a reusable one-liner or script derived from a note, tracked as a first-class output rather than folded into tool guidance);
 - explicit card, tool, Path, or tag bindings;
 - optional opaque source references used for private-ledger traceability.
 

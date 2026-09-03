@@ -4,7 +4,7 @@ Obol is a static, browser-local workspace for OSCP-style labs, Active Directory 
 
 Live site: `https://platocres.github.io/obol/`
 
-Current release: **v9.35**
+Current release: **v9.36**
 
 Open `#/dashboard` for the active Product Hardening Dashboard and Product Build Next queue.
 
@@ -62,15 +62,7 @@ Pinned Orange Cyber Defense mind map provenance remains `https://orange-cyberdef
 
 Product Build Next is the only active development queue. Its atomic item source of truth is `data/product-hardening/product-hardening-queue.js`; coherent multi-item package metadata lives in `data/product-hardening/work-packages.js`. The README and Product Hardening Dashboard consume both so the highest-priority item remains the entry point while agents are encouraged to burn down a meaningful same-ownership work package rather than nibbling one checkbox at a time.
 
-The 556-note disposition item is an umbrella requirement, not permission to perform anonymous review waves forever. Notes work should be organized as coherent subject packets and reported through the notes-to-product impact projection so the dashboard shows what was learned, where guidance is bound, what product mechanics actually changed, and what gaps remain.
-
-Historical runtime layers are explicit product debt, not permanent architecture. The current Dashboard owns its route and paint, proven historical Dashboard data/presentation owners are out of live startup, and remaining runtime areas should follow the same current-owner, equivalence, fixture, live-layer removal, and obsolete-test-retirement lifecycle.
-
-Path, Card, and Tools use a stable current operator-route owner. Path presents a compact decision screen, while Card/Tools keep guided builders first and fold raw historical command blocks behind supporting detail.
-
-Notes Integration uses themed packets under the 556-note umbrella. Completed packets cover web upload/file inclusion, XSS/session behavior, credentials/authentication, and Windows privilege escalation; Linux privilege escalation and AD/pivoting remain live. The dashboard and generated Product Build Next block project the same current ledger and note-to-product impact state.
-
-The completed Orange methodology/source queue is historical, regression-protected baseline material. Do not reopen it unless a real defect is found or the pinned upstream source is deliberately repinned. Detailed Orange accounting belongs in the North Star/source-depth docs above, not in this README.
+Queue tracks, work-package rules, notes-integration policy, and runtime-compaction status live in [`docs/PRODUCT-HARDENING.md`](docs/PRODUCT-HARDENING.md); the completed Orange methodology/source accounting is regression-protected baseline in [`docs/NORTH-STAR.md`](docs/NORTH-STAR.md).
 
 ### Product Build Next
 
@@ -78,7 +70,7 @@ The completed Orange methodology/source queue is historical, regression-protecte
 This block is generated from `data/product-hardening/product-hardening-queue.js`. Do not edit it manually.
 Recommended work-package metadata comes from `data/product-hardening/work-packages.js`.
 
-**Current product-hardening queue:** 197/640 complete (31%), 12 queued, 9 foundation items modeled.
+**Current product-hardening queue:** 197/640 complete (31%), 11 queued, 9 foundation items modeled.
 **Private notes source:** `platocres/obol-source-notes` — 556 notes and 1326 embedded resources accounted.
 **Notes Integration:** 127/556 reviewed — 95 modeled, 27 private-only, 429 pending.
 **Derived note guidance:** 48 Field Notes · 43 tool-bound · 45 Path-bound · 14 Evidence · 5 Report.
@@ -86,7 +78,7 @@ Recommended work-package metadata comes from `data/product-hardening/work-packag
 **Latest mined themes:** Windows local privilege escalation.
 **Notes impact contract:** `docs/NOTES-IMPACT.md`.
 
-**Recommended work package:** **Notes Impact and Themed Burn-down** — 5 live items / 11 tracked.
+**Recommended work package:** **Notes Impact and Themed Burn-down** — 4 live items / 11 tracked.
 **Work-package entry:** **Burn down all 556 note dispositions**
 **Ownership area:** `notes/impact-packets`
 **Package guidance:** Treat the 556-note disposition item as the umbrella. Fix the conversion engine first: every modeled note must produce a declared product mechanic or a justified guidance-only reason (notes-conversion-rubric), backfill mechanics from already-modeled notes (notes-mechanic-backfill), and track script outputs as first-class (notes-script-category). Then burn remaining notes down in coherent themed packets, recording for every modeled source which Field Note, tool-bound or Path-bound guidance, Evidence/report/troubleshooting output, code-level product change, or explicit product gap it produced.
@@ -95,7 +87,6 @@ Recommended work-package metadata comes from `data/product-hardening/work-packag
 **Live items in this package:**
 - **Burn down all 556 note dispositions** — Umbrella disposition goal. Review work should be executed in themed packets and must record what each modeled note changed in Field Notes, tools, Path, Evidence, reports, troubleshooting, or product gaps.
 - **Re-audit all reviewed notes for missed mechanics** — Re-audit every note already processed under the old rubric — all 127 reviewed, not only the 95 modeled — because the defect was the review standard itself. Re-judge modeled, guidance-only, reviewed-not-modeled, and private-only dispositions against the new bar and convert to declared product changes (tool toggle, Path branch, evidence rule, report/workflow change) wherever one was missed. Cheaper than fresh review since rationales already exist; distinct from the first-pass review of the 429 pending notes.
-- **Script-bound note disposition category** — Add a script disposition kind so reusable one-liners and scripts derived from notes become tracked, first-class product outputs instead of being folded into tool-guidance or silently dropped.
 - **Notes packet: Linux privilege escalation** — Mine Linux privilege-escalation discovery, evidence, tool options, failure modes, path branches, proof boundaries, and reporting guidance.
 - **Notes packet: AD and pivoting** — Mine Active Directory, lateral movement, tunneling, pivoting, routing, credential use, evidence boundaries, and missing workflow/tool options.
 
@@ -104,12 +95,12 @@ Recommended work-package metadata comes from `data/product-hardening/work-packag
 **Highest-priority live items:**
 1. **Burn down all 556 note dispositions** — Umbrella disposition goal. Review work should be executed in themed packets and must record what each modeled note changed in Field Notes, tools, Path, Evidence, reports, troubleshooting, or product gaps.
 2. **Re-audit all reviewed notes for missed mechanics** — Re-audit every note already processed under the old rubric — all 127 reviewed, not only the 95 modeled — because the defect was the review standard itself. Re-judge modeled, guidance-only, reviewed-not-modeled, and private-only dispositions against the new bar and convert to declared product changes (tool toggle, Path branch, evidence rule, report/workflow change) wherever one was missed. Cheaper than fresh review since rationales already exist; distinct from the first-pass review of the 429 pending notes.
-3. **Script-bound note disposition category** — Add a script disposition kind so reusable one-liners and scripts derived from notes become tracked, first-class product outputs instead of being folded into tool-guidance or silently dropped.
-4. **Notes packet: Linux privilege escalation** — Mine Linux privilege-escalation discovery, evidence, tool options, failure modes, path branches, proof boundaries, and reporting guidance.
-5. **Notes packet: AD and pivoting** — Mine Active Directory, lateral movement, tunneling, pivoting, routing, credential use, evidence boundaries, and missing workflow/tool options.
-6. **Path three-mode rendering over one graph** — Render checklist, simplified, and live-map views as three renderers over the existing nextStepsOverview34 graph. Add the pan/zoom SVG map renderer and explicit view-mode switching on assets/operator-route-current.js so a technique authored once updates every view.
-7. **UI quality audit rubric** — Add a fixed per-screen audit checklist under docs/visual-qa/ (hierarchy, density, consistency, affordance, state feedback, accessibility). Run once per primary screen and file each finding as its own queue item instead of ad-hoc fixes.
-8. **Quiet service worker caching** — Improve repeat-load and offline behavior without prompting users to install anything.
+3. **Notes packet: Linux privilege escalation** — Mine Linux privilege-escalation discovery, evidence, tool options, failure modes, path branches, proof boundaries, and reporting guidance.
+4. **Notes packet: AD and pivoting** — Mine Active Directory, lateral movement, tunneling, pivoting, routing, credential use, evidence boundaries, and missing workflow/tool options.
+5. **Path three-mode rendering over one graph** — Render checklist, simplified, and live-map views as three renderers over the existing nextStepsOverview34 graph. Add the pan/zoom SVG map renderer and explicit view-mode switching on assets/operator-route-current.js so a technique authored once updates every view.
+6. **UI quality audit rubric** — Add a fixed per-screen audit checklist under docs/visual-qa/ (hierarchy, density, consistency, affordance, state feedback, accessibility). Run once per primary screen and file each finding as its own queue item instead of ad-hoc fixes.
+7. **Quiet service worker caching** — Improve repeat-load and offline behavior without prompting users to install anything.
+8. **IndexedDB workspace storage** — Support durable larger local workspaces, multiple engagements, and cached indexes while remaining browser-local.
 
 **Track status:**
 - **Critical correctness:** 4/4 complete (100%), 0 modeled.

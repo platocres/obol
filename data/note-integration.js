@@ -7,7 +7,7 @@ const SOURCE_INVENTORY=Object.freeze([
 ]);
 const DISPOSITIONS=Object.freeze(['pending-review','modeled','superseded','rejected','private-reference-only']);
 const TERMINAL_DISPOSITIONS=Object.freeze(['modeled','superseded','rejected','private-reference-only']);
-const ATOM_KINDS=Object.freeze(['lesson','tool-guidance','path-guidance','troubleshooting','evidence','report','cleanup']);
+const ATOM_KINDS=Object.freeze(['lesson','tool-guidance','path-guidance','troubleshooting','evidence','report','cleanup','script']);
 
 const REVIEWED_DISPOSITIONS=Object.freeze([
  Object.freeze({noteId:'htb-penetration-tester-bfe04186f42f682f',disposition:'modeled',reviewWave:'v9.25',rationale:'Credential extraction can create useful candidate material, but authentication and report proof require an independent validation step.',outputIds:Object.freeze(['note-lsass-proof-boundary'])}),

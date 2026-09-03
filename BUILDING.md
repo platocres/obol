@@ -6,6 +6,16 @@ This file is a mandatory companion to `README.md` for future Obol build work. Re
 
 **Use one normal, non-draft release PR from the start. Ordinary release-branch commits run lightweight smoke validation. `[preflight]` runs the current-release gate. `[release-final]` runs smoke, preflight, and the complete historical chain. Required checks and exact-head validation prevent premature merge; Draft status is not part of the Obol release workflow.**
 
+**Every build is a versioned release — bump the version across the board, every time, not only for large changes.** Each merged build must, in the same PR:
+
+- bump `data/current-release.js` to the next `vX.Y` (patch `vX.Y.Z` only for a follow-up fix to an unreleased head);
+- add a `docs/vX.Y.md` release doc whose first heading is `# Obol vX.Y`;
+- add a `tests/run-vX.Y-tests.js` suite that invokes `tools/validate-release-pr.js` and asserts the current release version-agnostically (never hard-code the current `Current release: **vX.Y**` token — mirror the previous release's test, which was demoted to `rp[0]===9&&rp[1]>=N`);
+- add a `## vX.Y — …` entry at the top of `CHANGELOG.md` (release narratives live here, never in README);
+- run `node tools/sync-current-release.js --write` and `node tools/sync-product-build-next.js --write`, then validate with `node tools/validate-current-release.js` and `node tools/validate-release-pr.js`.
+
+Product-hardening releases are delta-based: do **not** create `core-vX.Y.js`, `app-vX.Y.js`, `project-model-vX.Y.js`, or `obol-vX.Y.css` overlays. When bumping, demote the previous release's test off any live-current assertion (`release.version` equality and the exact README release token both become version-agnostic checks) so the historical suite keeps passing.
+
 The intended release flow is:
 
 - create exactly one `release/obol-vX.Y` or `release/obol-vX.Y.Z` branch from current `main`;
