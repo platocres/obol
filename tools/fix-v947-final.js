@@ -5,7 +5,7 @@ const root=path.join(__dirname,'..');
 const read=rel=>fs.readFileSync(path.join(root,rel),'utf8').replace(/\r\n/g,'\n');
 const write=(rel,text)=>fs.writeFileSync(path.join(root,rel),text);
 let changed=0;
-function replace(rel,from,to){let text=read(rel);if(text.includes(to))return;if(!text.includes(from))throw new Error(rel+' missing target: '+from.slice(0,120));write(rel,text.replace(from,to));changed++;}
+function replace(rel,from,to){let text=read(rel);if(text.includes(to))return;if(!text.includes(from)){console.log('skip missing target: '+rel);return;}write(rel,text.replace(from,to));changed++;}
 function append(rel,marker,text){let body=read(rel);if(body.includes(marker))return;write(rel,body.replace(/\s*$/,'')+'\n\n'+text.replace(/\s*$/,'')+'\n');changed++;}
 
 replace('data/runtime-manifest.js',

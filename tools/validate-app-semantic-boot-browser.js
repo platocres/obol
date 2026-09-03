@@ -2,7 +2,9 @@
 const assert=require('assert');
 const baseUrl=process.env.OBOL_SMOKE_BASE_URL||'http://127.0.0.1:4173/index.html';
 const executablePath=process.env.OBOL_SMOKE_BROWSER_PATH||undefined;
-const HISTORICAL_APP=/\/assets\/(?:app-v\d|app-v2-|review-v2\.7\.js|report-v2\.js)(?:[?#]|$)/;
+const manifest=require('../data/runtime-manifest.js');
+const appArea=(manifest.bundles.areas||[]).find(area=>area.id==='app');
+const HISTORICAL_APP_PATHS=Array.from(appArea&&appArea.fragments||[]);
 (async()=>{
  let chromium;try{({chromium}=require('playwright'));}catch(_err){console.error('tools/validate-app-semantic-boot-browser.js needs Playwright.');process.exit(1);}
  const browser=await chromium.launch({headless:true,executablePath});
@@ -10,7 +12,7 @@ const HISTORICAL_APP=/\/assets\/(?:app-v\d|app-v2-|review-v2\.7\.js|report-v2\.j
   const context=await browser.newContext({viewport:{width:1365,height:900},reducedMotion:'reduce'});
   const page=await context.newPage();
   const directHistorical=[];
-  page.on('request',request=>{if(HISTORICAL_APP.test(request.url()))directHistorical.push(request.url());});
+  page.on('request',request=>{const pathname=new URL(request.url()).pathname;const hit=HISTORICAL_APP_PATHS.find(rel=>pathname.endsWith('/'+rel));if(hit)directHistorical.push({url:request.url(),fragment:hit});});
   await page.addInitScript(()=>{
    window.__OBOL_SEMANTIC_APP_FRAMES__=[];
    const sample=()=>{try{
