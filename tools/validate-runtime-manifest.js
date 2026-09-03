@@ -20,7 +20,8 @@ function exists(label,list){
 }
 
 assert(/^1\.\d+\.\d+$/.test(manifest.schemaVersion),'runtime manifest remains on compatible schema major 1');
-assert.strictEqual(manifest.compatibility.strategy,'script-exact-load-order+style-import-equivalence','runtime compatibility strategy protects script order and CSS cascade equivalence');
+assert.strictEqual(manifest.compatibility.strategy,'script-exact-load-order+style-cascade-equivalence','runtime compatibility strategy protects script order and CSS cascade equivalence');
+assert.strictEqual(manifest.compatibility.consolidation,'ordered-fragment-concatenation','consolidated owners stay pure ordered concatenations of the frozen fragment ledger');
 assert.strictEqual(fixture.release,manifest.compatibility.baselineRelease,'runtime manifest baseline release matches fixture');
 const historicalStyles=manifest.compatibility.historicalStyles;
 assert(Array.isArray(historicalStyles)&&historicalStyles.length,'historical stylesheet compatibility list is explicit');
@@ -63,15 +64,18 @@ assert(!/addCommand\s*\(|addTool\s*\(|\.produces\.push|\.prereq\s*=/.test(dashbo
 const sourceDelivery65=read('data/source-delivery-v6.5.js');
 for(const token of ['Certify.exe find /vulnerable','certutil -v -dsTemplate','adcs.agent_certificate','adcs.target_certificate','sourceDepthAudit62'])assert(sourceDelivery65.includes(token),'v6.5 product behavior remains owned by source-delivery-v6.5.js after Dashboard data retirement: '+token);
 
+/* The single stylesheet owner is now a flattened cascade rather than an @import chain:
+   same fragments, same order, one request instead of seventy. */
 const css=read(manifest.compatibility.styleOwner).replace(/\r\n/g,'\n');
-const imported=[];
-const importRe=/@import\s+url\(["']([^"']+)["']\)\s*;/g;
-let importMatch;
-while((importMatch=importRe.exec(css)))imported.push(importMatch[1]);
-assert.deepStrictEqual(imported,historicalStyles.map(rel=>path.basename(rel)),'current stylesheet imports historical fragments in exact cascade order');
-const cssWithoutComments=css.replace(/\/\*[\s\S]*?\*\//g,'');
-const cssWithoutImports=cssWithoutComments.replace(/@import\s+url\(["'][^"']+["']+[)]\s*;/g,'').trim();
-assert.strictEqual(cssWithoutImports,'','current stylesheet owner is a pure generated compatibility projection, not a competing style layer');
+const styleMarkers=[...css.matchAll(/\/\* obol-style-fragment: ([^ ]+) \*\//g)].map(m=>m[1]);
+assert.deepStrictEqual(styleMarkers,historicalStyles,'current stylesheet flattens historical fragments in exact cascade order');
+const cssBody=css.replace(/^\/\*[\s\S]*?\*\/\n/,'');
+assert(!/@import/.test(cssBody),'flattened stylesheet owner costs one request and no longer chains @import fetches');
+assert.strictEqual(
+ cssBody.replace(/\/\* obol-style-fragment: [^\n]*\*\/\n/g,''),
+ historicalStyles.map(rel=>read(rel).replace(/\r\n/g,'\n').replace(/\s+$/,'')+'\n').join(''),
+ 'current stylesheet owner is a pure generated cascade projection, not a competing style layer'
+);
 
 const flattened=[].concat(
  manifest.groups.domain,
@@ -97,6 +101,26 @@ unique('Node historical data fixture',manifest.node.historicalData);
 exists('Node current data',manifest.node.data);
 exists('Node historical data fixture',manifest.node.historicalData);
 
+/* Consolidated ownership: the browser loads one owner per area instead of one request
+   per historical fragment. tools/validate-runtime-bundles.js owns the equivalence proof. */
+const bundleAreas=manifest.bundles&&manifest.bundles.areas;
+assert(Array.isArray(bundleAreas)&&bundleAreas.length,'runtime manifest declares consolidated ownership areas');
+assert.strictEqual(manifest.bundles.generator,'tools/sync-runtime-bundles.js','consolidated owners declare their generator');
+assert.deepStrictEqual(
+ bundleAreas.filter(area=>area.scope==='startup').flatMap(area=>area.fragments),
+ Array.from(manifest.startupScripts),
+ 'startup bundles reproduce the historical startup chain exactly'
+);
+assert.deepStrictEqual(manifest.startupBundleScripts,bundleAreas.filter(area=>area.scope==='startup').map(area=>area.owner),'startup bundle order follows declared ownership areas');
+for(const area of bundleAreas){
+ assert(!manifest.scripts.includes(area.owner),'consolidated owner stays outside the frozen historical ledger: '+area.owner);
+ for(const rel of area.fragments)assert(manifest.scripts.includes(rel),'consolidated fragment stays inside the frozen historical ledger: '+rel);
+}
+unique('consolidated bundle owners',manifest.bundles.owners);
+exists('consolidated bundle owners',manifest.bundles.owners);
+assert(manifest.startupBundleScripts.length<manifest.startupScripts.length,'consolidation reduces startup requests below the historical fragment count');
+assert.strictEqual(manifest.performance.startup.consolidatedStartupRequests,manifest.startupPreludeScripts.length+manifest.startupBundleScripts.length,'runtime budget reports the consolidated startup request count');
+
 const index=read('index.html');
 assert(index.includes('<script src="data/runtime-manifest.js"></script>'),'index loads the stable runtime manifest');
 assert(index.includes('<script src="assets/runtime-current.js"></script>'),'index loads the stable current runtime entrypoint');
@@ -119,7 +143,7 @@ assert(!projected.includes('dashboard-route-current.js'),'stable current owners 
 assert(!projected.includes('dashboard-compat-current.js'),'compact compatibility seam stays outside the inert historical projection');
 
 const loader=read('assets/runtime-current.js');
-for(const token of ['OBOL_RUNTIME_MANIFEST','writeStyles','writeScripts','document.write','manifest.styles','manifest.startupPreludeScripts','manifest.startupScripts||manifest.scripts','manifest.currentScripts','startupPreludeList','compatibilityScriptList','browserScriptList','currentOwnerList'])assert(loader.includes(token),'current browser entrypoint missing '+token);
+for(const token of ['OBOL_RUNTIME_MANIFEST','writeStyles','writeScripts','document.write','manifest.styles','manifest.startupPreludeScripts','manifest.startupScripts||manifest.scripts','manifest.currentScripts','manifest.startupBundleScripts','manifest.lazyBundles','startupPreludeList','startupFragmentList','lazyOwnerList','compatibilityScriptList','browserScriptList','currentOwnerList'])assert(loader.includes(token),'current browser entrypoint missing '+token);
 assert(loader.includes('startupPreludeList().concat(startupList())'),'compact compatibility prelude loads before the remaining historical startup chain');
 assert(loader.includes('compatibilityScriptList().concat(currentOwnerList())'),'current owners load after the compact compatibility + historical startup boundary');
 const dashboardOwner=read('assets/dashboard-route-current.js');
@@ -148,4 +172,4 @@ assert.strictEqual(loaded.C.VERSION,'8.8.0','runtime consolidation preserves the
 assert(loaded.project,'manifest-backed runtime preserves the current v8.8 project adapter');
 assert(global.OBOL_DASHBOARD_COMPAT_CURRENT,'Node current runtime initializes through the compact Dashboard metadata seam');
 
-console.log('Runtime manifest valid: frozen v9.5 history remains fixture-addressable while versioned Dashboard data/presentation owners are retired from live browser and Node current execution behind stable current seams.');
+console.log('Runtime manifest valid: frozen v9.5 history remains fixture-addressable while consolidated per-area owners replace '+manifest.startupScripts.length+' startup fragment requests with '+manifest.startupBundleScripts.length+' bundles and '+historicalStyles.length+' stylesheet fragments with one flattened cascade.');

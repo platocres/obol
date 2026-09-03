@@ -68,6 +68,9 @@ if(isProductHardening){
   run('Path three-mode rendering',['tools/validate-path-views.js']);
   run('contextual field-notes contract',['tools/validate-field-notes-ui.js']);
   run('current stylesheet synchronization',['tools/sync-current-styles.js','--check']);
+  run('runtime bundle synchronization',['tools/sync-runtime-bundles.js','--check']);
+  run('runtime bundle equivalence',['tools/validate-runtime-bundles.js']);
+  run('runtime consolidation dashboard/README sync',['tools/validate-runtime-consolidation-sync.js']);
   run('runtime loading and request budget',['tools/validate-runtime-loading.js']);
   run('runtime manifest and equivalence',['tools/validate-runtime-manifest.js']);
   run('Dashboard compatibility equivalence',['tools/validate-dashboard-compat-equivalence.js']);

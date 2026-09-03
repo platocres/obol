@@ -9,6 +9,9 @@ const checks=[
  ['tools/validate-product-hardening-queue.js'],
  ['tools/validate-runtime-manifest.js'],
  ['tools/validate-runtime-loading.js'],
+ ['tools/sync-runtime-bundles.js','--check'],
+ ['tools/validate-runtime-bundles.js'],
+ ['tools/validate-runtime-consolidation-sync.js'],
  ['tools/validate-dashboard-compat-equivalence.js'],
  ['tools/validate-path-views.js'],
  ['tools/validate-asset-references.js'],
@@ -16,7 +19,8 @@ const checks=[
  ['tools/sync-current-release.js','--check'],
  ['tools/sync-product-build-next.js','--check'],
  ['tests/run-v9.29-tests.js'],
- ['tests/run-v9.31-tests.js']
+ ['tests/run-v9.31-tests.js'],
+ ['tests/run-v9.40-tests.js']
 ];
 for(const args of checks){
  const result=cp.spawnSync(process.execPath,args.map((part,idx)=>idx===0?path.join(root,part):part),{cwd:root,encoding:'utf8'});

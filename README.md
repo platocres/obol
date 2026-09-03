@@ -4,7 +4,7 @@ Obol is a static, browser-local workspace for OSCP-style labs, Active Directory 
 
 Live site: `https://platocres.github.io/obol/`
 
-Current release: **v9.39**
+Current release: **v9.40**
 
 Open `#/dashboard` for the active Product Hardening Dashboard and Product Build Next queue.
 
@@ -46,7 +46,8 @@ There must be only one open release/product-hardening PR at a time. If one exist
 
 - [`BUILDING.md`](BUILDING.md) - exact release flow, validation tiers, one-open-PR rule, coherent work-package burn-down, and merge-readiness contract.
 - [`docs/PRODUCT-HARDENING.md`](docs/PRODUCT-HARDENING.md) - active v9 product vision, tracks, work-package rules, and item Definition of Done.
-- [`docs/ARCHITECTURE.md`](docs/ARCHITECTURE.md) - runtime ownership, compaction strategy, and legacy-layer boundaries.
+- [`docs/ARCHITECTURE.md`](docs/ARCHITECTURE.md) - runtime ownership, consolidated per-area owners, compaction strategy, and legacy-layer boundaries.
+- [`docs/RUNTIME-COMPACTION.md`](docs/RUNTIME-COMPACTION.md) - per-area retirement lifecycle, consolidated ownership state, and test-retirement rules.
 - [`docs/PROOF-CONTRACT.md`](docs/PROOF-CONTRACT.md) - Evidence, proof boundaries, manual outcomes, and report readiness.
 - [`docs/TOOL-BUILDER-COVERAGE.md`](docs/TOOL-BUILDER-COVERAGE.md) - stable Tool Builder Platform, runnable-tool inventory, and representative-builder migration contract.
 - [`docs/NOTES-INTEGRATION.md`](docs/NOTES-INTEGRATION.md) - private source repo `platocres/obol-source-notes` and normalized public-output workflow.
@@ -69,49 +70,56 @@ Queue tracks, work-package rules, notes-integration policy, and runtime-compacti
 <!-- OBOL-PRODUCT-BUILD-NEXT:START -->
 This block is generated from `data/product-hardening/product-hardening-queue.js`. Do not edit it manually.
 Recommended work-package metadata comes from `data/product-hardening/work-packages.js`.
+Runtime consolidation figures come from `data/runtime-consolidation-current.js`, the same projection the Product Hardening Dashboard renders.
 
-**Current product-hardening queue:** 198/640 complete (31%), 10 queued, 9 foundation items modeled.
+**Current product-hardening queue:** 201/648 complete (31%), 15 queued, 9 foundation items modeled.
 **Private notes source:** `platocres/obol-source-notes` — 556 notes and 1326 embedded resources accounted.
 **Notes Integration:** 127/556 reviewed — 95 modeled, 27 private-only, 429 pending.
 **Derived note guidance:** 48 Field Notes · 43 tool-bound · 45 Path-bound · 14 Evidence · 5 Report.
 **Declared note-driven product mechanics:** 2 total · 2 builder · 0 Path logic · 0 Evidence parser · 0 report generator · 0 workflow.
 **Latest mined themes:** Windows local privilege escalation.
 **Notes impact contract:** `docs/NOTES-IMPACT.md`.
+**Runtime consolidation:** 5 operator startup requests, down from 307 (98% fewer).
+**Consolidated ownership areas:** 7 owners hold 297 historical fragments — 3 startup, 4 route-lazy; 30 fragments stay retired in the frozen ledger.
+**Runtime area owners:** Domain data (103) · Core state and derivation (69) · Report base and application UI (64) · Evidence parsing (41) · Nmap builders (3) · Report overlays (14) · Tool reference data (3).
+**Measured in Chromium (v9.40):** Home 321→19 · Next Steps 329→27 · Evidence 365→21 · Report 335→20 JavaScript/CSS requests.
+**Runtime compaction contract:** `docs/RUNTIME-COMPACTION.md`.
 
-**Recommended work package:** **Notes Impact and Themed Burn-down** — 4 live items / 11 tracked.
-**Work-package entry:** **Burn down all 556 note dispositions**
-**Ownership area:** `notes/impact-packets`
-**Package guidance:** Treat the 556-note disposition item as the umbrella. Fix the conversion engine first: every modeled note must produce a declared product mechanic or a justified guidance-only reason (notes-conversion-rubric), backfill mechanics from already-modeled notes (notes-mechanic-backfill), and track script outputs as first-class (notes-script-category). Then burn remaining notes down in coherent themed packets, recording for every modeled source which Field Note, tool-bound or Path-bound guidance, Evidence/report/troubleshooting output, code-level product change, or explicit product gap it produced.
-**Package dependencies:** Notes Integration Foundation
+**Recommended work package:** **Runtime Layer Consolidation** — 5 live items / 8 tracked.
+**Work-package entry:** **Flatten the domain ownership area**
+**Ownership area:** `runtime/ownership-areas`
+**Package guidance:** Request consolidation is done: every ownership area now loads one generated owner instead of one request per historical fragment, proven equivalent and enforced by a browser request budget. What remains is semantic flattening, one ownership area at a time. For each area, prove which fragments still encode unique behavior, move that behavior onto the current owner, retire the superseded fragments from the frozen ledger, and retire the assertions that only protected their delivery shape. Do not flatten two areas in one pass — each has its own equivalence and migration surface.
+**Package dependencies:** Runtime Consolidation Foundation, Dashboard Runtime Compaction
 
 **Live items in this package:**
-- **Burn down all 556 note dispositions** — Umbrella disposition goal. Review work should be executed in themed packets and must record what each modeled note changed in Field Notes, tools, Path, Evidence, reports, troubleshooting, or product gaps.
-- **Re-audit all reviewed notes for missed mechanics** — Re-audit every note already processed under the old rubric — all 127 reviewed, not only the 95 modeled — because the defect was the review standard itself. Re-judge modeled, guidance-only, reviewed-not-modeled, and private-only dispositions against the new bar and convert to declared product changes (tool toggle, Path branch, evidence rule, report/workflow change) wherever one was missed. Cheaper than fresh review since rationales already exist; distinct from the first-pass review of the 429 pending notes.
-- **Notes packet: Linux privilege escalation** — Mine Linux privilege-escalation discovery, evidence, tool options, failure modes, path branches, proof boundaries, and reporting guidance.
-- **Notes packet: AD and pivoting** — Mine Active Directory, lateral movement, tunneling, pivoting, routing, credential use, evidence boundaries, and missing workflow/tool options.
+- **Flatten the domain ownership area** — The domain owner still concatenates 103 versioned methodology, Orange source-fidelity, and project-model fragments. Replace superseded fragments with authored current data where behavior is provably equivalent, and retire fragments that no longer encode unique behavior.
+- **Flatten the core ownership area** — The core owner still concatenates 69 versioned state and derivation overlays. Collapse overlapping migration, applicability, and ranking deltas into a current core owner once equivalence and browser-local workspace migration are proven per overlay.
+- **Flatten the application ownership area** — The application owner still concatenates 64 report-base, prelude, and UI overlays. Move surviving behavior onto the current workflow and operator-route owners, then retire the superseded presentation fragments.
+- **Flatten the Evidence parsing ownership area** — The route-lazy Evidence owner still concatenates 41 parser overlays. Consolidate the parser chain into a current Evidence owner without changing conservative interpretation or proof boundaries.
+- **Flatten the stylesheet ownership area** — The single stylesheet owner is a flat concatenation of 69 fragments that still override each other. Collapse dead and superseded rules into an authored current stylesheet once visual regression proof exists.
 
-**Related items to consider, not automatically in scope:** Design contextual field-notes disclosure.
+**Related items to consider, not automatically in scope:** Runtime compaction and test-retirement policy; No new layered queue architecture; Bundle and request budget.
 
 **Highest-priority live items:**
-1. **Burn down all 556 note dispositions** — Umbrella disposition goal. Review work should be executed in themed packets and must record what each modeled note changed in Field Notes, tools, Path, Evidence, reports, troubleshooting, or product gaps.
-2. **Re-audit all reviewed notes for missed mechanics** — Re-audit every note already processed under the old rubric — all 127 reviewed, not only the 95 modeled — because the defect was the review standard itself. Re-judge modeled, guidance-only, reviewed-not-modeled, and private-only dispositions against the new bar and convert to declared product changes (tool toggle, Path branch, evidence rule, report/workflow change) wherever one was missed. Cheaper than fresh review since rationales already exist; distinct from the first-pass review of the 429 pending notes.
-3. **Notes packet: Linux privilege escalation** — Mine Linux privilege-escalation discovery, evidence, tool options, failure modes, path branches, proof boundaries, and reporting guidance.
-4. **Notes packet: AD and pivoting** — Mine Active Directory, lateral movement, tunneling, pivoting, routing, credential use, evidence boundaries, and missing workflow/tool options.
-5. **UI quality audit rubric** — Add a fixed per-screen audit checklist under docs/visual-qa/ (hierarchy, density, consistency, affordance, state feedback, accessibility). Run once per primary screen and file each finding as its own queue item instead of ad-hoc fixes.
-6. **Quiet service worker caching** — Improve repeat-load and offline behavior without prompting users to install anything.
-7. **IndexedDB workspace storage** — Support durable larger local workspaces, multiple engagements, and cached indexes while remaining browser-local.
-8. **Web Workers for heavy tasks** — Move evidence parsing, search indexing, and report generation off the UI thread.
+1. **Flatten the domain ownership area** — The domain owner still concatenates 103 versioned methodology, Orange source-fidelity, and project-model fragments. Replace superseded fragments with authored current data where behavior is provably equivalent, and retire fragments that no longer encode unique behavior.
+2. **Flatten the core ownership area** — The core owner still concatenates 69 versioned state and derivation overlays. Collapse overlapping migration, applicability, and ranking deltas into a current core owner once equivalence and browser-local workspace migration are proven per overlay.
+3. **Flatten the application ownership area** — The application owner still concatenates 64 report-base, prelude, and UI overlays. Move surviving behavior onto the current workflow and operator-route owners, then retire the superseded presentation fragments.
+4. **Flatten the Evidence parsing ownership area** — The route-lazy Evidence owner still concatenates 41 parser overlays. Consolidate the parser chain into a current Evidence owner without changing conservative interpretation or proof boundaries.
+5. **Flatten the stylesheet ownership area** — The single stylesheet owner is a flat concatenation of 69 fragments that still override each other. Collapse dead and superseded rules into an authored current stylesheet once visual regression proof exists.
+6. **Burn down all 556 note dispositions** — Umbrella disposition goal. Review work should be executed in themed packets and must record what each modeled note changed in Field Notes, tools, Path, Evidence, reports, troubleshooting, or product gaps.
+7. **Re-audit all reviewed notes for missed mechanics** — Re-audit every note already processed under the old rubric — all 127 reviewed, not only the 95 modeled — because the defect was the review standard itself. Re-judge modeled, guidance-only, reviewed-not-modeled, and private-only dispositions against the new bar and convert to declared product changes (tool toggle, Path branch, evidence rule, report/workflow change) wherever one was missed. Cheaper than fresh review since rationales already exist; distinct from the first-pass review of the 429 pending notes.
+8. **Notes packet: Linux privilege escalation** — Mine Linux privilege-escalation discovery, evidence, tool options, failure modes, path branches, proof boundaries, and reporting guidance.
 
 **Track status:**
 - **Critical correctness:** 4/4 complete (100%), 0 modeled.
-- **Architecture / runtime:** 10/13 complete (77%), 3 modeled.
+- **Architecture / runtime:** 12/20 complete (60%), 3 modeled.
 - **UI / UX repair:** 9/10 complete (90%), 1 modeled.
 - **Tool GUI builders:** 19/19 complete (100%), 0 modeled.
 - **Credential modes:** 14/14 complete (100%), 0 modeled.
 - **Manual outcomes:** 8/8 complete (100%), 0 modeled.
 - **Notes integration:** 127/556 complete (23%), 2 modeled.
 - **Offline / performance:** 1/6 complete (17%), 0 modeled.
-- **Testing / visual QA:** 6/10 complete (60%), 3 modeled.
+- **Testing / visual QA:** 7/11 complete (64%), 3 modeled.
 
 Generated by `node tools/sync-product-build-next.js --write`. Verify with `node tools/sync-product-build-next.js --check`.
 <!-- OBOL-PRODUCT-BUILD-NEXT:END -->
@@ -140,6 +148,17 @@ node tools/validate-note-integration.js
 node tools/sync-product-build-next.js --check
 node tests/run-v9.35-tests.js
 ```
+
+The permanent runtime-consolidation checks are:
+
+```bash
+node tools/sync-runtime-bundles.js --check
+node tools/validate-runtime-bundles.js
+node tools/sync-current-styles.js --check
+node tools/validate-runtime-consolidation-sync.js
+```
+
+Regenerate the consolidated owners with `node tools/sync-runtime-bundles.js --write` and `node tools/sync-current-styles.js --write` after any change to the runtime manifest or a historical fragment. Never hand-edit a generated owner: every ownership area's owner is the exact ordered concatenation of its fragments, and `tools/validate-runtime-bundles.js` proves it.
 
 ## GitHub Pages
 

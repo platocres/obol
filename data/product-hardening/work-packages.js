@@ -25,6 +25,12 @@ const packages=[
   guidance:'Treat the current entrypoint, active CSS ownership, generated asset manifest, equivalence harness, lazy-load boundary, and request budget as one consolidation area when the same runtime context is already loaded.'
  },
  {
+  id:'runtime-layer-consolidation',title:'Runtime Layer Consolidation',priority:'critical',ownershipArea:'runtime/ownership-areas',
+  itemIds:['runtime-area-consolidation','runtime-consolidation-sync','qa-runtime-request-budget','runtime-domain-flattening','runtime-core-flattening','runtime-app-flattening','runtime-evidence-flattening','runtime-style-flattening'],
+  dependencies:['runtime-consolidation-foundation','runtime-dashboard-retirement'],relatedItems:['runtime-test-retirement-policy','runtime-no-layer-rule','perf-bundle-budget'],parallelSafe:false,recommendedBatch:true,
+  guidance:'Request consolidation is done: every ownership area now loads one generated owner instead of one request per historical fragment, proven equivalent and enforced by a browser request budget. What remains is semantic flattening, one ownership area at a time. For each area, prove which fragments still encode unique behavior, move that behavior onto the current owner, retire the superseded fragments from the frozen ledger, and retire the assertions that only protected their delivery shape. Do not flatten two areas in one pass — each has its own equivalence and migration surface.'
+ },
+ {
   id:'runtime-dashboard-retirement',title:'Dashboard Runtime Compaction',priority:'critical',ownershipArea:'runtime/dashboard-retirement',
   itemIds:['runtime-dashboard-no-flash','qa-playwright-smoke','runtime-dashboard-layer-retirement','runtime-test-retirement-policy'],dependencies:['runtime-consolidation-foundation'],relatedItems:['runtime-dashboard-owner','runtime-no-layer-rule'],parallelSafe:false,recommendedBatch:true,
   guidance:'Keep the current no-flash route owner, add real browser smoke proof, then remove old dashboard owners from live startup after equivalence is proven. The same current-owner/fixture/test-retirement lifecycle applies to the rest of the runtime.'

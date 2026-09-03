@@ -96,6 +96,20 @@ This gives styling one boring current owner while preserving historical cascade 
 
 With this item complete, Architecture / runtime is 4/10. The next highest-priority item is `runtime-dashboard-owner`, which moves execution into the **Dashboard and User Workflow Rebalance** ownership area. Per the coherent-package stop rule, v9.7 does not skip that priority boundary just to consume more items from the runtime package.
 
+v9.40 later closed the delivery half that v9.7 deliberately left open: the same owner is now the flattened concatenation of those 69 fragments rather than an `@import` chain, so the cascade is unchanged and costs one request instead of seventy.
+
+## Runtime layer consolidation
+
+v9.40 completes `runtime-area-consolidation`. Every historical runtime ownership area resolves to exactly one stable, non-versioned owner that is the **exact ordered concatenation** of its fragments — three at operator startup (domain 103, core 69, application 64) and four route-lazy (Evidence 41, Nmap 3, report overlays 14, tool reference 3) — plus the flattened stylesheet cascade.
+
+Operator startup drops from 307 requests to 5. Measured in Chromium: Home 321→19, Next Steps 329→27, Evidence 365→21, Report 335→20.
+
+Nothing is minified, reordered, or rewritten, and the frozen v9.5 fragment ledger and its order fingerprints are untouched. `tools/sync-runtime-bundles.js` generates the owners; `tools/validate-runtime-bundles.js` proves equivalence, including the three hazards that make classic-script concatenation unsafe (strict-mode prologue leakage, automatic semicolon insertion across fragment boundaries, and lost parse isolation) plus an A/B global-surface diff. `tests/playwright-smoke.js` enforces a per-route request ceiling and fails when a historical fragment is fetched directly.
+
+**This is request consolidation, not semantic flattening.** The owners still concatenate 297 versioned fragments that override each other. Product Build Next therefore leads with the **Runtime Layer Consolidation** package: one queued flattening item per ownership area, each with its own equivalence, workspace-migration, and test-retirement proof. Do not flatten two areas in one pass.
+
+`data/runtime-consolidation-current.js` is the single projection for consolidation figures. The Product Hardening Dashboard and the generated README block both read it; `tools/validate-runtime-consolidation-sync.js` fails when they drift apart.
+
 ## Single dashboard rule
 
 Product hardening must have one quantified dashboard surface. The dashboard top should make overall progress obvious through figures, progress bars, the recommended coherent work package, and the broader Build Next queue. Detailed ledgers belong below the high-level summary.

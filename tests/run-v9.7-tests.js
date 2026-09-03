@@ -41,10 +41,19 @@ assert.deepStrictEqual(manifest.styles,['assets/obol-current.css'],'current runt
 assert.strictEqual(manifest.compatibility.styleOwner,'assets/obol-current.css');
 assert.strictEqual(manifest.compatibility.historicalStyles.length,fixture.styleCount);
 assert.strictEqual(manifest.scripts.length,fixture.scriptCount);
-const css=read('assets/obol-current.css');
-const imports=[...css.matchAll(/@import\s+url\(["']([^"']+)["']\)\s*;/g)].map(m=>m[1]);
-assert.deepStrictEqual(imports,manifest.compatibility.historicalStyles.map(rel=>path.basename(rel)),'generated current CSS preserves exact historical cascade order');
-assert.strictEqual(css.replace(/\/\*[\s\S]*?\*\//g,'').replace(/@import\s+url\(["'][^"']+["']\)\s*;/g,'').trim(),'','current CSS owner contains no competing rules');
+// v9.7's contract is one stable non-versioned stylesheet owner that is a pure generated
+// projection of the frozen cascade order and adds no rules of its own. v9.40 changed the
+// projection's delivery shape from an @import chain to a flattened concatenation, which
+// costs one request instead of seventy. The contract below is the same; only the old
+// implementation-shape assertion was retired.
+const css=read('assets/obol-current.css').replace(/\r\n/g,'\n');
+const fragments=[...css.matchAll(/\/\* obol-style-fragment: ([^ ]+) \*\//g)].map(m=>m[1]);
+assert.deepStrictEqual(fragments,manifest.compatibility.historicalStyles,'generated current CSS preserves exact historical cascade order');
+assert.strictEqual(
+  css.replace(/^\/\*[\s\S]*?\*\/\n/,'').replace(/\/\* obol-style-fragment: [^\n]*\*\/\n/g,''),
+  manifest.compatibility.historicalStyles.map(rel=>read(rel).replace(/\r\n/g,'\n').replace(/\s+$/,'')+'\n').join(''),
+  'current CSS owner contains no competing rules'
+);
 
 const building=read('BUILDING.md');
 assert(building.includes('one normal, non-draft release PR from the start'),'BUILDING permanently adopts normal non-draft release PRs');

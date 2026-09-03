@@ -42,7 +42,29 @@ v9.7 advances `runtime-css-consolidation` without pretending that request-count 
 
 The source of truth for historical cascade order remains `data/runtime-manifest.js` under `compatibility.historicalStyles`. `tools/sync-current-styles.js` generates `assets/obol-current.css` as a pure ordered `@import` projection of that list. The generated owner adds no independent rules, so it cannot become a second styling layer or silently change precedence. `tools/validate-runtime-manifest.js` verifies that every historical stylesheet is imported exactly once in the frozen v9.5 order and that the compatibility fingerprint still matches the v9.5 fixture.
 
-This deliberately separates **ownership consolidation** from **performance consolidation**. The historical CSS fragments still exist and still execute through the stable owner, preserving regression behavior and an easy rollback boundary. `perf-bundle-budget` remains queued to reduce network requests and parse cost later; v9.7 does not claim that `@import` by itself reduces requests.
+This deliberately separated **ownership consolidation** from **performance consolidation**. The historical CSS fragments still exist and still execute through the stable owner, preserving regression behavior and an easy rollback boundary.
+
+v9.40 closes the delivery half. `assets/obol-current.css` is now the flattened ordered concatenation of the same 69 fragments rather than an `@import` chain, so the cascade is byte-for-byte what it was while costing one request instead of seventy. `tools/sync-current-styles.js` still generates it; the owner still adds no rules of its own; `tools/validate-runtime-manifest.js` still verifies exact fragment order against the frozen v9.5 fixture.
+
+### Consolidated runtime ownership
+
+v9.40 applies the same rule to JavaScript. Every historical ownership area resolves to one stable, non-versioned owner that is the exact ordered concatenation of its fragments:
+
+| Ownership area | Fragments | Owner | Loading |
+| --- | --- | --- | --- |
+| Domain data | 103 | `assets/obol-domain-current.js` | operator startup |
+| Core state and derivation | 69 | `assets/obol-core-current.js` | operator startup |
+| Report base and application UI | 64 | `assets/obol-app-current.js` | operator startup |
+| Evidence parsing | 41 | `assets/obol-evidence-current.js` | route-lazy |
+| Nmap builders | 3 | `assets/obol-nmap-current.js` | route-lazy |
+| Report overlays | 14 | `assets/obol-report-overlays-current.js` | route-lazy |
+| Tool reference data | 3 | `assets/obol-tool-reference-current.js` | route-lazy |
+
+`data/runtime-manifest.js` owns the area definitions, `tools/sync-runtime-bundles.js` generates the owners, and `tools/validate-runtime-bundles.js` owns the equivalence proof. Nothing is minified, reordered, wrapped, or rewritten: the same code runs in the same order in the same global scope, and the fragments remain on disk as the frozen regression ledger.
+
+This is **request consolidation, not semantic flattening**. The owners still concatenate versioned fragments that override each other. Per-area semantic flattening is queued as separate Product Build Next items, each with its own equivalence and workspace-migration proof.
+
+`data/runtime-consolidation-current.js` is the single projection for consolidation figures; the Product Hardening Dashboard and the generated README block both read it, and `tools/validate-runtime-consolidation-sync.js` fails when they drift apart.
 
 Historical data, core, report, intake, app, and CSS fragment files therefore remain available where they still encode behavior. Future compaction may physically bundle or remove superseded fragments only after equivalent observable behavior is proven.
 

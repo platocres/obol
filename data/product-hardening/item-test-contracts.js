@@ -247,6 +247,34 @@ const contracts={
   proofFiles:['tools/validate-release-pr.js','tests/run-v9.0-tests.js']
  }
 };
+contracts['runtime-area-consolidation']={
+ acceptance:[
+  'Every historical runtime ownership area resolves to exactly one stable, non-versioned owner declared in data/runtime-manifest.js, and the startup owners concatenated reproduce the frozen historical startup chain in exact order with nothing added or dropped.',
+  'Each generated owner is a pure ordered concatenation of its fragments: no fragment carries a strict-mode prologue that could leak, every fragment is explicitly terminated so automatic semicolon insertion cannot fuse two fragments, and stripping the generated banners yields the verbatim fragment bodies.',
+  'The fragment chain and the bundle chain expose an identical global surface when executed in isolated contexts, and the browser loads the consolidated owners rather than the fragments.',
+  'The frozen v9.5 fragment ledger, its order fingerprints, and every fragment file remain intact for regression and audit.'
+ ],
+ validationCommands:['node tools/sync-runtime-bundles.js --check','node tools/validate-runtime-bundles.js','node tools/sync-current-styles.js --check','node tools/validate-runtime-manifest.js','node tools/validate-runtime-loading.js','node tools/validate-asset-references.js','node tests/run-v9.40-tests.js'],
+ proofFiles:['data/runtime-manifest.js','tools/sync-runtime-bundles.js','tools/validate-runtime-bundles.js','tools/sync-current-styles.js','assets/runtime-current.js','assets/obol-domain-current.js','assets/obol-core-current.js','assets/obol-app-current.js','assets/obol-current.css','tests/run-v9.40-tests.js','docs/RUNTIME-COMPACTION.md','docs/ARCHITECTURE.md']
+};
+contracts['runtime-consolidation-sync']={
+ acceptance:[
+  'data/runtime-consolidation-current.js is the single projection for runtime consolidation figures and derives everything except the recorded browser measurement from data/runtime-manifest.js.',
+  'The Product Hardening Dashboard and the generated README Product Build Next block both read that projection, and a validator fails when the README block does not match the projection value for value.',
+  'The projection self-validates that every frozen fragment is either consolidated or explicitly retired.'
+ ],
+ validationCommands:['node tools/validate-runtime-consolidation-sync.js','node tools/sync-product-build-next.js --check','node tests/run-v9.40-tests.js'],
+ proofFiles:['data/runtime-consolidation-current.js','tools/validate-runtime-consolidation-sync.js','tools/sync-product-build-next.js','assets/product-hardening-dashboard.js','README.md','tests/run-v9.40-tests.js']
+};
+contracts['qa-runtime-request-budget']={
+ acceptance:[
+  'tests/playwright-smoke.js records every JavaScript and CSS request per route and fails when a route exceeds its declared ceiling.',
+  'The suite fails when any historical runtime fragment is fetched directly instead of through its consolidated owner.',
+  'The gate is proven real by failing against the pre-consolidation runtime and passing against the consolidated runtime.'
+ ],
+ validationCommands:['node tests/playwright-smoke.js','node tests/run-v9.40-tests.js'],
+ proofFiles:['tests/playwright-smoke.js','.github/workflows/browser-smoke.yml','tests/run-v9.40-tests.js','docs/v9.40.md']
+};
 const requiredForStatuses=['modeled','complete','superseded','rejected'];
 root.OBOL_PRODUCT_HARDENING_TEST_CONTRACTS={version:'9.20.0',requiredForStatuses,contracts};
 })(typeof window!=='undefined'?window:globalThis);
