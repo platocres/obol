@@ -26,6 +26,7 @@ jobs:
         run: |
           node tools/fix-apply-v947.js
           node tools/apply-v947.js
+          node tools/fix-v947-final.js
           node tools/sync-app-current.js --write
           node tools/sync-current-release.js --write
           node tools/sync-product-build-next.js --write
@@ -42,5 +43,5 @@ jobs:
           git config user.name "github-actions[bot]"
           git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
           git add -A
-          git commit -m "Apply v9.47 semantic application ownership"
+          git commit -m "Repair v9.47 current application contracts"
           git push origin HEAD:release/obol-v9.47
