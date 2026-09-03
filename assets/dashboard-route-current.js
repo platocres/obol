@@ -21,6 +21,7 @@ const PRODUCT_SCRIPTS=[
  'data/note-integration.js',
  'data/note-integration-reviews.js',
  'data/note-integration-packets.js',
+ 'data/product-hardening/note-mechanic-backfill-v9.38.js',
  'data/product-hardening/note-progress-current.js',
  'data/product-hardening/notes-impact-current.js',
  'assets/product-hardening-dashboard.js'
@@ -40,6 +41,7 @@ const READY={
  'data/note-integration.js':()=>!!root.OBOL_NOTE_INTEGRATION,
  'data/note-integration-reviews.js':()=>reviewSchemaAtLeast(1,3),
  'data/note-integration-packets.js':()=>reviewSchemaAtLeast(1,4),
+ 'data/product-hardening/note-mechanic-backfill-v9.38.js':()=>!!root.OBOL_NOTE_MECHANIC_BACKFILL_V938,
  'data/product-hardening/note-progress-current.js':()=>!!root.OBOL_PRODUCT_HARDENING_NOTE_PROGRESS,
  'data/product-hardening/notes-impact-current.js':()=>!!root.OBOL_PRODUCT_HARDENING_NOTES_IMPACT,
  'assets/product-hardening-dashboard.js':()=>typeof root.renderProductHardeningDashboard==='function'
