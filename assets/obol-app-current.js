@@ -11,7 +11,7 @@
  * suppresses historical schedulers and commits current route owners last.
  *
  * Historical fragment order sha256: 40e3006d9423d669acf5869b577ecf56a6ca2ee1629c95fd0fcc5d242d2c5f27
- * Generated body sha256: e4829d9d2dc37d3628d37702dd23c2ef1c36aabe40d8fef2bc0bbc17eb3c45e0
+ * Generated body sha256: c51dc870064735b9dcd4a0bc78f79adc97756947f4b13bd0334449c237c34ec0
  * First historical fragment: assets/report-v2.js
  * Last historical fragment:  assets/app-v8.8.js
  */
@@ -1930,8 +1930,8 @@ if(__nativeMutationObserver)root.MutationObserver=__nativeMutationObserver;
 'use strict';
 (function(root){
 const release=Object.freeze({
- version:'9.48.0',
- label:'v9.48',
+ version:'9.49.0',
+ label:'v9.49',
  phase:'product-hardening',
  phaseLabel:'Product Hardening',
  orangeBaseline:'v8.8'
@@ -2401,11 +2401,26 @@ function compactToolPanels(rootEl){
  }
  return false;
 }
+/* This current owner ships with a companion stylesheet (assets/operator-route-current.css).
+   Because the module is inlined into the startup application owner, ensureOperatorRoutes88()
+   short-circuits before it can inject that stylesheet, so the owner must deliver its own
+   style — the same way the current dashboard route owner does. Idempotent and Node-safe. */
+const OPERATOR_STYLE='assets/operator-route-current.css';
+function ensureOperatorStyle(){
+ if(typeof document==='undefined')return false;
+ if(document.querySelector('link[data-obol-operator-style],link[href="'+OPERATOR_STYLE+'"]'))return true;
+ const link=document.createElement('link');
+ link.rel='stylesheet';link.href=OPERATOR_STYLE;link.dataset.obolOperatorStyle='current';
+ (document.head||document.documentElement||document).appendChild(link);
+ return true;
+}
 function decorateRoute(){
+ ensureOperatorStyle();
  if(page()==='path')renderCurrentPath();
  if(page()==='card'||page()==='tools')compactToolPanels();
 }
-root.OBOL_OPERATOR_ROUTES=Object.freeze({version:'1.1.0',MAX_PRIMARY_BUILDERS,buildPathModel,renderSimplified,renderChecklist,renderLiveMap,renderCurrentPath,compactToolPanels,decorateRoute});
+root.OBOL_OPERATOR_ROUTES=Object.freeze({version:'1.1.0',MAX_PRIMARY_BUILDERS,buildPathModel,renderSimplified,renderChecklist,renderLiveMap,renderCurrentPath,compactToolPanels,ensureOperatorStyle,decorateRoute});
+ensureOperatorStyle();
 for(const t of [0,80,260,900,1800])root.setTimeout&&root.setTimeout(decorateRoute,t);
 })(typeof window!=='undefined'?window:globalThis);
 ;

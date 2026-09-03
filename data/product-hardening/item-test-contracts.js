@@ -1,6 +1,16 @@
 'use strict';
 (function(root){
 const contracts={
+ 'ux-current-owner-style-delivery':{
+  acceptance:['The current operator (Next Steps / Card / Tools) route owner injects assets/operator-route-current.css itself, so inlining it into the startup application bundle can no longer orphan the stylesheet and leave Next Steps unstyled; the role tokens the flattened cascade references but never defined (--muted, --card, --surface, --hover, --bad, --ok, --green, --gold, --warn) are defined once in the always-loaded current-owner sheet mapped to base tokens; and the operator route surfaces adopt the North Star dashboard card and accent language for a consistent look across primary routes.'],
+  validationCommands:['node tools/validate-current-owner-styles.js','node tools/validate-path-views.js','node tools/sync-app-current.js --check','node tests/run-v9.49-tests.js'],
+  proofFiles:['assets/operator-route-current.js','assets/operator-route-current.css','assets/responsive-current.css','assets/obol-app-current.js','tools/validate-current-owner-styles.js','tests/run-v9.49-tests.js','docs/v9.49.md']
+ },
+ 'qa-current-owner-style-guard':{
+  acceptance:['tools/validate-current-owner-styles.js fails when a current route owner stops injecting its companion stylesheet, when the delivered stylesheet set references a CSS custom property that is defined nowhere (in CSS or inline by an owner), or when the current operator route emits a class with no backing rule in the delivered set; it is wired into scope-check and release preflight so the regression that unstyled Next Steps cannot ship again.'],
+  validationCommands:['node tools/validate-current-owner-styles.js','node tools/scope-check.js','node tests/run-v9.49-tests.js'],
+  proofFiles:['tools/validate-current-owner-styles.js','tools/scope-check.js','tools/release-preflight.js','tests/run-v9.49-tests.js','docs/v9.49.md']
+ },
  'notes-script-category':{
   acceptance:['A first-class script disposition kind exists end to end: the note-integration atom kinds and the public field-notes data contract both accept a script kind, the notes-impact projection maps it to a script-guidance impact type in the allowed set and counts it, and the field-notes UI contract requires the kind, so reusable one-liners and scripts derived from notes are tracked outputs rather than folded into tool-guidance or dropped.'],
   validationCommands:['node tools/validate-field-notes-ui.js','node tools/validate-notes-impact.js','node tools/validate-note-integration.js'],
