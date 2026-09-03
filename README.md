@@ -74,7 +74,7 @@ Recommended work-package metadata comes from `data/product-hardening/work-packag
 **Private notes source:** `platocres/obol-source-notes` — 556 notes and 1326 embedded resources accounted.
 **Notes Integration:** 127/556 reviewed — 95 modeled, 27 private-only, 429 pending.
 **Derived note guidance:** 48 Field Notes · 43 tool-bound · 45 Path-bound · 14 Evidence · 5 Report.
-**Declared note-driven product mechanics:** 1 total · 1 builder · 0 Path logic · 0 Evidence parser · 0 report generator · 0 workflow.
+**Declared note-driven product mechanics:** 2 total · 2 builder · 0 Path logic · 0 Evidence parser · 0 report generator · 0 workflow.
 **Latest mined themes:** Windows local privilege escalation.
 **Notes impact contract:** `docs/NOTES-IMPACT.md`.
 

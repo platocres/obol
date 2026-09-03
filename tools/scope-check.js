@@ -5,6 +5,7 @@ const root=path.join(__dirname,'..');
 const checks=[
  ['tools/validate-notes-impact.js'],
  ['tools/validate-note-integration.js'],
+ ['tools/validate-note-mechanic-backfill.js'],
  ['tools/validate-product-hardening-queue.js'],
  ['tools/validate-runtime-manifest.js'],
  ['tools/validate-runtime-loading.js'],
