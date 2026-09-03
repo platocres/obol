@@ -28,11 +28,16 @@ function projection(){
  const areas=manifest.bundles.areas.map(area=>Object.freeze({
   id:area.id,
   scope:area.scope,
+  strategy:area.strategy||'ordered-fragment-concatenation',
   label:area.label,
   owner:area.owner,
   description:area.description,
-  fragments:area.fragments.length
+  fragments:area.fragments.length,
+  generator:area.id==='domain'&&manifest.domainCurrent?manifest.domainCurrent.generator:manifest.bundles.generator,
+  equivalenceValidator:area.id==='domain'&&manifest.domainCurrent?manifest.domainCurrent.equivalenceValidator:'tools/validate-runtime-bundles.js'
  }));
+ const semanticFragments=areas.filter(area=>area.strategy==='semantic-snapshot').reduce((n,area)=>n+area.fragments,0);
+ const liveHistoricalFragments=areas.filter(area=>area.strategy==='ordered-fragment-concatenation').reduce((n,area)=>n+area.fragments,0);
  const preludeRequests=manifest.startupPreludeScripts.length;
  const startupFragments=manifest.startupScripts.length;
  const startupBundles=manifest.startupBundleScripts.length;
@@ -43,9 +48,12 @@ function projection(){
  const before=scriptRequests.before+styleRequests.before;
  const after=scriptRequests.after+styleRequests.after;
  return Object.freeze({
-  schemaVersion:'1.0.0',
+  schemaVersion:'1.1.0',
   areas:Object.freeze(areas),
   consolidatedFragments:areas.reduce((n,area)=>n+area.fragments,0),
+  flattenedHistoricalFragments:semanticFragments,
+  liveHistoricalFragments,
+  liveStartupHistoricalFragments:areas.filter(area=>area.scope==='startup'&&area.strategy==='ordered-fragment-concatenation').reduce((n,area)=>n+area.fragments,0),
   ledgerFragments:manifest.scripts.length,
   retiredFragments:manifest.retiredStartupScripts.length,
   scriptRequests,
@@ -61,11 +69,11 @@ function projection(){
 function summaryLine(p){
  p=p||projection();
  if(!p)return 'Runtime consolidation: runtime manifest unavailable.';
- return 'Operator startup loads '+p.startupRequests.after+' runtime requests instead of '+p.startupRequests.before+' ('+p.startupRequests.reductionPct+'% fewer), with '+p.consolidatedFragments+' historical fragments behind '+p.areas.length+' ownership-area owners.';
+ return 'Operator startup loads '+p.startupRequests.after+' runtime requests instead of '+p.startupRequests.before+' ('+p.startupRequests.reductionPct+'% fewer), with '+p.flattenedHistoricalFragments+' fragments semantically flattened and '+p.liveHistoricalFragments+' still executing through exact current owners.';
 }
 
 function areaLine(area){
- return area.label+' — '+area.fragments+' fragments behind `'+area.owner+'` ('+area.scope+')';
+ return area.label+' — '+area.fragments+' fragments behind `'+area.owner+'` ('+area.scope+', '+area.strategy+')';
 }
 
 function validate(){
@@ -76,7 +84,9 @@ function validate(){
  for(const area of p.areas){
   if(!area.owner||!area.label||!area.fragments)failures.push('runtime consolidation area is incomplete: '+area.id);
   if(area.fragments<1)failures.push('runtime consolidation area owns no fragments: '+area.id);
+  if(!['semantic-snapshot','ordered-fragment-concatenation'].includes(area.strategy))failures.push('runtime consolidation area has an unknown strategy: '+area.id);
  }
+ if(p.flattenedHistoricalFragments+p.liveHistoricalFragments+p.retiredFragments!==p.ledgerFragments)failures.push('every frozen historical fragment must be semantically flattened, still exact-owned, or explicitly retired');
  if(p.startupRequests.after>=p.startupRequests.before)failures.push('runtime consolidation must reduce startup requests');
  if(p.consolidatedFragments+p.retiredFragments!==p.ledgerFragments)failures.push('every frozen historical fragment must be consolidated or explicitly retired');
  for(const route of p.measured.routes){
@@ -85,7 +95,7 @@ function validate(){
  return failures;
 }
 
-const api={schemaVersion:'1.0.0',projection,summaryLine,areaLine,validate,measured};
+const api={schemaVersion:'1.1.0',projection,summaryLine,areaLine,validate,measured};
 root.OBOL_RUNTIME_CONSOLIDATION=api;
 if(typeof module!=='undefined'&&module.exports)module.exports=api;
 })(typeof window!=='undefined'?window:globalThis);

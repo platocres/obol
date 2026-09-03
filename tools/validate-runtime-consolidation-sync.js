@@ -43,8 +43,8 @@ const startupAreas=p.areas.filter(area=>area.scope==='startup');
 const lazyAreas=p.areas.filter(area=>area.scope==='lazy');
 const expected=[
  '**Runtime consolidation:** '+p.startupRequests.after+' operator startup requests, down from '+p.startupRequests.before+' ('+p.startupRequests.reductionPct+'% fewer).',
- '**Consolidated ownership areas:** '+p.areas.length+' owners hold '+p.consolidatedFragments+' historical fragments — '+startupAreas.length+' startup, '+lazyAreas.length+' route-lazy; '+p.retiredFragments+' fragments stay retired in the frozen ledger.',
- '**Runtime area owners:** '+p.areas.map(area=>area.label+' ('+area.fragments+')').join(' · ')+'.',
+ '**Current runtime ownership areas:** '+p.areas.length+' owners account for '+p.consolidatedFragments+' historical fragments — '+p.flattenedHistoricalFragments+' semantically flattened, '+p.liveHistoricalFragments+' still exact-owned; '+p.retiredFragments+' fragments stay retired in the frozen ledger.',
+ '**Runtime area owners:** '+p.areas.map(area=>area.label+' ('+area.fragments+', '+area.strategy+')').join(' · ')+'.',
  '**Measured in Chromium ('+p.measured.release+'):** '+p.measured.routes.map(route=>route.label+' '+route.before+'→'+route.after).join(' · ')+' JavaScript/CSS requests.'
 ];
 for(const line of expected){
@@ -57,7 +57,7 @@ assert(block.includes('data/runtime-consolidation-current.js'),'README block nam
 const dashboard=read('assets/product-hardening-dashboard.js');
 assert(dashboard.includes('OBOL_RUNTIME_CONSOLIDATION'),'dashboard renderer reads the shared consolidation projection');
 assert(!/const\s+rc\s*=\s*\{/.test(dashboard),'dashboard must not keep its own consolidation numbers');
-for(const field of ['rc.startupRequests.after','rc.startupRequests.before','rc.consolidatedFragments','rc.retiredFragments','rc.styleRequests.after','rc.areas','rc.measured.routes']){
+for(const field of ['rc.startupRequests.after','rc.startupRequests.before','rc.flattenedHistoricalFragments','rc.liveHistoricalFragments','rc.liveStartupHistoricalFragments','rc.retiredFragments','rc.styleRequests.after','rc.areas','rc.measured.routes']){
  assert(dashboard.includes(field),'dashboard does not render projection field '+field);
 }
 assert(dashboard.includes('data/runtime-consolidation-current.js'),'dashboard footer attributes the consolidation figures to the shared projection');

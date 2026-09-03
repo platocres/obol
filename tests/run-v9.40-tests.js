@@ -18,7 +18,7 @@ test('v9.40 current release authority is bumped and consistent',()=>{
 test('v9.40 gives every runtime ownership area exactly one consolidated owner',()=>{
  const areas=manifest.bundles.areas;
  assert(areas.length>=7,'every ownership area is declared');
- assert.strictEqual(manifest.bundles.schema,'ordered-fragment-concatenation','owners stay pure concatenations rather than rewritten builds');
+ assert.strictEqual(manifest.bundles.schema,'per-area-current-owner','runtime owners declare their current strategy');
  const startup=areas.filter(a=>a.scope==='startup');
  // Manifest arrays come from a VM realm; compare contents in this realm's prototype.
  assert.deepStrictEqual(Array.from(startup.flatMap(a=>a.fragments)),Array.from(manifest.startupScripts),'startup owners reproduce the historical startup chain exactly');
@@ -28,6 +28,8 @@ test('v9.40 gives every runtime ownership area exactly one consolidated owner',(
   assert(!manifest.scripts.includes(area.owner),'consolidated owner stays outside the frozen ledger: '+area.owner);
   for(const rel of area.fragments)assert(manifest.scripts.includes(rel),'fragment stays inside the frozen ledger: '+rel);
  }
+ assert.strictEqual(areas.find(a=>a.id==='domain').strategy,'semantic-snapshot','later releases may flatten the domain owner semantically');
+ for(const area of areas.filter(a=>a.id!=='domain'))assert.strictEqual(area.strategy,'ordered-fragment-concatenation',area.id+' remains an exact concatenation owner');
  // The frozen v9.5 history is the whole safety net; consolidation must not touch it.
  const fixture=require(path.join(root,'tests','fixtures','runtime-v9.5-load-order.json'));
  assert.strictEqual(manifest.scripts.length,fixture.scriptCount,'frozen historical script ledger is untouched');
@@ -59,7 +61,7 @@ test('v9.40 dashboard and README read one runtime consolidation projection',()=>
  assert(p.startupRequests.after<p.startupRequests.before,'consolidation reduces startup requests');
  const dash=read('assets/product-hardening-dashboard.js');
  assert(dash.includes('OBOL_RUNTIME_CONSOLIDATION'),'dashboard reads the shared projection');
- assert(dash.includes('Consolidated runtime ownership'),'dashboard renders the ownership-area table');
+ assert(dash.includes('Current runtime ownership'),'dashboard renders the ownership-area table');
  assert(dash.includes('Measured browser requests'),'dashboard renders the measured request table');
  const readme=read('README.md');
  assert(readme.includes('**Runtime consolidation:** '+p.startupRequests.after+' operator startup requests'),'README projects the same startup request count');
@@ -92,14 +94,14 @@ test('v9.40 queue leads Product Build Next with the runtime consolidation packag
  assert.deepStrictEqual(Array.from(packages.validate(q)),[],'work-package metadata remains valid');
  const rec=packages.recommend(q);
  assert(rec&&rec.id==='runtime-layer-consolidation','runtime consolidation is the recommended work package');
- assert(rec.liveItems.length>=5,'each remaining ownership area is queued separately');
- for(const id of ['runtime-area-consolidation','runtime-consolidation-sync','qa-runtime-request-budget']){
+ assert(rec.liveItems.length>=4,'remaining ownership areas are queued separately');
+ for(const id of ['runtime-area-consolidation','runtime-consolidation-sync','qa-runtime-request-budget','runtime-domain-flattening']){
   assert(q.items.find(i=>i.id===id&&i.status==='complete'),id+' is complete');
  }
 });
 
 test('v9.40 consolidation validators pass',()=>{
- for(const args of [['tools/sync-runtime-bundles.js','--check'],['tools/validate-runtime-bundles.js'],['tools/sync-current-styles.js','--check'],['tools/validate-runtime-manifest.js'],['tools/validate-runtime-loading.js'],['tools/validate-runtime-consolidation-sync.js'],['tools/validate-asset-references.js'],['tools/validate-responsive-layout.js'],['tools/validate-release-pr.js'],['tools/validate-current-release.js'],['tools/validate-product-hardening-queue.js'],['tools/sync-product-build-next.js','--check'],['tools/sync-current-release.js','--check']]){
+ for(const args of [['tools/sync-domain-current.js','--check'],['tools/validate-domain-current-equivalence.js'],['tools/sync-runtime-bundles.js','--check'],['tools/validate-runtime-bundles.js'],['tools/sync-current-styles.js','--check'],['tools/validate-runtime-manifest.js'],['tools/validate-runtime-loading.js'],['tools/validate-runtime-consolidation-sync.js'],['tools/validate-asset-references.js'],['tools/validate-responsive-layout.js'],['tools/validate-release-pr.js'],['tools/validate-current-release.js'],['tools/validate-product-hardening-queue.js'],['tools/sync-product-build-next.js','--check'],['tools/sync-current-release.js','--check']]){
   const r=cp.spawnSync(process.execPath,args.map((p,i)=>i===0?path.join(root,p):p),{cwd:root,encoding:'utf8',env:process.env});
   assert.strictEqual(r.status,0,(args.join(' ')+': '+(r.stderr||r.stdout||'failed')).trim());
  }

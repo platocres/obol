@@ -257,6 +257,16 @@ contracts['runtime-area-consolidation']={
  validationCommands:['node tools/sync-runtime-bundles.js --check','node tools/validate-runtime-bundles.js','node tools/sync-current-styles.js --check','node tools/validate-runtime-manifest.js','node tools/validate-runtime-loading.js','node tools/validate-asset-references.js','node tests/run-v9.40-tests.js'],
  proofFiles:['data/runtime-manifest.js','tools/sync-runtime-bundles.js','tools/validate-runtime-bundles.js','tools/sync-current-styles.js','assets/runtime-current.js','assets/obol-domain-current.js','assets/obol-core-current.js','assets/obol-app-current.js','assets/obol-current.css','tests/run-v9.40-tests.js','docs/RUNTIME-COMPACTION.md','docs/ARCHITECTURE.md']
 };
+contracts['runtime-domain-flattening']={
+ acceptance:[
+  'The domain ownership area declares a semantic-snapshot strategy in data/runtime-manifest.js, and browser/Node current execution loads assets/obol-domain-current.js instead of executing the 103 versioned domain fragments directly.',
+  'tools/sync-domain-current.js deterministically regenerates the current-domain owner from the frozen historical ledger while replacing the historical closure chain with authored function bodies for the six live functions.',
+  'tools/validate-domain-current-equivalence.js proves the semantic owner exposes the same OBOL_* root order, enumerable graph, shared identities, cycles, mutability flags, RegExp metadata, and function signatures as the historical chain, then exercises every authored function on live and synthetic fixtures.',
+  'The frozen v9.5/v9.40 historical fragment ledger remains intact for fixture regression, while README, dashboard, runtime projection, and release docs report the domain area as semantically flattened.'
+ ],
+ validationCommands:['node tools/sync-domain-current.js --check','node tools/validate-domain-current-equivalence.js','node tools/sync-runtime-bundles.js --check','node tools/validate-runtime-bundles.js','node tools/validate-runtime-manifest.js','node tools/validate-runtime-loading.js','node tools/validate-runtime-consolidation-sync.js','node tests/run-v9.41-tests.js'],
+ proofFiles:['data/runtime-manifest.js','data/runtime-consolidation-current.js','assets/obol-domain-current.js','tools/sync-domain-current.js','tools/validate-domain-current-equivalence.js','tools/sync-runtime-bundles.js','tools/validate-runtime-bundles.js','tools/validate-runtime-manifest.js','tools/validate-runtime-loading.js','tools/validate-runtime-consolidation-sync.js','assets/runtime-current.js','assets/product-hardening-dashboard.js','README.md','CHANGELOG.md','docs/v9.41.md','docs/RUNTIME-COMPACTION.md','docs/ARCHITECTURE.md','docs/PRODUCT-HARDENING.md','tests/run-v9.41-tests.js']
+};
 contracts['runtime-consolidation-sync']={
  acceptance:[
   'data/runtime-consolidation-current.js is the single projection for runtime consolidation figures and derives everything except the recorded browser measurement from data/runtime-manifest.js.',

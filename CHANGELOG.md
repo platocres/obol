@@ -4,6 +4,17 @@ This file is the release-history source for Obol. Future build work should revie
 
 The README is intentionally reserved for current product purpose, permanent operating and build requirements, current architecture/state, and forward priorities. Release narratives and historical implementation summaries belong here, not in README.
 
+## v9.41 — Domain ownership flattening
+
+- Replaced the live domain owner’s 103-fragment ordered execution chain with an authored semantic graph snapshot in `assets/obol-domain-current.js`, while preserving the historical files as the frozen equivalence ledger.
+- Added `tools/sync-domain-current.js`, which deterministically executes the v9.40 domain ledger at build time and emits the current owner graph with shared identity, cycles, RegExp metadata, mutability flags, and six authored function implementations.
+- Added `tools/validate-domain-current-equivalence.js`, proving the semantic owner exposes the same `OBOL_*` root order, complete enumerable graph, object identity/cycle topology, RegExp metadata, mutability flags, and function signatures as the historical chain, then exercising the authored functions against live and synthetic fixtures.
+- Updated runtime ownership metadata from a single exact-concatenation schema to per-area owner strategies: domain is `semantic-snapshot`; core, app, Evidence parsing, Nmap, report overlays, and tool reference data remain exact ordered concatenations.
+- Updated the Product Hardening Dashboard, runtime consolidation projection, README Product Build Next block, and runtime docs to report 103 semantically flattened historical fragments, 194 still exact-owned fragments, and 30 retired Dashboard fragments.
+- Extended the Tool Builder inventory with explicit modeled dispositions for runnable identities surfaced by the semantic domain graph, keeping the permanent inventory validator green without adding new builders in this release.
+- Closed `runtime-domain-flattening` with an item-specific proof contract and v9.41 regression suite, while leaving core, application, Evidence, and stylesheet flattening queued as separate ownership-area passes.
+- Preserved the v8.8 workspace/runtime schema identity, browser-local and human-run constraints, conservative Evidence/report proof semantics, request budget, frozen v9.5 ledger, and exact-head release validation model.
+
 ## v9.40 — Runtime layer consolidation
 
 - Gave every historical runtime ownership area one stable, non-versioned owner that is the exact ordered concatenation of its fragments: `assets/obol-domain-current.js` (103), `assets/obol-core-current.js` (69), `assets/obol-app-current.js` (64), plus route-lazy owners for Evidence parsing (41), Nmap (3), report overlays (14), and tool reference data (3).
