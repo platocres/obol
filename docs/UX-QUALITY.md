@@ -120,3 +120,7 @@ Browser/screenshot QA should catch UI regressions in addition to deterministic r
 ## Cold-start single-paint rule (v9.46)
 
 A primary route must never visibly replay earlier Obol UI generations while current owners initialize. On cold Home startup, including under deliberately delayed current-workflow loading, the first visible `#view` frame must already contain the current user-first Home. A short hidden boot interval is preferable to flashing historical interfaces. Boot failure must surface a current-owned error state rather than dropping the visibility barrier onto a historical compatibility render.
+
+## v9.47 startup and navigation paint ownership
+
+A route is not considered current merely because its first visible frame is current. Once a current route is visible, historical presentation must never reclaim the view on a later timer, lazy-hydration rerender, or hash navigation callback. v9.47 therefore extends visual ownership testing across the complete former application timer horizon and repeated navigation. Home must retain `data-current-home-owner="workflow-current"`; Next Steps must retain `data-operator-route-owner="path-current"` whenever those routes are visible.

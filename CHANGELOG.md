@@ -8,6 +8,13 @@
 
 # Obol Changelog
 
+## v9.47 — Semantic application ownership
+
+- Replaced the exact-concatenation application runtime with a generated semantic current application/router owner while preserving all 43 surviving historical fragments as the frozen semantic/equivalence ledger.
+- Retired autonomous historical application timers, intervals, hashchange listeners, MutationObservers, and delayed route repaint scheduling; current workflow/operator renderers now commit last behind one current navigation owner.
+- Added long-horizon Chromium proof spanning the former 5.2-second historical timer window plus forced reroutes and Home → Next Steps → Home navigation, and forbade direct versioned application requests.
+- Preserved v9.43 request/stale-overlay retirement and v9.46 first-paint protection as separate completed historical milestones; added `runtime-app-semantic-retirement` so Architecture/runtime and overall Product Hardening metrics advance additively instead of being rewritten.
+
 This file is the release-history source for Obol. Future build work should review this changelog together with the current README before changing architecture or methodology.
 
 The README is intentionally reserved for current product purpose, permanent operating and build requirements, current architecture/state, and forward priorities. Release narratives and historical implementation summaries belong here, not in README.

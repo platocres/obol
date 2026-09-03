@@ -30,7 +30,8 @@ test('v9.40 gives every runtime ownership area exactly one consolidated owner',(
  }
  assert.strictEqual(areas.find(a=>a.id==='domain').strategy,'semantic-snapshot','later releases may flatten the domain owner semantically');
  assert(['ordered-fragment-concatenation','semantic-delta-replay'].includes(areas.find(a=>a.id==='core').strategy),'later releases may flatten the core owner semantically');
- for(const area of areas.filter(a=>!['domain','core'].includes(a.id)))assert.strictEqual(area.strategy,'ordered-fragment-concatenation',area.id+' remains an exact concatenation owner');
+ const app=areas.find(a=>a.id==='app');assert(app&&['ordered-fragment-concatenation','semantic-delta-replay'].includes(app.strategy),'later releases may semantically retire the v9.40 application ledger');
+ for(const area of areas.filter(a=>!['domain','core','app'].includes(a.id)))assert.strictEqual(area.strategy,'ordered-fragment-concatenation',area.id+' remains an exact route-lazy compatibility owner');
  // The frozen v9.5 history is the whole safety net; consolidation must not touch it.
  const fixture=require(path.join(root,'tests','fixtures','runtime-v9.5-load-order.json'));
  assert.strictEqual(manifest.scripts.length,fixture.scriptCount,'frozen historical script ledger is untouched');

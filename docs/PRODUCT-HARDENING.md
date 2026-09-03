@@ -238,3 +238,7 @@ These checks do not replace smoke, preflight, release-contract validation, or th
 ## Single-paint metric correction (v9.46)
 
 The v9.43 `runtime-app-flattening` milestone is retained as complete because it did what its implementation actually proved: it consolidated the surviving application compatibility chain into one request owner and retired 21 stale-gated overlays. It did not semantically flatten the remaining 43 UI fragments and did not prove a no-flash first-paint contract. v9.46 records that newly discovered requirement as a separate additive `runtime-app-single-paint` item. Architecture/runtime therefore advances from 17/20 to 18/21 instead of rewriting prior history. Overall Product Hardening advances from 206/649 to 207/650. Future agents must distinguish request consolidation, semantic retirement, and visible first-paint ownership in queue labels, proofs, and dashboard language.
+
+## v9.47 semantic application-retirement accounting
+
+Application runtime hardening now records three separate completed contracts instead of collapsing them into one ambiguous "flattening" claim: v9.43 request/stale-overlay retirement, v9.46 first-visible-paint protection, and v9.47 semantic execution ownership. The new `runtime-app-semantic-retirement` item is additive. Architecture/runtime advances by one completed item and one total item; overall Product Hardening advances by the same +1/+1 through the generated queue projection. Earlier completion denominators are historical facts and are not rewritten.

@@ -77,11 +77,11 @@ assert.strictEqual(new Set(flatDeferred).size,flatDeferred.length,'deferred scri
 for(const src of retiredAll)assert(!flatDeferred.includes(src),'retired layer must not masquerade as a route-lazy group: '+src);
 assert.deepStrictEqual(new Set(excluded),new Set(flatDeferred.concat(retiredAll)),'historical startup exclusions must be explained by route deferral or explicit live-layer retirement');
 
-/* Consolidation budget: the live historical fragment ledger is 215 scripts deep, and the
-   browser must fetch one current owner per ownership area rather than one file per
-   fragment. Domain is a semantic graph snapshot, core is a semantic delta replay,
-   and app remains an exact concatenation of the fragments that still contribute
-   behavior. */
+/* Consolidation budget: the startup semantic source ledger is 215 scripts deep, but the
+   browser fetches one current owner per ownership area rather than one file per
+   fragment. Domain is a semantic graph snapshot; core and application are semantic
+   delta replays. Historical application fragments remain regression/equivalence input,
+   not autonomous browser layers. */
 const startupBundles=manifest.startupBundleScripts||[];
 assert.strictEqual(startupBundles.length,3,'operator startup consolidates into three ownership-area bundles');
 assert.deepStrictEqual(startupBundles,['assets/obol-domain-current.js','assets/obol-core-current.js','assets/obol-app-current.js'],'startup bundle owners are stable, non-versioned, and ordered domain -> core -> app');
@@ -98,11 +98,14 @@ assert(coreArea&&coreArea.strategy==='semantic-delta-replay','core startup owner
 assert(manifest.coreCurrent&&manifest.coreCurrent.owner===coreArea.owner,'core semantic owner metadata must name the startup owner');
 assert.strictEqual(manifest.coreCurrent.generator,'tools/sync-core-current.js','core semantic owner declares its generator');
 assert.strictEqual(manifest.coreCurrent.equivalenceValidator,'tools/validate-core-current-equivalence.js','core semantic owner declares its equivalence validator');
-for(const area of (manifest.bundles.areas||[]).filter(area=>!['domain','core'].includes(area.id)))assert.strictEqual(area.strategy,'ordered-fragment-concatenation',area.id+' remains an exact concatenation owner');
 const appArea=(manifest.bundles.areas||[]).find(area=>area.id==='app');
-assert(appArea&&manifest.appCurrent&&manifest.appCurrent.owner===appArea.owner,'application owner metadata must name the startup owner');
-assert.strictEqual(manifest.appCurrent.equivalenceValidator,'tools/validate-app-current-equivalence.js','application owner declares its retirement validator');
-assert.strictEqual(manifest.appCurrent.domEquivalenceValidator,'tools/validate-app-dom-equivalence.js','application owner declares its browser-level validator');
+assert(appArea&&appArea.strategy==='semantic-delta-replay','application startup owner must be a semantic delta replay');
+assert(manifest.appCurrent&&manifest.appCurrent.owner===appArea.owner,'application owner metadata must name the startup owner');
+assert.strictEqual(manifest.appCurrent.generator,'tools/sync-app-current.js','application owner declares its semantic generator');
+assert.strictEqual(manifest.appCurrent.semanticValidator,'tools/validate-app-semantic-current.js','application owner declares its execution-ownership validator');
+assert.strictEqual(manifest.appCurrent.equivalenceValidator,'tools/validate-app-current-equivalence.js','application owner keeps its v9.43 retirement validator');
+assert.strictEqual(manifest.appCurrent.domEquivalenceValidator,'tools/validate-app-dom-equivalence.js','application owner keeps its browser-level retirement validator');
+for(const area of (manifest.bundles.areas||[]).filter(area=>!['domain','core','app'].includes(area.id)))assert.strictEqual(area.strategy,'ordered-fragment-concatenation',area.id+' remains an exact route-lazy compatibility owner');
 assert.strictEqual(appArea.fragments.length,43,'the application owner keeps only the fragments that still contribute behavior');
 for(const rel of manifest.appCurrent.retiredFragments)assert(!appArea.fragments.includes(rel),'a retired release-wave overlay leaked back into the application owner: '+rel);
 assert.strictEqual(manifest.styles.length,1,'the browser fetches exactly one stylesheet');

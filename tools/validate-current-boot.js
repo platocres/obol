@@ -19,7 +19,7 @@ const oldItem=q.items.find(i=>i.id==='runtime-app-flattening'),item=q.items.find
 assert(oldItem&&oldItem.status==='complete'&&/request-layer|request consolidation/.test(oldItem.detail),'v9.43 milestone remains complete with corrected scope');
 assert(item&&item.status==='complete','single-paint corrective item is complete');
 assert(c.contracts['runtime-app-single-paint'],'single-paint item has a Definition of Done');
-const track=q.tracks.find(t=>t.id==='architecture-runtime');assert(track&&track.complete===18&&track.total===21,'architecture metrics add the corrective item instead of rewriting history');
-const app=m.bundles.areas.find(a=>a.id==='app');assert(app&&app.strategy==='ordered-fragment-concatenation'&&app.fragments.length===43,'app compatibility remains honestly exact-owned at 43 fragments');
+const track=q.tracks.find(t=>t.id==='architecture-runtime');assert(track&&track.complete>=18&&track.total>=21,'architecture metrics preserve the v9.46 additive correction even as later items are added');
+const app=m.bundles.areas.find(a=>a.id==='app');assert(app&&app.fragments.length===43,'v9.46 boot proof keeps the 43-fragment application ledger even if a later release semantically retires its execution strategy');
 assert(browser.includes('node tools/validate-single-paint-boot-browser.js'),'browser smoke owns first-visible-paint proof');
-console.log('Current boot ownership valid: compatibility startup is hidden until the explicit stable current route owner commits first paint; app fragment accounting remains 43 exact-owned.');
+console.log('Current boot ownership valid: startup is hidden until the explicit stable current route owner commits first paint; the v9.46 43-fragment application ledger remains accounted even when later semantic retirement changes execution ownership.');

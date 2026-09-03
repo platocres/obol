@@ -4,7 +4,7 @@ Obol is a static, browser-local workspace for OSCP-style labs, Active Directory 
 
 Live site: `https://platocres.github.io/obol/`
 
-Current release: **v9.46**
+Current release: **v9.47**
 
 Open `#/dashboard` for the active Product Hardening Dashboard and Product Build Next queue.
 
@@ -72,7 +72,7 @@ This block is generated from `data/product-hardening/product-hardening-queue.js`
 Recommended work-package metadata comes from `data/product-hardening/work-packages.js`.
 Runtime consolidation figures come from `data/runtime-consolidation-current.js`, the same projection the Product Hardening Dashboard renders.
 
-**Current product-hardening queue:** 207/650 complete (32%), 11 queued, 9 foundation items modeled.
+**Current product-hardening queue:** 208/651 complete (32%), 11 queued, 9 foundation items modeled.
 **Private notes source:** `platocres/obol-source-notes` — 556 notes and 1326 embedded resources accounted.
 **Notes Integration:** 127/556 reviewed — 95 modeled, 27 private-only, 429 pending.
 **Derived note guidance:** 48 Field Notes · 43 tool-bound · 45 Path-bound · 14 Evidence · 5 Report.
@@ -80,8 +80,8 @@ Runtime consolidation figures come from `data/runtime-consolidation-current.js`,
 **Latest mined themes:** Windows local privilege escalation.
 **Notes impact contract:** `docs/NOTES-IMPACT.md`.
 **Runtime consolidation:** 5 operator startup requests, down from 286 (98% fewer).
-**Current runtime ownership areas:** 7 owners account for 272 historical fragments — 172 semantically flattened, 100 still exact-owned; 55 fragments stay retired in the frozen ledger.
-**Runtime area owners:** Domain data (103, semantic-snapshot) · Core state and derivation (69, semantic-delta-replay) · Report base and application UI (43, ordered-fragment-concatenation) · Evidence parsing (37, ordered-fragment-concatenation) · Nmap builders (3, ordered-fragment-concatenation) · Report overlays (14, ordered-fragment-concatenation) · Tool reference data (3, ordered-fragment-concatenation).
+**Current runtime ownership areas:** 7 owners account for 272 historical fragments — 215 semantically flattened, 57 still exact-owned; 55 fragments stay retired in the frozen ledger.
+**Runtime area owners:** Domain data (103, semantic-snapshot) · Core state and derivation (69, semantic-delta-replay) · Report base and application UI (43, semantic-delta-replay) · Evidence parsing (37, ordered-fragment-concatenation) · Nmap builders (3, ordered-fragment-concatenation) · Report overlays (14, ordered-fragment-concatenation) · Tool reference data (3, ordered-fragment-concatenation).
 **Measured in Chromium (v9.40):** Home 321→19 · Next Steps 329→27 · Evidence 365→21 · Report 335→20 JavaScript/CSS requests.
 **Runtime compaction contract:** `docs/RUNTIME-COMPACTION.md`.
 
@@ -106,7 +106,7 @@ Runtime consolidation figures come from `data/runtime-consolidation-current.js`,
 
 **Track status:**
 - **Critical correctness:** 4/5 complete (80%), 0 modeled.
-- **Architecture / runtime:** 18/21 complete (86%), 3 modeled.
+- **Architecture / runtime:** 19/22 complete (86%), 3 modeled.
 - **UI / UX repair:** 9/10 complete (90%), 1 modeled.
 - **Tool GUI builders:** 19/19 complete (100%), 0 modeled.
 - **Credential modes:** 14/14 complete (100%), 0 modeled.

@@ -51,18 +51,18 @@ test('v9.42 generated core asset is semantic replay, not exact concatenation',()
 test('v9.42 runtime projection and dashboard report flattened core ownership',()=>{
  assert.deepStrictEqual(Array.from(consolidation.validate()),[],'runtime consolidation projection validates');
  const p=consolidation.projection();
- /* Demoted in v9.43: later releases retire fragments out of the live areas, so these
-    become one-way ratchets. The 172 semantically flattened domain+core fragments are
-    v9.42's own contract and stay exact. */
+ /* Later releases may semantically flatten additional ownership areas or retire
+    fragments, so v9.42 current-state values are one-way floors/ceilings. Its durable
+    fact is that at least the 103 domain + 69 core fragments are semantic. */
  assert(p.consolidatedFragments<=297,'projection never regrows the live runtime ownership areas');
- assert.strictEqual(p.flattenedHistoricalFragments,172,'projection counts domain and core as semantically flattened');
+ assert(p.flattenedHistoricalFragments>=172,'v9.42 establishes a permanent floor of 172 semantically flattened domain+core fragments');
  assert(p.liveHistoricalFragments<=125,'projection never regrows the exact-owned historical fragment count');
  assert(p.liveStartupHistoricalFragments<=64,'projection never regrows exact-owned startup runtime beyond the v9.42 application area');
  assert.strictEqual(p.flattenedHistoricalFragments+p.liveHistoricalFragments+p.retiredFragments,p.ledgerFragments,'all frozen fragments are flattened, exact-owned, or retired');
  const dashboard=read('assets/product-hardening-dashboard.js');
  for(const token of ['Current runtime ownership','rc.flattenedHistoricalFragments','rc.liveHistoricalFragments','rc.liveStartupHistoricalFragments'])assert(dashboard.includes(token),'dashboard reports '+token);
  const readme=read('README.md');
- assert(/\*\*Current runtime ownership areas:\*\* 7 owners account for \d+ historical fragments — 172 semantically flattened, \d+ still exact-owned; \d+ fragments stay retired in the frozen ledger\./.test(readme),'README Product Build Next reports core flattening');
+ assert(/\*\*Current runtime ownership areas:\*\* 7 owners account for \d+ historical fragments — \d+ semantically flattened, \d+ still exact-owned; \d+ fragments stay retired in the frozen ledger\./.test(readme),'README Product Build Next reports the live projection without freezing v9.42 current-state values');
 });
 
 test('v9.42 queue and item contract close runtime-core-flattening',()=>{

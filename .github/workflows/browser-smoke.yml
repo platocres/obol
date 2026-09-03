@@ -67,6 +67,11 @@ jobs:
           OBOL_SMOKE_BASE_URL: http://127.0.0.1:4173/index.html
         run: node tools/validate-single-paint-boot-browser.js
 
+      - name: Prove v9.47 semantic application ownership across the historical timer horizon
+        env:
+          OBOL_SMOKE_BASE_URL: http://127.0.0.1:4173/index.html
+        run: node tools/validate-app-semantic-boot-browser.js
+
       - name: Upload browser screenshots
         if: always()
         uses: actions/upload-artifact@v4

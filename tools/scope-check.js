@@ -16,6 +16,8 @@ const checks=[
  ['tools/validate-domain-current-equivalence.js'],
  ['tools/sync-core-current.js','--check'],
  ['tools/validate-core-current-equivalence.js'],
+ ['tools/sync-app-current.js','--check'],
+ ['tools/validate-app-semantic-current.js'],
  ['tools/sync-runtime-bundles.js','--check'],
  ['tools/validate-app-current-equivalence.js'],
  ['tools/validate-evidence-current-equivalence.js'],
@@ -35,7 +37,8 @@ const checks=[
  ['tests/run-v9.43-tests.js'],
  ['tests/run-v9.44-tests.js'],
  ['tests/run-v9.45-tests.js'],
- ['tests/run-v9.46-tests.js']
+ ['tests/run-v9.46-tests.js'],
+ ['tests/run-v9.47-tests.js']
 ];
 for(const args of checks){
  const result=cp.spawnSync(process.execPath,args.map((part,idx)=>idx===0?path.join(root,part):part),{cwd:root,encoding:'utf8'});

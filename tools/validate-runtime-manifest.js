@@ -20,8 +20,8 @@ function exists(label,list){
 }
 
 assert(/^1\.\d+\.\d+$/.test(manifest.schemaVersion),'runtime manifest remains on compatible schema major 1');
-assert.strictEqual(manifest.compatibility.strategy,'domain-core-semantic-equivalence+script-exact-load-order+style-cascade-equivalence','runtime compatibility strategy protects domain/core semantic equivalence, script order, and CSS cascade equivalence');
-assert.strictEqual(manifest.compatibility.consolidation,'semantic-domain-snapshot+semantic-core-delta-replay+ordered-fragment-concatenation','current runtime owners record mixed semantic/exact-concatenation strategies');
+assert.strictEqual(manifest.compatibility.strategy,'domain-core-app-semantic-equivalence+script-exact-ledger+style-cascade-equivalence','runtime compatibility strategy protects domain/core/application semantic equivalence, the frozen historical script ledger, and CSS cascade equivalence');
+assert.strictEqual(manifest.compatibility.consolidation,'semantic-domain-snapshot+semantic-core-delta-replay+semantic-app-delta-replay+ordered-fragment-concatenation','current runtime owners record mixed semantic/exact-concatenation strategies');
 assert.strictEqual(fixture.release,manifest.compatibility.baselineRelease,'runtime manifest baseline release matches fixture');
 const historicalStyles=manifest.compatibility.historicalStyles;
 assert(Array.isArray(historicalStyles)&&historicalStyles.length,'historical stylesheet compatibility list is explicit');
@@ -114,9 +114,9 @@ exists('Node historical data fixture',manifest.node.historicalData);
 exists('Node historical core fixture',manifest.node.historicalCore);
 
 /* Current ownership: the browser loads one owner per area instead of one request per
-   historical fragment. Domain is a semantic graph snapshot, core is a semantic
-   delta replay, and the other five owners remain exact concatenations. Dedicated
-   validators own the proof for each strategy. */
+   historical fragment. Domain is a semantic graph snapshot; core and application are
+   semantic delta replays; the four route-lazy compatibility areas remain exact
+   concatenations. Dedicated validators own the proof for each strategy. */
 const bundleAreas=manifest.bundles&&manifest.bundles.areas;
 assert(Array.isArray(bundleAreas)&&bundleAreas.length,'runtime manifest declares consolidated ownership areas');
 assert.strictEqual(manifest.bundles.generator,'tools/sync-runtime-bundles.js','consolidated owners declare their generator');
@@ -135,7 +135,14 @@ assert.strictEqual(manifest.coreCurrent.generator,'tools/sync-core-current.js','
 assert.strictEqual(manifest.coreCurrent.equivalenceValidator,'tools/validate-core-current-equivalence.js','core semantic owner declares its equivalence validator');
 assert.deepStrictEqual(Array.from(manifest.coreCurrent.historicalFragments),Array.from(coreArea.fragments),'core semantic metadata keeps the exact frozen historical ledger');
 assert.strictEqual(coreArea.fragments.length,69,'core semantic owner flattens the 69-fragment state/derivation chain');
-for(const area of bundleAreas.filter(area=>!['domain','core'].includes(area.id)))assert.strictEqual(area.strategy,'ordered-fragment-concatenation','non-domain/core area remains an exact ordered concatenation: '+area.id);
+const appArea=bundleAreas.find(area=>area.id==='app');
+assert(appArea&&appArea.strategy==='semantic-delta-replay','application area is flattened behind a semantic delta-replay current owner');
+assert(manifest.appCurrent&&manifest.appCurrent.owner===appArea.owner,'application semantic owner metadata must name the startup owner');
+assert.strictEqual(manifest.appCurrent.generator,'tools/sync-app-current.js','application semantic owner declares its generator');
+assert.strictEqual(manifest.appCurrent.semanticValidator,'tools/validate-app-semantic-current.js','application semantic owner declares its execution-ownership validator');
+assert.deepStrictEqual(Array.from(manifest.appCurrent.historicalFragments),Array.from(appArea.fragments),'application semantic metadata keeps the exact frozen v9.43 surviving ledger');
+assert.strictEqual(appArea.fragments.length,43,'application semantic owner accounts for all 43 surviving rendering deltas');
+for(const area of bundleAreas.filter(area=>!['domain','core','app'].includes(area.id)))assert.strictEqual(area.strategy,'ordered-fragment-concatenation','route-lazy compatibility area remains an exact ordered concatenation: '+area.id);
 assert.deepStrictEqual(
  bundleAreas.filter(area=>area.scope==='startup').flatMap(area=>area.fragments),
  Array.from(manifest.startupScripts),
