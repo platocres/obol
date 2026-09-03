@@ -4,6 +4,12 @@ This file is the release-history source for Obol. Future build work should revie
 
 The README is intentionally reserved for current product purpose, permanent operating and build requirements, current architecture/state, and forward priorities. Release narratives and historical implementation summaries belong here, not in README.
 
+## v9.42 — Core ownership flattening
+
+- Started the scoped Runtime Layer Consolidation pass for `runtime-core-flattening`.
+- Added the v9.42 release scaffold, current-release authority bump, release note, and regression entrypoint before opening the release PR.
+- Preserved the one-open-release-PR workflow and kept the branch scoped to the core state and derivation ownership area.
+
 ## v9.41 — Domain ownership flattening
 
 - Replaced the live domain owner’s 103-fragment ordered execution chain with an authored semantic graph snapshot in `assets/obol-domain-current.js`, while preserving the historical files as the frozen equivalence ledger.
