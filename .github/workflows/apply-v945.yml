@@ -1,3 +1,4 @@
+# Temporary branch-only release wiring; removed before final validation.
 name: Obol v9.45 release wiring
 
 on:
