@@ -95,17 +95,18 @@ test('v9.40 browser smoke enforces the runtime request budget',()=>{
  for(const route of ['home','dashboard'])assert(new RegExp("id: '"+route+"'[^}]*requestBudget").test(smoke),route+' route declares a budget');
 });
 
-test('v9.40 queue leads Product Build Next with the runtime consolidation package',()=>{
+test('v9.40 records the runtime consolidation package and its ownership-area passes',()=>{
  const pkg=packages.packageForItem('runtime-domain-flattening');
- assert(pkg&&pkg.id==='runtime-layer-consolidation','remaining flattening work belongs to the runtime consolidation package');
+ assert(pkg&&pkg.id==='runtime-layer-consolidation','flattening work belongs to the runtime consolidation package');
  assert.deepStrictEqual(Array.from(packages.validate(q)),[],'work-package metadata remains valid');
- const rec=packages.recommend(q);
- assert(rec&&rec.id==='runtime-layer-consolidation','runtime consolidation is the recommended work package');
- /* Demoted in v9.43: this is a burn-down counter, not a v9.40 contract. Each
-    ownership area is flattened in its own release, so the live count only falls.
-    What v9.40 owns is that the remaining areas stay tracked as separate items. */
- assert(rec.liveItems.length>=1,'remaining ownership areas are still queued separately');
- for(const id of ['runtime-app-flattening','runtime-evidence-flattening','runtime-style-flattening'])assert(q.items.find(i=>i.id===id),id+' remains its own tracked ownership-area pass');
+ // Recommendation is a live-current projection and legitimately advances after the
+ // package burns down. v9.40 owns package membership and the completed foundation,
+ // not which package future releases recommend next.
+ for(const id of ['runtime-domain-flattening','runtime-app-flattening','runtime-evidence-flattening','runtime-style-flattening']){
+  const item=q.items.find(i=>i.id===id);
+  assert(item,id+' remains a tracked ownership-area pass');
+  assert(packages.packageForItem(id)&&packages.packageForItem(id).id==='runtime-layer-consolidation',id+' remains in the runtime consolidation package');
+ }
  for(const id of ['runtime-area-consolidation','runtime-consolidation-sync','qa-runtime-request-budget','runtime-domain-flattening']){
   assert(q.items.find(i=>i.id===id&&i.status==='complete'),id+' is complete');
  }
