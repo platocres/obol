@@ -78,6 +78,7 @@ if(isProductHardening){
   run('application semantic execution ownership',['tools/validate-app-semantic-current.js']);
   run('application retirement equivalence',['tools/validate-app-current-equivalence.js']);
   run('Evidence retirement equivalence',['tools/validate-evidence-current-equivalence.js']);
+  run('Evidence chain restoration',['tools/validate-evidence-current-equivalence.js']);
   run('runtime bundle synchronization',['tools/sync-runtime-bundles.js','--check']);
   run('runtime bundle equivalence',['tools/validate-runtime-bundles.js']);
   run('runtime consolidation dashboard/README sync',['tools/validate-runtime-consolidation-sync.js']);

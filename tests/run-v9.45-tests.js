@@ -82,7 +82,13 @@ test('v9.45 closes stylesheet flattening and advances Product Build Next to the 
  assert(pkg&&pkg.id==='runtime-layer-consolidation','stylesheet remains the last item in the runtime consolidation package');
  assert.strictEqual(packages.liveItems(pkg,q).length,0,'Runtime Layer Consolidation has no remaining live items');
  const rec=packages.recommend(q);
- assert(rec&&rec.entryItem&&rec.entryItem.id==='cc-evidence-chain-restore','Product Build Next advances to the latent Evidence correctness defect');
+ // At v9.45 this advanced to cc-evidence-chain-restore; which queued item is recommended
+ // next is live-current (v9.48 closes that defect), so this historical suite asserts only
+ // the durable milestone: Product Build Next has moved past the completed runtime
+ // consolidation package rather than freezing the specific follow-on item.
+ assert(rec&&rec.entryItem,'Product Build Next has a recommended entry item');
+ const entryPkg=packages.packageForItem(rec.entryItem.id);
+ assert(!entryPkg||entryPkg.id!=='runtime-layer-consolidation','Product Build Next advances past the completed runtime consolidation work');
 });
 
 test('v9.45 current validation wiring includes semantic stylesheet proof',()=>{

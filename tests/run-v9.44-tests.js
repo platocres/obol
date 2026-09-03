@@ -116,7 +116,11 @@ test('v9.44 queue closes runtime-evidence-flattening and files the defect',()=>{
  assert(contract.acceptance.length>=4&&contract.validationCommands.length&&contract.proofFiles.length,'the contract names acceptance criteria, validation commands, and proof files');
  assert(contract.validationCommands.includes('node tools/validate-evidence-current-equivalence.js'),'the contract names its equivalence validator');
  const defect=q.items.find(item=>item.id==='cc-evidence-chain-restore');
- assert(defect&&defect.status==='queued','the never-shipped Evidence behavior is filed as a queued correctness item');
+ // v9.44 filed the never-shipped Evidence as its own correctness item. Whether it is
+ // still queued or has since been restored is live-current state (v9.48 re-homes it),
+ // so this historical suite asserts only the durable filing/track invariant.
+ assert(defect,'the never-shipped Evidence behavior is filed as its own correctness item');
+ assert(['queued','complete'].includes(defect.status),'the filed defect carries a valid disposition');
  assert.strictEqual(defect.track,'critical-correctness','the missing Evidence is a correctness defect');
  const evidencePkg=packages.packageForItem('runtime-evidence-flattening');
  const stylePkg=packages.packageForItem('runtime-style-flattening');

@@ -127,6 +127,7 @@ const lazy=Object.freeze({
  productHardening:freeze(['data/runtime-consolidation-current.js','data/current-release.js','data/product-hardening/product-hardening-queue.js','data/product-hardening/work-packages.js','data/note-integration.js','data/note-integration-reviews.js','data/note-integration-packets.js','data/product-hardening/note-progress-current.js','data/product-hardening/notes-impact-current.js','assets/product-hardening-dashboard.css','assets/product-hardening-dashboard.js','assets/workflow-current.js','assets/operator-route-current.css','assets/operator-route-current.js']),
  accessibility:freeze(['assets/accessibility.css','assets/accessibility.js']),
  evidenceParsing:freeze([...vendor,'assets/bh-v2-patch.js',...liveIntake]),
+ evidenceRestore:freeze(['assets/intake-evidence-restore.js']),
  nmap:freeze(nmap),
  reportOverlays:freeze(report.slice(1)),
  toolReferenceData:freeze(['data/wordlists.js','data/scripts.js','data/scripts-v2.5.js'])
@@ -146,8 +147,8 @@ const startupScripts=liveHistoricalStartup;
 const routeLazy=Object.freeze({
  home:freeze([]),
  boxes:freeze(['nmap']),
- intake:freeze(['nmap','evidenceParsing']),
- artifacts:freeze(['nmap','evidenceParsing']),
+ intake:freeze(['nmap','evidenceParsing','evidenceRestore']),
+ artifacts:freeze(['nmap','evidenceParsing','evidenceRestore']),
  tools:freeze(['toolReferenceData']),
  report:freeze(['reportOverlays']),
  dashboard:freeze([]),
@@ -262,6 +263,27 @@ const evidenceCurrent=Object.freeze({
  equivalenceValidator:'tools/validate-evidence-current-equivalence.js',
  restorationItem:'cc-evidence-chain-restore'
 });
+/* v9.48 Evidence-chain restoration. The four overlays v9.44 retired stay dead in the
+   frozen ledger; the conservative Evidence they were written to add is re-homed here
+   onto the live OBOL_INTAKE_V21 decorator chain. This stable current owner is NOT a
+   frozen historical fragment and is NOT part of the exact-concatenation Evidence
+   bundle — it is a route-lazy current decorator loaded after the Evidence bundle on
+   the Evidence/Artifacts routes, so it wraps the fully-assembled analyzeTerminal last.
+   Its equivalence is proven by re-running the same reachability/differential harness
+   the retirement uses. */
+const evidenceRestore=Object.freeze({
+ owner:'assets/intake-evidence-restore.js',
+ strategy:'live-current-decorator',
+ sourceRelease:'v9.48',
+ hookTarget:'OBOL_INTAKE_V21',
+ restorationItem:'cc-evidence-chain-restore',
+ rehomedOverlays:retiredEvidenceOverlays,
+ loadsAfter:'evidenceParsing',
+ routes:freeze(['intake','artifacts']),
+ lazyGroup:'evidenceRestore',
+ marker:'__OBOL_EVIDENCE_RESTORE__',
+ equivalenceValidator:'tools/validate-evidence-current-equivalence.js'
+});
 
 const performance=Object.freeze({
  baseline:Object.freeze({historicalScripts:327,historicalStyles:69}),
@@ -295,6 +317,7 @@ return Object.freeze({
  coreCurrent,
  appCurrent,
  evidenceCurrent,
+ evidenceRestore,
  startupBundleScripts,
  lazyBundles,
  deferredScriptGroups,

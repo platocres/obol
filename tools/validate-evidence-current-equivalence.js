@@ -35,9 +35,17 @@
  *
  * The behavior the four overlays were written to add (no-credentials poisoning/coercion
  * Evidence beyond v7.6, relay-SOCKS, WebDAV coercion, Windows local-exploit, and
- * offline-cracking Evidence) never reached production because of the break. That is a
- * real latent defect, tracked separately as cc-evidence-chain-restore; this release
- * does not silently bless the loss, it removes the dead files and files the gap.
+ * offline-cracking Evidence) never reached production because of the break. v9.44
+ * removed the dead files and filed the gap as cc-evidence-chain-restore.
+ *
+ * v9.48 closes that defect. The four overlays stay retired in the frozen ledger; their
+ * conservative Evidence is re-homed onto the live OBOL_INTAKE_V21 decorator chain by a
+ * stable current owner (assets/intake-evidence-restore.js), loaded route-lazily after
+ * the Evidence bundle. This validator now proves BOTH milestones: the retirement is
+ * still observably inert (reachability + differential over the frozen chain), and the
+ * restoration actually decorates analyzeTerminal — the exact step the broken subchain
+ * skipped — restoring conservative Evidence across all four families with proof
+ * boundaries intact.
  */
 
 const assert=require('assert');
@@ -74,7 +82,8 @@ const EVIDENCE_CORPUS=Object.freeze([
    context and returns the observable surface: the sorted OBOL_* global names and the
    analyzeTerminal output over the corpus. Pure with respect to its inputs — no shared
    module state — so tests can call it with mutated fragment lists. */
-function loadEvidenceRuntime(fragmentList){
+function loadEvidenceRuntime(fragmentList,corpus){
+ corpus=corpus||EVIDENCE_CORPUS;
  const sandbox={console};
  sandbox.window=sandbox;
  sandbox.globalThis=sandbox;
@@ -87,12 +96,48 @@ function loadEvidenceRuntime(fragmentList){
  const globals=Object.keys(sandbox).filter(k=>/^OBOL_/.test(k)).sort();
  const C=sandbox.OBOL_CORE_V2,lanes=sandbox.OBOL_LANES,T=sandbox.OBOL_INTAKE_V21;
  assert(C&&lanes&&T&&typeof T.analyzeTerminal==='function','Evidence runtime failed to initialize analyzeTerminal');
- const results=EVIDENCE_CORPUS.map(text=>{
+ const results=corpus.map(text=>{
   const state=C.newState();
   const ctx=C.normalizeContext?C.normalizeContext(state,state.activeContext):state.activeContext;
   return T.analyzeTerminal(text,lanes,state,ctx);
  });
  return {globals,results:JSON.parse(JSON.stringify(results))};
+}
+
+/* An unambiguous per-family operator corpus for the v9.48 restoration: each transcript
+   hits exactly one of the re-homed overlays so a missing restore is observable per
+   family. Kept separate from EVIDENCE_CORPUS so the v9.44 differential is untouched. */
+const RESTORE_CASES=Object.freeze([
+ {family:'7.7',text:"└─$ sudo Pcredz -i eth0 -v\nUsername: CORP\\alice Password: Secret!",card:'arp-poison-77',result:'success',has:['credential.candidate'],forbid:['relay.success','credential.available','access.admin','access.system']},
+ {family:'7.8',text:"└─$ proxychains impacket-mssqlclient -windows-auth 'corp/alice'@10.0.0.10 -no-pass\nSQL>",card:'relay-socks-78',result:'success',has:['db.mssql_access'],forbid:['objective.domain_admin','capability.dcsync','access.admin']},
+ {family:'7.8',text:"└─$ certipy auth -pfx alice.pfx -dc-ip 10.0.0.5\nGot TGT\nSaved credential cache to alice.ccache",card:'certificate-movement-78',result:'success',has:['kerberos.tickets'],forbid:['objective.domain_admin','capability.dcsync']},
+ {family:'7.9',text:"└─$ icacls C:\\Windows\\System32\\config\\SAM\nBUILTIN\\Users:(I)(RX)",card:'windows-local-exploit-79',result:'success',has:[],forbid:['access.admin','access.system','credential.available']},
+ {family:'7.9',text:"└─$ python3 dnstool.py -a add -r attacker corp.local\n[SMB] NTLMv2-SSP Hash: CORP\\bob::CORP:1122334455667788:AAAA",card:'webdav-coercion-79',result:'success',has:['credential.candidate'],forbid:['relay.success','access.admin']},
+ {family:'8.2',text:"└─$ hashcat -m 13100 tgs.hash rockyou.txt\nStatus...........: Cracked\nRecovered........: 1/1 (100.00%)",card:'hashcat-modes',result:'success',has:['credential.candidate'],forbid:['credential.plaintext','access.system','objective.domain_admin']}
+]);
+
+/* Runs the live Evidence chain, captures OBOL_INTAKE_V21.analyzeTerminal, then executes
+   one extra overlay and reports whether that overlay replaced analyzeTerminal. This is
+   the exact test the four retired overlays fail: they hook a predecessor that never
+   published analyzeTerminal, so appending them leaves the function untouched. */
+function restoreReachability(baseFragments,overlayRel){
+ const sandbox={console};
+ sandbox.window=sandbox;
+ sandbox.globalThis=sandbox;
+ sandbox.DOMParser=function(){};
+ vm.createContext(sandbox);
+ const exec=rel=>vm.runInContext(read(rel),sandbox,{filename:rel});
+ for(const rel of manifest.node.data)exec(rel);
+ for(const rel of manifest.node.core)exec(rel);
+ for(const rel of baseFragments)exec(rel);
+ const before=sandbox.OBOL_INTAKE_V21&&sandbox.OBOL_INTAKE_V21.analyzeTerminal;
+ exec(overlayRel);
+ const after=sandbox.OBOL_INTAKE_V21&&sandbox.OBOL_INTAKE_V21.analyzeTerminal;
+ return{
+  mutatesAnalyze:after!==before,
+  marker:sandbox.__OBOL_EVIDENCE_RESTORE__,
+  publishesRestoreGlobal:Object.prototype.hasOwnProperty.call(sandbox,'OBOL_INTAKE_EVIDENCE_RESTORE')
+ };
 }
 
 /* Executes domain + core, then the full frozen Intake chain fragment by fragment,
@@ -189,8 +234,60 @@ function main(){
  new vm.Script(owner,{filename:area.owner});
 
  console.log('Evidence current owner valid: '+area.fragments.length+' fragments still reach the decorator chain and '+retired.length+' unreachable overlays are provably inert against the '+ev.retirementGate+' gate; surviving analyzeTerminal corpus sha256 '+sha(JSON.stringify(live.results)).slice(0,16)+'.');
+
+ /* ---- v9.48 Evidence-chain restoration ------------------------------------- */
+ const restoreMeta=manifest.evidenceRestore;
+ assert(restoreMeta,'runtime manifest declares evidenceRestore metadata');
+ assert.strictEqual(restoreMeta.owner,'assets/intake-evidence-restore.js','the restoration owner is stable and non-versioned');
+ assert.strictEqual(restoreMeta.hookTarget,'OBOL_INTAKE_V21','the restoration re-homes onto the live decorator entry global');
+ assert.strictEqual(restoreMeta.restorationItem,ev.restorationItem,'restoration and retirement name the same follow-up defect item');
+ assert.deepStrictEqual(Array.from(restoreMeta.rehomedOverlays).slice().sort(),retired.slice().sort(),'the restoration re-homes exactly the four retired overlays');
+ assert(fs.existsSync(path.join(root,restoreMeta.owner)),'the restoration owner exists on disk');
+ assert(!manifest.scripts.includes(restoreMeta.owner),'the restoration owner is a current owner, not a frozen historical fragment');
+ assert(!area.fragments.includes(restoreMeta.owner),'the restoration owner is not smuggled into the exact Evidence bundle');
+ assert((manifest.lazy.evidenceRestore||[]).includes(restoreMeta.owner),'the restoration owner loads as its route-lazy current group');
+ for(const route of restoreMeta.routes){
+  const seq=manifest.routeLazy[route]||[];
+  assert(seq.includes('evidenceRestore'),route+' route must load the restoration group');
+  assert(seq.indexOf('evidenceRestore')>seq.indexOf('evidenceParsing'),route+' must load the restoration after the Evidence bundle so it wraps analyzeTerminal last');
+ }
+
+ /* Anti-regression: the four overlays broke because they decorated a global that never
+    published analyzeTerminal, so appending them left the live function untouched. Prove
+    (a) the corrected restoration owner DOES replace analyzeTerminal, and (b) the dead
+    intake-v7.7.js still cannot, which is exactly the bug the restoration corrects. */
+ const restoreReach=restoreReachability(area.fragments,restoreMeta.owner);
+ assert(restoreReach.mutatesAnalyze,'the restoration owner must replace OBOL_INTAKE_V21.analyzeTerminal — the step the broken subchain skipped');
+ assert.strictEqual(restoreReach.marker,'7.7-7.8-7.9-8.2','the restoration owner records which overlays it re-homed');
+ assert(restoreReach.publishesRestoreGlobal,'the restoration owner publishes OBOL_INTAKE_EVIDENCE_RESTORE');
+ const deadReach=restoreReachability(area.fragments,retired[0]);
+ assert(!deadReach.mutatesAnalyze,'the retired '+retired[0]+' still cannot decorate the live chain — it hooks a predecessor that never publishes analyzeTerminal');
+
+ /* Differential: the restoration must move observable Evidence for every re-homed
+    family, and only toward conservative outcomes with proof boundaries intact. */
+ const corpus=RESTORE_CASES.map(c=>c.text);
+ const preRestore=loadEvidenceRuntime(area.fragments,corpus);
+ const postRestore=loadEvidenceRuntime([...area.fragments,restoreMeta.owner],corpus);
+ assert(postRestore.globals.includes('OBOL_INTAKE_EVIDENCE_RESTORE'),'the restored runtime exposes the restoration global');
+ assert(!preRestore.globals.includes('OBOL_INTAKE_EVIDENCE_RESTORE'),'the pre-restore runtime does not expose the restoration global');
+ assert.notStrictEqual(sha(JSON.stringify(preRestore.results)),sha(JSON.stringify(postRestore.results)),'the restoration must change observable Evidence over the restoration corpus');
+ const families=new Set();
+ RESTORE_CASES.forEach((c,i)=>{
+  const acts=postRestore.results[i].activities||[];
+  const act=acts.find(a=>a.cardId===c.card);
+  assert(act,'restored Evidence for family v'+c.family+' owns card '+c.card+' for: '+c.text.split('\n')[0]);
+  assert.strictEqual(act.result,c.result,'restored '+c.card+' result');
+  for(const f of c.has)assert((act.outcomeFacts||[]).includes(f),'restored '+c.card+' must carry conservative fact '+f);
+  for(const f of c.forbid)assert(!(act.outcomeFacts||[]).includes(f),c.card+' must keep proof boundary — never assert '+f);
+  const before=(preRestore.results[i].activities||[]).find(a=>a.cardId===c.card);
+  assert(!before||JSON.stringify(before.outcomeFacts||[])!==JSON.stringify(act.outcomeFacts||[])||before.result!==act.result,'family v'+c.family+' Evidence was actually missing before the restoration');
+  families.add(c.family);
+ });
+ assert.strictEqual(families.size,4,'the restoration proof exercises all four re-homed overlay families');
+
+ console.log('Evidence chain restoration valid: the '+restoreMeta.owner+' current owner re-homes '+Array.from(restoreMeta.rehomedOverlays).length+' overlays onto '+restoreMeta.hookTarget+', decorates analyzeTerminal the broken subchain never touched, and restores conservative Evidence across '+families.size+' families with proof boundaries intact; restored corpus sha256 '+sha(JSON.stringify(postRestore.results)).slice(0,16)+'.');
 }
 
 if(require.main===module)main();
 
-module.exports={main,EVIDENCE_CORPUS,loadEvidenceRuntime,chainReachability};
+module.exports={main,EVIDENCE_CORPUS,RESTORE_CASES,loadEvidenceRuntime,chainReachability,restoreReachability};

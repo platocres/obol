@@ -54,7 +54,13 @@ for(const [name,count] of Object.entries({nmap:3,reportOverlays:14,toolReference
 // and must keep at least the vendor + patch + one parser fragment that make it a group.
 assert(manifest.lazy.evidenceParsing.length<=41,'evidenceParsing lazy group never regrows above its v9.9 reviewed ceiling');
 assert(manifest.lazy.evidenceParsing.length>=3,'evidenceParsing lazy group keeps its ingest helpers and at least one parser');
-assert.deepStrictEqual(Array.from(manifest.routeLazy.intake),['nmap','evidenceParsing']);
+// Demoted in v9.48: later releases may append route-lazy current owners to the
+// Evidence-bearing routes (v9.48 adds evidenceRestore after evidenceParsing to re-home
+// the restored Evidence chain). The durable v9.9 invariant is that the intake route
+// still loads nmap and then the Evidence bundle, in that order.
+const intakeRoute=Array.from(manifest.routeLazy.intake);
+assert(intakeRoute.includes('nmap')&&intakeRoute.includes('evidenceParsing'),'intake route still loads nmap and the Evidence bundle');
+assert(intakeRoute.indexOf('evidenceParsing')>intakeRoute.indexOf('nmap'),'intake route preserves nmap-before-Evidence order');
 assert.deepStrictEqual(Array.from(manifest.routeLazy.tools),['toolReferenceData']);
 assert.deepStrictEqual(Array.from(manifest.routeLazy.report),['reportOverlays']);
 assert(manifest.surfacePolicy.dashboard&&manifest.surfacePolicy.dashboard.policy,'Dashboard loading policy remains explicit while later current-owner compaction may strengthen it');
