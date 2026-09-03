@@ -47,7 +47,13 @@ assert.strictEqual(manifest.compatibility.historicalStyles.length,69,'historical
 // that reviewed ceiling or lose the original deferred groups.
 assert(manifest.startupScripts.length<=266,'current historical startup never regresses above the v9.9 266-script ceiling');
 assert(manifest.scripts.length-manifest.startupScripts.length>=61,'current runtime preserves at least the v9.9 61-script startup reduction');
-for(const [name,count] of Object.entries({evidenceParsing:41,nmap:3,reportOverlays:14,toolReferenceData:3}))assert.strictEqual(manifest.lazy[name].length,count,name+' lazy group retains reviewed cardinality');
+for(const [name,count] of Object.entries({nmap:3,reportOverlays:14,toolReferenceData:3}))assert.strictEqual(manifest.lazy[name].length,count,name+' lazy group retains reviewed cardinality');
+// Demoted in v9.44: the Evidence-parsing area is itself a compaction target, so its
+// cardinality is a one-way ratchet like the startup ceiling above — v9.44 retired four
+// unreachable Intake overlays (41 -> 37). It must never regrow above the v9.9 ceiling
+// and must keep at least the vendor + patch + one parser fragment that make it a group.
+assert(manifest.lazy.evidenceParsing.length<=41,'evidenceParsing lazy group never regrows above its v9.9 reviewed ceiling');
+assert(manifest.lazy.evidenceParsing.length>=3,'evidenceParsing lazy group keeps its ingest helpers and at least one parser');
 assert.deepStrictEqual(Array.from(manifest.routeLazy.intake),['nmap','evidenceParsing']);
 assert.deepStrictEqual(Array.from(manifest.routeLazy.tools),['toolReferenceData']);
 assert.deepStrictEqual(Array.from(manifest.routeLazy.report),['reportOverlays']);

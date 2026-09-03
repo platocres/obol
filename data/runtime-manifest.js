@@ -101,19 +101,38 @@ const retiredReleaseWaveOverlays=freeze([
  ...vr('assets/app-v',8,seq(0,7),'.js')
 ]);
 const groups=Object.freeze({domain:freeze(domain),vendor:freeze(vendor),core:freeze(core),nmap:freeze(nmap),report:freeze(report),appPrelude:freeze(appPrelude),intake:freeze(intake),app:freeze(app)});
+/* v9.44 Evidence-parsing retirement. The Intake chain is a decorator chain: every
+   overlay reads the analyzeTerminal already published on an earlier OBOL_INTAKE_*
+   global, wraps it, and writes the wrapper back. These four hook a predecessor that
+   never publishes analyzeTerminal — v7.6 and its peers publish helpers only and
+   decorate OBOL_INTAKE_V21 — so each returns at its own guard, publishes nothing,
+   and breaks the next link in turn. They cannot execute in any load order the
+   runtime produces. tools/validate-evidence-current-equivalence.js re-derives that
+   reachability from source and proves the retirement changes nothing observable.
+   The behavior they were written to add is not silently dropped: it is queued as
+   cc-evidence-chain-restore. */
+const retiredEvidenceOverlays=freeze(['assets/intake-v7.7.js','assets/intake-v7.8.js','assets/intake-v7.9.js','assets/intake-v8.2.js']);
+const liveIntake=freeze(intake.filter(src=>!retiredEvidenceOverlays.includes(src)));
 
 const lazy=Object.freeze({
  productHardening:freeze(['data/runtime-consolidation-current.js','data/current-release.js','data/product-hardening/product-hardening-queue.js','data/product-hardening/work-packages.js','data/note-integration.js','data/note-integration-reviews.js','data/note-integration-packets.js','data/product-hardening/note-progress-current.js','data/product-hardening/notes-impact-current.js','assets/product-hardening-dashboard.css','assets/product-hardening-dashboard.js','assets/workflow-current.js','assets/operator-route-current.css','assets/operator-route-current.js']),
  accessibility:freeze(['assets/accessibility.css','assets/accessibility.js']),
- evidenceParsing:freeze([...vendor,'assets/bh-v2-patch.js',...intake]),
+ evidenceParsing:freeze([...vendor,'assets/bh-v2-patch.js',...liveIntake]),
  nmap:freeze(nmap),
  reportOverlays:freeze(report.slice(1)),
  toolReferenceData:freeze(['data/wordlists.js','data/scripts.js','data/scripts-v2.5.js'])
 });
 const deferredScriptGroups=freeze(['evidenceParsing','nmap','reportOverlays','toolReferenceData']);
 const deferredScriptSet=new Set(deferredScriptGroups.flatMap(name=>lazy[name]||[]));
-const retiredStartupSet=new Set([...historicalDashboardData,...retiredDashboardPresentation,...retiredReleaseWaveOverlays]);
-const liveHistoricalStartup=freeze(scripts.filter(src=>!deferredScriptSet.has(src)&&!retiredStartupSet.has(src)));
+const retiredStartupScripts=freeze([...historicalDashboardData,...retiredDashboardPresentation,...retiredReleaseWaveOverlays]);
+/* Retirement is per ownership area, not per loading tier. Dashboard data, dashboard
+   presentation, and the stale-gated release-wave overlays left operator startup;
+   the unreachable Intake overlays left a route-lazy group. Both kinds are gone from
+   the live runtime and both stay in the frozen ledger, so the consolidation
+   projection counts them together. */
+const retiredScripts=freeze([...retiredStartupScripts,...retiredEvidenceOverlays]);
+const retiredSet=new Set(retiredScripts);
+const liveHistoricalStartup=freeze(scripts.filter(src=>!deferredScriptSet.has(src)&&!retiredSet.has(src)));
 const startupScripts=liveHistoricalStartup;
 const routeLazy=Object.freeze({
  home:freeze([]),
@@ -136,8 +155,8 @@ const surfacePolicy=Object.freeze({
  methodology:Object.freeze({policy:'semantic-current-owner-eager',owner:'assets/obol-domain-current.js',reason:'Methodology data drives Home and Next Steps ranking, so the semantic current-domain owner remains eager while the 103 versioned sources are retained only as the equivalence ledger.'}),
  toolLibrary:Object.freeze({policy:'route-lazy',owner:'toolReferenceData',reason:'Wordlist and script reference payloads are route-local and load when Tools is opened.'}),
  lineage:Object.freeze({policy:'shared-core-eager',owner:'core/app',reason:'Artifact and activity lineage participates in Evidence, recommendation, and reporting semantics across primary workflow routes.'}),
- historical:Object.freeze({policy:'compatibility-selective',owner:'scripts',reason:'The frozen historical script ledger remains available for fixtures/regression. Dashboard data/presentation owners, the stale-gated release-wave application overlays, and the domain and core fragment chains no longer execute directly in the current runtime; other compatibility layers stay live only until their current owner and equivalence proof exist.'}),
- evidence:Object.freeze({policy:'route-lazy',owner:'evidenceParsing',reason:'BloodHound helpers and versioned Evidence parser overlays load when Evidence/Artifacts is opened.'}),
+ historical:Object.freeze({policy:'compatibility-selective',owner:'scripts',reason:'The frozen historical script ledger remains available for fixtures/regression. Dashboard data/presentation owners, the stale-gated release-wave application overlays, the unreachable Evidence parser overlays, and the domain and core fragment chains no longer execute directly in the current runtime; other compatibility layers stay live only until their current owner and equivalence proof exist.'}),
+ evidence:Object.freeze({policy:'route-lazy+retired-unreachable-overlays',owner:'evidenceParsing',reason:'BloodHound helpers and the versioned Evidence parser overlays that still reach the decorator chain load when Evidence/Artifacts is opened. Four overlays that hook a predecessor global which never publishes analyzeTerminal are retired to the frozen ledger; conservative interpretation and proof boundaries are unchanged.'}),
  report:Object.freeze({policy:'route-lazy',owner:'reportOverlays',reason:'The stable base report owner stays eager; historical report overlays load on Report.'})
 });
 const bundleAreaGroups=Object.freeze({domain:['domain','vendor'],core:['core'],app:['report','appPrelude','intake','nmap','app']});
@@ -212,17 +231,36 @@ const coreCurrent=Object.freeze({
  generator:'tools/sync-core-current.js',
  equivalenceValidator:'tools/validate-core-current-equivalence.js'
 });
+/* The Evidence area stays an exact ordered concatenation of the fragments that can
+   still reach the decorator chain. v9.44 flattened it the same way v9.43 flattened
+   the application area — by proving supersession rather than re-authoring parser
+   code — so conservative interpretation, proof boundaries, and report lineage are
+   untouched. The retirement gate is reachability: an overlay whose hook target never
+   publishes analyzeTerminal returns at its guard and publishes nothing. */
+const evidenceCurrent=Object.freeze({
+ owner:'assets/obol-evidence-current.js',
+ strategy:'ordered-fragment-concatenation',
+ sourceRelease:'v9.44',
+ historicalFragments:bundleAreas.find(area=>area.id==='evidenceParsing').fragments,
+ retiredFragments:retiredEvidenceOverlays,
+ retirementGate:'analyzeTerminal',
+ chainEntryOwner:'OBOL_INTAKE_V21',
+ lastReachableOverlay:'assets/intake-v7.6.js',
+ generator:'tools/sync-runtime-bundles.js',
+ equivalenceValidator:'tools/validate-evidence-current-equivalence.js',
+ restorationItem:'cc-evidence-chain-restore'
+});
 
 const performance=Object.freeze({
  baseline:Object.freeze({historicalScripts:327,historicalStyles:69}),
- startup:Object.freeze({historicalScripts:liveHistoricalStartup.length,compatibilityPreludeScripts:startupPreludeScripts.length,totalScripts:startupPreludeScripts.length+liveHistoricalStartup.length,consolidatedStartupRequests:startupPreludeScripts.length+startupBundleScripts.length,startupBundles:startupBundleScripts.length,currentOwnerScripts:currentScripts.length,maxHistoricalScripts:215,minDeferredHistoricalScripts:61,retiredDashboardDataScripts:historicalDashboardData.length,retiredDashboardPresentationScripts:retiredDashboardPresentation.length,retiredReleaseWaveScripts:retiredReleaseWaveOverlays.length}),
+ startup:Object.freeze({historicalScripts:liveHistoricalStartup.length,compatibilityPreludeScripts:startupPreludeScripts.length,totalScripts:startupPreludeScripts.length+liveHistoricalStartup.length,consolidatedStartupRequests:startupPreludeScripts.length+startupBundleScripts.length,startupBundles:startupBundleScripts.length,currentOwnerScripts:currentScripts.length,maxHistoricalScripts:215,minDeferredHistoricalScripts:61,retiredDashboardDataScripts:historicalDashboardData.length,retiredDashboardPresentationScripts:retiredDashboardPresentation.length,retiredReleaseWaveScripts:retiredReleaseWaveOverlays.length,retiredEvidenceOverlayScripts:retiredEvidenceOverlays.length}),
  styleRequests:Object.freeze({currentOwner:1,historicalFragments:historicalStyles.length}),
  consolidation:Object.freeze({bundleAreas:bundleAreas.length,startupAreas:startupBundleScripts.length,lazyAreas:bundleAreas.length-startupBundleScripts.length,consolidatedFragments:bundleAreas.reduce((n,area)=>n+area.fragments.length,0)}),
  requiredDeferredGroups:deferredScriptGroups
 });
 
 return Object.freeze({
- schemaVersion:'1.11.0',
+ schemaVersion:'1.12.0',
  styles:freeze(styles),
  scripts:freeze(scripts),
  startupPreludeScripts,
@@ -232,7 +270,10 @@ return Object.freeze({
  historicalDashboardData,
  retiredDashboardPresentation,
  retiredReleaseWaveOverlays,
- retiredStartupScripts:freeze([...historicalDashboardData,...retiredDashboardPresentation,...retiredReleaseWaveOverlays]),
+ retiredEvidenceOverlays,
+ retiredStartupScripts,
+ retiredRouteLazyScripts:retiredEvidenceOverlays,
+ retiredScripts,
  groups,
  node:Object.freeze({data:freeze(['data/dashboard-compat-current.js',domainCurrent.owner]),historicalData:historicalNodeData,core:freeze([coreCurrent.owner]),historicalCore:groups.core}),
  lazy,
@@ -240,6 +281,7 @@ return Object.freeze({
  domainCurrent,
  coreCurrent,
  appCurrent,
+ evidenceCurrent,
  startupBundleScripts,
  lazyBundles,
  deferredScriptGroups,

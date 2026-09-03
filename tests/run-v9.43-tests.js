@@ -138,14 +138,18 @@ test('v9.43 browser-level DOM equivalence is wired into browser smoke',()=>{
 test('v9.43 runtime projection, dashboard, and README report the retirement',()=>{
  assert.deepStrictEqual(Array.from(consolidation.validate()),[],'runtime consolidation projection validates');
  const p=consolidation.projection();
- assert.strictEqual(p.consolidatedFragments,276,'projection accounts for the live runtime ownership areas after retirement');
+ /* Demoted in v9.44: later releases retire fragments out of the live areas, so the
+    aggregate current-projection figures become one-way ratchets. v9.43's own durable
+    contract is the application area — 43 exact-owned survivors and 21 retired
+    release-wave overlays — which is asserted exactly in the retirement test above. */
+ assert(p.consolidatedFragments<=276,'projection never regrows the live runtime ownership areas after the v9.43 retirement');
  assert.strictEqual(p.flattenedHistoricalFragments,172,'domain and core stay semantically flattened');
- assert.strictEqual(p.liveHistoricalFragments,104,'projection counts the remaining exact-owned historical fragments');
+ assert(p.liveHistoricalFragments<=104,'projection never regrows the exact-owned historical fragment count');
  assert.strictEqual(p.liveStartupHistoricalFragments,43,'projection counts only the surviving application fragments as exact-owned startup runtime');
- assert.strictEqual(p.retiredFragments,51,'projection counts the grown retired ledger');
+ assert(p.retiredFragments>=51,'the retired ledger never shrinks below the v9.43 retirement');
  assert.strictEqual(p.flattenedHistoricalFragments+p.liveHistoricalFragments+p.retiredFragments,p.ledgerFragments,'all frozen fragments are flattened, exact-owned, or retired');
  const readme=read('README.md');
- assert(readme.includes('**Current runtime ownership areas:** 7 owners account for 276 historical fragments — 172 semantically flattened, 104 still exact-owned; 51 fragments stay retired in the frozen ledger.'),'README Product Build Next reports the retirement');
+ assert(/\*\*Current runtime ownership areas:\*\* 7 owners account for \d+ historical fragments — 172 semantically flattened, \d+ still exact-owned; \d+ fragments stay retired in the frozen ledger\./.test(readme),'README Product Build Next reports semantic flattening plus retirement');
  assert(readme.includes('Report base and application UI (43, ordered-fragment-concatenation)'),'README reports the post-retirement application owner');
 });
 
@@ -159,8 +163,11 @@ test('v9.43 queue and item contract close runtime-app-flattening',()=>{
  const rec=packages.recommend(q);
  assert(rec&&rec.id==='runtime-layer-consolidation','remaining runtime flattening stays the recommended work package');
  assert(!rec.liveItems.some(item=>item.id==='runtime-app-flattening'),'completed application flattening is not still listed as live work');
- assert(rec.entryItem&&rec.entryItem.id==='runtime-evidence-flattening','Evidence parsing flattening becomes the next package entry');
- for(const id of ['runtime-evidence-flattening','runtime-style-flattening'])assert(q.items.find(item=>item.id===id&&item.status==='queued'),id+' remains queued as its own pass');
+ /* Demoted in v9.44: which flattening item is the next entry is a live-current fact
+    that later releases advance. v9.43's durable contract is that the application
+    retirement is done and the package keeps burning down remaining flattening work. */
+ assert(rec.entryItem&&rec.entryItem.id!=='runtime-app-flattening','the completed application flattening is no longer the package entry');
+ assert(rec.liveItems.some(item=>/^runtime-.*-flattening$/.test(item.id)),'the package keeps at least one queued runtime flattening pass');
 });
 
 test('v9.43 validators prove the retirement and the untouched areas together',()=>{

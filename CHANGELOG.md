@@ -6,7 +6,12 @@ The README is intentionally reserved for current product purpose, permanent oper
 
 ## v9.44 — Evidence parsing ownership area flattening
 
-- Release scaffold. The Evidence parsing flattening narrative is written on this release head.
+- Retired four Intake parser overlays (`assets/intake-v7.7.js`, `assets/intake-v7.8.js`, `assets/intake-v7.9.js`, `assets/intake-v8.2.js`) from the live runtime, shrinking the route-lazy Evidence ownership area from 41 exact-owned fragments to 37 while keeping every retired file in the frozen historical ledger. `assets/obol-evidence-current.js` drops from ~355 KB to ~339 KB, so the first Evidence/Artifacts open parses ~16 KB less JavaScript.
+- These four were not superseded, they were dead code: `intake-v7.7.js` hooks `OBOL_INTAKE_V76`, which only ever publishes helpers, so its `!T.analyzeTerminal` guard returns and the chain breaks for the three overlays after it. They never ran in production in any load order the runtime produces.
+- Added `tools/validate-evidence-current-equivalence.js`, which proves the retirement two independent ways: a reachability pass executes the whole frozen Intake chain and confirms the four retired overlays never publish their global or touch `OBOL_INTAKE_V21.analyzeTerminal`; a differential pass builds the Evidence runtime from the frozen and surviving fragment sets and requires byte-identical globals and `analyzeTerminal` output over a fixed operator corpus.
+- Filed `cc-evidence-chain-restore` (critical correctness): the Evidence the four overlays were written to add — no-credentials poisoning/coercion beyond v7.6, relay-SOCKS, WebDAV coercion, Windows local-exploit, and offline-cracking Evidence — never reached production because of the broken link, so it is tracked as its own defect rather than silently written off.
+- Exported the equivalence helpers (`chainReachability`, `loadEvidenceRuntime`) so `tests/run-v9.44-tests.js` can drive the proof with mutated inputs — an unreachable-marked overlay and a dropped reachable overlay — and require it to reveal the difference, without editing a tracked file the concurrent historical-contract runner would observe.
+- Updated the runtime manifest, consolidation projection, dashboard matrix, and README so the retired ledger reports 55 fragments and the Evidence owner reports its post-retirement fragment count.
 
 ## v9.43 — Application ownership area flattening
 
