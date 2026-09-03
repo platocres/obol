@@ -120,6 +120,24 @@ async function installDashboardPaintObserver(page) {
         const oldOwner = await page.locator('[data-product-dashboard-owner]:not([data-product-dashboard-owner="current"])').count();
         if (oldOwner) routeFailures.push('dashboard retained a non-current dashboard owner after render');
 
+        // The README block is validated against the same projection offline, so proving the
+        // rendered dashboard matches it here is what keeps the two surfaces in sync.
+        const consolidation = await page.evaluate(() => {
+          const owner = window.OBOL_RUNTIME_CONSOLIDATION;
+          const projected = owner && typeof owner.projection === 'function' ? owner.projection() : null;
+          const head = [...document.querySelectorAll('.ph-bar-head')].find(node => /Operator startup requests/.test(node.textContent || ''));
+          const value = head && head.querySelector('b');
+          return {
+            projected: projected ? String(projected.startupRequests.after) : '',
+            rendered: value ? (value.textContent || '').trim() : '',
+            areas: projected ? projected.areas.length : 0,
+            renderedAreas: document.querySelectorAll('.ph-detail table.ph-table tr td code').length
+          };
+        });
+        if (!consolidation.projected) routeFailures.push('dashboard did not load the runtime consolidation projection');
+        else if (consolidation.rendered !== consolidation.projected) routeFailures.push('dashboard startup-request figure "' + consolidation.rendered + '" does not match the shared projection "' + consolidation.projected + '"');
+        if (consolidation.areas && consolidation.renderedAreas < consolidation.areas) routeFailures.push('dashboard rendered ' + consolidation.renderedAreas + ' consolidated owners, projection declares ' + consolidation.areas);
+
         const paints = await page.evaluate(() => window.__OBOL_DASHBOARD_PAINTS__ || []);
         const meaningful = paints.filter(paint => paint.owner || /dashboard|product hardening|build next|orange|source depth/i.test(paint.text));
         if (!meaningful.length) routeFailures.push('dashboard paint observer captured no meaningful dashboard render');

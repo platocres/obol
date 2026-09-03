@@ -66,6 +66,20 @@ The exact-head preservation gate completed successfully after physical compactio
 
 The Product Hardening Dashboard exposes this state directly: current script counts, zero live historical Dashboard-data owners, real-browser proof status, the runtime queue, and an ownership-area retirement matrix for Dashboard, Home/Path, Tool Builders, Evidence, Reports, and CSS.
 
+## Consolidated ownership in v9.40
+
+Dashboard retirement removed layers. v9.40 does something different and complementary: it stops the *remaining* layers from costing one request each.
+
+Every ownership area now resolves to one stable, non-versioned owner that is the exact ordered concatenation of its fragments — 103 domain, 69 core, 64 application, and 61 route-lazy fragments behind seven owners — plus a flattened stylesheet cascade. Operator startup drops from 307 requests to 5. Measured in Chromium: Home 321→19, Next Steps 329→27, Evidence 365→21, Report 335→20.
+
+This is deliberately the *safe* half of compaction. Concatenation preserves behavior exactly, which is why it can ship ahead of per-area semantic work:
+
+- `tools/sync-runtime-bundles.js` generates the owners from the manifest.
+- `tools/validate-runtime-bundles.js` proves exact concatenation, rules out strict-mode prologue leakage and ASI fusion across fragment boundaries, checks parse isolation, and diffs the global surface produced by the fragment chain against the bundle chain in isolated VM contexts.
+- `tests/playwright-smoke.js` enforces a per-route request ceiling and fails when any historical fragment is fetched directly. The gate was verified against the pre-consolidation runtime, where every route fails.
+
+**Consolidation is not retirement.** The owners still concatenate 297 versioned fragments that override each other, and the frozen ledger is untouched. Product Build Next therefore leads with one queued flattening item per ownership area — domain, core, application, Evidence parsing, and stylesheet. Each is a separate pass with its own equivalence, workspace-migration, and test-retirement proof. Do not flatten two areas at once: their migration surfaces are unrelated, and a combined pass cannot be rolled back cleanly.
+
 ## Dependency and equivalence audits
 
 `node tools/audit-dashboard-runtime-dependencies.js` inventories every historical `data/dashboard-v*.js` file that participates in live startup, the `OBOL_DASHBOARD_*` globals it exports, live startup consumers of those globals, and detected domain-mutation signals inside the file.

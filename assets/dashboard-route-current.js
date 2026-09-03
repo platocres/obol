@@ -15,6 +15,8 @@ const INSTANCE=Date.now().toString(36)+'-'+Math.random().toString(36).slice(2,8)
 root.__OBOL_CURRENT_DASHBOARD_ROUTE_INSTANCE__=INSTANCE;
 const PRODUCT_STYLE='assets/product-hardening-dashboard.css';
 const PRODUCT_SCRIPTS=[
+ 'data/runtime-manifest.js',
+ 'data/runtime-consolidation-current.js',
  'data/current-release.js',
  'data/product-hardening/product-hardening-queue.js',
  'data/product-hardening/work-packages.js',
@@ -35,6 +37,8 @@ function reviewSchemaAtLeast(major,minor){
  return currentMajor>major||(currentMajor===major&&currentMinor>=minor);
 }
 const READY={
+ 'data/runtime-manifest.js':()=>!!root.OBOL_RUNTIME_MANIFEST,
+ 'data/runtime-consolidation-current.js':()=>!!root.OBOL_RUNTIME_CONSOLIDATION,
  'data/current-release.js':()=>!!(root.OBOL_CURRENT_RELEASE&&root.OBOL_RELEASE_IDENTITY),
  'data/product-hardening/product-hardening-queue.js':()=>!!root.OBOL_PRODUCT_HARDENING,
  'data/product-hardening/work-packages.js':()=>!!root.OBOL_PRODUCT_HARDENING_WORK_PACKAGES,

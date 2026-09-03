@@ -14,6 +14,8 @@ const notePacketsFile = path.join(root, 'data', 'note-integration-packets.js');
 const noteBackfillFile = path.join(root, 'data', 'product-hardening', 'note-mechanic-backfill-v9.38.js');
 const noteProgressFile = path.join(root, 'data', 'product-hardening', 'note-progress-current.js');
 const noteImpactFile = path.join(root, 'data', 'product-hardening', 'notes-impact-current.js');
+const runtimeManifestFile = path.join(root, 'data', 'runtime-manifest.js');
+const runtimeConsolidationFile = path.join(root, 'data', 'runtime-consolidation-current.js');
 const readmeFile = path.join(root, 'README.md');
 const sandbox = { window: {}, globalThis: null };
 sandbox.globalThis = sandbox.window;
@@ -27,10 +29,14 @@ if (fs.existsSync(notePacketsFile)) vm.runInContext(fs.readFileSync(notePacketsF
 if (fs.existsSync(noteBackfillFile)) vm.runInContext(fs.readFileSync(noteBackfillFile, 'utf8'), sandbox, { filename: noteBackfillFile });
 if (fs.existsSync(noteProgressFile)) vm.runInContext(fs.readFileSync(noteProgressFile, 'utf8'), sandbox, { filename: noteProgressFile });
 if (fs.existsSync(noteImpactFile)) vm.runInContext(fs.readFileSync(noteImpactFile, 'utf8'), sandbox, { filename: noteImpactFile });
+vm.runInContext(fs.readFileSync(runtimeManifestFile, 'utf8'), sandbox, { filename: runtimeManifestFile });
+vm.runInContext(fs.readFileSync(runtimeConsolidationFile, 'utf8'), sandbox, { filename: runtimeConsolidationFile });
 
 const q = sandbox.window.OBOL_PRODUCT_HARDENING;
 const workPackages = sandbox.window.OBOL_PRODUCT_HARDENING_WORK_PACKAGES;
 const noteImpact = sandbox.window.OBOL_PRODUCT_HARDENING_NOTES_IMPACT;
+const runtimeConsolidation = sandbox.window.OBOL_RUNTIME_CONSOLIDATION;
+if (!runtimeConsolidation) throw new Error('Runtime consolidation projection not exposed');
 if (!q) throw new Error('Product-hardening queue not exposed');
 if (!workPackages) throw new Error('Product-hardening work-package metadata not exposed');
 const packageFailures = workPackages.validate(q);
@@ -39,6 +45,8 @@ if (noteImpact) {
   const failures = noteImpact.validate();
   if (failures.length) throw new Error('Invalid notes-impact projection:\n- ' + failures.join('\n- '));
 }
+const runtimeFailures = runtimeConsolidation.validate();
+if (runtimeFailures.length) throw new Error('Invalid runtime-consolidation projection:\n- ' + runtimeFailures.join('\n- '));
 
 function packageLines() {
   const rec = workPackages.recommend(q);
@@ -76,6 +84,20 @@ function noteImpactLines() {
   ];
 }
 
+function runtimeConsolidationLines() {
+  const p = runtimeConsolidation.projection();
+  if (!p) return [];
+  const startup = p.areas.filter(area => area.scope === 'startup');
+  const lazy = p.areas.filter(area => area.scope === 'lazy');
+  return [
+    '**Runtime consolidation:** ' + p.startupRequests.after + ' operator startup requests, down from ' + p.startupRequests.before + ' (' + p.startupRequests.reductionPct + '% fewer).',
+    '**Consolidated ownership areas:** ' + p.areas.length + ' owners hold ' + p.consolidatedFragments + ' historical fragments — ' + startup.length + ' startup, ' + lazy.length + ' route-lazy; ' + p.retiredFragments + ' fragments stay retired in the frozen ledger.',
+    '**Runtime area owners:** ' + p.areas.map(area => area.label + ' (' + area.fragments + ')').join(' · ') + '.',
+    '**Measured in Chromium (' + p.measured.release + '):** ' + p.measured.routes.map(route => route.label + ' ' + route.before + '→' + route.after).join(' · ') + ' JavaScript/CSS requests.',
+    '**Runtime compaction contract:** `docs/RUNTIME-COMPACTION.md`.'
+  ];
+}
+
 function block() {
   const totals = q.totals();
   const tracks = q.trackSummary();
@@ -84,10 +106,12 @@ function block() {
     '<!-- OBOL-PRODUCT-BUILD-NEXT:START -->',
     'This block is generated from `data/product-hardening/product-hardening-queue.js`. Do not edit it manually.',
     'Recommended work-package metadata comes from `data/product-hardening/work-packages.js`.',
+    'Runtime consolidation figures come from `data/runtime-consolidation-current.js`, the same projection the Product Hardening Dashboard renders.',
     '',
     '**Current product-hardening queue:** ' + totals.complete + '/' + totals.total + ' complete (' + totals.pct + '%), ' + totals.queued + ' queued, ' + totals.modeled + ' foundation items modeled.',
     '**Private notes source:** `' + q.notes.privateRepo + '` — ' + totals.notes + ' notes and ' + totals.resources + ' embedded resources accounted.',
     ...noteImpactLines(),
+    ...runtimeConsolidationLines(),
     '',
     ...packageLines(),
     '',
