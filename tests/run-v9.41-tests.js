@@ -79,11 +79,10 @@ test('v9.41 queue and item contract close runtime-domain-flattening',()=>{
  const item=q.items.find(item=>item.id==='runtime-domain-flattening');
  assert(item&&item.status==='complete','runtime-domain-flattening is complete');
  assert(contracts.contracts['runtime-domain-flattening'],'runtime-domain-flattening has an item-specific test contract');
- const rec=packages.recommend(q);
- assert(rec&&rec.id==='runtime-layer-consolidation','remaining runtime flattening stays the recommended work package');
- assert(!rec.liveItems.some(item=>item.id==='runtime-domain-flattening'),'completed domain flattening is not still listed as live work');
- /* Demoted in v9.43: these areas are flattened one release at a time, so v9.41 owns
-    only that each stays tracked as its own pass, not that it is still unstarted. */
+ const pkg=packages.packageForItem('runtime-domain-flattening');
+ assert(pkg&&pkg.id==='runtime-layer-consolidation','domain flattening stays attributed to the runtime consolidation package');
+ // The package recommendation is live-current and may advance once every remaining pass
+ // completes. v9.41 owns the completed domain pass and durable package membership only.
  for(const id of ['runtime-app-flattening','runtime-evidence-flattening','runtime-style-flattening'])assert(q.items.find(item=>item.id===id&&['queued','complete'].includes(item.status)),id+' remains tracked as a separate pass');
 });
 
