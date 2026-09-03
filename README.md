@@ -62,15 +62,7 @@ Pinned Orange Cyber Defense mind map provenance remains `https://orange-cyberdef
 
 Product Build Next is the only active development queue. Its atomic item source of truth is `data/product-hardening/product-hardening-queue.js`; coherent multi-item package metadata lives in `data/product-hardening/work-packages.js`. The README and Product Hardening Dashboard consume both so the highest-priority item remains the entry point while agents are encouraged to burn down a meaningful same-ownership work package rather than nibbling one checkbox at a time.
 
-The 556-note disposition item is an umbrella requirement, not permission to perform anonymous review waves forever. Notes work should be organized as coherent subject packets and reported through the notes-to-product impact projection so the dashboard shows what was learned, where guidance is bound, what product mechanics actually changed, and what gaps remain.
-
-Historical runtime layers are explicit product debt, not permanent architecture. The current Dashboard owns its route and paint, proven historical Dashboard data/presentation owners are out of live startup, and remaining runtime areas should follow the same current-owner, equivalence, fixture, live-layer removal, and obsolete-test-retirement lifecycle.
-
-Path, Card, and Tools use a stable current operator-route owner. Path presents a compact decision screen, while Card/Tools keep guided builders first and fold raw historical command blocks behind supporting detail.
-
-Notes Integration uses themed packets under the 556-note umbrella. Completed packets cover web upload/file inclusion, XSS/session behavior, credentials/authentication, and Windows privilege escalation; Linux privilege escalation and AD/pivoting remain live. The dashboard and generated Product Build Next block project the same current ledger and note-to-product impact state.
-
-The completed Orange methodology/source queue is historical, regression-protected baseline material. Do not reopen it unless a real defect is found or the pinned upstream source is deliberately repinned. Detailed Orange accounting belongs in the North Star/source-depth docs above, not in this README.
+Queue tracks, work-package rules, notes-integration policy, and runtime-compaction status live in [`docs/PRODUCT-HARDENING.md`](docs/PRODUCT-HARDENING.md); the completed Orange methodology/source accounting is regression-protected baseline in [`docs/NORTH-STAR.md`](docs/NORTH-STAR.md).
 
 ### Product Build Next
 
