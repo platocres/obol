@@ -120,7 +120,16 @@ test('v9.40 release contract accepts documented working-branch releases and stil
   fs.writeFileSync(file,JSON.stringify({pull_request:{number:1,html_url:'https://example.invalid/pr/1',title,head:{ref:head},base:{ref:'main'},body}}));
   return file;
  };
- const run=file=>cp.spawnSync(process.execPath,[path.join(root,'tools','validate-release-pr.js')],{cwd:root,encoding:'utf8',env:Object.assign({},process.env,{GITHUB_EVENT_NAME:'pull_request',GITHUB_EVENT_PATH:file})});
+ // This test owns the release-PR metadata contract, not open-PR uniqueness. Uniqueness
+ // reaches the GitHub API and compares against whatever PRs are open right now, so under
+ // Actions it would judge these synthetic payloads against the live repository. Dropping
+ // GITHUB_REPOSITORY makes it self-skip, keeping the test hermetic on any machine.
+ const run=file=>{
+  const env=Object.assign({},process.env,{GITHUB_EVENT_NAME:'pull_request',GITHUB_EVENT_PATH:file});
+  delete env.GITHUB_REPOSITORY;
+  delete env.GITHUB_TOKEN;
+  return cp.spawnSync(process.execPath,[path.join(root,'tools','validate-release-pr.js')],{cwd:root,encoding:'utf8',env});
+ };
 
  for(const [label,title,head] of [
   ['working branch with a Release title','Release v'+version+': consolidation','claude/eloquent-gates-o83xnx'],
