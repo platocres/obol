@@ -21,7 +21,10 @@ jobs:
           fetch-depth: 0
 
       - name: Apply v9.46 changes
-        run: node tools/apply-v946-release.js
+        run: |
+          node tools/fix-apply-v946.js
+          node tools/apply-v946-release.js
+          rm -f tools/fix-apply-v946.js
 
       - name: Commit generated release
         run: |
