@@ -70,15 +70,17 @@ The Product Hardening Dashboard exposes this state directly: current script coun
 
 Dashboard retirement removed layers. v9.40 does something different and complementary: it stops the *remaining* layers from costing one request each.
 
-Every ownership area now resolves to one stable, non-versioned owner that is the exact ordered concatenation of its fragments — 103 domain, 69 core, 64 application, and 61 route-lazy fragments behind seven owners — plus a flattened stylesheet cascade. Operator startup drops from 307 requests to 5. Measured in Chromium: Home 321→19, Next Steps 329→27, Evidence 365→21, Report 335→20.
+Every ownership area now resolves to one stable, non-versioned owner — 103 domain, 69 core, 64 application, and 61 route-lazy fragments behind seven owners — plus a flattened stylesheet cascade. v9.41 makes the first semantic cut: the 103 domain fragments no longer execute directly in the current runtime and are represented by `assets/obol-domain-current.js`, an authored graph snapshot proven equivalent to the frozen ledger. Operator startup remains 5 requests, down from 307. Measured in Chromium: Home 321→19, Next Steps 329→27, Evidence 365→21, Report 335→20.
 
-This is deliberately the *safe* half of compaction. Concatenation preserves behavior exactly, which is why it can ship ahead of per-area semantic work:
+Request consolidation shipped first because exact concatenation preserved behavior while reducing fetch count. The current proof chain is now split by owner strategy:
 
-- `tools/sync-runtime-bundles.js` generates the owners from the manifest.
-- `tools/validate-runtime-bundles.js` proves exact concatenation, rules out strict-mode prologue leakage and ASI fusion across fragment boundaries, checks parse isolation, and diffs the global surface produced by the fragment chain against the bundle chain in isolated VM contexts.
+- `tools/sync-domain-current.js` generates the semantic domain owner from the historical domain ledger.
+- `tools/validate-domain-current-equivalence.js` proves the same `OBOL_*` root order, graph topology, shared identities, cycles, mutability flags, RegExp metadata, function signatures, and authored function behavior.
+- `tools/sync-runtime-bundles.js` generates the remaining exact-concatenation owners from the manifest.
+- `tools/validate-runtime-bundles.js` proves exact concatenation for those owners, rules out strict-mode prologue leakage and ASI fusion across fragment boundaries, checks parse isolation, and diffs the current-domain-plus-core fragment chain against the current-domain-plus-core owner chain in isolated VM contexts.
 - `tests/playwright-smoke.js` enforces a per-route request ceiling and fails when any historical fragment is fetched directly. The gate was verified against the pre-consolidation runtime, where every route fails.
 
-**Consolidation is not retirement.** The owners still concatenate 297 versioned fragments that override each other, and the frozen ledger is untouched. Product Build Next therefore leads with one queued flattening item per ownership area — domain, core, application, Evidence parsing, and stylesheet. Each is a separate pass with its own equivalence, workspace-migration, and test-retirement proof. Do not flatten two areas at once: their migration surfaces are unrelated, and a combined pass cannot be rolled back cleanly.
+**Consolidation is not automatic retirement.** The frozen ledger is untouched. Current accounting is 103 domain fragments semantically flattened, 194 fragments still executing through exact owners, and 30 Dashboard fragments retired to fixtures. Product Build Next therefore leads with the next queued flattening item per remaining ownership area — core, application, Evidence parsing, and stylesheet. Each is a separate pass with its own equivalence, workspace-migration, and test-retirement proof. Do not flatten two areas at once: their migration surfaces are unrelated, and a combined pass cannot be rolled back cleanly.
 
 ## Dependency and equivalence audits
 

@@ -1,22 +1,14 @@
 'use strict';
 
 /*
- * Proves that the consolidated runtime bundles are behavior-preserving replacements
- * for the historical fragment chain.
+ * Proves that the current runtime owners declared in data/runtime-manifest.js are
+ * safe replacements for the historical fragment chain.
  *
- * Concatenating classic scripts is only safe if three hazards are ruled out:
- *
- *   1. a fragment carrying a "use strict" prologue would silently apply strict mode
- *      to every fragment after it in the same file;
- *   2. automatic semicolon insertion can fuse the end of one fragment to the start of
- *      the next (`foo()` + `(function(){…})()` parses as a single call);
- *   3. separate <script> tags isolate load-time errors from each other; one bundle
- *      does not.
- *
- * This validator checks all three, proves each bundle is the exact ordered
- * concatenation of its declared fragments, and — for the two ownership areas Node can
- * execute headlessly — runs the fragment chain and the bundle chain in isolated VM
- * contexts and diffs the resulting global surface.
+ * v9.41 has two strategies:
+ *   - semantic-snapshot: the domain graph is authored by tools/sync-domain-current.js
+ *     and proven by tools/validate-domain-current-equivalence.js;
+ *   - ordered-fragment-concatenation: every other area remains a pure generated
+ *     concatenation with explicit separators.
  */
 
 const assert=require('assert');
@@ -33,23 +25,30 @@ const read=rel=>fs.readFileSync(path.join(root,rel),'utf8').replace(/\r\n/g,'\n'
 const sha=value=>crypto.createHash('sha256').update(value).digest('hex');
 
 const areas=manifest.bundles.areas;
-assert(Array.isArray(areas)&&areas.length===7,'runtime manifest declares every consolidated ownership area');
-assert.strictEqual(manifest.bundles.schema,'ordered-fragment-concatenation','bundles stay pure ordered concatenations rather than rewritten builds');
-assert.strictEqual(manifest.bundles.separator,'\n;\n','bundle separator terminates each fragment so ASI cannot fuse two fragments');
+assert(Array.isArray(areas)&&areas.length===7,'runtime manifest declares every current ownership area');
+assert.strictEqual(manifest.bundles.schema,'per-area-current-owner','runtime bundles declare per-area owner strategies');
+assert.strictEqual(manifest.bundles.separator,'\n;\n','bundle separator terminates each exact-concatenation fragment so ASI cannot fuse two fragments');
+
+const exactAreas=areas.filter(area=>(area.strategy||'ordered-fragment-concatenation')==='ordered-fragment-concatenation');
+const semanticAreas=areas.filter(area=>area.strategy==='semantic-snapshot');
+assert.strictEqual(semanticAreas.length,1,'v9.41 has exactly one semantic runtime area');
+assert.strictEqual(semanticAreas[0].id,'domain','the domain area is the semantic runtime owner');
+assert.strictEqual(exactAreas.length,6,'the remaining runtime areas stay exact ordered concatenations');
 
 /* ---- ownership coverage ------------------------------------------------- */
 
 const seen=new Map();
 for(const area of areas){
- assert(area.id&&area.owner&&area.label&&area.description,'bundle area declares full identity: '+area.id);
- assert(['startup','lazy'].includes(area.scope),'bundle area declares a runtime scope: '+area.id);
- assert(area.fragments.length,'bundle area owns at least one historical fragment: '+area.id);
- assert(fs.existsSync(path.join(root,area.owner)),'generated bundle owner exists: '+area.owner);
- assert(!manifest.scripts.includes(area.owner),'a consolidated owner must not be smuggled into the frozen historical ledger: '+area.owner);
+ assert(area.id&&area.owner&&area.label&&area.description,'runtime area declares full identity: '+area.id);
+ assert(['startup','lazy'].includes(area.scope),'runtime area declares a runtime scope: '+area.id);
+ assert(['semantic-snapshot','ordered-fragment-concatenation'].includes(area.strategy),'runtime area declares a known owner strategy: '+area.id);
+ assert(area.fragments.length,'runtime area owns at least one historical fragment: '+area.id);
+ assert(fs.existsSync(path.join(root,area.owner)),'current runtime owner exists: '+area.owner);
+ assert(!manifest.scripts.includes(area.owner),'a current owner must not be smuggled into the frozen historical ledger: '+area.owner);
  for(const rel of area.fragments){
-  assert(manifest.scripts.includes(rel),'bundled fragment stays traceable to the frozen historical ledger: '+rel);
-  assert(fs.existsSync(path.join(root,rel)),'bundled fragment remains on disk as the regression ledger: '+rel);
-  assert(!seen.has(rel),'fragment '+rel+' is owned by two bundles: '+seen.get(rel)+' and '+area.id);
+  assert(manifest.scripts.includes(rel),'owned fragment stays traceable to the frozen historical ledger: '+rel);
+  assert(fs.existsSync(path.join(root,rel)),'owned fragment remains on disk as the regression ledger: '+rel);
+  assert(!seen.has(rel),'fragment '+rel+' is owned by two runtime owners: '+seen.get(rel)+' and '+area.id);
   seen.set(rel,area.id);
  }
 }
@@ -59,33 +58,46 @@ const lazyAreas=areas.filter(area=>area.scope==='lazy');
 assert.deepStrictEqual(
  startupAreas.flatMap(area=>area.fragments),
  Array.from(manifest.startupScripts),
- 'startup bundles reproduce the historical startup chain in exact order with nothing added or dropped'
+ 'startup owners account for the historical startup chain in exact order'
 );
-assert.deepStrictEqual(startupAreas.map(area=>area.owner),Array.from(manifest.startupBundleScripts),'startup bundle load order follows the declared ownership areas');
+assert.deepStrictEqual(startupAreas.map(area=>area.owner),Array.from(manifest.startupBundleScripts),'startup owner load order follows the declared ownership areas');
 for(const area of lazyAreas){
- assert.deepStrictEqual(area.fragments,Array.from(manifest.lazy[area.id]),'lazy bundle '+area.id+' reproduces its route-deferred group exactly');
- assert.strictEqual(manifest.lazyBundles[area.id],area.owner,'lazy group '+area.id+' resolves to its consolidated owner');
+ assert.deepStrictEqual(area.fragments,Array.from(manifest.lazy[area.id]),'lazy owner '+area.id+' accounts for its route-deferred group exactly');
+ assert.strictEqual(manifest.lazyBundles[area.id],area.owner,'lazy group '+area.id+' resolves to its current owner');
 }
-for(const rel of manifest.startupScripts)assert(seen.has(rel),'every historical startup fragment has a consolidated owner: '+rel);
-for(const group of manifest.deferredScriptGroups)assert(manifest.lazyBundles[group],'every route-deferred group has a consolidated owner: '+group);
+for(const rel of manifest.startupScripts)assert(seen.has(rel),'every historical startup fragment has a current owner: '+rel);
+for(const group of manifest.deferredScriptGroups)assert(manifest.lazyBundles[group],'every route-deferred group has a current owner: '+group);
 
-/* ---- hazard 1: strict-mode prologue leakage ------------------------------ */
+/* ---- semantic domain owner ----------------------------------------------- */
 
-for(const rel of seen.keys()){
- assert(!/^\s*(['"])use strict\1\s*;/.test(read(rel)),'no bundled fragment may carry a strict-mode prologue that would leak to later fragments: '+rel);
-}
+const domain=semanticAreas[0];
+assert(manifest.domainCurrent,'semantic domain owner declares manifest metadata');
+assert.strictEqual(manifest.domainCurrent.owner,domain.owner,'domainCurrent owner matches the domain area owner');
+assert.strictEqual(manifest.domainCurrent.strategy,'semantic-snapshot','domainCurrent records the semantic strategy');
+assert.strictEqual(manifest.domainCurrent.generator,'tools/sync-domain-current.js','domain semantic owner declares its generator');
+assert.strictEqual(manifest.domainCurrent.equivalenceValidator,'tools/validate-domain-current-equivalence.js','domain semantic owner declares its equivalence validator');
+assert.deepStrictEqual(Array.from(manifest.domainCurrent.historicalFragments),Array.from(domain.fragments),'domainCurrent records the frozen domain ledger');
+assert.strictEqual(domain.fragments.length,103,'domain semantic owner flattens the 103-fragment v9.40 domain chain');
+const domainOwner=read(domain.owner);
+assert(!domainOwner.includes('obol-runtime-fragment:'),'semantic domain owner is not an exact historical concatenation bundle');
+for(const forbidden of ['vm.runInContext','vm.runInThisContext','fs.readFile','document.write'])assert(!domainOwner.includes(forbidden),'semantic domain owner must not dynamically load historical fragments: '+forbidden);
+new vm.Script(domainOwner,{filename:domain.owner});
 
-/* ---- hazard 2 + exact concatenation -------------------------------------- */
+/* ---- exact areas: strict leakage, exact concatenation, parse isolation ----- */
 
-for(const area of areas){
+for(const area of exactAreas){
+ for(const rel of area.fragments){
+  assert(!/^\s*(['"])use strict\1\s*;/.test(read(rel)),'no exact-concatenation fragment may carry a strict-mode prologue that would leak to later fragments: '+rel);
+  assert(!manifest.bundles.owners.includes(rel),'bundle owner cannot be its own fragment: '+rel);
+ }
  const disk=read(area.owner);
  assert.strictEqual(disk,bundles.expected(area),area.owner+' is out of sync with its manifest fragments — run node tools/sync-runtime-bundles.js --write');
  let cursor=0;
  for(const rel of area.fragments){
   const body=read(rel).replace(/\s+$/,'');
   const at=disk.indexOf(body,cursor);
-  assert(at>=0,'bundle '+area.owner+' contains the verbatim body of '+rel);
-  assert(at>=cursor,'bundle '+area.owner+' preserves fragment order at '+rel);
+  assert(at>=0,'owner '+area.owner+' contains the verbatim body of '+rel);
+  assert(at>=cursor,'owner '+area.owner+' preserves fragment order at '+rel);
   cursor=at+body.length;
   assert.strictEqual(disk.slice(cursor,cursor+manifest.bundles.separator.length),manifest.bundles.separator,'fragment '+rel+' is explicitly terminated inside '+area.owner);
  }
@@ -93,18 +105,13 @@ for(const area of areas){
  assert.strictEqual(
   disk.replace(scaffolding,''),
   area.fragments.map(rel=>read(rel).replace(/\s+$/,'')).join(''),
-  'bundle '+area.owner+' is nothing but generated banners around the verbatim fragment bodies'
+  'owner '+area.owner+' is nothing but generated banners around the verbatim fragment bodies'
  );
-}
-
-/* ---- hazard 3: parse isolation ------------------------------------------- */
-
-for(const area of areas){
- new vm.Script(read(area.owner),{filename:area.owner});
+ new vm.Script(disk,{filename:area.owner});
  for(const rel of area.fragments)new vm.Script(read(rel),{filename:rel});
 }
 
-/* ---- observable equivalence: fragment chain vs bundle chain --------------- */
+/* ---- observable equivalence for the Node-executable exact owner ------------ */
 
 function context(){
  const sandbox={console,setTimeout,clearTimeout,setInterval,clearInterval};
@@ -138,10 +145,10 @@ function surface(ctx,baseline){
 }
 
 const baseline=new Set(Object.getOwnPropertyNames(context()));
-const executable=['domain','core'];
 const prelude=Array.from(manifest.startupPreludeScripts);
-const fragmentChain=prelude.concat(startupAreas.filter(a=>executable.includes(a.id)).flatMap(a=>a.fragments));
-const bundleChain=prelude.concat(startupAreas.filter(a=>executable.includes(a.id)).map(a=>a.owner));
+const coreArea=startupAreas.find(area=>area.id==='core');
+const fragmentChain=prelude.concat(domain.owner,coreArea.fragments);
+const bundleChain=prelude.concat(domain.owner,coreArea.owner);
 
 const fragmentSurface=surface(run(context(),fragmentChain),baseline);
 const bundleSurface=surface(run(context(),bundleChain),baseline);
@@ -149,8 +156,7 @@ assert(fragmentSurface.length,'headless equivalence run produced an observable g
 assert.strictEqual(
  sha(bundleSurface),
  sha(fragmentSurface),
- 'consolidated domain/core bundles expose exactly the global surface the historical fragment chain exposed'
+ 'current domain owner plus the consolidated core owner exposes the same global surface as current domain owner plus the historical core fragment chain'
 );
 
-const globals=fragmentSurface.split('\n').length;
-console.log('Runtime bundles valid: '+areas.length+' ownership areas consolidate '+seen.size+' historical fragments ('+startupAreas.length+' startup, '+lazyAreas.length+' route-lazy); '+fragmentChain.length+' fragment loads and '+bundleChain.length+' bundle loads produce an identical '+globals+'-symbol global surface.');
+console.log('Runtime owners valid: '+areas.length+' ownership areas cover '+seen.size+' historical fragments ('+semanticAreas.length+' semantic snapshot, '+exactAreas.length+' exact concatenations); core exact-concatenation equivalence surface sha256 '+sha(bundleSurface).slice(0,16)+'.');

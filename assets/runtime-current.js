@@ -33,9 +33,8 @@ function appendScripts(list){
 }
 function startupPreludeList(){return Array.isArray(manifest.startupPreludeScripts)?manifest.startupPreludeScripts:[];}
 function startupFragmentList(){return manifest.startupScripts||manifest.scripts;}
-/* The consolidated startup bundles are the exact ordered concatenation of the historical
-   fragment chain, so the browser executes identical code in identical order from far
-   fewer requests. The fragment list stays reachable for regression and audit tooling. */
+/* Startup owners now mix a semantic domain snapshot with exact core/app concatenations.
+   The historical fragment list stays reachable for regression and audit tooling. */
 function startupList(){return Array.isArray(manifest.startupBundleScripts)&&manifest.startupBundleScripts.length?manifest.startupBundleScripts:startupFragmentList();}
 function currentOwnerList(){return Array.isArray(manifest.currentScripts)?manifest.currentScripts:[];}
 function compatibilityScriptList(){return startupPreludeList().concat(startupList());}

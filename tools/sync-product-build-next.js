@@ -91,8 +91,8 @@ function runtimeConsolidationLines() {
   const lazy = p.areas.filter(area => area.scope === 'lazy');
   return [
     '**Runtime consolidation:** ' + p.startupRequests.after + ' operator startup requests, down from ' + p.startupRequests.before + ' (' + p.startupRequests.reductionPct + '% fewer).',
-    '**Consolidated ownership areas:** ' + p.areas.length + ' owners hold ' + p.consolidatedFragments + ' historical fragments — ' + startup.length + ' startup, ' + lazy.length + ' route-lazy; ' + p.retiredFragments + ' fragments stay retired in the frozen ledger.',
-    '**Runtime area owners:** ' + p.areas.map(area => area.label + ' (' + area.fragments + ')').join(' · ') + '.',
+    '**Current runtime ownership areas:** ' + p.areas.length + ' owners account for ' + p.consolidatedFragments + ' historical fragments — ' + p.flattenedHistoricalFragments + ' semantically flattened, ' + p.liveHistoricalFragments + ' still exact-owned; ' + p.retiredFragments + ' fragments stay retired in the frozen ledger.',
+    '**Runtime area owners:** ' + p.areas.map(area => area.label + ' (' + area.fragments + ', ' + area.strategy + ')').join(' · ') + '.',
     '**Measured in Chromium (' + p.measured.release + '):** ' + p.measured.routes.map(route => route.label + ' ' + route.before + '→' + route.after).join(' · ') + ' JavaScript/CSS requests.',
     '**Runtime compaction contract:** `docs/RUNTIME-COMPACTION.md`.'
   ];

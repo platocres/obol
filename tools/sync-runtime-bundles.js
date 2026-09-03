@@ -1,13 +1,15 @@
 'use strict';
 
 /*
- * Generates the consolidated runtime bundle owners declared by data/runtime-manifest.js.
+ * Generates the exact-concatenation runtime bundle owners declared by
+ * data/runtime-manifest.js.
  *
- * A bundle is a pure ordered concatenation of the historical fragments in one
- * ownership area. Nothing is minified, reordered, wrapped, or rewritten, so the
- * consolidated owner executes exactly the code the historical chain executed, in
- * exactly the frozen v9.5 order. The historical fragments stay on disk as the
- * regression ledger; the browser simply stops making one request per fragment.
+ * Most current owners remain pure ordered concatenations of the historical
+ * fragments in one ownership area. Nothing is minified, reordered, wrapped, or
+ * rewritten for those areas, so the owner executes exactly the code the historical
+ * chain executed, in exactly the frozen v9.5 order. Semantic owners, such as the
+ * v9.41 domain snapshot, declare their own generator/equivalence proof and are
+ * intentionally skipped here.
  */
 
 const crypto=require('crypto');
@@ -20,10 +22,13 @@ const manifest=require(path.join(root,'data','runtime-manifest.js'));
 const read=rel=>fs.readFileSync(path.join(root,rel),'utf8').replace(/\r\n/g,'\n');
 const hash=list=>crypto.createHash('sha256').update(list.join('\n')).digest('hex');
 
-function areas(){
+function allAreas(){
  const list=manifest.bundles&&manifest.bundles.areas;
  if(!Array.isArray(list)||!list.length)throw new Error('runtime manifest bundles.areas is required');
  return list;
+}
+function areas(){
+ return allAreas().filter(area=>(area.strategy||'ordered-fragment-concatenation')==='ordered-fragment-concatenation');
 }
 
 /*
@@ -39,6 +44,7 @@ function segment(rel){
 }
 
 function expected(area){
+ if((area.strategy||'ordered-fragment-concatenation')!=='ordered-fragment-concatenation')throw new Error('sync-runtime-bundles only owns exact-concatenation areas: '+area.id);
  if(!area.fragments.length)throw new Error('bundle area declares no fragments: '+area.id);
  for(const rel of area.fragments){
   if(!/^(assets|data)\/[^/]+\.js$/.test(rel))throw new Error('bundle fragment must stay inside assets/ or data/: '+rel);
@@ -68,6 +74,7 @@ function expected(area){
 function main(){
  const write=process.argv.includes('--write');
  let stale=0,written=0,fragments=0;
+ const skipped=allAreas().filter(area=>(area.strategy||'ordered-fragment-concatenation')!=='ordered-fragment-concatenation').length;
  for(const area of areas()){
   const target=path.join(root,area.owner);
   const next=expected(area);
@@ -82,15 +89,15 @@ function main(){
  }
 
  if(write){
-  console.log('Runtime bundles synchronized: '+areas().length+' ownership areas own '+fragments+' historical fragments ('+written+' rewritten).');
+  console.log('Runtime bundles synchronized: '+areas().length+' exact-concatenation ownership areas own '+fragments+' historical fragments ('+written+' rewritten, '+skipped+' semantic area skipped).');
  }else if(stale){
   console.error('Run node tools/sync-runtime-bundles.js --write');
   process.exit(1);
  }else{
-  console.log('Runtime bundles match the manifest: '+areas().length+' ownership areas own '+fragments+' historical fragments.');
+  console.log('Runtime bundles match the manifest: '+areas().length+' exact-concatenation ownership areas own '+fragments+' historical fragments ('+skipped+' semantic area skipped).');
  }
 }
 
 if(require.main===module)main();
 
-module.exports={areas,expected,segment,main};
+module.exports={allAreas,areas,expected,segment,main};

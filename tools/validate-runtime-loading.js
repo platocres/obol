@@ -58,13 +58,20 @@ for(const src of retired)assert(!flatDeferred.includes(src),'retired dashboard l
 assert.deepStrictEqual(new Set(excluded),new Set(flatDeferred.concat(retired)),'historical startup exclusions must be explained by route deferral or explicit live-layer retirement');
 
 /* Consolidation budget: the historical fragment ledger stays 236 scripts deep, but the
-   browser must fetch one owner per ownership area rather than one file per fragment. */
+   browser must fetch one current owner per ownership area rather than one file per
+   fragment. The domain owner is semantic; core/app remain exact concatenations. */
 const startupBundles=manifest.startupBundleScripts||[];
 assert.strictEqual(startupBundles.length,3,'operator startup consolidates into three ownership-area bundles');
 assert.deepStrictEqual(startupBundles,['assets/obol-domain-current.js','assets/obol-core-current.js','assets/obol-app-current.js'],'startup bundle owners are stable, non-versioned, and ordered domain -> core -> app');
-assert.strictEqual(manifest.performance.startup.consolidatedStartupRequests,4,'operator startup costs one compatibility prelude plus three consolidated bundles');
+assert.strictEqual(manifest.performance.startup.consolidatedStartupRequests,4,'operator startup costs one compatibility prelude plus three current startup owners');
 assert(manifest.performance.startup.consolidatedStartupRequests<manifest.performance.startup.totalScripts/50,'consolidation must be a real request reduction, not a rename');
 for(const rel of startupBundles)assert(exists(rel),'consolidated startup owner is missing: '+rel);
+const domainArea=(manifest.bundles.areas||[]).find(area=>area.id==='domain');
+assert(domainArea&&domainArea.strategy==='semantic-snapshot','domain startup owner must be a semantic snapshot');
+assert(manifest.domainCurrent&&manifest.domainCurrent.owner===domainArea.owner,'domain semantic owner metadata must name the startup owner');
+assert.strictEqual(manifest.domainCurrent.generator,'tools/sync-domain-current.js','domain semantic owner declares its generator');
+assert.strictEqual(manifest.domainCurrent.equivalenceValidator,'tools/validate-domain-current-equivalence.js','domain semantic owner declares its equivalence validator');
+for(const area of (manifest.bundles.areas||[]).filter(area=>area.id!=='domain'))assert.strictEqual(area.strategy,'ordered-fragment-concatenation',area.id+' remains an exact concatenation owner');
 assert.strictEqual(manifest.styles.length,1,'the browser fetches exactly one stylesheet');
 assert(!/@import/.test(read(manifest.styles[0]).replace(/^\/\*[\s\S]*?\*\/\n/,'')),'the single stylesheet owner no longer chains fragment requests');
 const lazyBundles=manifest.lazyBundles||{};
@@ -90,7 +97,8 @@ assert.strictEqual(policies.dashboard.compatibilityMetadataOwner,'data/dashboard
 assert.strictEqual(policies.toolLibrary.policy,'route-lazy','Tool reference payload must stay route-lazy');
 assert.strictEqual(policies.evidence.policy,'route-lazy','Evidence parser extensions must stay route-lazy');
 assert.strictEqual(policies.report.policy,'route-lazy','Report overlays must stay route-lazy');
-assert(/shared-core/.test(policies.methodology.policy),'methodology shared-core exception must remain explicit');
+assert.strictEqual(policies.methodology.policy,'semantic-current-owner-eager','methodology/domain policy must name the eager semantic current owner');
+assert.strictEqual(policies.methodology.owner,'assets/obol-domain-current.js','methodology/domain policy names the semantic current owner');
 assert(/shared-core/.test(policies.lineage.policy),'lineage shared-core exception must remain explicit');
 assert.strictEqual(policies.historical.policy,'compatibility-selective','historical runtime policy must allow proven live-layer retirement while retaining frozen fixtures');
 
@@ -111,4 +119,4 @@ const bridge=read('assets/app-v8.8.js');
 for(const token of ['function ensureWorkflow88','function ensureProductAssets88','ensureWorkflow88().catch(()=>{})'])assert(bridge.includes(token),'v8.8 compatibility bridge missing '+token);
 assert(!/ensureProductAssets88\(\)\.catch\(\(\)=>\{\}\)/.test(bridge),'Product Dashboard assets are still eagerly requested during ordinary startup');
 
-console.log('Runtime loading budget valid: Dashboard uses one current owner; operator routes load one stable metadata prelude plus '+startupBundles.length+' consolidated bundles covering '+manifest.startupScripts.length+' historical scripts, with 61 route-deferred fragments behind '+Object.keys(lazyBundles).length+' owners and 30 Dashboard data/presentation layers retired to the frozen fixture ledger.');
+console.log('Runtime loading budget valid: Dashboard uses one current owner; operator routes load one stable metadata prelude plus '+startupBundles.length+' startup owners covering '+manifest.startupScripts.length+' historical scripts (domain semantic, core/app exact), with 61 route-deferred fragments behind '+Object.keys(lazyBundles).length+' owners and 30 Dashboard data/presentation layers retired to the frozen fixture ledger.');

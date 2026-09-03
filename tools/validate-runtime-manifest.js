@@ -20,8 +20,8 @@ function exists(label,list){
 }
 
 assert(/^1\.\d+\.\d+$/.test(manifest.schemaVersion),'runtime manifest remains on compatible schema major 1');
-assert.strictEqual(manifest.compatibility.strategy,'script-exact-load-order+style-cascade-equivalence','runtime compatibility strategy protects script order and CSS cascade equivalence');
-assert.strictEqual(manifest.compatibility.consolidation,'ordered-fragment-concatenation','consolidated owners stay pure ordered concatenations of the frozen fragment ledger');
+assert.strictEqual(manifest.compatibility.strategy,'domain-semantic-equivalence+script-exact-load-order+style-cascade-equivalence','runtime compatibility strategy protects domain semantic equivalence, script order, and CSS cascade equivalence');
+assert.strictEqual(manifest.compatibility.consolidation,'semantic-domain-snapshot+ordered-fragment-concatenation','current runtime owners record mixed semantic/exact-concatenation strategies');
 assert.strictEqual(fixture.release,manifest.compatibility.baselineRelease,'runtime manifest baseline release matches fixture');
 const historicalStyles=manifest.compatibility.historicalStyles;
 assert(Array.isArray(historicalStyles)&&historicalStyles.length,'historical stylesheet compatibility list is explicit');
@@ -93,19 +93,30 @@ assert(Array.isArray(manifest.node.historicalData)&&manifest.node.historicalData
 assert.deepStrictEqual(manifest.node.historicalData,manifest.groups.domain.slice(0,manifest.node.historicalData.length),'Node historical data remains the frozen source-observation prefix');
 assert.strictEqual(manifest.groups.domain.length-manifest.node.historicalData.length,6,'browser-only domain extras remain explicit');
 assert.strictEqual(manifest.node.data[0],'data/dashboard-compat-current.js','Node current runtime loads the compact Dashboard compatibility seam first');
-assert.strictEqual(manifest.node.data.length,manifest.node.historicalData.length-manifest.historicalDashboardData.length+1,'Node current execution replaces sixteen Dashboard data owners with one compatibility seam');
+assert.deepStrictEqual(manifest.node.data,['data/dashboard-compat-current.js',manifest.domainCurrent.owner],'Node current execution replaces versioned domain fragments with the compact Dashboard seam plus the semantic domain owner');
 for(const src of manifest.historicalDashboardData)assert(!manifest.node.data.includes(src),'retired Dashboard data must not execute in Node current runtime: '+src);
-for(const src of manifest.node.historicalData.filter(src=>!manifest.historicalDashboardData.includes(src)))assert(manifest.node.data.includes(src),'Node current runtime lost durable historical domain owner: '+src);
+for(const src of manifest.node.historicalData)assert(!manifest.node.data.includes(src),'Node current runtime no longer executes historical domain fragments directly: '+src);
 unique('Node current data',manifest.node.data);
 unique('Node historical data fixture',manifest.node.historicalData);
 exists('Node current data',manifest.node.data);
 exists('Node historical data fixture',manifest.node.historicalData);
 
-/* Consolidated ownership: the browser loads one owner per area instead of one request
-   per historical fragment. tools/validate-runtime-bundles.js owns the equivalence proof. */
+/* Current ownership: the browser loads one owner per area instead of one request per
+   historical fragment. Domain is a semantic snapshot; the other six owners remain
+   exact concatenations. tools/validate-runtime-bundles.js and
+   tools/validate-domain-current-equivalence.js own the proof. */
 const bundleAreas=manifest.bundles&&manifest.bundles.areas;
 assert(Array.isArray(bundleAreas)&&bundleAreas.length,'runtime manifest declares consolidated ownership areas');
 assert.strictEqual(manifest.bundles.generator,'tools/sync-runtime-bundles.js','consolidated owners declare their generator');
+assert.strictEqual(manifest.bundles.schema,'per-area-current-owner','runtime manifest declares per-area current-owner strategies');
+const domainArea=bundleAreas.find(area=>area.id==='domain');
+assert(domainArea&&domainArea.strategy==='semantic-snapshot','domain area is flattened behind a semantic current owner');
+assert.strictEqual(manifest.domainCurrent.owner,domainArea.owner,'semantic domain metadata points at the domain area owner');
+assert.strictEqual(manifest.domainCurrent.generator,'tools/sync-domain-current.js','domain semantic owner declares its generator');
+assert.strictEqual(manifest.domainCurrent.equivalenceValidator,'tools/validate-domain-current-equivalence.js','domain semantic owner declares its equivalence validator');
+assert.deepStrictEqual(Array.from(manifest.domainCurrent.historicalFragments),Array.from(domainArea.fragments),'domain semantic metadata keeps the exact frozen historical ledger');
+assert.strictEqual(domainArea.fragments.length,103,'domain semantic owner flattens the 103-fragment methodology/source/project chain');
+for(const area of bundleAreas.filter(area=>area.id!=='domain'))assert.strictEqual(area.strategy,'ordered-fragment-concatenation','non-domain area remains an exact ordered concatenation: '+area.id);
 assert.deepStrictEqual(
  bundleAreas.filter(area=>area.scope==='startup').flatMap(area=>area.fragments),
  Array.from(manifest.startupScripts),
@@ -171,5 +182,6 @@ assert(loaded&&loaded.C&&loaded.lanes,'manifest-backed Node current runtime init
 assert.strictEqual(loaded.C.VERSION,'8.8.0','runtime consolidation preserves the v8.8 workspace schema identity');
 assert(loaded.project,'manifest-backed runtime preserves the current v8.8 project adapter');
 assert(global.OBOL_DASHBOARD_COMPAT_CURRENT,'Node current runtime initializes through the compact Dashboard metadata seam');
+assert(global.OBOL_METHODOLOGY_V47&&global.OBOL_SIGNATURES,'Node current runtime initializes through the semantic domain owner');
 
-console.log('Runtime manifest valid: frozen v9.5 history remains fixture-addressable while consolidated per-area owners replace '+manifest.startupScripts.length+' startup fragment requests with '+manifest.startupBundleScripts.length+' bundles and '+historicalStyles.length+' stylesheet fragments with one flattened cascade.');
+console.log('Runtime manifest valid: frozen v9.5 history remains fixture-addressable while current per-area owners replace '+manifest.startupScripts.length+' startup fragment requests with '+manifest.startupBundleScripts.length+' startup owners, including the 103-fragment semantic domain snapshot, and '+historicalStyles.length+' stylesheet fragments with one flattened cascade.');

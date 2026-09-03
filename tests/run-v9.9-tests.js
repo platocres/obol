@@ -52,7 +52,8 @@ assert.deepStrictEqual(Array.from(manifest.routeLazy.intake),['nmap','evidencePa
 assert.deepStrictEqual(Array.from(manifest.routeLazy.tools),['toolReferenceData']);
 assert.deepStrictEqual(Array.from(manifest.routeLazy.report),['reportOverlays']);
 assert(manifest.surfacePolicy.dashboard&&manifest.surfacePolicy.dashboard.policy,'Dashboard loading policy remains explicit while later current-owner compaction may strengthen it');
-assert.strictEqual(manifest.surfacePolicy.methodology.policy,'shared-core-eager');
+assert(['shared-core-eager','semantic-current-owner-eager'].includes(manifest.surfacePolicy.methodology.policy),'methodology/domain loading policy remains explicit while later compaction may strengthen it');
+if(manifest.surfacePolicy.methodology.policy==='semantic-current-owner-eager')assert.strictEqual(manifest.surfacePolicy.methodology.owner,'assets/obol-domain-current.js','semantic methodology owner is the stable domain current owner');
 assert.strictEqual(manifest.surfacePolicy.lineage.policy,'shared-core-eager');
 assert(manifest.surfacePolicy.historical&&/^compatibility-/.test(manifest.surfacePolicy.historical.policy),'historical compatibility policy remains explicit while proven layers may retire');
 assert(manifest.performance.startup.maxHistoricalScripts<=266,'current startup budget is no weaker than the v9.9 ceiling');
