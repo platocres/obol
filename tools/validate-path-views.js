@@ -64,7 +64,7 @@ const runtimeManifest=require(path.join(root,'data','runtime-manifest.js'));
   '.operator-map-list31'
 ].forEach(t=>token(css,t,`operator route CSS missing ${t}`));
 
-token(queueText,'["ui-ux","UI / UX repair","Make the primary workflow user-first and keep build metrics in dashboard surfaces.",9,10]','UI/UX track must count v9.37 complete');
+token(queueText,'["ui-ux","UI / UX repair","Make the primary workflow user-first and keep build metrics in dashboard surfaces.",10,11]','UI/UX track must keep v9.37 (and the v9.49 style-delivery repair) complete');
 token(queueText,'["ux-path-three-mode","ui-ux","complete",89.6,"Path three-mode rendering over one graph"','ux-path-three-mode queue item must be complete');
 token(contractsText,"'ux-path-three-mode'","ux-path-three-mode contract must exist");
 token(contractsText,'node tools/validate-path-views.js','ux-path-three-mode contract must require this validator');

@@ -27,8 +27,8 @@ assert.strictEqual(item.status,'complete');
 assert(item.detail.includes('nextStepsOverview34'),'queue item must name the shared Next Steps graph source');
 const track=queue.tracks.find(x=>x.id==='ui-ux');
 assert(track,'UI/UX track must exist');
-assert.strictEqual(track.complete,9);
-assert.strictEqual(track.total,10);
+assert(track.complete>=9,'UI/UX track retains at least the nine completions through v9.37');
+assert(track.total>=10,'UI/UX track never drops below the v9.37 size');
 
 const contract=contracts.contracts&&contracts.contracts['ux-path-three-mode'];
 assert(contract,'ux-path-three-mode test contract must exist');

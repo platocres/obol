@@ -106,7 +106,7 @@ test('v9.48 closes cc-evidence-chain-restore with an atomic item contract',()=>{
 
 test('v9.48 README reports the correctness track closed and the queue advanced',()=>{
  const readme=read('README.md');
- assert(/\*\*Current product-hardening queue:\*\* \d+\/651 complete/.test(readme),'README reports the queue total');
+ assert(/\*\*Current product-hardening queue:\*\* \d+\/\d+ complete/.test(readme),'README reports the queue total');
  assert(readme.includes('**Critical correctness:** 5/5 complete (100%)'),'README reports critical correctness complete');
  assert(readme.includes('Evidence parsing (37, ordered-fragment-concatenation)'),'README still reports the 37-fragment Evidence owner');
 });

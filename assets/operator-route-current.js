@@ -302,10 +302,25 @@ function compactToolPanels(rootEl){
  }
  return false;
 }
+/* This current owner ships with a companion stylesheet (assets/operator-route-current.css).
+   Because the module is inlined into the startup application owner, ensureOperatorRoutes88()
+   short-circuits before it can inject that stylesheet, so the owner must deliver its own
+   style — the same way the current dashboard route owner does. Idempotent and Node-safe. */
+const OPERATOR_STYLE='assets/operator-route-current.css';
+function ensureOperatorStyle(){
+ if(typeof document==='undefined')return false;
+ if(document.querySelector('link[data-obol-operator-style],link[href="'+OPERATOR_STYLE+'"]'))return true;
+ const link=document.createElement('link');
+ link.rel='stylesheet';link.href=OPERATOR_STYLE;link.dataset.obolOperatorStyle='current';
+ (document.head||document.documentElement||document).appendChild(link);
+ return true;
+}
 function decorateRoute(){
+ ensureOperatorStyle();
  if(page()==='path')renderCurrentPath();
  if(page()==='card'||page()==='tools')compactToolPanels();
 }
-root.OBOL_OPERATOR_ROUTES=Object.freeze({version:'1.1.0',MAX_PRIMARY_BUILDERS,buildPathModel,renderSimplified,renderChecklist,renderLiveMap,renderCurrentPath,compactToolPanels,decorateRoute});
+root.OBOL_OPERATOR_ROUTES=Object.freeze({version:'1.1.0',MAX_PRIMARY_BUILDERS,buildPathModel,renderSimplified,renderChecklist,renderLiveMap,renderCurrentPath,compactToolPanels,ensureOperatorStyle,decorateRoute});
+ensureOperatorStyle();
 for(const t of [0,80,260,900,1800])root.setTimeout&&root.setTimeout(decorateRoute,t);
 })(typeof window!=='undefined'?window:globalThis);

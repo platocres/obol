@@ -1,4 +1,21 @@
 /* Stable v9 responsive-density owner. Loaded after the historical cascade. */
+/* Current-owner token aliases. The flattened historical cascade (assets/obol-current.css)
+   references several role tokens it never defines (--muted ~140x, --card, --surface,
+   --hover, --bad), so those surfaces and captions silently fell back to inherited values
+   and lost their intended color. This sheet always loads on operator routes, so it is the
+   robust home for the aliases — independent of any single route stylesheet. Each maps to
+   an existing base token; tools/validate-current-owner-styles.js keeps the set complete. */
+:root{
+  --muted:var(--dim,#8b98a9);
+  --card:var(--panel,#161b22);
+  --surface:var(--panel,#161b22);
+  --hover:var(--panel2,#1c2330);
+  --bad:var(--danger,#e05c5c);
+  --ok:var(--accent,#58d68d);
+  --green:var(--accent,#58d68d);
+  --gold:var(--accent2,#e8b54a);
+  --warn:var(--accent2,#e8b54a);
+}
 :where(.layout,main,#view,.card,.card-body,.cmd-block,.next-shell34,.next-layout34,.next-main34,.home-grid30,.metrics30,.ph-shell,.ph-card,.ph-detail){min-width:0}
 :where(img,svg,canvas,video){max-width:100%;height:auto}
 :where(input,textarea,select,button,.btn,.mini-btn){max-width:100%}
