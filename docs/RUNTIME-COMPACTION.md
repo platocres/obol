@@ -88,6 +88,23 @@ Request consolidation shipped first because exact concatenation preserved behavi
 
 **Retirement beats rewriting when it is available.** v9.43 removed a third of the application area without touching a line of surviving code, because supersession was provable. Run that check first on every remaining area: a fragment that cannot execute is cheaper and safer to retire than to re-author. Only rewrite what genuinely still runs.
 
+## Evidence parsing in v9.44
+
+v9.44 flattens the Evidence parsing area by the same subtraction-first method, and finds a second, distinct reason a fragment can be safe to retire: not supersession by a stale gate, but plain unreachability.
+
+The Intake overlays are a decorator chain. Each overlay reads the `analyzeTerminal` already published on an earlier `OBOL_INTAKE_*` global, wraps it, and writes the wrapper back onto `OBOL_INTAKE_V21`. Four overlays share a latent break: `intake-v7.7.js` hooks `OBOL_INTAKE_V76`, which `intake-v7.6.js` publishes with helpers only and no `analyzeTerminal`, so v7.7's `!T.analyzeTerminal` guard returns before it does anything and it never publishes `OBOL_INTAKE_V77`. That breaks `intake-v7.8.js`, `intake-v7.9.js`, and `intake-v8.2.js` in turn, each of which hooks the global its predecessor failed to publish. In every load order the runtime produces, these four run their guard and no more.
+
+`tools/validate-evidence-current-equivalence.js` proves the retirement two independent ways:
+
+- **reachability** — it executes the whole frozen Intake chain fragment by fragment and asserts the four retired overlays never publish their `OBOL_INTAKE_*` global and never change `OBOL_INTAKE_V21.analyzeTerminal`, while every surviving overlay does publish;
+- **differential** — it builds the Evidence runtime from the full frozen fragment set and from the surviving set and requires byte-identical `OBOL_*` globals and `analyzeTerminal` output over a fixed operator transcript corpus.
+
+Unreachability is not the same as supersession, and the difference matters for honesty. A superseded fragment's behavior is preserved by its replacement; a dead fragment's intended behavior was simply never delivered. So v9.44 does **not** claim the retirement is behavior-neutral in intent — it claims it is behavior-neutral in observable effect, because the code never ran. The no-credentials poisoning/coercion beyond v7.6, relay-SOCKS, WebDAV coercion, Windows local-exploit, and offline-cracking Evidence the four overlays were written to add is genuinely missing, and is filed as the critical-correctness item `cc-evidence-chain-restore` rather than absorbed silently into the retirement. Removing dead files and fixing the defect are two separate pieces of work; v9.44 does the first and files the second.
+
+The historical suite `tests/run-v7.7-tests.js` keeps passing because it stubs `OBOL_INTAKE_V76` with an `analyzeTerminal` before loading v7.7. That is a legitimate historical contract on v7.7's proof logic in isolation and is preserved; it never asserted the overlay was live, and this retirement does not weaken it. Do not "fix" that test to make the overlay reachable — the reachability defect is real, and its fix belongs to `cc-evidence-chain-restore`, not to the retirement.
+
+**Retirement removes what does not run; it does not repair what should.** When a compaction pass uncovers dead code, retire the dead files and file the missing behavior as its own tracked defect. Folding a latent bug into a "no-op cleanup" would hide it.
+
 ## Dependency and equivalence audits
 
 `node tools/audit-dashboard-runtime-dependencies.js` inventories every historical `data/dashboard-v*.js` file that participates in live startup, the `OBOL_DASHBOARD_*` globals it exports, live startup consumers of those globals, and detected domain-mutation signals inside the file.

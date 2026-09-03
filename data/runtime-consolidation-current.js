@@ -56,7 +56,7 @@ function projection(){
   liveHistoricalFragments,
   liveStartupHistoricalFragments:areas.filter(area=>area.scope==='startup'&&area.strategy==='ordered-fragment-concatenation').reduce((n,area)=>n+area.fragments,0),
   ledgerFragments:manifest.scripts.length,
-  retiredFragments:manifest.retiredStartupScripts.length,
+  retiredFragments:(manifest.retiredScripts||manifest.retiredStartupScripts).length,
   scriptRequests,
   styleRequests,
   startupRequests:Object.freeze({before,after,eliminated:before-after,reductionPct:before?Math.round(((before-after)/before)*100):0}),

@@ -288,6 +288,17 @@ contracts['runtime-app-flattening']={
  validationCommands:['node tools/validate-app-current-equivalence.js','node tools/validate-app-dom-equivalence.js','node tools/sync-runtime-bundles.js --check','node tools/validate-runtime-bundles.js','node tools/validate-runtime-manifest.js','node tools/validate-runtime-loading.js','node tools/validate-runtime-consolidation-sync.js','node tests/run-v9.43-tests.js'],
  proofFiles:['data/runtime-manifest.js','data/runtime-consolidation-current.js','assets/obol-app-current.js','tools/validate-app-current-equivalence.js','tools/validate-app-dom-equivalence.js','tools/sync-runtime-bundles.js','tools/validate-runtime-bundles.js','tools/validate-runtime-loading.js','tools/validate-runtime-consolidation-sync.js','tools/scope-check.js','.github/workflows/browser-smoke.yml','assets/product-hardening-dashboard.js','README.md','CHANGELOG.md','docs/v9.43.md','docs/RUNTIME-COMPACTION.md','docs/ARCHITECTURE.md','docs/PRODUCT-HARDENING.md','tests/run-v9.43-tests.js']
 };
+contracts['runtime-evidence-flattening']={
+ acceptance:[
+  'The route-lazy Evidence ownership area owns only the parser overlays that can still reach the decorator chain: the four unreachable overlays (intake-v7.7/v7.8/v7.9/v8.2) leave the live runtime, taking the area from 41 fragments to 37, and data/runtime-manifest.js declares that retirement through evidenceCurrent metadata plus the validator that proves it.',
+  'tools/validate-evidence-current-equivalence.js proves the retirement two independent ways rather than by assertion: a reachability pass executes the whole frozen Intake chain fragment by fragment and confirms the four retired overlays never publish their OBOL_INTAKE_* global and never change OBOL_INTAKE_V21.analyzeTerminal while every surviving overlay does publish, and a differential pass builds the Evidence runtime from the full frozen set and from the surviving set and requires byte-identical OBOL_* globals and analyzeTerminal output over a fixed operator corpus.',
+  'The retired overlays stay on disk and in the frozen historical ledger; retirement removes them from the live runtime only, so the 327-fragment v9.5 ledger, workspace migration, conservative Evidence interpretation, proof boundaries, command behavior, recommendation logic, and report lineage are unchanged.',
+  'The Evidence behavior the four overlays were written to add never reached production because intake-v7.7 hooked a predecessor global that never publishes analyzeTerminal; that latent defect is recorded as its own queued item cc-evidence-chain-restore rather than silently blessed by the retirement.',
+  'README, the Product Hardening Dashboard, and the runtime consolidation projection all report the post-retirement figures (272 consolidated fragments, 100 exact-owned, 55 retired) from the one projection owner.'
+ ],
+ validationCommands:['node tools/validate-evidence-current-equivalence.js','node tools/sync-runtime-bundles.js --check','node tools/validate-runtime-bundles.js','node tools/validate-runtime-manifest.js','node tools/validate-runtime-loading.js','node tools/validate-runtime-consolidation-sync.js','node tests/run-v9.44-tests.js'],
+ proofFiles:['data/runtime-manifest.js','data/runtime-consolidation-current.js','assets/obol-evidence-current.js','tools/validate-evidence-current-equivalence.js','tools/sync-runtime-bundles.js','tools/validate-runtime-bundles.js','tools/validate-runtime-loading.js','tools/validate-runtime-consolidation-sync.js','tools/scope-check.js','assets/product-hardening-dashboard.js','README.md','CHANGELOG.md','docs/v9.44.md','docs/RUNTIME-COMPACTION.md','docs/ARCHITECTURE.md','tests/run-v9.44-tests.js']
+};
 contracts['runtime-consolidation-sync']={
  acceptance:[
   'data/runtime-consolidation-current.js is the single projection for runtime consolidation figures and derives everything except the recorded browser measurement from data/runtime-manifest.js.',
@@ -307,5 +318,5 @@ contracts['qa-runtime-request-budget']={
  proofFiles:['tests/playwright-smoke.js','.github/workflows/browser-smoke.yml','tests/run-v9.40-tests.js','docs/v9.40.md']
 };
 const requiredForStatuses=['modeled','complete','superseded','rejected'];
-root.OBOL_PRODUCT_HARDENING_TEST_CONTRACTS={version:'9.43.0',requiredForStatuses,contracts};
+root.OBOL_PRODUCT_HARDENING_TEST_CONTRACTS={version:'9.44.0',requiredForStatuses,contracts};
 })(typeof window!=='undefined'?window:globalThis);

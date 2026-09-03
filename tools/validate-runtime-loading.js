@@ -35,27 +35,37 @@ const expectedReleaseWaveOverlays=[
  ...Array.from({length:8},(_,i)=>'assets/app-v8.'+i+'.js')
 ];
 const retired=manifest.retiredStartupScripts||[];
+/* v9.44: the Evidence-parsing retirement removes route-lazy overlays, not startup
+   layers, so it is tracked separately from the startup retirement ledger. Both kinds
+   are gone from the live runtime and both stay in the frozen ledger. */
+const expectedEvidenceOverlays=['assets/intake-v7.7.js','assets/intake-v7.8.js','assets/intake-v7.9.js','assets/intake-v8.2.js'];
+const retiredEvidence=manifest.retiredEvidenceOverlays||[];
+const retiredAll=manifest.retiredScripts||retired;
 assert.deepStrictEqual(manifest.historicalDashboardData,expectedDashboardData,'all sixteen historical dashboard data owners are explicitly inventoried');
-assert.deepStrictEqual(retired,expectedDashboardData.concat(expectedDashboardPresentation,expectedReleaseWaveOverlays),'retired live-layer ledger contains dashboard data, dashboard-only presentation overlays, then the stale-gated release-wave overlays');
+assert.deepStrictEqual(retired,expectedDashboardData.concat(expectedDashboardPresentation,expectedReleaseWaveOverlays),'retired startup ledger contains dashboard data, dashboard-only presentation overlays, then the stale-gated release-wave overlays');
 assert.deepStrictEqual(Array.from(manifest.retiredReleaseWaveOverlays),expectedReleaseWaveOverlays,'all twenty-one stale-gated release-wave overlays are explicitly inventoried');
+assert.deepStrictEqual(Array.from(retiredEvidence),expectedEvidenceOverlays,'all four unreachable Evidence overlays are explicitly inventoried');
+assert.deepStrictEqual(Array.from(retiredAll),retired.concat(expectedEvidenceOverlays),'the full retired ledger is the startup retirement plus the Evidence retirement');
 assert(!expectedReleaseWaveOverlays.includes('assets/app-v8.8.js'),'the overlay gated on the live schema identity is never retired');
 assert.strictEqual(manifest.performance.startup.retiredDashboardDataScripts,16,'runtime budget accounts for retired historical dashboard data owners');
 assert.strictEqual(manifest.performance.startup.retiredDashboardPresentationScripts,14,'runtime budget accounts for retired dashboard presentation overlays');
 assert.strictEqual(manifest.performance.startup.retiredReleaseWaveScripts,21,'runtime budget accounts for retired release-wave application overlays');
-assert.strictEqual(new Set(retired).size,retired.length,'retired startup script list contains duplicates');
-for(const src of retired){assert(manifest.scripts.includes(src),'retired dashboard layer must remain in the frozen historical fixture ledger: '+src);assert(!manifest.startupScripts.includes(src),'retired dashboard layer leaked back into live startup: '+src);}
+assert.strictEqual(manifest.performance.startup.retiredEvidenceOverlayScripts,4,'runtime budget accounts for retired unreachable Evidence overlays');
+assert.strictEqual(new Set(retiredAll).size,retiredAll.length,'retired script ledger contains duplicates');
+for(const src of retiredAll){assert(manifest.scripts.includes(src),'retired layer must remain in the frozen historical fixture ledger: '+src);assert(!manifest.startupScripts.includes(src),'retired layer leaked back into live startup: '+src);}
+for(const src of retiredEvidence){for(const group of manifest.deferredScriptGroups||[])assert(!(manifest.lazy[group]||[]).includes(src),'retired Evidence overlay must not remain in a route-lazy group: '+src);}
 for(const src of manifest.startupPreludeScripts){assert(!manifest.scripts.includes(src),'stable compatibility prelude must stay outside frozen historical ledger: '+src);assert(exists(src),'compatibility prelude is missing: '+src);}
 
 const excluded=manifest.scripts.filter(src=>!manifest.startupScripts.includes(src));
 assert(excluded.length>=manifest.performance.startup.minDeferredHistoricalScripts,'not enough historical scripts are excluded from compatibility startup');
-assert.strictEqual(excluded.length,112,'61 route-deferred scripts plus 51 retired dashboard and release-wave layers must stay out of historical startup');
+assert.strictEqual(excluded.length,112,'57 route-deferred scripts plus 55 retired dashboard, release-wave, and Evidence layers must stay out of historical startup');
 assert.strictEqual(new Set(manifest.startupScripts).size,manifest.startupScripts.length,'startup script list contains duplicates');
 assert.strictEqual(new Set(manifest.currentScripts).size,manifest.currentScripts.length,'current-owner script list contains duplicates');
 for(const src of manifest.startupScripts)assert(manifest.scripts.includes(src),'startup asset is outside the frozen compatibility script ledger: '+src);
 for(const src of manifest.currentScripts){assert(!manifest.scripts.includes(src),'current owner must remain outside the frozen historical ledger: '+src);assert(exists(src),'current owner is missing: '+src);}
 for(const src of excluded)assert(exists(src),'excluded runtime asset is missing: '+src);
 
-const expectedGroups={evidenceParsing:41,nmap:3,reportOverlays:14,toolReferenceData:3};
+const expectedGroups={evidenceParsing:37,nmap:3,reportOverlays:14,toolReferenceData:3};
 for(const [name,count] of Object.entries(expectedGroups)){
  const group=manifest.lazy&&manifest.lazy[name];
  assert(Array.isArray(group),name+' lazy group missing');
@@ -64,8 +74,8 @@ for(const [name,count] of Object.entries(expectedGroups)){
 }
 const flatDeferred=(manifest.deferredScriptGroups||[]).flatMap(name=>manifest.lazy[name]||[]);
 assert.strictEqual(new Set(flatDeferred).size,flatDeferred.length,'deferred script groups overlap');
-for(const src of retired)assert(!flatDeferred.includes(src),'retired dashboard layer must not masquerade as a route-lazy group: '+src);
-assert.deepStrictEqual(new Set(excluded),new Set(flatDeferred.concat(retired)),'historical startup exclusions must be explained by route deferral or explicit live-layer retirement');
+for(const src of retiredAll)assert(!flatDeferred.includes(src),'retired layer must not masquerade as a route-lazy group: '+src);
+assert.deepStrictEqual(new Set(excluded),new Set(flatDeferred.concat(retiredAll)),'historical startup exclusions must be explained by route deferral or explicit live-layer retirement');
 
 /* Consolidation budget: the live historical fragment ledger is 215 scripts deep, and the
    browser must fetch one current owner per ownership area rather than one file per
@@ -118,7 +128,7 @@ assert.strictEqual(policies.dashboard.policy,'current-owner+retired-historical-d
 assert.strictEqual(policies.dashboard.owner,'assets/dashboard-route-current.js','dashboard surface policy names the stable current route owner');
 assert.strictEqual(policies.dashboard.compatibilityMetadataOwner,'data/dashboard-compat-current.js','dashboard policy names the consolidated historical-core metadata seam');
 assert.strictEqual(policies.toolLibrary.policy,'route-lazy','Tool reference payload must stay route-lazy');
-assert.strictEqual(policies.evidence.policy,'route-lazy','Evidence parser extensions must stay route-lazy');
+assert(/^route-lazy/.test(policies.evidence.policy),'Evidence parser extensions must stay route-lazy');
 assert.strictEqual(policies.report.policy,'route-lazy','Report overlays must stay route-lazy');
 assert.strictEqual(policies.methodology.policy,'semantic-current-owner-eager','methodology/domain policy must name the eager semantic current owner');
 assert.strictEqual(policies.methodology.owner,'assets/obol-domain-current.js','methodology/domain policy names the semantic current owner');
@@ -143,4 +153,4 @@ const bridge=read('assets/app-v8.8.js');
 for(const token of ['function ensureWorkflow88','function ensureProductAssets88','ensureWorkflow88().catch(()=>{})'])assert(bridge.includes(token),'v8.8 compatibility bridge missing '+token);
 assert(!/ensureProductAssets88\(\)\.catch\(\(\)=>\{\}\)/.test(bridge),'Product Dashboard assets are still eagerly requested during ordinary startup');
 
-console.log('Runtime loading budget valid: Dashboard uses one current owner; operator routes load one stable metadata prelude plus '+startupBundles.length+' startup owners covering '+manifest.startupScripts.length+' historical scripts (domain semantic, core semantic replay, app exact), with 61 route-deferred fragments behind '+Object.keys(lazyBundles).length+' owners and '+retired.length+' Dashboard data/presentation and stale-gated release-wave layers retired to the frozen fixture ledger.');
+console.log('Runtime loading budget valid: Dashboard uses one current owner; operator routes load one stable metadata prelude plus '+startupBundles.length+' startup owners covering '+manifest.startupScripts.length+' historical scripts (domain semantic, core semantic replay, app exact), with '+flatDeferred.length+' route-deferred fragments behind '+Object.keys(lazyBundles).length+' owners and '+retiredAll.length+' Dashboard data/presentation, stale-gated release-wave, and unreachable Evidence layers retired to the frozen fixture ledger.');
