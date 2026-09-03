@@ -58,7 +58,7 @@ function renderHome(){
  const nextHref=top&&top.card?'#/card/'+encodeURIComponent(top.card.id):o.next.href;
  const nextWhy=top?(top.why||'Evidence-grounded recommendation for the active context.'):o.next.detail;
  const unlocks=top&&Array.isArray(top.unlocks)?top.unlocks.length:0;
- v.innerHTML='<div class="home-head30"><div><div class="eyebrow30">Operator workspace</div><h2>Home</h2><p class="subtitle">Resume the active engagement without project-build accounting competing for attention.</p></div><div class="home-context30"><span>Active target / context</span><b>'+e(o.contextLabel||'Engagement-wide')+'</b></div></div>'+ 
+ v.innerHTML='<div class="home-head30 current-home98" data-current-home-owner="workflow-current"><div><div class="eyebrow30">Operator workspace</div><h2>Home</h2><p class="subtitle">Resume the active engagement without project-build accounting competing for attention.</p></div><div class="home-context30"><span>Active target / context</span><b>'+e(o.contextLabel||'Engagement-wide')+'</b></div></div>'+ 
   '<section class="resume30"><div><span class="stage30">'+e(o.stage)+'</span><h3>'+e(o.next.label)+'</h3><p>'+e(o.next.detail)+'</p></div><a class="btn primary30" href="'+e(o.next.href)+'">Continue →</a></section>'+ 
   workflowHTML(o,'home')+
   '<div class="metrics30">'+
@@ -102,6 +102,13 @@ function decoratePath(){
  if(hero)hero.insertAdjacentElement('afterend',brief);else shell.insertAdjacentElement('afterbegin',brief);
  ensureDashboardNav();
 }
+function syncVisibleReleaseIdentity(){
+ const r=root.OBOL_CURRENT_RELEASE;if(!r||typeof document==='undefined')return false;
+ const title='Obol '+r.label+' — '+r.phaseLabel;if(document.title!==title)document.title=title;
+ const tag=document.querySelector('.tagline');if(tag){const text='Offensive Box Operations Ledger · '+r.label;if(tag.textContent!==text)tag.textContent=text;}
+ return true;
+}
+function announceCurrentPaint(){syncVisibleReleaseIdentity();const loader=root.OBOL_RUNTIME_LOADER;if(loader&&typeof loader.commitCurrentPaint==='function')loader.commitCurrentPaint(page());}
 function stripBuildMetrics(){
  if(page()==='dashboard')return;
  document.querySelectorAll('.northstar-home50,.northstar-home66,.product-home88,.app-phase-badge88').forEach(x=>x.remove());
@@ -113,7 +120,8 @@ function decorateRoute(){
  else if(p==='home')renderHome();
  else if(p==='path')decoratePath();
  stripBuildMetrics();
+ announceCurrentPaint();
 }
-root.OBOL_CURRENT_WORKFLOW=Object.freeze({version:'1.0.0',decorateRoute,renderHome,renderDashboard,decoratePath,ensureDashboardNav});
+root.OBOL_CURRENT_WORKFLOW=Object.freeze({version:'1.1.0',decorateRoute,renderHome,renderDashboard,decoratePath,ensureDashboardNav,syncVisibleReleaseIdentity,announceCurrentPaint});
 for(const t of [0,80,260,900,2200])setTimeout(decorateRoute,t);
 })(typeof window!=='undefined'?window:globalThis);

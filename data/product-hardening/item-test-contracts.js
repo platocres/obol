@@ -328,6 +328,17 @@ contracts['qa-runtime-request-budget']={
  validationCommands:['node tests/playwright-smoke.js','node tests/run-v9.40-tests.js'],
  proofFiles:['tests/playwright-smoke.js','.github/workflows/browser-smoke.yml','tests/run-v9.40-tests.js','docs/v9.40.md']
 };
+contracts['runtime-app-single-paint']={
+ acceptance:[
+  'The v9.43 runtime-app-flattening milestone remains complete as request consolidation and stale-overlay retirement, while runtime-app-single-paint is recorded as a separate additive architecture item so Product Build Next history and denominators are not rewritten.',
+  'index.html starts behind an inline boot visibility barrier and exposes the current release title/tagline from first parse; assets/runtime-current.js owns arm, commit, and fail-safe transitions, and a boot timeout renders a current-owned error shell rather than exposing an intermediate historical route.',
+  'assets/workflow-current.js commits the visible paint only after the stable current workflow has rendered/decorated the active operator route; Dashboard uses its current-owner hydration path to commit independently.',
+  'A real Chromium regression deliberately delays assets/workflow-current.js, samples visible frames during cold Home startup, and fails if any visible #view state precedes the current Home marker.',
+  'The 43 application compatibility fragments remain exact-owned and frozen for regression; v9.46 changes visibility/boot ownership without falsely claiming semantic application retirement or changing runtime consolidation fragment counts.'
+ ],
+ validationCommands:['node tools/validate-current-boot.js','node tools/validate-single-paint-boot-browser.js','node tools/sync-current-release.js --check','node tests/run-v9.46-tests.js'],
+ proofFiles:['index.html','assets/runtime-current.js','assets/workflow-current.js','tools/validate-current-boot.js','tools/validate-single-paint-boot-browser.js','.github/workflows/browser-smoke.yml','data/product-hardening/product-hardening-queue.js','assets/product-hardening-dashboard.js','README.md','docs/PRODUCT-HARDENING.md','docs/RUNTIME-COMPACTION.md','docs/ARCHITECTURE.md','docs/UX-QUALITY.md','tests/run-v9.46-tests.js','docs/v9.46.md']
+};
 const requiredForStatuses=['modeled','complete','superseded','rejected'];
-root.OBOL_PRODUCT_HARDENING_TEST_CONTRACTS={version:'9.45.0',requiredForStatuses,contracts};
+root.OBOL_PRODUCT_HARDENING_TEST_CONTRACTS={version:'9.46.0',requiredForStatuses,contracts};
 })(typeof window!=='undefined'?window:globalThis);

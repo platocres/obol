@@ -234,3 +234,7 @@ node tests/run-v9.7-tests.js
 ```
 
 These checks do not replace smoke, preflight, release-contract validation, or the complete historical chain. They add the phase-specific governance needed for v9 product hardening.
+
+## Single-paint metric correction (v9.46)
+
+The v9.43 `runtime-app-flattening` milestone is retained as complete because it did what its implementation actually proved: it consolidated the surviving application compatibility chain into one request owner and retired 21 stale-gated overlays. It did not semantically flatten the remaining 43 UI fragments and did not prove a no-flash first-paint contract. v9.46 records that newly discovered requirement as a separate additive `runtime-app-single-paint` item. Architecture/runtime therefore advances from 17/20 to 18/21 instead of rewriting prior history. Overall Product Hardening advances from 206/649 to 207/650. Future agents must distinguish request consolidation, semantic retirement, and visible first-paint ownership in queue labels, proofs, and dashboard language.

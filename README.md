@@ -4,7 +4,7 @@ Obol is a static, browser-local workspace for OSCP-style labs, Active Directory 
 
 Live site: `https://platocres.github.io/obol/`
 
-Current release: **v9.45**
+Current release: **v9.46**
 
 Open `#/dashboard` for the active Product Hardening Dashboard and Product Build Next queue.
 
@@ -72,7 +72,7 @@ This block is generated from `data/product-hardening/product-hardening-queue.js`
 Recommended work-package metadata comes from `data/product-hardening/work-packages.js`.
 Runtime consolidation figures come from `data/runtime-consolidation-current.js`, the same projection the Product Hardening Dashboard renders.
 
-**Current product-hardening queue:** 206/649 complete (32%), 11 queued, 9 foundation items modeled.
+**Current product-hardening queue:** 207/650 complete (32%), 11 queued, 9 foundation items modeled.
 **Private notes source:** `platocres/obol-source-notes` — 556 notes and 1326 embedded resources accounted.
 **Notes Integration:** 127/556 reviewed — 95 modeled, 27 private-only, 429 pending.
 **Derived note guidance:** 48 Field Notes · 43 tool-bound · 45 Path-bound · 14 Evidence · 5 Report.
@@ -106,7 +106,7 @@ Runtime consolidation figures come from `data/runtime-consolidation-current.js`,
 
 **Track status:**
 - **Critical correctness:** 4/5 complete (80%), 0 modeled.
-- **Architecture / runtime:** 17/20 complete (85%), 3 modeled.
+- **Architecture / runtime:** 18/21 complete (86%), 3 modeled.
 - **UI / UX repair:** 9/10 complete (90%), 1 modeled.
 - **Tool GUI builders:** 19/19 complete (100%), 0 modeled.
 - **Credential modes:** 14/14 complete (100%), 0 modeled.
