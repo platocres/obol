@@ -36,6 +36,7 @@ for(const args of [
  ['tools/validate-note-mechanic-backfill.js'],
  ['tools/validate-tool-builders.js'],
  ['tools/validate-note-integration.js'],
+ ['tools/validate-release-pr.js','--repo-only','--release-version=9.38'],
  ['tools/scope-check.js']
 ])run(args);
 console.log('v9.38 reviewed-note mechanic backfill contract passed.');
