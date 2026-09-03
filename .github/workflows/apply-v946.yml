@@ -1,5 +1,5 @@
 name: Apply Obol v9.46 release changes
-# retry 7: skip already-applied release-sync block
+# retry 8: push generated non-workflow changes only
 
 on:
   push:
@@ -26,6 +26,7 @@ jobs:
           node tools/fix-apply-v946.js
           node tools/apply-v946-release.js
           rm -f tools/fix-apply-v946.js
+          git checkout HEAD -- .github/workflows/browser-smoke.yml .github/workflows/apply-v946.yml
 
       - name: Commit generated release
         run: |
