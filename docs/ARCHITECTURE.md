@@ -176,3 +176,11 @@ Architectural consolidation must preserve:
 ## Current-route single-paint boot boundary (v9.46)
 
 The browser now has a first-paint ownership boundary in addition to request and fragment ownership. `index.html` starts with `html.obol-booting`, `assets/runtime-current.js` owns the boot state machine, and `assets/workflow-current.js` removes the barrier only after the stable current route has rendered. Historical application compatibility can still execute behind `assets/obol-app-current.js`, but it cannot become operator-visible during cold start. This is intentionally different from semantic application retirement: the app area remains a 43-fragment `ordered-fragment-concatenation` owner until a future equivalence-backed semantic replacement is built.
+
+## Application ownership boundary (v9.47)
+
+The browser application has one stable execution owner: `assets/obol-app-current.js`. Historical `app-v*`, v2 base/view, and related application fragments are source/equivalence fixtures, not autonomous browser layers. The current owner may replay their still-required rendering deltas as generated semantic input, but historical code may not install live navigation listeners, timers, intervals, MutationObservers, or delayed repaint schedules.
+
+Navigation is owned by the current application router. For non-Dashboard routes it executes the surviving rendering transaction, drains captured historical decorator intent before paint, then invokes `OBOL_CURRENT_WORKFLOW` and `OBOL_OPERATOR_ROUTES` last. Dashboard retains its dedicated current-route hydration owner. Runtime lazy hydration may call `window.route()`, but that symbol now resolves to the stable current router rather than the historical wrapper chain.
+
+Do not regress this boundary by changing the application area back to `ordered-fragment-concatenation`, loading `assets/app-v*.js` directly, or reintroducing version-specific route scheduling. Historical files remain valuable regression evidence; they are not the current presentation authority.

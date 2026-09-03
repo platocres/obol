@@ -23,6 +23,7 @@ const root=path.join(__dirname,'..');
 const manifest=require(path.join(root,'data','runtime-manifest.js'));
 const bundles=require('./sync-runtime-bundles');
 const coreCurrent=require('./sync-core-current');
+const appCurrent=require('./sync-app-current');
 
 const read=rel=>fs.readFileSync(path.join(root,rel),'utf8').replace(/\r\n/g,'\n');
 const sha=value=>crypto.createHash('sha256').update(value).digest('hex');
@@ -37,9 +38,10 @@ const semanticAreas=areas.filter(area=>area.strategy==='semantic-snapshot');
 const semanticDeltaAreas=areas.filter(area=>area.strategy==='semantic-delta-replay');
 assert.strictEqual(semanticAreas.length,1,'v9.42 has exactly one graph-snapshot runtime area');
 assert.strictEqual(semanticAreas[0].id,'domain','the domain area is the semantic runtime owner');
-assert.strictEqual(semanticDeltaAreas.length,1,'v9.42 has exactly one semantic delta-replay runtime area');
-assert.strictEqual(semanticDeltaAreas[0].id,'core','the core area is the semantic delta-replay owner');
-assert.strictEqual(exactAreas.length,5,'the remaining runtime areas stay exact ordered concatenations');
+assert.strictEqual(semanticDeltaAreas.length,2,'core and application are semantic delta-replay runtime areas');
+assert(semanticDeltaAreas.some(area=>area.id==='core'),'the core area is a semantic delta-replay owner');
+assert(semanticDeltaAreas.some(area=>area.id==='app'),'the application area is a semantic delta-replay owner');
+assert.strictEqual(exactAreas.length,4,'the remaining runtime areas stay exact ordered concatenations');
 
 /* ---- ownership coverage ------------------------------------------------- */
 
@@ -91,7 +93,7 @@ new vm.Script(domainOwner,{filename:domain.owner});
 
 /* ---- semantic core owner ------------------------------------------------- */
 
-const core=semanticDeltaAreas[0];
+const core=semanticDeltaAreas.find(area=>area.id==='core');
 assert(manifest.coreCurrent,'semantic core owner declares manifest metadata');
 assert.strictEqual(manifest.coreCurrent.owner,core.owner,'coreCurrent owner matches the core area owner');
 assert.strictEqual(manifest.coreCurrent.strategy,'semantic-delta-replay','coreCurrent records the semantic delta strategy');
@@ -106,6 +108,24 @@ assert(coreOwner.includes('obol-core-base-scope:'),'semantic core owner preserve
 assert(coreOwner.includes('obol-core-delta: assets/core-v8.8.js'),'semantic core owner preserves late release deltas');
 for(const forbidden of ['vm.runInContext','vm.runInThisContext','fs.readFile','document.write'])assert(!coreOwner.includes(forbidden),'semantic core owner must not dynamically load historical fragments: '+forbidden);
 new vm.Script(coreOwner,{filename:core.owner});
+
+/* ---- semantic application owner ------------------------------------------ */
+
+const app=semanticDeltaAreas.find(area=>area.id==='app');
+assert(app&&manifest.appCurrent,'semantic application owner declares manifest metadata');
+assert.strictEqual(manifest.appCurrent.owner,app.owner,'appCurrent owner matches the application area owner');
+assert.strictEqual(manifest.appCurrent.strategy,'semantic-delta-replay','appCurrent records the semantic delta strategy');
+assert.strictEqual(manifest.appCurrent.generator,'tools/sync-app-current.js','application semantic owner declares its generator');
+assert.strictEqual(manifest.appCurrent.semanticValidator,'tools/validate-app-semantic-current.js','application semantic owner declares its ownership validator');
+assert.deepStrictEqual(Array.from(manifest.appCurrent.historicalFragments),Array.from(app.fragments),'appCurrent records the frozen application semantic ledger');
+assert.strictEqual(app.fragments.length,43,'application semantic owner retains the 43 v9.43 surviving source fragments');
+const appOwner=read(app.owner);
+assert.strictEqual(appOwner,appCurrent.expected(),app.owner+' is out of sync with its semantic application generator');
+assert(!appOwner.includes('obol-runtime-fragment:'),'semantic application owner is not an exact historical concatenation bundle');
+assert(appOwner.includes('obol-app-delta: assets/app-v8.8.js'),'semantic application owner preserves the live v8.8 bridge semantics as generated input');
+assert(appOwner.includes('__OBOL_HISTORICAL_APP_SCHEDULERS_DISABLED__'),'semantic application owner retires autonomous historical scheduling');
+for(const forbidden of ['vm.runInContext','vm.runInThisContext','fs.readFile','document.write(manifest'])assert(!appOwner.includes(forbidden),'semantic application owner must not dynamically load historical fragments: '+forbidden);
+new vm.Script(appOwner,{filename:app.owner});
 
 /* ---- exact areas: strict leakage, exact concatenation, parse isolation ----- */
 

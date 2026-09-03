@@ -328,6 +328,16 @@ contracts['qa-runtime-request-budget']={
  validationCommands:['node tests/playwright-smoke.js','node tests/run-v9.40-tests.js'],
  proofFiles:['tests/playwright-smoke.js','.github/workflows/browser-smoke.yml','tests/run-v9.40-tests.js','docs/v9.40.md']
 };
+contracts['runtime-app-semantic-retirement']={
+ acceptance:[
+  'The application ownership area uses a stable non-versioned semantic-delta-replay owner rather than an exact historical concatenation, while all 43 v9.43 surviving fragments remain traceable as the frozen semantic ledger.',
+  'Historical application startup timers, intervals, hashchange listeners, MutationObservers, and delayed route repaint schedules are suppressed; one current router owns navigation and drains surviving historical decorator intent before current workflow/operator presentation commits.',
+  'Cold boot and route navigation do not directly request versioned historical application files and do not expose a historical Home or Next Steps frame across the complete former timer horizon.',
+  'README, Product Build Next, Dashboard, runtime consolidation projection, architecture guidance, and historical v9.43/v9.46 milestones distinguish request flattening, first-paint protection, and semantic application retirement without rewriting earlier completion counts.'
+ ],
+ validationCommands:['node tools/sync-app-current.js --check','node tools/validate-app-semantic-current.js','node tools/validate-app-current-equivalence.js','node tools/validate-app-dom-equivalence.js','node tools/validate-app-semantic-boot-browser.js','node tests/run-v9.47-tests.js'],
+ proofFiles:['data/runtime-manifest.js','assets/obol-app-current.js','tools/sync-app-current.js','tools/validate-app-semantic-current.js','tools/validate-app-semantic-boot-browser.js','data/product-hardening/product-hardening-queue.js','assets/product-hardening-dashboard.js','README.md','BUILDING.md','docs/RUNTIME-COMPACTION.md','docs/ARCHITECTURE.md','tests/run-v9.47-tests.js','docs/v9.47.md']
+};
 contracts['runtime-app-single-paint']={
  acceptance:[
   'The v9.43 runtime-app-flattening milestone remains complete as request consolidation and stale-overlay retirement, while runtime-app-single-paint is recorded as a separate additive architecture item so Product Build Next history and denominators are not rewritten.',

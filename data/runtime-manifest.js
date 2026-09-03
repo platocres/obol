@@ -160,11 +160,11 @@ const routeLazy=Object.freeze({
 });
 const surfacePolicy=Object.freeze({
  dashboard:Object.freeze({policy:'current-owner+retired-historical-data-and-presentation+route-lazy-data',owner:'assets/dashboard-route-current.js',compatibilityMetadataOwner:'data/dashboard-compat-current.js',reason:'The stable current route owner prevents historical paint. Versioned dashboard data owners and proven dashboard-only presentation overlays remain only in the frozen historical ledger; one data-only compatibility seam supplies the minimal metadata still consumed by historical core overlays on non-Dashboard routes.'}),
- operatorRoutes:Object.freeze({policy:'current-owner+compatibility-decorated',owner:'assets/operator-route-current.js',reason:'Path, Card, and Tools keep historical compatibility code available while current route owners replace visible presentation. v9.46 adds a boot visibility barrier so exact-owned application compatibility may initialize but cannot expose historical intermediate route paints before the current workflow claims first paint.'}),
+ operatorRoutes:Object.freeze({policy:'semantic-current-application+current-route-owners',owner:'assets/operator-route-current.js',reason:'v9.47 gives the application layer one stable current router. The surviving historical rendering deltas remain only as the frozen semantic ledger compiled into assets/obol-app-current.js; their timers, hashchange listeners, intervals, and MutationObservers no longer run autonomously. Current workflow/operator owners commit visible presentation last.'}),
  methodology:Object.freeze({policy:'semantic-current-owner-eager',owner:'assets/obol-domain-current.js',reason:'Methodology data drives Home and Next Steps ranking, so the semantic current-domain owner remains eager while the 103 versioned sources are retained only as the equivalence ledger.'}),
  toolLibrary:Object.freeze({policy:'route-lazy',owner:'toolReferenceData',reason:'Wordlist and script reference payloads are route-local and load when Tools is opened.'}),
  lineage:Object.freeze({policy:'shared-core-eager',owner:'core/app',reason:'Artifact and activity lineage participates in Evidence, recommendation, and reporting semantics across primary workflow routes.'}),
- historical:Object.freeze({policy:'compatibility-selective',owner:'scripts',reason:'The frozen historical script ledger remains available for fixtures/regression. Dashboard data/presentation owners, stale-gated release-wave application overlays, unreachable Evidence parser overlays, and the domain and core fragment chains no longer execute directly. Remaining application compatibility still executes through an exact owner, but v9.46 prevents its intermediate historical renders from becoming visible while deeper semantic retirement remains future work.'}),
+ historical:Object.freeze({policy:'compatibility-selective',owner:'scripts',reason:'The frozen historical script ledger remains available for fixtures/regression. Dashboard data/presentation owners, stale-gated release-wave application overlays, unreachable Evidence parser overlays, and the domain and core fragment chains no longer execute directly. The application area is semantically current-owned as of v9.47: its 43 surviving historical rendering deltas remain traceable in the frozen ledger but no longer execute as autonomous browser layers. v9.43 remains the request/stale-overlay retirement milestone and v9.46 remains the first-paint barrier milestone.'}),
  evidence:Object.freeze({policy:'route-lazy+retired-unreachable-overlays',owner:'evidenceParsing',reason:'BloodHound helpers and the versioned Evidence parser overlays that still reach the decorator chain load when Evidence/Artifacts is opened. Four overlays that hook a predecessor global which never publishes analyzeTerminal are retired to the frozen ledger; conservative interpretation and proof boundaries are unchanged.'}),
  report:Object.freeze({policy:'route-lazy',owner:'reportOverlays',reason:'The stable base report owner stays eager; historical report overlays load on Report.'})
 });
@@ -175,7 +175,7 @@ const bundleSeparator='\n;\n';
 const startupBundleDefs=[
  ['domain','assets/obol-domain-current.js','Domain data','Lane, methodology, Orange source-fidelity, project-model, report-metadata, and signature owners.','semantic-snapshot'],
  ['core','assets/obol-core-current.js','Core state and derivation','Browser-local state, migrations, proof boundaries, applicability, ranking, progress, and report readiness.','semantic-delta-replay'],
- ['app','assets/obol-app-current.js','Report base and application UI','Base report owner, application prelude, and historical workflow/UI overlays.','ordered-fragment-concatenation']
+ ['app','assets/obol-app-current.js','Report base and application UI','Base report owner, application prelude, and historical workflow/UI semantic deltas.','semantic-delta-replay']
 ];
 const lazyBundleDefs=[
  ['evidenceParsing','assets/obol-evidence-current.js','Evidence parsing','BloodHound helpers and historical Evidence parser overlays.'],
@@ -214,21 +214,24 @@ const domainCurrent=Object.freeze({
  generator:'tools/sync-domain-current.js',
  equivalenceValidator:'tools/validate-domain-current-equivalence.js'
 });
-/* The application area stays an exact ordered concatenation of the fragments that
-   still contribute behavior. v9.43 flattened it by proving supersession instead of
-   by rewriting code: the stale-gated release-wave overlays left the live chain, and
-   the survivors are exact-owned so Evidence, command, recommendation, report, and
-   workspace semantics are untouched. */
+/* v9.47 application semantic retirement. v9.43 proved which release-wave overlays were
+   inert and reduced the surviving ledger to 43 load-bearing fragments; v9.46 added a
+   first-paint barrier. v9.47 changes execution ownership: the surviving rendering
+   deltas are generated into one stable current router, historical scheduler/listener
+   side effects are suppressed, and current workflow/operator owners commit last. */
 const appCurrent=Object.freeze({
  owner:'assets/obol-app-current.js',
- strategy:'ordered-fragment-concatenation',
- sourceRelease:'v9.43',
+ strategy:'semantic-delta-replay',
+ sourceRelease:'v9.47',
+ requestRetirementRelease:'v9.43',
+ firstPaintRelease:'v9.46',
  historicalFragments:bundleAreas.find(area=>area.id==='app').fragments,
  retiredFragments:retiredReleaseWaveOverlays,
  retirementGate:'C.VERSION',
  retirementGateValue:'8.8.0',
  retainedGateOwner:'assets/app-v8.8.js',
- generator:'tools/sync-runtime-bundles.js',
+ generator:'tools/sync-app-current.js',
+ semanticValidator:'tools/validate-app-semantic-current.js',
  equivalenceValidator:'tools/validate-app-current-equivalence.js',
  domEquivalenceValidator:'tools/validate-app-dom-equivalence.js'
 });

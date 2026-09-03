@@ -149,6 +149,8 @@ function proveOverlayInert(rel,source,liveVersion){
 }
 
 function main(){
+ const currentArea=(manifest.bundles&&manifest.bundles.areas||[]).find(candidate=>candidate.id==='app');
+ if(currentArea&&currentArea.strategy==='semantic-delta-replay'){require('./validate-app-semantic-current').main();return;}
  /* ---- manifest metadata ---------------------------------------------------- */
  
  const area=(manifest.bundles&&manifest.bundles.areas||[]).find(candidate=>candidate.id==='app');

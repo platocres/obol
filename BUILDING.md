@@ -116,6 +116,10 @@ v6.6 established the boundary between domain models and current project-status p
 
 ## Historical runtime compaction
 
+**Critical application-ownership distinction for future agents:** do not use "flattened" as a synonym for semantic retirement. v9.43 consolidated application requests and retired 21 stale overlays but deliberately kept 43 surviving fragments in exact historical execution order. v9.46 added a first-visible-paint barrier but did not stop those survivors from scheduling later route repaints. v9.47 is the separate semantic application-ownership milestone: the 43 survivors remain the frozen regression/equivalence ledger, while one stable current application/router owner suppresses their autonomous schedulers/listeners and commits current presentation last. Future compaction metrics must preserve all three milestones additively rather than retroactively relabeling an earlier one.
+
+A generated owner is not semantically retired merely because the browser makes one request. For application work, require proof of **execution ownership**: versioned fragments must not be requested directly, historical scheduling/listener side effects must not remain autonomous, and long-horizon browser proof must show that a current-owned route cannot be replaced by a historical paint after commit.
+
 The historical browser load chain is acknowledged technical debt. With the pinned Orange 2025.03 methodology/source queue complete in v8.8, regression-equivalent compaction is now a primary engineering direction rather than secondary cleanup. `docs/RUNTIME-COMPACTION.md` owns the detailed retirement lifecycle.
 
 For each ownership area selected for compaction:

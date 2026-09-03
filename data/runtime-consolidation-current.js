@@ -25,7 +25,7 @@ const measured=Object.freeze({
 
 function projection(){
  if(!manifest||!manifest.bundles)return null;
- const generatedOwner=area=>area.id==='domain'&&manifest.domainCurrent?manifest.domainCurrent:area.id==='core'&&manifest.coreCurrent?manifest.coreCurrent:null;
+ const generatedOwner=area=>area.id==='domain'&&manifest.domainCurrent?manifest.domainCurrent:area.id==='core'&&manifest.coreCurrent?manifest.coreCurrent:area.id==='app'&&manifest.appCurrent?manifest.appCurrent:null;
  const areas=manifest.bundles.areas.map(area=>Object.freeze({
   id:area.id,
   scope:area.scope,
