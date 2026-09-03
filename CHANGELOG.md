@@ -4,6 +4,13 @@ This file is the release-history source for Obol. Future build work should revie
 
 The README is intentionally reserved for current product purpose, permanent operating and build requirements, current architecture/state, and forward priorities. Release narratives and historical implementation summaries belong here, not in README.
 
+## v9.39 — Faster regression gate and dashboard at-a-glance
+
+- Parallelized `tools/run-historical-contracts.js`: the syntax-check phase and the full suite/validator set now run through a bounded worker pool of isolated processes. Identical coverage (every file syntax-checked, every `run-v*-tests.js` suite run), but the complete gate finishes far faster — measured ~64s vs the prior sequential run that had not finished at 120s. Safe because historical suites write only to unique `os.tmpdir` paths and the validators are read-only.
+- Led the Product Hardening Dashboard with an at-a-glance summary strip (release, product-hardening percent, notes reviewed, mechanic conversion, guidance-only backlog) above the detailed ledgers.
+- Surfaced the v9.36 notes conversion rubric in the dashboard's Notes Integration detail: mechanic conversion (the primary notes metric), the ratcheted guidance-only backlog, and script-bound guidance counts. README and dashboard continue to read the same queue and notes-impact data.
+- Physical historical-layer retirement remains per-area lifecycle work tracked by the `architecture-runtime` items and the dashboard retirement matrix; this release adds no layer deletions, so no coverage is lost.
+
 ## v9.37 — Path three-mode rendering
 
 - Completed `ux-path-three-mode`: Next Steps now renders Simplified, Checklist, and Live Map views from one normalized `C.nextStepsOverview34(...)` model.

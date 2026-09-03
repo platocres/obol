@@ -18,8 +18,8 @@ const release=w.OBOL_CURRENT_RELEASE;
 const queue=w.OBOL_PRODUCT_HARDENING;
 const contracts=w.OBOL_PRODUCT_HARDENING_TEST_CONTRACTS;
 assert(release&&queue&&contracts,'release, queue, and contracts must load');
-assert.strictEqual(release.label,'v9.37');
-assert.strictEqual(release.version,'9.37.0');
+assert(/^v9\.\d+$/.test(release.label),'v9 current release label');
+{const rp=String(release.version).split('.').map(Number);assert(rp[0]===9&&rp[1]>=37,'v9.37+ current release required')};
 
 const item=queue.items.find(x=>x.id==='ux-path-three-mode');
 assert(item,'ux-path-three-mode must exist in product-hardening queue');
