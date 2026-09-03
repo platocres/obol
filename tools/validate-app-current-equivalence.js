@@ -48,58 +48,6 @@ const bundles=require('./sync-runtime-bundles');
 const read=rel=>fs.readFileSync(path.join(root,rel),'utf8').replace(/\r\n/g,'\n');
 const sha=value=>crypto.createHash('sha256').update(value).digest('hex');
 
-/* ---- manifest metadata ---------------------------------------------------- */
-
-const area=(manifest.bundles&&manifest.bundles.areas||[]).find(candidate=>candidate.id==='app');
-assert(area,'runtime manifest declares the application ownership area');
-assert.strictEqual(area.scope,'startup','the application area is an operator startup owner');
-assert.strictEqual(area.strategy,'ordered-fragment-concatenation','the surviving application chain stays exact-owned so no behavior is rewritten');
-
-const app=manifest.appCurrent;
-assert(app,'runtime manifest declares appCurrent metadata');
-assert.strictEqual(app.owner,area.owner,'appCurrent points at the application owner');
-assert.strictEqual(app.generator,'tools/sync-runtime-bundles.js','appCurrent declares its generator');
-assert.strictEqual(app.equivalenceValidator,'tools/validate-app-current-equivalence.js','appCurrent declares this validator');
-assert.strictEqual(app.domEquivalenceValidator,'tools/validate-app-dom-equivalence.js','appCurrent declares its browser-level validator');
-assert.strictEqual(app.retirementGate,'C.VERSION','appCurrent names the identity the retirement depends on');
-assert.deepStrictEqual(Array.from(app.historicalFragments),Array.from(area.fragments),'appCurrent records the surviving application chain');
-
-const retired=Array.from(app.retiredFragments);
-assert.strictEqual(retired.length,21,'v9.43 retires the 21 stale-gated release-wave overlays');
-assert.strictEqual(new Set(retired).size,retired.length,'the retired application ledger contains no duplicates');
-assert.strictEqual(area.fragments.length,43,'the application owner keeps the 43 fragments that still contribute behavior');
-assert.strictEqual(retired.length+area.fragments.length,64,'every fragment of the v9.42 64-fragment application area is either retired or still owned');
-
-/* Retirement removes fragments from live startup only. Nothing is deleted. */
-for(const rel of retired){
- assert(fs.existsSync(path.join(root,rel)),'retired application overlay stays on disk as the regression ledger: '+rel);
- assert(manifest.scripts.includes(rel),'retired application overlay stays in the frozen historical ledger: '+rel);
- assert(manifest.retiredStartupScripts.includes(rel),'retired application overlay is declared in the retired startup ledger: '+rel);
- assert(!manifest.startupScripts.includes(rel),'retired application overlay leaked back into live startup: '+rel);
- assert(!area.fragments.includes(rel),'retired application overlay leaked back into the application owner: '+rel);
- for(const group of manifest.deferredScriptGroups||[])assert(!(manifest.lazy[group]||[]).includes(rel),'a retired overlay must not reappear as a route-lazy group member: '+rel);
-}
-
-/* ---- the live gate value -------------------------------------------------- */
-
-/* C.VERSION is read from the generated current core owner rather than hard-coded,
-   so a future intentional storage migration invalidates this proof instead of
-   silently leaving dead-but-now-live overlays out of the runtime. */
-function liveSchemaVersion(){
- const sandbox={console,setTimeout,clearTimeout,setInterval,clearInterval};
- sandbox.window=sandbox;
- sandbox.globalThis=sandbox;
- sandbox.DOMParser=function(){};
- const ctx=vm.createContext(sandbox);
- for(const rel of [...manifest.startupPreludeScripts,manifest.domainCurrent.owner,manifest.coreCurrent.owner])vm.runInContext(read(rel),ctx,{filename:rel});
- assert(ctx.OBOL_CORE_V2&&ctx.OBOL_CORE_V2.VERSION,'current core owner exposes the workspace/runtime schema identity');
- return String(ctx.OBOL_CORE_V2.VERSION);
-}
-const liveVersion=liveSchemaVersion();
-assert.strictEqual(liveVersion,app.retirementGateValue,'appCurrent records the workspace/runtime schema identity the current core owner actually ships');
-
-/* ---- structural inertness ------------------------------------------------- */
-
 const IIFE=/^(?:\/\/[^\n]*\n)*'use strict';\n\(function\(\)\{\n([\s\S]*)\n\}\)\(\);\n?$/;
 
 /* Splits IIFE body text into top-level statements. Function declarations are
@@ -161,9 +109,12 @@ function inertForms(n){
  ];
 }
 
-const gates=new Map();
-for(const rel of retired){
- const source=read(rel);
+/* The whole per-overlay proof, as a pure function of the fragment's source text.
+   Keeping it pure is what lets tests/run-v9.43-tests.js prove the proof can fail —
+   it feeds mutated source in memory rather than writing to the working tree, which
+   would break the hermeticity that tools/run-historical-contracts.js relies on to
+   run suites concurrently. Returns the stale gate it proved against. */
+function proveOverlayInert(rel,source,liveVersion){
  new vm.Script(source,{filename:rel});
  const match=source.match(IIFE);
  assert(match,'retired application overlay keeps the historical release-wave IIFE shape: '+rel);
@@ -174,8 +125,6 @@ for(const rel of retired){
  const gate=source.match(new RegExp('function active'+suffix+'\\(\\)\\{return typeof C!==\'undefined\'&&C\\.VERSION===\'([\\d.]+)\';\\}'));
  assert(gate,'retired application overlay declares its release-wave version gate: '+rel);
  assert.notStrictEqual(gate[1],liveVersion,'a retired overlay must be gated on a stale schema identity, but '+rel+' matches the live C.VERSION '+liveVersion);
- assert(!gates.has(gate[1]),'two retired overlays claim the same schema identity gate: '+gate[1]);
- gates.set(gate[1],rel);
 
  assert(new RegExp('function decorate'+suffix+'\\(\\)\\{if\\(!active'+suffix+'\\(\\)\\)return;').test(source),'retired overlay short-circuits its decorator on the stale gate: '+rel);
 
@@ -196,25 +145,94 @@ for(const rel of retired){
  for(const forbidden of ['innerHTML','insertAdjacentHTML','localStorage','document.title','textContent','appendChild','save(','renderAll(','state.']){
   assert(!residual.includes(forbidden),'retired overlay '+rel+' performs '+forbidden+' outside its short-circuited decorator');
  }
+ return gate[1];
 }
 
-/* The one release-wave overlay whose gate matches the live identity stays live: it
-   owns the current release bridge to the workflow and operator-route owners. */
-const retained=app.retainedGateOwner;
-assert(area.fragments.includes(retained),'the overlay matching the live schema identity stays in the application owner: '+retained);
-assert(new RegExp("C\\.VERSION==='"+liveVersion.replace(/\./g,'\\.')+"'").test(read(retained)),retained+' is the overlay gated on the live schema identity');
-for(const token of ['assets/workflow-current.js','assets/operator-route-current.js'])assert(read(retained).includes(token),retained+' keeps the current-owner bridge to '+token);
+function main(){
+ /* ---- manifest metadata ---------------------------------------------------- */
+ 
+ const area=(manifest.bundles&&manifest.bundles.areas||[]).find(candidate=>candidate.id==='app');
+ assert(area,'runtime manifest declares the application ownership area');
+ assert.strictEqual(area.scope,'startup','the application area is an operator startup owner');
+ assert.strictEqual(area.strategy,'ordered-fragment-concatenation','the surviving application chain stays exact-owned so no behavior is rewritten');
+ 
+ const app=manifest.appCurrent;
+ assert(app,'runtime manifest declares appCurrent metadata');
+ assert.strictEqual(app.owner,area.owner,'appCurrent points at the application owner');
+ assert.strictEqual(app.generator,'tools/sync-runtime-bundles.js','appCurrent declares its generator');
+ assert.strictEqual(app.equivalenceValidator,'tools/validate-app-current-equivalence.js','appCurrent declares this validator');
+ assert.strictEqual(app.domEquivalenceValidator,'tools/validate-app-dom-equivalence.js','appCurrent declares its browser-level validator');
+ assert.strictEqual(app.retirementGate,'C.VERSION','appCurrent names the identity the retirement depends on');
+ assert.deepStrictEqual(Array.from(app.historicalFragments),Array.from(area.fragments),'appCurrent records the surviving application chain');
+ 
+ const retired=Array.from(app.retiredFragments);
+ assert.strictEqual(retired.length,21,'v9.43 retires the 21 stale-gated release-wave overlays');
+ assert.strictEqual(new Set(retired).size,retired.length,'the retired application ledger contains no duplicates');
+ assert.strictEqual(area.fragments.length,43,'the application owner keeps the 43 fragments that still contribute behavior');
+ assert.strictEqual(retired.length+area.fragments.length,64,'every fragment of the v9.42 64-fragment application area is either retired or still owned');
+ 
+ /* Retirement removes fragments from live startup only. Nothing is deleted. */
+ for(const rel of retired){
+  assert(fs.existsSync(path.join(root,rel)),'retired application overlay stays on disk as the regression ledger: '+rel);
+  assert(manifest.scripts.includes(rel),'retired application overlay stays in the frozen historical ledger: '+rel);
+  assert(manifest.retiredStartupScripts.includes(rel),'retired application overlay is declared in the retired startup ledger: '+rel);
+  assert(!manifest.startupScripts.includes(rel),'retired application overlay leaked back into live startup: '+rel);
+  assert(!area.fragments.includes(rel),'retired application overlay leaked back into the application owner: '+rel);
+  for(const group of manifest.deferredScriptGroups||[])assert(!(manifest.lazy[group]||[]).includes(rel),'a retired overlay must not reappear as a route-lazy group member: '+rel);
+ }
+ 
+ /* ---- the live gate value -------------------------------------------------- */
+ 
+ /* C.VERSION is read from the generated current core owner rather than hard-coded,
+    so a future intentional storage migration invalidates this proof instead of
+    silently leaving dead-but-now-live overlays out of the runtime. */
+ function liveSchemaVersion(){
+  const sandbox={console,setTimeout,clearTimeout,setInterval,clearInterval};
+  sandbox.window=sandbox;
+  sandbox.globalThis=sandbox;
+  sandbox.DOMParser=function(){};
+  const ctx=vm.createContext(sandbox);
+  for(const rel of [...manifest.startupPreludeScripts,manifest.domainCurrent.owner,manifest.coreCurrent.owner])vm.runInContext(read(rel),ctx,{filename:rel});
+  assert(ctx.OBOL_CORE_V2&&ctx.OBOL_CORE_V2.VERSION,'current core owner exposes the workspace/runtime schema identity');
+  return String(ctx.OBOL_CORE_V2.VERSION);
+ }
+ const liveVersion=liveSchemaVersion();
+ assert.strictEqual(liveVersion,app.retirementGateValue,'appCurrent records the workspace/runtime schema identity the current core owner actually ships');
+ 
+ /* ---- structural inertness ------------------------------------------------- */
+ 
+ 
+ 
+ 
+ const gates=new Map();
+ for(const rel of retired){
+   const gate=proveOverlayInert(rel,read(rel),liveVersion);
+   assert(!gates.has(gate),'two retired overlays claim the same schema identity gate: '+gate);
+   gates.set(gate,rel);
+  }
+ 
+  /* The one release-wave overlay whose gate matches the live identity stays live: it
+    owns the current release bridge to the workflow and operator-route owners. */
+ const retained=app.retainedGateOwner;
+ assert(area.fragments.includes(retained),'the overlay matching the live schema identity stays in the application owner: '+retained);
+ assert(new RegExp("C\\.VERSION==='"+liveVersion.replace(/\./g,'\\.')+"'").test(read(retained)),retained+' is the overlay gated on the live schema identity');
+ for(const token of ['assets/workflow-current.js','assets/operator-route-current.js'])assert(read(retained).includes(token),retained+' keeps the current-owner bridge to '+token);
+ 
+ /* ---- surviving owner ------------------------------------------------------ */
+ 
+ const owner=read(area.owner);
+ assert.strictEqual(owner,bundles.expected(area),area.owner+' is out of sync with its surviving fragments — run node tools/sync-runtime-bundles.js --write');
+ for(const rel of retired)assert(!owner.includes('obol-runtime-fragment: '+rel+' '),'retired overlay is still concatenated into '+area.owner+': '+rel);
+ for(const rel of area.fragments)assert(owner.includes('obol-runtime-fragment: '+rel+' '),'surviving fragment is missing from '+area.owner+': '+rel);
+ new vm.Script(owner,{filename:area.owner});
+ 
+ const survivingBody=area.fragments.map(rel=>read(rel).replace(/\s+$/,'')).join('');
+ const scaffolding=new RegExp('^/\\*[\\s\\S]*?\\*/\\n|/\\* obol-runtime-fragment: [^\\n]*\\*/\\n|\\n;\\n','g');
+ assert.strictEqual(owner.replace(scaffolding,''),survivingBody,area.owner+' is nothing but generated banners around the verbatim surviving fragment bodies');
+ 
+ console.log('Application current owner valid: '+area.fragments.length+' fragments still contribute behavior and '+retired.length+' release-wave overlays are provably inert against live C.VERSION '+liveVersion+' (stale gates '+Array.from(gates.keys()).join(', ')+'); surviving concatenation sha256 '+sha(survivingBody).slice(0,16)+'.');
+}
 
-/* ---- surviving owner ------------------------------------------------------ */
+if(require.main===module)main();
 
-const owner=read(area.owner);
-assert.strictEqual(owner,bundles.expected(area),area.owner+' is out of sync with its surviving fragments — run node tools/sync-runtime-bundles.js --write');
-for(const rel of retired)assert(!owner.includes('obol-runtime-fragment: '+rel+' '),'retired overlay is still concatenated into '+area.owner+': '+rel);
-for(const rel of area.fragments)assert(owner.includes('obol-runtime-fragment: '+rel+' '),'surviving fragment is missing from '+area.owner+': '+rel);
-new vm.Script(owner,{filename:area.owner});
-
-const survivingBody=area.fragments.map(rel=>read(rel).replace(/\s+$/,'')).join('');
-const scaffolding=new RegExp('^/\\*[\\s\\S]*?\\*/\\n|/\\* obol-runtime-fragment: [^\\n]*\\*/\\n|\\n;\\n','g');
-assert.strictEqual(owner.replace(scaffolding,''),survivingBody,area.owner+' is nothing but generated banners around the verbatim surviving fragment bodies');
-
-console.log('Application current owner valid: '+area.fragments.length+' fragments still contribute behavior and '+retired.length+' release-wave overlays are provably inert against live C.VERSION '+liveVersion+' (stale gates '+Array.from(gates.keys()).join(', ')+'); surviving concatenation sha256 '+sha(survivingBody).slice(0,16)+'.');
+module.exports={main,topLevelStatements,inertForms,proveOverlayInert};

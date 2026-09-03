@@ -76,37 +76,53 @@ test('v9.43 proves every retired overlay is inert, not merely unused-looking',()
  assert(output.includes('43 fragments still contribute behavior'),'the validator reports the surviving chain');
 });
 
-test('v9.43 retirement proof fails when a retired overlay regains a side effect',()=>{
- /* A validator that cannot fail proves nothing. Mutate one retired overlay so its
-    top-level code reaches the DOM, and require the shipped validator to reject it. */
- const target=path.join(root,'assets/app-v7.5.js');
- const original=fs.readFileSync(target,'utf8');
- try{
-  fs.writeFileSync(target,original.replace(/\n\}\)\(\);\s*$/,"\ndocument.querySelector('#view').innerHTML='injected';\n})();\n"));
-  const mutated=spawn(['tools/validate-app-current-equivalence.js']);
-  assert.notStrictEqual(mutated.status,0,'the retirement proof must reject a retired overlay that regains a top-level side effect');
-  assert(/not provably inert/.test(mutated.stderr||mutated.stdout||''),'the failure names the offending statement');
- }finally{
-  fs.writeFileSync(target,original);
+/* A proof that cannot fail proves nothing, so the next three tests mutate a retired
+   overlay's source and require the shipped proof to reject it.
+
+   They feed the mutated source to the validator's exported proof in memory. They must
+   not write the mutation into the working tree: tools/run-historical-contracts.js runs
+   suites concurrently and relies on every suite being hermetic, so an in-place edit
+   here would be observed by a sibling task as a real failure. */
+const appProof=require(path.join(root,'tools','validate-app-current-equivalence.js'));
+const retiredSource=rel=>read(rel);
+function rejects(rel,source,pattern,message){
+ assert.throws(()=>appProof.proveOverlayInert(rel,source,'8.8.0'),pattern,message);
+}
+
+test('v9.43 retirement proof accepts the retired overlays as they actually ship',()=>{
+ for(const rel of Array.from(manifest.appCurrent.retiredFragments)){
+  const gate=appProof.proveOverlayInert(rel,retiredSource(rel),'8.8.0');
+  assert(/^\d+\.\d+\.0$/.test(gate),'the proof reports the stale gate it proved against for '+rel);
+  assert.notStrictEqual(gate,'8.8.0','a retired overlay is never gated on the live schema identity: '+rel);
  }
- run(['tools/validate-app-current-equivalence.js']);
+});
+
+test('v9.43 retirement proof fails when a retired overlay regains a side effect',()=>{
+ const rel='assets/app-v7.5.js';
+ const mutated=retiredSource(rel).replace(/\n\}\)\(\);\s*$/,"\ndocument.querySelector('#view').innerHTML='injected';\n})();\n");
+ assert.notStrictEqual(mutated,retiredSource(rel),'the mutation actually changed the overlay source');
+ rejects(rel,mutated,/not provably inert/,'the proof must reject a retired overlay that regains a top-level side effect');
+ /* A decorator body that stops short-circuiting is the same class of regression. */
+ rejects(rel,retiredSource(rel).replace('function decorate75(){if(!active75())return;','function decorate75(){'),/short-circuits its decorator/,'the proof must reject a retired overlay whose decorator stops checking its gate');
 });
 
 test('v9.43 retirement proof fails when the schema identity gate stops being stale',()=>{
  /* The retirement is only valid while C.VERSION differs from every retired gate. An
     intentional storage migration must invalidate this proof rather than silently
     leaving newly-live overlays out of the runtime. */
- const target=path.join(root,'assets/app-v8.7.js');
- const original=fs.readFileSync(target,'utf8');
- try{
-  fs.writeFileSync(target,original.replace("C.VERSION==='8.7.0'","C.VERSION==='8.8.0'"));
-  const mutated=spawn(['tools/validate-app-current-equivalence.js']);
-  assert.notStrictEqual(mutated.status,0,'the retirement proof must reject a retired overlay whose gate matches the live schema identity');
-  assert(/matches the live C\.VERSION/.test(mutated.stderr||mutated.stdout||''),'the failure names the live schema identity');
- }finally{
-  fs.writeFileSync(target,original);
- }
- run(['tools/validate-app-current-equivalence.js']);
+ const rel='assets/app-v8.7.js';
+ const mutated=retiredSource(rel).replace("C.VERSION==='8.7.0'","C.VERSION==='8.8.0'");
+ assert.notStrictEqual(mutated,retiredSource(rel),'the mutation actually changed the overlay gate');
+ rejects(rel,mutated,/matches the live C\.VERSION/,'the proof must reject a retired overlay whose gate matches the live schema identity');
+});
+
+test('v9.43 retirement proof reads the live schema identity from the shipped core owner',()=>{
+ /* The live gate value is derived, not hard-coded, so a future storage migration
+    invalidates the retirement instead of silently leaving newly-live overlays out. */
+ const source=read('tools/validate-app-current-equivalence.js');
+ assert(source.includes('manifest.coreCurrent.owner'),'the proof reads C.VERSION out of the generated core owner');
+ assert(source.includes("assert.strictEqual(liveVersion,app.retirementGateValue"),'the proof cross-checks the derived identity against the recorded one');
+ assert(!source.includes("liveVersion='8.8.0'"),'the live schema identity is never hard-coded');
 });
 
 test('v9.43 browser-level DOM equivalence is wired into browser smoke',()=>{
