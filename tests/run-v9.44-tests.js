@@ -29,7 +29,6 @@ test('v9.44 retires the four unreachable Evidence overlays',()=>{
  assert.strictEqual(area.scope,'lazy','the Evidence area stays route-lazy');
  assert.strictEqual(area.strategy,'ordered-fragment-concatenation','the surviving Evidence chain stays exact-owned so no behavior is rewritten');
  assert.strictEqual(area.fragments.length,37,'the Evidence area drops from 41 to the 37 fragments that still reach the decorator chain');
-
  const ev=manifest.evidenceCurrent;
  assert(ev,'manifest declares evidenceCurrent metadata');
  assert.strictEqual(ev.owner,area.owner,'evidenceCurrent points at the Evidence owner');
@@ -38,7 +37,6 @@ test('v9.44 retires the four unreachable Evidence overlays',()=>{
  assert.strictEqual(ev.retirementGate,'analyzeTerminal','evidenceCurrent names the reachability gate');
  assert.strictEqual(ev.lastReachableOverlay,'assets/intake-v7.6.js','the last reachable overlay is named');
  assert.strictEqual(ev.restorationItem,'cc-evidence-chain-restore','evidenceCurrent names the follow-up defect item');
-
  const retired=Array.from(ev.retiredFragments);
  assert.deepStrictEqual(retired.slice().sort(),['assets/intake-v7.7.js','assets/intake-v7.8.js','assets/intake-v7.9.js','assets/intake-v8.2.js'],'the retired overlays are exactly the broken subchain');
  assert.strictEqual(retired.length+area.fragments.length,41,'every fragment of the v9.43 41-fragment Evidence area is either retired or still owned');
@@ -72,10 +70,6 @@ test('v9.44 proves the retirement by reachability and differential equivalence',
  assert(output.includes('4 unreachable overlays are provably inert'),'the validator reports the retired overlays');
 });
 
-/* A proof that cannot fail proves nothing. These tests drive the validator's exported
-   helpers with mutated inputs and require them to reveal the difference. They are
-   fully in-memory — no tracked file is edited — so tools/run-historical-contracts.js
-   can keep running suites concurrently. */
 const evProof=require(path.join(root,'tools','validate-evidence-current-equivalence.js'));
 
 test('v9.44 reachability model actually marks the broken subchain unreachable',()=>{
@@ -93,11 +87,8 @@ test('v9.44 differential equivalence catches a dropped reachable overlay',()=>{
  const frozenGroup=[...manifest.groups.vendor,'assets/bh-v2-patch.js',...manifest.groups.intake];
  const frozen=evProof.loadEvidenceRuntime(frozenGroup);
  const live=evProof.loadEvidenceRuntime(Array.from(area.fragments));
- /* The shipped surviving chain is observably identical to the full frozen chain. */
  assert.deepStrictEqual(live.globals,frozen.globals,'surviving chain publishes the same globals as the frozen chain');
  assert.deepStrictEqual(live.results,frozen.results,'surviving chain produces identical analyzeTerminal output');
- /* Dropping a genuinely reachable overlay must change the observable surface, or the
-    differential proof would not have caught an over-eager retirement. */
  const broken=Array.from(area.fragments).filter(rel=>rel!=='assets/intake-v7.6.js');
  const brokenRun=evProof.loadEvidenceRuntime(broken);
  const changed=JSON.stringify(brokenRun.globals)!==JSON.stringify(frozen.globals)||JSON.stringify(brokenRun.results)!==JSON.stringify(frozen.results);
@@ -127,11 +118,13 @@ test('v9.44 queue closes runtime-evidence-flattening and files the defect',()=>{
  const defect=q.items.find(item=>item.id==='cc-evidence-chain-restore');
  assert(defect&&defect.status==='queued','the never-shipped Evidence behavior is filed as a queued correctness item');
  assert.strictEqual(defect.track,'critical-correctness','the missing Evidence is a correctness defect');
- const rec=packages.recommend(q);
- assert(rec&&rec.id==='runtime-layer-consolidation','remaining runtime flattening stays the recommended work package');
- assert(!rec.liveItems.some(item=>item.id==='runtime-evidence-flattening'),'completed Evidence flattening is not still listed as live work');
- assert(rec.entryItem&&rec.entryItem.id==='runtime-style-flattening','stylesheet flattening becomes the next package entry');
- assert(q.items.find(item=>item.id==='runtime-style-flattening'&&item.status==='queued'),'stylesheet flattening remains queued as its own pass');
+ const evidencePkg=packages.packageForItem('runtime-evidence-flattening');
+ const stylePkg=packages.packageForItem('runtime-style-flattening');
+ assert(evidencePkg&&evidencePkg.id==='runtime-layer-consolidation','Evidence flattening remains attributed to the runtime consolidation package');
+ assert(stylePkg&&stylePkg.id==='runtime-layer-consolidation','stylesheet flattening remains attributed to the same package history');
+ assert(q.items.find(item=>item.id==='runtime-style-flattening'),'stylesheet flattening remains a tracked ownership-area pass after v9.44');
+ // Which item is recommended next is intentionally live-current; v9.45 completes the
+ // stylesheet pass and legitimately moves Product Build Next to this filed defect.
 });
 
 test('v9.44 wires the retirement proof into scope check and preflight',()=>{
@@ -146,8 +139,6 @@ test('v9.44 adds no versioned runtime sediment',()=>{
  }
 });
 
-test('v9.44 release contract holds for the repository',()=>{
- run(['tools/validate-release-pr.js','--repo-only']);
-});
+test('v9.44 release contract holds for the repository',()=>{run(['tools/validate-release-pr.js','--repo-only']);});
 
 console.log(passed+' v9.44 tests passed');

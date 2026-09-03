@@ -105,6 +105,16 @@ The historical suite `tests/run-v7.7-tests.js` keeps passing because it stubs `O
 
 **Retirement removes what does not run; it does not repair what should.** When a compaction pass uncovers dead code, retire the dead files and file the missing behavior as its own tracked defect. Folding a latent bug into a "no-op cleanup" would hide it.
 
+## Stylesheet flattening in v9.45
+
+v9.45 completes the final live Runtime Layer Consolidation ownership-area item. The stable owner remains `assets/obol-current.css`, but it stops being an exact formatted copy of all 69 historical stylesheet fragments. `tools/style-cascade-current.js` builds a semantic cascade snapshot from that frozen ledger and removes only declarations superseded by the same selector/property in the same ordered grouping-at-rule context. Important precedence is respected; shorthand/longhand relationships are not guessed; vendor/fallback chains and unknown at-rules are preserved conservatively.
+
+The shipped v9.45 projection reduces 1,817 source style rules / 5,524 declarations to 1,809 rules / 5,496 declarations. The 69 source files remain on disk with the same path-order fingerprint, so historical source observation is retained even though the live owner no longer carries one marker/body per fragment.
+
+Two independent proofs replace the retired delivery-shape assertion. `tools/validate-style-current-equivalence.js` proves deterministic regeneration and mutation-tests the reducer boundaries. `tools/validate-style-visual-equivalence.js` substitutes the exact historical cascade for the current owner in Chromium and requires matching layout geometry and computed style for every rendered element and visible pseudo-element across representative routes at desktop and mobile widths. The browser-smoke workflow owns that second proof.
+
+This closes Runtime Layer Consolidation without deleting the historical ledger. Future style work should edit current stable owners or deliberately evolve this generator/equivalence boundary; it should not restore versioned stylesheet execution merely because an old v9.40 test once observed fragment markers.
+
 ## Dependency and equivalence audits
 
 `node tools/audit-dashboard-runtime-dependencies.js` inventories every historical `data/dashboard-v*.js` file that participates in live startup, the `OBOL_DASHBOARD_*` globals it exports, live startup consumers of those globals, and detected domain-mutation signals inside the file.

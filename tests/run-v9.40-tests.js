@@ -37,13 +37,19 @@ test('v9.40 gives every runtime ownership area exactly one consolidated owner',(
  assert.strictEqual(manifest.compatibility.historicalStyles.length,fixture.styleCount,'frozen historical stylesheet ledger is untouched');
 });
 
-test('v9.40 stylesheet owner is one flattened cascade rather than an import chain',()=>{
+test('v9.40 stylesheet owner remains one request over the frozen compatibility ledger',()=>{
  assert.deepStrictEqual(Array.from(manifest.styles),['assets/obol-current.css'],'one stable stylesheet owner');
+ assert.strictEqual(manifest.compatibility.historicalStyles.length,69,'frozen stylesheet ledger remains explicit');
  const css=read('assets/obol-current.css').replace(/\r\n/g,'\n');
- const body=css.replace(/^\/\*[\s\S]*?\*\/\n/,'');
- assert(!/@import/.test(body),'the stylesheet owner no longer chains fragment fetches');
- const markers=[...css.matchAll(/\/\* obol-style-fragment: ([^ ]+) \*\//g)].map(m=>m[1]);
- assert.deepStrictEqual(markers,Array.from(manifest.compatibility.historicalStyles),'flattened cascade preserves exact fragment order');
+ assert(!/@import\b/.test(css),'the stylesheet owner no longer chains fragment fetches');
+ if(manifest.styleCurrent&&manifest.styleCurrent.strategy==='semantic-cascade-snapshot'){
+  assert(css.includes('semantic cascade snapshot'),'later semantic flattening may replace the exact v9.40 delivery shape');
+  assert(!/obol-style-fragment:/.test(css),'later semantic owner no longer needs fragment markers');
+  assert.deepStrictEqual(Array.from(manifest.styleCurrent.historicalFragments),Array.from(manifest.compatibility.historicalStyles),'semantic owner still points at the v9.40 frozen ledger');
+ }else{
+  const markers=[...css.matchAll(/\/\* obol-style-fragment: ([^ ]+) \*\//g)].map(m=>m[1]);
+  assert.deepStrictEqual(markers,Array.from(manifest.compatibility.historicalStyles),'v9.40 exact owner preserves fragment order');
+ }
 });
 
 test('v9.40 browser loads consolidated owners and keeps the fragment ledger reachable',()=>{
@@ -89,17 +95,18 @@ test('v9.40 browser smoke enforces the runtime request budget',()=>{
  for(const route of ['home','dashboard'])assert(new RegExp("id: '"+route+"'[^}]*requestBudget").test(smoke),route+' route declares a budget');
 });
 
-test('v9.40 queue leads Product Build Next with the runtime consolidation package',()=>{
+test('v9.40 records the runtime consolidation package and its ownership-area passes',()=>{
  const pkg=packages.packageForItem('runtime-domain-flattening');
- assert(pkg&&pkg.id==='runtime-layer-consolidation','remaining flattening work belongs to the runtime consolidation package');
+ assert(pkg&&pkg.id==='runtime-layer-consolidation','flattening work belongs to the runtime consolidation package');
  assert.deepStrictEqual(Array.from(packages.validate(q)),[],'work-package metadata remains valid');
- const rec=packages.recommend(q);
- assert(rec&&rec.id==='runtime-layer-consolidation','runtime consolidation is the recommended work package');
- /* Demoted in v9.43: this is a burn-down counter, not a v9.40 contract. Each
-    ownership area is flattened in its own release, so the live count only falls.
-    What v9.40 owns is that the remaining areas stay tracked as separate items. */
- assert(rec.liveItems.length>=1,'remaining ownership areas are still queued separately');
- for(const id of ['runtime-app-flattening','runtime-evidence-flattening','runtime-style-flattening'])assert(q.items.find(i=>i.id===id),id+' remains its own tracked ownership-area pass');
+ // Recommendation is a live-current projection and legitimately advances after the
+ // package burns down. v9.40 owns package membership and the completed foundation,
+ // not which package future releases recommend next.
+ for(const id of ['runtime-domain-flattening','runtime-app-flattening','runtime-evidence-flattening','runtime-style-flattening']){
+  const item=q.items.find(i=>i.id===id);
+  assert(item,id+' remains a tracked ownership-area pass');
+  assert(packages.packageForItem(id)&&packages.packageForItem(id).id==='runtime-layer-consolidation',id+' remains in the runtime consolidation package');
+ }
  for(const id of ['runtime-area-consolidation','runtime-consolidation-sync','qa-runtime-request-budget','runtime-domain-flattening']){
   assert(q.items.find(i=>i.id===id&&i.status==='complete'),id+' is complete');
  }
