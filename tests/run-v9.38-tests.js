@@ -41,7 +41,7 @@ function run(args){
 }
 for(const args of [
  ['tools/validate-note-mechanic-backfill.js'],
- ['tools/validate-tool-builders.js'],
+ ['tools/validate-tool-builder-platform.js'],
  ['tools/validate-note-integration.js'],
  ['tools/validate-notes-impact.js'],
  ['tools/validate-release-pr.js','--repo-only','--release-version=9.38'],
