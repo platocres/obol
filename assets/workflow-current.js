@@ -58,7 +58,7 @@ function renderHome(){
  const nextHref=top&&top.card?'#/card/'+encodeURIComponent(top.card.id):o.next.href;
  const nextWhy=top?(top.why||'Evidence-grounded recommendation for the active context.'):o.next.detail;
  const unlocks=top&&Array.isArray(top.unlocks)?top.unlocks.length:0;
- v.innerHTML='<div class="home-head30"><div><div class="eyebrow30">Operator workspace</div><h2>Home</h2><p class="subtitle">Resume the active engagement without project-build accounting competing for attention.</p></div><div class="home-context30"><span>Active target / context</span><b>'+e(o.contextLabel||'Engagement-wide')+'</b></div></div>'+ 
+ v.innerHTML='<div class="home-head30 current-home98" data-current-home-owner="workflow-current"><div><div class="eyebrow30">Operator workspace</div><h2>Home</h2><p class="subtitle">Resume the active engagement without project-build accounting competing for attention.</p></div><div class="home-context30"><span>Active target / context</span><b>'+e(o.contextLabel||'Engagement-wide')+'</b></div></div>'+ 
   '<section class="resume30"><div><span class="stage30">'+e(o.stage)+'</span><h3>'+e(o.next.label)+'</h3><p>'+e(o.next.detail)+'</p></div><a class="btn primary30" href="'+e(o.next.href)+'">Continue →</a></section>'+ 
   workflowHTML(o,'home')+
   '<div class="metrics30">'+
