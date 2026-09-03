@@ -81,8 +81,8 @@ const packages=[
  },
  {
   id:'notes-impact-burn-down',title:'Notes Impact and Themed Burn-down',priority:'high',ownershipArea:'notes/impact-packets',
-  itemIds:['notes-impact-dashboard','notes-disposition-burn-down','notes-packet-web-upload-inclusion','notes-packet-xss-session','notes-packet-credentials-auth','notes-packet-windows-privesc','notes-packet-linux-privesc','notes-packet-ad-pivoting'],dependencies:['notes-integration-platform'],relatedItems:['ux-progressive-notes'],parallelSafe:false,recommendedBatch:true,
-  guidance:'Treat the 556-note disposition item as the umbrella. Burn notes down in coherent themed packets, and for every modeled source record which Field Note, tool-bound or Path-bound guidance, Evidence/report/troubleshooting output, code-level product change, or explicit product gap it produced.'
+  itemIds:['notes-impact-dashboard','notes-disposition-burn-down','notes-conversion-rubric','notes-mechanic-backfill','notes-script-category','notes-packet-web-upload-inclusion','notes-packet-xss-session','notes-packet-credentials-auth','notes-packet-windows-privesc','notes-packet-linux-privesc','notes-packet-ad-pivoting'],dependencies:['notes-integration-platform'],relatedItems:['ux-progressive-notes'],parallelSafe:false,recommendedBatch:true,
+  guidance:'Treat the 556-note disposition item as the umbrella. Fix the conversion engine first: every modeled note must produce a declared product mechanic or a justified guidance-only reason (notes-conversion-rubric), backfill mechanics from already-modeled notes (notes-mechanic-backfill), and track script outputs as first-class (notes-script-category). Then burn remaining notes down in coherent themed packets, recording for every modeled source which Field Note, tool-bound or Path-bound guidance, Evidence/report/troubleshooting output, code-level product change, or explicit product gap it produced.'
  },
  {
   id:'offline-browser-platform',title:'Offline and Browser Performance Platform',priority:'normal',ownershipArea:'browser/offline-storage-workers',

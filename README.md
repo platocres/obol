@@ -52,6 +52,7 @@ There must be only one open release/product-hardening PR at a time. If one exist
 - [`docs/NOTES-INTEGRATION.md`](docs/NOTES-INTEGRATION.md) - private source repo `platocres/obol-source-notes` and normalized public-output workflow.
 - [`docs/NOTES-IMPACT.md`](docs/NOTES-IMPACT.md) - required notes-to-product output decision, packet review model, dashboard interpretation, and runtime-compaction relationship.
 - [`docs/UX-QUALITY.md`](docs/UX-QUALITY.md) - UI/UX quality goals and seeded product defects.
+- [`docs/CORRECTIVE-PLAN.md`](docs/CORRECTIVE-PLAN.md) - durable corrective roadmap: notes conversion-engine fix, workstream ordering, and the aims-achieved definition.
 - [`docs/NORTH-STAR.md`](docs/NORTH-STAR.md) and [`docs/ORANGE-SOURCE-DEPTH.md`](docs/ORANGE-SOURCE-DEPTH.md) - completed Orange methodology/source accounting and historical regression baseline.
 - [`CHANGELOG.md`](CHANGELOG.md) - release history.
 
@@ -77,7 +78,7 @@ The completed Orange methodology/source queue is historical, regression-protecte
 This block is generated from `data/product-hardening/product-hardening-queue.js`. Do not edit it manually.
 Recommended work-package metadata comes from `data/product-hardening/work-packages.js`.
 
-**Current product-hardening queue:** 197/638 complete (31%), 8 queued, 9 foundation items modeled.
+**Current product-hardening queue:** 197/640 complete (31%), 13 queued, 9 foundation items modeled.
 **Private notes source:** `platocres/obol-source-notes` — 556 notes and 1326 embedded resources accounted.
 **Notes Integration:** 127/556 reviewed — 95 modeled, 27 private-only, 429 pending.
 **Derived note guidance:** 48 Field Notes · 43 tool-bound · 45 Path-bound · 14 Evidence · 5 Report.
@@ -85,14 +86,17 @@ Recommended work-package metadata comes from `data/product-hardening/work-packag
 **Latest mined themes:** Windows local privilege escalation.
 **Notes impact contract:** `docs/NOTES-IMPACT.md`.
 
-**Recommended work package:** **Notes Impact and Themed Burn-down** — 3 live items / 8 tracked.
+**Recommended work package:** **Notes Impact and Themed Burn-down** — 6 live items / 11 tracked.
 **Work-package entry:** **Burn down all 556 note dispositions**
 **Ownership area:** `notes/impact-packets`
-**Package guidance:** Treat the 556-note disposition item as the umbrella. Burn notes down in coherent themed packets, and for every modeled source record which Field Note, tool-bound or Path-bound guidance, Evidence/report/troubleshooting output, code-level product change, or explicit product gap it produced.
+**Package guidance:** Treat the 556-note disposition item as the umbrella. Fix the conversion engine first: every modeled note must produce a declared product mechanic or a justified guidance-only reason (notes-conversion-rubric), backfill mechanics from already-modeled notes (notes-mechanic-backfill), and track script outputs as first-class (notes-script-category). Then burn remaining notes down in coherent themed packets, recording for every modeled source which Field Note, tool-bound or Path-bound guidance, Evidence/report/troubleshooting output, code-level product change, or explicit product gap it produced.
 **Package dependencies:** Notes Integration Foundation
 
 **Live items in this package:**
 - **Burn down all 556 note dispositions** — Umbrella disposition goal. Review work should be executed in themed packets and must record what each modeled note changed in Field Notes, tools, Path, Evidence, reports, troubleshooting, or product gaps.
+- **Notes conversion rubric: mechanics over notebook** — Every modeled note must declare a code-level product change (tool-builder toggle, Path branch, evidence rule, report or workflow change) or an explicit guidance-only reason. Enforce in tools/validate-notes-impact.js so guidance-only becomes a justified exception rather than the default, keeping Obol a product surface instead of a notebook.
+- **Re-audit all reviewed notes for missed mechanics** — Re-audit every note already processed under the old rubric — all 127 reviewed, not only the 95 modeled — because the defect was the review standard itself. Re-judge modeled, guidance-only, reviewed-not-modeled, and private-only dispositions against the new bar and convert to declared product changes (tool toggle, Path branch, evidence rule, report/workflow change) wherever one was missed. Cheaper than fresh review since rationales already exist; distinct from the first-pass review of the 429 pending notes.
+- **Script-bound note disposition category** — Add a script disposition kind so reusable one-liners and scripts derived from notes become tracked, first-class product outputs instead of being folded into tool-guidance or silently dropped.
 - **Notes packet: Linux privilege escalation** — Mine Linux privilege-escalation discovery, evidence, tool options, failure modes, path branches, proof boundaries, and reporting guidance.
 - **Notes packet: AD and pivoting** — Mine Active Directory, lateral movement, tunneling, pivoting, routing, credential use, evidence boundaries, and missing workflow/tool options.
 
@@ -100,24 +104,24 @@ Recommended work-package metadata comes from `data/product-hardening/work-packag
 
 **Highest-priority live items:**
 1. **Burn down all 556 note dispositions** — Umbrella disposition goal. Review work should be executed in themed packets and must record what each modeled note changed in Field Notes, tools, Path, Evidence, reports, troubleshooting, or product gaps.
-2. **Notes packet: Linux privilege escalation** — Mine Linux privilege-escalation discovery, evidence, tool options, failure modes, path branches, proof boundaries, and reporting guidance.
-3. **Notes packet: AD and pivoting** — Mine Active Directory, lateral movement, tunneling, pivoting, routing, credential use, evidence boundaries, and missing workflow/tool options.
-4. **Quiet service worker caching** — Improve repeat-load and offline behavior without prompting users to install anything.
-5. **IndexedDB workspace storage** — Support durable larger local workspaces, multiple engagements, and cached indexes while remaining browser-local.
-6. **Web Workers for heavy tasks** — Move evidence parsing, search indexing, and report generation off the UI thread.
-7. **Non-intrusive update notice** — When cached app updates are available, notify users without install nagging.
-8. **Workspace storage migration safety** — Any storage refactor must preserve existing browser-local workspaces and sanitized exports.
+2. **Notes conversion rubric: mechanics over notebook** — Every modeled note must declare a code-level product change (tool-builder toggle, Path branch, evidence rule, report or workflow change) or an explicit guidance-only reason. Enforce in tools/validate-notes-impact.js so guidance-only becomes a justified exception rather than the default, keeping Obol a product surface instead of a notebook.
+3. **Re-audit all reviewed notes for missed mechanics** — Re-audit every note already processed under the old rubric — all 127 reviewed, not only the 95 modeled — because the defect was the review standard itself. Re-judge modeled, guidance-only, reviewed-not-modeled, and private-only dispositions against the new bar and convert to declared product changes (tool toggle, Path branch, evidence rule, report/workflow change) wherever one was missed. Cheaper than fresh review since rationales already exist; distinct from the first-pass review of the 429 pending notes.
+4. **Script-bound note disposition category** — Add a script disposition kind so reusable one-liners and scripts derived from notes become tracked, first-class product outputs instead of being folded into tool-guidance or silently dropped.
+5. **Notes packet: Linux privilege escalation** — Mine Linux privilege-escalation discovery, evidence, tool options, failure modes, path branches, proof boundaries, and reporting guidance.
+6. **Notes packet: AD and pivoting** — Mine Active Directory, lateral movement, tunneling, pivoting, routing, credential use, evidence boundaries, and missing workflow/tool options.
+7. **Path three-mode rendering over one graph** — Render checklist, simplified, and live-map views as three renderers over the existing nextStepsOverview34 graph. Add the pan/zoom SVG map renderer and explicit view-mode switching on assets/operator-route-current.js so a technique authored once updates every view.
+8. **UI quality audit rubric** — Add a fixed per-screen audit checklist under docs/visual-qa/ (hierarchy, density, consistency, affordance, state feedback, accessibility). Run once per primary screen and file each finding as its own queue item instead of ad-hoc fixes.
 
 **Track status:**
 - **Critical correctness:** 4/4 complete (100%), 0 modeled.
 - **Architecture / runtime:** 10/13 complete (77%), 3 modeled.
-- **UI / UX repair:** 8/9 complete (89%), 1 modeled.
+- **UI / UX repair:** 8/10 complete (80%), 1 modeled.
 - **Tool GUI builders:** 19/19 complete (100%), 0 modeled.
 - **Credential modes:** 14/14 complete (100%), 0 modeled.
 - **Manual outcomes:** 8/8 complete (100%), 0 modeled.
 - **Notes integration:** 127/556 complete (23%), 2 modeled.
 - **Offline / performance:** 1/6 complete (17%), 0 modeled.
-- **Testing / visual QA:** 6/9 complete (67%), 3 modeled.
+- **Testing / visual QA:** 6/10 complete (60%), 3 modeled.
 
 Generated by `node tools/sync-product-build-next.js --write`. Verify with `node tools/sync-product-build-next.js --check`.
 <!-- OBOL-PRODUCT-BUILD-NEXT:END -->
