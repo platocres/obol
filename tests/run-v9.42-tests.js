@@ -69,9 +69,10 @@ test('v9.42 queue and item contract close runtime-core-flattening',()=>{
  const item=q.items.find(item=>item.id==='runtime-core-flattening');
  assert(item&&item.status==='complete','runtime-core-flattening is complete');
  assert(contracts.contracts['runtime-core-flattening'],'runtime-core-flattening has an item-specific test contract');
- const rec=packages.recommend(q);
- assert(rec&&rec.id==='runtime-layer-consolidation','remaining runtime flattening stays the recommended work package');
- assert(!rec.liveItems.some(item=>item.id==='runtime-core-flattening'),'completed core flattening is not still listed as live work');
+ const pkg=packages.packageForItem('runtime-core-flattening');
+ assert(pkg&&pkg.id==='runtime-layer-consolidation','core flattening stays attributed to the runtime consolidation package');
+ // Recommendation is intentionally not frozen here; later releases burn the package
+ // down and move Product Build Next to a different ownership area.
  for(const id of ['runtime-app-flattening','runtime-evidence-flattening','runtime-style-flattening'])assert(q.items.find(item=>item.id===id&&['queued','complete'].includes(item.status)),id+' remains tracked as a separate pass');
 });
 
