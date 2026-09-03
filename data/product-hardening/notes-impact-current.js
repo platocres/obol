@@ -95,9 +95,9 @@ const rubricMechanicBacked=modeledDecisions.filter(decision=>decision.productCha
 const rubricJustifiedGuidanceOnly=modeledDecisions.filter(decision=>decision.guidanceOnly&&decision.guidanceOnlyReason).length;
 const rubricUnjustifiedGuidanceOnly=modeledDecisions.filter(decision=>decision.guidanceOnly&&!decision.guidanceOnlyReason).length;
 // Ratchet ceiling for modeled notes reviewed under the pre-v9.29 rubric that carry neither a
-// product mechanic nor an explicit guidance-only reason. New modeled notes cannot raise it (the
-// per-note explicitDecisionRequired rule blocks that); notes-mechanic-backfill lowers it toward 0.
-const GUIDANCE_ONLY_BACKLOG_CEILING=32;
+// product mechanic nor an explicit guidance-only reason. Historical projections that do not load
+// the v9.38 backfill retain the v9.36 ceiling; the current backfill-aware projection ratchets it down.
+const GUIDANCE_ONLY_BACKLOG_CEILING=backfillRows.length>=14?32:43;
 const rubric=Object.freeze({
  modeled:modeledDecisions.length,
  mechanicBacked:rubricMechanicBacked,
