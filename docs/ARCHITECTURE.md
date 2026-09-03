@@ -172,3 +172,7 @@ Architectural consolidation must preserve:
 - report lineage and proof readiness;
 - the pinned canonical/source accounting denominators;
 - the release-quality and exact-final-head CI contracts.
+
+## Current-route single-paint boot boundary (v9.46)
+
+The browser now has a first-paint ownership boundary in addition to request and fragment ownership. `index.html` starts with `html.obol-booting`, `assets/runtime-current.js` owns the boot state machine, and `assets/workflow-current.js` removes the barrier only after the stable current route has rendered. Historical application compatibility can still execute behind `assets/obol-app-current.js`, but it cannot become operator-visible during cold start. This is intentionally different from semantic application retirement: the app area remains a 43-fragment `ordered-fragment-concatenation` owner until a future equivalence-backed semantic replacement is built.

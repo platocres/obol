@@ -1,3 +1,11 @@
+## v9.46 — Single-paint current application boot
+
+- Added a current-route boot visibility barrier so historical application compatibility can initialize without replaying old Home/UI generations to the operator.
+- Added a throttled Chromium first-visible-paint regression that delays the current workflow and requires every visible Home frame to be the current user-first interface.
+- Extended current-release synchronization to the static browser title/tagline.
+- Retroactively clarified v9.43 application flattening as request/stale-overlay consolidation and added `runtime-app-single-paint` as a separate completed metric, moving Architecture/runtime to 18/21 and overall Product Hardening to 207/650 without rewriting prior completion history.
+- Preserved truthful runtime fragment accounting: the app area remains 43 exact-owned compatibility fragments; v9.46 changes visibility ownership, not semantic fragment retirement.
+
 # Obol Changelog
 
 This file is the release-history source for Obol. Future build work should review this changelog together with the current README before changing architecture or methodology.

@@ -7,6 +7,34 @@ let compatibilityLoaded=false,compatibilityLoad=null;
 const groupLoads=new Map();
 let tunnelBuilderLoad=null,credentialMaterialLoad=null,manualOutcomeLoad=null,dashboardViewGuard=null;
 const esc=v=>String(v).replace(/&/g,'&amp;').replace(/"/g,'&quot;').replace(/</g,'&lt;');
+let bootTimer=null,bootCommitted=false;
+function armBootGuard(){
+ if(typeof document==='undefined'||bootCommitted)return false;
+ const html=document.documentElement;if(!html)return false;
+ html.classList.add('obol-booting');html.dataset.obolBoot='pending';
+ if(bootTimer)clearTimeout(bootTimer);
+ bootTimer=setTimeout(()=>failBoot(new Error('Current route did not claim first paint before the boot deadline.')),12000);
+ root.__OBOL_CURRENT_BOOT_GUARD__='armed';
+ return true;
+}
+function commitCurrentPaint(page){
+ if(typeof document==='undefined')return false;
+ const current=routeName();if(page&&page!==current)return false;
+ const html=document.documentElement;if(!html)return false;
+ bootCommitted=true;if(bootTimer){clearTimeout(bootTimer);bootTimer=null;}
+ html.classList.remove('obol-booting');html.dataset.obolBoot='ready';html.dataset.obolCurrentPaint=current;
+ root.__OBOL_CURRENT_BOOT_GUARD__='committed';root.__OBOL_CURRENT_FIRST_VISIBLE_ROUTE__=current;
+ try{root.dispatchEvent(new CustomEvent('obol:current-first-paint',{detail:{route:current}}));}catch(_err){}
+ return true;
+}
+function failBoot(error){
+ if(typeof document==='undefined'||bootCommitted)return false;
+ const html=document.documentElement,view=document.getElementById('view');
+ if(view)view.innerHTML='<section class="card" data-obol-current-boot-error="true"><div class="card-body"><h2>Obol could not finish loading</h2><p class="subtitle">The current interface did not initialize. Refresh the page to try again.</p></div></section>';
+ if(html){html.classList.remove('obol-booting');html.dataset.obolBoot='failed';html.dataset.obolCurrentPaint='error';}
+ root.__OBOL_CURRENT_BOOT_GUARD__='failed';root.__OBOL_CURRENT_BOOT_ERROR__=String(error&&error.message||error||'unknown boot failure');
+ return false;
+}
 
 function canParserWrite(){return typeof document!=='undefined'&&document.readyState==='loading'&&typeof document.write==='function';}
 function writeStyles(){
@@ -175,7 +203,7 @@ function loadTunnelBuilders(attempt){
 }
 function hydrateDashboard(){
  syncCurrentRouteOwnership();
- return ensureRoute('dashboard');
+ return ensureRoute('dashboard').then(names=>{commitCurrentPaint('dashboard');return names;});
 }
 function hydrateOperatorRoute(page){
  return ensureCompatibility().then(()=>ensureRoute(page)).then(names=>loadCredentialMaterial(0).then(credentials=>loadManualOutcomes(0).then(manual=>{
@@ -206,7 +234,7 @@ if(typeof window!=='undefined'){
  if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',()=>{syncCurrentRouteOwnership();hydrateRoute().catch(()=>{});},{once:true});
  else setTimeout(()=>{syncCurrentRouteOwnership();hydrateRoute().catch(()=>{});},0);
 }
-root.OBOL_RUNTIME_LOADER=Object.freeze({manifest,writeStyles,writeScripts,appendScripts,startupPreludeList,startupFragmentList,startupList,lazyOwnerList,currentOwnerList,compatibilityScriptList,browserScriptList,ensureCompatibility,loadGroup,ensureRoute,routeName,isDashboardRoute,syncCurrentRouteOwnership,protectDashboardView,releaseDashboardViewGuard,loadCredentialMaterial,loadManualOutcomes,loadTunnelBuilders,hydrateRoute,budgetSnapshot});
+root.OBOL_RUNTIME_LOADER=Object.freeze({manifest,writeStyles,writeScripts,appendScripts,startupPreludeList,startupFragmentList,startupList,lazyOwnerList,currentOwnerList,compatibilityScriptList,browserScriptList,ensureCompatibility,loadGroup,ensureRoute,routeName,isDashboardRoute,syncCurrentRouteOwnership,protectDashboardView,releaseDashboardViewGuard,armBootGuard,commitCurrentPaint,failBoot,loadCredentialMaterial,loadManualOutcomes,loadTunnelBuilders,hydrateRoute,budgetSnapshot});
 root.__OBOL_RUNTIME_ENTRYPOINT__='manifest-v1';
 root.__OBOL_RUNTIME_CONSOLIDATED__=Array.isArray(manifest.startupBundleScripts)&&manifest.startupBundleScripts.length>0;
 })(typeof window!=='undefined'?window:globalThis);

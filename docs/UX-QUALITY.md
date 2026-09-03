@@ -116,3 +116,7 @@ Canonical responsive test sizes live in `tests/fixtures/responsive-v9.11-viewpor
 ## Visual QA direction
 
 Browser/screenshot QA should catch UI regressions in addition to deterministic repository validation. v9.5 establishes screenshot-assisted contrast/focus review; v9.11 adds a canonical responsive viewport/route contract. The separate `qa-playwright-smoke` item remains queued for automated route opening, console-error detection, document-overflow checks, and captured screenshots across the full core route set.
+
+## Cold-start single-paint rule (v9.46)
+
+A primary route must never visibly replay earlier Obol UI generations while current owners initialize. On cold Home startup, including under deliberately delayed current-workflow loading, the first visible `#view` frame must already contain the current user-first Home. A short hidden boot interval is preferable to flashing historical interfaces. Boot failure must surface a current-owned error state rather than dropping the visibility barrier onto a historical compatibility render.

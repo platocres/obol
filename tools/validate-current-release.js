@@ -18,8 +18,10 @@ if(r&&r.orangeBaseline!=='v8.8')bad('completed Orange baseline identity drifted'
 if(identity&&r&&identity.release!==r)bad('release identity helper must share the current release authority object');
 if(identity&&typeof identity.stampState!=='function')bad('release identity helper must stamp state/export metadata');
 if(identity&&typeof identity.normalizeReportMarkdown!=='function')bad('release identity helper must normalize generated report identity');
-const readme=read('README.md'),app=read('assets/app-v8.8.js'),dashboard=read('assets/product-hardening-dashboard.js'),standalone=read('product-hardening.html'),dashboardOwner=read('assets/dashboard-route-current.js'),core=read('assets/core-v8.8.js');
+const readme=read('README.md'),index=read('index.html'),app=read('assets/app-v8.8.js'),dashboard=read('assets/product-hardening-dashboard.js'),standalone=read('product-hardening.html'),dashboardOwner=read('assets/dashboard-route-current.js'),core=read('assets/core-v8.8.js');
 if(r&&!readme.includes('Current release: **'+r.label+'**'))bad('README current release does not match authority');
+if(r&&!index.includes('<title>Obol '+r.label+' — '+r.phaseLabel+'</title>'))bad('index static title does not match current release authority');
+if(r&&!index.includes('Offensive Box Operations Ledger · '+r.label))bad('index static tagline does not match current release authority');
 if(!app.includes("const RELEASE_SOURCE='data/current-release.js'"))bad('live app does not load current release authority');
 if(!app.includes('window.OBOL_CURRENT_RELEASE'))bad('live app does not consume current release authority');
 if(!app.includes('window.OBOL_RELEASE_IDENTITY'))bad('live app does not consume release identity helpers');

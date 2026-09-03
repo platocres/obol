@@ -102,6 +102,7 @@ function decoratePath(){
  if(hero)hero.insertAdjacentElement('afterend',brief);else shell.insertAdjacentElement('afterbegin',brief);
  ensureDashboardNav();
 }
+function announceCurrentPaint(){const loader=root.OBOL_RUNTIME_LOADER;if(loader&&typeof loader.commitCurrentPaint==='function')loader.commitCurrentPaint(page());}
 function stripBuildMetrics(){
  if(page()==='dashboard')return;
  document.querySelectorAll('.northstar-home50,.northstar-home66,.product-home88,.app-phase-badge88').forEach(x=>x.remove());
@@ -113,7 +114,8 @@ function decorateRoute(){
  else if(p==='home')renderHome();
  else if(p==='path')decoratePath();
  stripBuildMetrics();
+ announceCurrentPaint();
 }
-root.OBOL_CURRENT_WORKFLOW=Object.freeze({version:'1.0.0',decorateRoute,renderHome,renderDashboard,decoratePath,ensureDashboardNav});
+root.OBOL_CURRENT_WORKFLOW=Object.freeze({version:'1.1.0',decorateRoute,renderHome,renderDashboard,decoratePath,ensureDashboardNav,announceCurrentPaint});
 for(const t of [0,80,260,900,2200])setTimeout(decorateRoute,t);
 })(typeof window!=='undefined'?window:globalThis);
