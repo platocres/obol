@@ -24,6 +24,7 @@ jobs:
 
       - name: Apply semantic application migration
         run: |
+          node tools/fix-apply-v947.js
           node tools/apply-v947.js
           node tools/sync-app-current.js --write
           node tools/sync-current-release.js --write
