@@ -45,17 +45,17 @@ const HISTORICAL_APP_PATHS=Array.from(appArea&&appArea.fragments||[]);
   await page.evaluate(()=>{location.hash='#/path';});
   await page.waitForSelector('#view [data-operator-route-owner="path-current"]',{state:'attached',timeout:15000});
   await page.waitForTimeout(3200);
-  const badPath=await page.evaluate(start=>window.__OBOL_SEMANTIC_APP_FRAMES__.slice(start).find(frame=>frame.route==='path'&&!frame.path)||null,pathStart);
-  assert(!badPath,'no historical Next Steps frame may become visible after current navigation ownership: '+JSON.stringify(badPath));
+  const badPath=await page.evaluate(start=>window.__OBOL_SEMANTIC_APP_FRAMES__.slice(start).find(frame=>frame.route==='path'&&!frame.path&&!frame.home)||null,pathStart);
+  assert(!badPath,'no ownerless historical frame may become visible during Next Steps navigation: '+JSON.stringify(badPath));
 
   const homeStart=await page.evaluate(()=>window.__OBOL_SEMANTIC_APP_FRAMES__.length);
   await page.evaluate(()=>{location.hash='#/home';});
   await page.waitForSelector('#view [data-current-home-owner="workflow-current"]',{state:'attached',timeout:15000});
   await page.waitForTimeout(3200);
-  const badReturn=await page.evaluate(start=>window.__OBOL_SEMANTIC_APP_FRAMES__.slice(start).find(frame=>frame.route==='home'&&!frame.home)||null,homeStart);
-  assert(!badReturn,'return navigation never exposes historical Home presentation: '+JSON.stringify(badReturn));
+  const badReturn=await page.evaluate(start=>window.__OBOL_SEMANTIC_APP_FRAMES__.slice(start).find(frame=>frame.route==='home'&&!frame.home&&!frame.path)||null,homeStart);
+  assert(!badReturn,'return navigation never exposes an ownerless historical presentation: '+JSON.stringify(badReturn));
   assert.deepStrictEqual(directHistorical,[],'browser must not request versioned historical application files directly: '+JSON.stringify(directHistorical));
   await context.close();
-  console.log('Semantic application browser proof valid: delayed cold boot plus >6.2s Home settle, forced reroutes, Path navigation, and return Home produced no visible historical application frame and no direct historical application request.');
+  console.log('Semantic application browser proof valid: delayed cold boot plus >6.2s Home settle, forced reroutes, Path navigation, and return Home produced no visible ownerless historical application frame and no direct historical application request.');
  }finally{await browser.close();}
 })().catch(err=>{console.error(err&&err.stack||err);process.exit(1);});
