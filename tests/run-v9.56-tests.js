@@ -63,7 +63,7 @@ for(const expected of [
  'full-spectrum re-mined',
  'old-rubric-only remaining',
  'Negative finding outcomes',
- 'Re-mining red flags',
+ 'Negative-proof red flags',
  'Extraction dimensions',
  'notes-remine-dashboard-schema',
  'completeSchemaItem',
