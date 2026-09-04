@@ -39,4 +39,6 @@ Authorization, scope, and candidate-material warnings still matter, but they bel
 
 Do not hide the only useful command block behind awkward scaffolding. Labels such as `Tool action stack`, `Raw legacy commands`, `Current builders stay up front`, and similar implementation-shaped copy should not appear in operator card UI. Use plain labels such as `Commands`, `Commands and checks`, or `Guided builder`.
 
+## Direct card route rule
+
 A direct card route is acceptable only when it renders the same kind of operator-facing content a user would expect from the normal path: title, hypothesis, gates, produced facts, commands with explanations, failure routing, and defender/reporting context.
