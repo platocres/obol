@@ -117,6 +117,23 @@ Do not implement note-mining, dashboard, path, tool, Evidence, or report work by
 
 Product-hardening work should strengthen current owners and reduce future consolidation debt. New wrappers are allowed only when a documented migration boundary proves they are temporary, names the owner they will replace, and adds validation that prevents the wrapper from becoming another sedimentary layer.
 
+## Negative finding proof
+
+Agents must prove negative findings, not just say "nothing found."
+
+For every extraction dimension in the full-spectrum checklist, the audit record must end in exactly one of these outcomes:
+
+- `added` means the product change was implemented and, when operator-facing, wired into the actual Next Steps / Orange path surface.
+- `covered` means the capability was already covered by an existing Obol owner, and the audit cites the exact path, tool, analyzer, report, or workflow owner ID.
+- `queued` means the capability was not implemented in this pass but was filed as a concrete product gap or queue item, and the audit cites that queue item ID.
+- `private-only` means useful material exists but cannot be public; the audit gives a public-safe reason without exposing raw private content.
+- `not-applicable` means the source was re-read and the dimension genuinely does not apply; the audit gives a short reason.
+- `blocked` means the reviewer cannot decide from the available public-safe context; the audit names the blocker and the next required action.
+
+A blank entry, omitted dimension, generic "none," generic "no change," or vague "not useful" statement is not valid negative proof.
+
+Negative proof must be specific enough that a future agent can return to the same original source note and challenge the decision. The goal is not impossible omniscience. The goal is reproducible audit work that makes lazy misses visible.
+
 ## Re-mining audit record
 
 Every re-mined source note should leave an explicit audit record that answers, at minimum:
@@ -132,6 +149,8 @@ Every re-mined source note should leave an explicit audit record that answers, a
 - scripts and one-liners considered or added;
 - terminal-output analyzer behavior considered or added;
 - Evidence, report, troubleshooting, cleanup, and lesson outputs considered or added;
+- per-dimension negative finding proof using `added`, `covered`, `queued`, `private-only`, `not-applicable`, or `blocked`;
+- existing owner IDs for `covered` decisions and queue item IDs for `queued` decisions;
 - product changes declared with proof refs;
 - product gaps filed;
 - public-safe rewritten outputs;
@@ -144,6 +163,6 @@ A previous terminal disposition is not enough. The re-mining pass must explain w
 
 ## Completion rule
 
-The re-mining queue is not complete until every already-reviewed source note has been re-mined from the original private source and every audit dimension above is either implemented, explicitly queued as a product gap, or explicitly ruled out with a substantive reason.
+The re-mining queue is not complete until every already-reviewed source note has been re-mined from the original private source and every audit dimension above is implemented, cited as already covered by an existing owner, explicitly queued as a product gap, marked private-only with a reason, marked not-applicable with a reason, or marked blocked with the next action.
 
 Only then should fresh pending-note packets resume as the main notes work.
