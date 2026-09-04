@@ -1,3 +1,17 @@
+## v9.56 — Product-hardening release for note re-mining dashboard schema tracking and dashboard readability
+
+- old-rubric reviewed count;
+- full-spectrum re-mined count;
+- old-rubric-only remaining count;
+- negative finding outcome counts;
+- invalid or missing negative-proof red flags;
+- extraction dimensions for Path bindings, tool cards, GUI controls, scripts, one-liners, command templates, terminal analyzers, Evidence expectations, path movement, lesson boxes, examples, troubleshooting, cleanup, report guidance, product mechanics, product gaps, and additive Orange-baseline preservation.
+- a wider dashboard shell that uses available desktop width instead of trapping everything in a narrow centered column;
+- a compact top summary for release, product-hardening progress, source re-mining, red flags, first-pass pending notes, mechanic conversion, and queued work;
+- a Build Next section that stays near the top and remains synchronized with the README;
+- drill-down sections for re-mining schema details, queue/package details, source-note impact, runtime/QA appendix data, and full ledgers;
+- long tables moved into contained scroll areas instead of making the whole dashboard feel endless.
+
 ## v9.55 — Product-hardening release for the Notes Impact and Source Re-mining package
 
 - `ad-sharphound-collection-review`
