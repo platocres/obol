@@ -98,6 +98,11 @@ function runtimeConsolidationLines() {
   ];
 }
 
+function sourceLink(repo) {
+  const url = 'https://github.com/' + repo + '/tree/main/sources/raw';
+  return '[`' + url + '`](' + url + ')';
+}
+
 function block() {
   const totals = q.totals();
   const tracks = q.trackSummary();
@@ -109,7 +114,7 @@ function block() {
     'Runtime consolidation figures come from `data/runtime-consolidation-current.js`, the same projection the Product Hardening Dashboard renders.',
     '',
     '**Current product-hardening queue:** ' + totals.complete + '/' + totals.total + ' complete (' + totals.pct + '%), ' + totals.queued + ' queued, ' + totals.modeled + ' foundation items modeled.',
-    '**Private notes source:** `' + q.notes.privateRepo + '` — ' + totals.notes + ' notes and ' + totals.resources + ' embedded resources accounted.',
+    '**Private notes source:** ' + sourceLink(q.notes.privateRepo) + ' — ' + totals.notes + ' notes and ' + totals.resources + ' embedded resources accounted.',
     ...noteImpactLines(),
     ...runtimeConsolidationLines(),
     '',

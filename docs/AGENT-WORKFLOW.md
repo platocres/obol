@@ -18,13 +18,14 @@ This is the detailed, do-this-now workflow for an agent told to "read the README
 
 The active notes work is **source re-mining**, not reading the public Field Note, prior rationale, prior disposition, or output IDs. Re-mine the **original private raw notes**:
 
-1. The private source repo is `platocres/obol-source-notes`. Add/clone it.
-2. The ENEX exports are Git LFS objects. The committed review packets under `data/review-packets/` are **truncated title/tag shortlists** — do not make a high-confidence product claim from them. Pull the real bodies:
+1. The private source repo is [`platocres/obol-source-notes`](https://github.com/platocres/obol-source-notes). The raw ENEX exports live at [`https://github.com/platocres/obol-source-notes/tree/main/sources/raw`](https://github.com/platocres/obol-source-notes/tree/main/sources/raw). Start there instead of stopping at the public Obol README, the source repo root, or the committed review-packet shortlists.
+2. The ENEX exports are Git LFS objects. The committed review packets under `data/review-packets/` are **truncated title/tag shortlists** - do not make a high-confidence product claim from them. Pull the real bodies and prove the HTB file materialized:
    ```bash
    git lfs install
-   git lfs pull            # fetches sources/raw/*.enex (large; be patient)
+   git lfs pull --include="sources/raw/HTB - Penetration Tester.enex,sources/raw/OffSec PEN-200.enex"
    python scripts/verify_sources.py
    ```
+   The HTB proof line must show `bytes=194191214` and `sha256=ceeab3da0770ecd3709bcd2693b7a26a6390ad45c5bbada0234079e6eb2ff06f`. A 134-byte file beginning with `version https://git-lfs.github.com/spec/v1` is only the pointer and is not source access. Full mechanics and fallback proof rules: [`docs/RAW-NOTES-LFS.md`](RAW-NOTES-LFS.md).
 3. Extract the full body of a note by `note_id` (`<source_id>-<sha256(content)[:16]}`) from the ENEX and read it end to end. `scripts/build_review_packets.py` shows the ENML-cleaning and note-id derivation.
 4. For each already-reviewed note, re-mine against every extraction dimension: path bindings, tool cards, GUI switches, scripts/one-liners, command templates, terminal-output analyzers, Evidence expectations, path movement, lesson boxes, examples, troubleshooting, cleanup, report guidance, product mechanics, product gaps, and additive Orange baseline.
 5. Check the live tracking source before choosing or closing a re-mining packet. `CHANGELOG.md` is release narrative only. Current re-mining status lives in `data/product-hardening/note-progress-current.js`, Product Build Next, and the Product Hardening Dashboard.
@@ -65,7 +66,7 @@ Every re-mined note dimension must resolve to one auditable outcome: `added`, `c
 Every product build is a versioned release. In the same PR:
 
 - bump `data/current-release.js`, then run `node tools/sync-current-release.js --write` (updates README + `index.html`);
-- add `docs/vX.Y.md` and a `## vX.Y — …` entry at the top of [`CHANGELOG.md`](../CHANGELOG.md);
+- add `docs/vX.Y.md` and a `## vX.Y - ...` entry at the top of [`CHANGELOG.md`](../CHANGELOG.md);
 - add `tests/run-vX.Y-tests.js` (invokes `tools/validate-release-pr.js`; assert the current release version-agnostically);
 - demote the previous release's test off any live-current assertion (README release token, `index.html` shell tokens, and `data/current-release.js` literals all become version-agnostic checks). `tools/validate-historical-tests.js` catches the common cases;
 - regenerate generated owners after any manifest/fragment change, and run `node tools/sync-product-build-next.js --write` whenever queue or work-package state changes.

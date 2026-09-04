@@ -1,7 +1,8 @@
 'use strict';
 // v9.52 regression: first Windows-privesc source re-mining batch, release-identity
-// synchronization hardening, and README declutter. This suite is deliberately
-// version-agnostic about the current release so it never needs demotion at the next bump.
+// synchronization hardening, README declutter, and raw-source handoff clarity. This
+// suite is deliberately version-agnostic about the current release so it never needs
+// demotion at the next bump.
 const assert=require('assert');
 const fs=require('fs');
 const path=require('path');
@@ -72,6 +73,14 @@ assert.strictEqual(notes.milestones['v9.35-windows-privesc'].reviewedCount,127,'
 assert(q.items.find(i=>i.id==='notes-packet-windows-privesc').status==='complete','v9.35 Windows packet stays complete');
 assert(q.items.find(i=>i.id==='notes-remine-windows-privesc').status==='complete','the Windows re-mining item is complete');
 
+// the raw-source breadcrumb stays explicit in the README and detailed workflow
+const rawNotesUrl='https://github.com/platocres/obol-source-notes/tree/main/sources/raw';
+const workflow=read('docs/AGENT-WORKFLOW.md');
+assert(readme.includes(rawNotesUrl),'README deep-links agents to the raw note sources directory');
+assert(workflow.includes(rawNotesUrl),'AGENT-WORKFLOW deep-links agents to the raw note sources directory');
+assert(readme.includes('[`'+rawNotesUrl+'`]'),'README labels the raw-source breadcrumb with the exact URL');
+assert(readme.includes('**Private notes source:** [`'+rawNotesUrl+'`]'),'generated Product Build Next block exposes the exact raw source URL');
+
 // the demotion guard was hardened for index shell tokens
 const guard=read('tools/validate-historical-tests.js');
 assert(guard.includes('index release-shell <title> token'),'historical-test guard rejects hard-coded index title tokens');
@@ -84,8 +93,7 @@ assert(releaseDoc.includes('note-windows-service-trigger-tool-proof')&&releaseDo
 const changelog=read('CHANGELOG.md');
 assert(changelog.includes('## v9.52 '),'CHANGELOG documents v9.52');
 assert(changelog.includes('## v9.51 '),'CHANGELOG restores the skipped v9.51 entry');
-const workflow=read('docs/AGENT-WORKFLOW.md');
 assert(workflow.includes('git lfs pull')&&workflow.includes('platocres/obol-source-notes'),'AGENT-WORKFLOW documents raw-source re-mining mechanics');
 assert(readme.includes('[`docs/AGENT-WORKFLOW.md`](docs/AGENT-WORKFLOW.md)'),'README links the agent workflow doc');
 
-console.log('v9.52 Windows-privesc source re-mining, release-identity synchronization hardening, and README declutter tests passed.');
+console.log('v9.52 Windows-privesc source re-mining, release-identity synchronization hardening, README declutter, and raw-source handoff tests passed.');
