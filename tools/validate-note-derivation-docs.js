@@ -31,6 +31,7 @@ for(const rel of [
  'docs/AGENT-WORKFLOW.md',
  'docs/NOTES-IMPACT.md',
  'docs/CARD-UI-STANDARD.md',
+ 'docs/V9.55-CARD-EVIDENCE-OS-WINDOWS.md',
  'README.md'
 ])requireFile(rel);
 
@@ -77,11 +78,28 @@ requireText('docs/CARD-UI-STANDARD.md','Cards are for operators working a lab, n
 requireText('docs/CARD-UI-STANDARD.md','Every command shown on a card needs a useful explanation.');
 requireText('docs/CARD-UI-STANDARD.md','Boilerplate warnings are not enough.');
 requireText('docs/CARD-UI-STANDARD.md','Do not hide useful command blocks behind awkward scaffolding.');
+requireText('docs/CARD-UI-STANDARD.md','Evidence flow rule');
+requireText('docs/CARD-UI-STANDARD.md','card → paste command output → `Analyze pasted evidence`');
+requireText('docs/CARD-UI-STANDARD.md','card:<card-id>:intake:<mode>');
+requireText('docs/CARD-UI-STANDARD.md','OS routing rule');
+requireText('docs/CARD-UI-STANDARD.md','Linux-only and Windows-only local privilege cards must be gated by the target operating system.');
+requireText('docs/CARD-UI-STANDARD.md','must not appear merely because a generic `privesc.leads` fact exists on the wrong operating system');
 requireText('docs/CARD-UI-STANDARD.md','Tool action stack');
 requireText('docs/CARD-UI-STANDARD.md','Raw legacy commands');
 requireText('docs/CARD-UI-STANDARD.md','Direct card route');
 requireText('docs/CARD-UI-STANDARD.md','Card pages must not be rewritten into a separate tool-stack layout after the shared card renderer runs.');
 requireText('docs/CARD-UI-STANDARD.md',"must not move the card's primary commands into a collapsed legacy section");
+
+requireText('docs/V9.55-CARD-EVIDENCE-OS-WINDOWS.md','Card-scoped evidence flow');
+requireText('docs/V9.55-CARD-EVIDENCE-OS-WINDOWS.md','Linux vs Windows path routing');
+requireText('docs/V9.55-CARD-EVIDENCE-OS-WINDOWS.md','Windows privilege-escalation source-mining pass');
+requireText('docs/V9.55-CARD-EVIDENCE-OS-WINDOWS.md','OffSec PEN-200 packet completeness check');
+requireText('docs/V9.55-CARD-EVIDENCE-OS-WINDOWS.md','review_text_policy`: `complete_cleaned_text`');
+requireText('docs/V9.55-CARD-EVIDENCE-OS-WINDOWS.md','truncation_policy`: `none`');
+requireText('docs/V9.55-CARD-EVIDENCE-OS-WINDOWS.md','truncated_note_count`: `0`');
+requireText('docs/V9.55-CARD-EVIDENCE-OS-WINDOWS.md','window_marker_count`: `0`');
+requireText('docs/V9.55-CARD-EVIDENCE-OS-WINDOWS.md','windows-service-permission-review');
+requireText('docs/V9.55-CARD-EVIDENCE-OS-WINDOWS.md','windows-token-privilege-review');
 
 requireText('docs/NOTES-IMPACT.md','The derivation rule is: extract the educational value fully, then re-author the public output into Obol-owned form.');
 requireText('docs/NOTES-IMPACT.md','This does not excuse discarding reusable educational value that can be re-authored safely.');

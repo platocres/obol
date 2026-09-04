@@ -232,4 +232,5 @@ for(const expected of [
  'v9.54-linux-privesc-remine-batch1'
 ]) mustInclude(notesImpact,expected,'note progress extension');
 
+require('./run-v9.55-tests.js');
 console.log('v9.54 contextual mine-then-use and card parity regression passed.');
