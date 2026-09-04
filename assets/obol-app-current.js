@@ -11,7 +11,7 @@
  * suppresses historical schedulers and commits current route owners last.
  *
  * Historical fragment order sha256: 40e3006d9423d669acf5869b577ecf56a6ca2ee1629c95fd0fcc5d242d2c5f27
- * Generated body sha256: d03ee0270dfb89478fc2750f6e0a852b3e4212c4384d3fe2e2daa80e695efae9
+ * Generated body sha256: 3efdd396e9b5b4e466354e324ab9028d90cb53f54a77dfb31389bfc3d51c4165
  * First historical fragment: assets/report-v2.js
  * Last historical fragment:  assets/app-v8.8.js
  */
@@ -2012,7 +2012,7 @@ function evidenceAttention(o,n){
   const facts=(latest.facts||[]).length,newly=(latest.newly||[]).length,source=latest.source||'recent Evidence';
   return '<div class="top-next30"><b>Latest Evidence impact</b><p>'+e(source)+' added or refreshed '+e(facts)+' fact(s) and made '+e(newly)+' recommendation(s) newly applicable in this context.</p><span>Review more output in Evidence →</span></div>';
  }
- return '<div class="top-next30"><b>No pending Evidence review is persisted</b><p>New pasted output is reviewed in Evidence before it becomes durable workspace state. Return there whenever new tool output needs review.</p><span>Open Evidence →</span></div>';
+ return '<div class="top-next30"><b>No pending Evidence review is persisted</b><p>New pasted output is reviewed in Evidence before it becomes durable state. Return there whenever new tool output needs review.</p><span>Open Evidence →</span></div>';
 }
 function blockerSummary(n){
  if(!n)return{count:0,detail:'No decision-context blockers available yet.'};
@@ -2048,10 +2048,10 @@ function renderHome(){
 }
 const MINE_THEN_USE_WAVE='v9.54-linux-privesc-remine-batch1';
 const MINE_THEN_USE_MAP=Object.freeze({
- 'offsec-pen-200-7d8319c3e311e160':Object.freeze({title:'Process and traffic secret analyzer',features:Object.freeze(['linux-source-mined-mechanics-current','process-traffic-secret-analyzer-current']),dimensions:Object.freeze(['gui-controls','terminal-analyzers','product-mechanics','product-gaps'])}),
- 'offsec-pen-200-37660dafbcec416c':Object.freeze({title:'User-trail credential validation mechanics',features:Object.freeze(['linux-source-mined-mechanics-current','linux-user-trail-secret-analyzer-current','credential-validation-builder-current','pattern-wordlist-helper-current']),dimensions:Object.freeze(['tool-cards','gui-controls','command-templates','terminal-analyzers','product-mechanics','product-gaps'])}),
- 'offsec-pen-200-ea0ee100f0506b3f':Object.freeze({title:'Cron proof-chain analyzer',features:Object.freeze(['linux-source-mined-mechanics-current','cron-proof-chain-analyzer-current']),dimensions:Object.freeze(['gui-controls','terminal-analyzers','product-mechanics','product-gaps'])}),
- 'offsec-pen-200-dcd4a16bbbfe100e':Object.freeze({title:'sudo -l analyzer',features:Object.freeze(['linux-source-mined-mechanics-current','sudo-list-analyzer-current']),dimensions:Object.freeze(['gui-controls','terminal-analyzers','product-mechanics','product-gaps'])})
+ 'offsec-pen-200-7d8319c3e311e160':Object.freeze({title:'Process and traffic secret exposure path item',cards:Object.freeze(['linux-process-traffic-secret-review']),analyzers:Object.freeze(['process-traffic-secret-analyzer-current']),dimensions:Object.freeze(['gui-controls','terminal-analyzers','product-mechanics','product-gaps'])}),
+ 'offsec-pen-200-37660dafbcec416c':Object.freeze({title:'User-trail credentials and validation path items',cards:Object.freeze(['linux-user-trail-secret-review','candidate-credential-validation','credential-pattern-wordlist-helper','online-brute']),analyzers:Object.freeze(['linux-user-trail-secret-analyzer-current','credential-validation-builder-current','pattern-wordlist-helper-current']),dimensions:Object.freeze(['tool-cards','gui-controls','command-templates','terminal-analyzers','product-mechanics','product-gaps'])}),
+ 'offsec-pen-200-ea0ee100f0506b3f':Object.freeze({title:'Cron proof-chain path item',cards:Object.freeze(['linux-cron-proof-chain']),analyzers:Object.freeze(['cron-proof-chain-analyzer-current']),dimensions:Object.freeze(['gui-controls','terminal-analyzers','product-mechanics','product-gaps'])}),
+ 'offsec-pen-200-dcd4a16bbbfe100e':Object.freeze({title:'sudo authorization path item',cards:Object.freeze(['linux-sudo-list-review']),analyzers:Object.freeze(['sudo-list-analyzer-current']),dimensions:Object.freeze(['gui-controls','terminal-analyzers','product-mechanics','product-gaps'])})
 });
 function patchMinedAdditions(){
  const progress=root.OBOL_PRODUCT_HARDENING_NOTE_PROGRESS;if(!progress||!progress.remining||!Array.isArray(progress.remining.auditRows))return false;
@@ -2068,19 +2068,20 @@ function patchMinedAdditions(){
     outcome:'added',
     proofRefs:Object.freeze(['assets/credential-material-current.js','assets/workflow-current.js']),
     changedOwners:Object.freeze(['assets/credential-material-current.js','assets/workflow-current.js']),
-    pathIds:Object.freeze(['path']),
-    analyzerIds:Object.freeze(spec.features),
+    pathIds:spec.cards,
+    analyzerIds:spec.analyzers,
     actualPathIntegrated:true,
-    actualNextStepsPathId:'path',
+    actualNextStepsPathId:spec.cards[0],
     resolvedGapIds:Object.freeze(Array.from(prior.gapIds||prior.queueIds||[])),
-    note:'Mined finding was converted into the Linux source-mined mechanics panel on the Next Steps path instead of left as future backlog.'
+    note:'Mined finding was converted into contextual Next Steps card behavior or an existing online-brute card enhancement instead of a generic path-page toolbox.'
    });
   }
-  row.productAdditions=Object.freeze(spec.features);
+  row.productAdditions=spec.cards;
+  row.productMechanics=spec.analyzers;
   row.productGaps=Object.freeze([]);
   row.minedIntoProduct=true;
   row.minedAdditionTitle=spec.title;
-  additions.push(Object.freeze({noteId:row.noteId,title:row.title||spec.title,implementedFeatureIds:spec.features,reviewWave:MINE_THEN_USE_WAVE,publicSurface:'#/path'}));
+  additions.push(Object.freeze({noteId:row.noteId,title:row.title||spec.title,implementedCardIds:spec.cards,implementedAnalyzerIds:spec.analyzers,reviewWave:MINE_THEN_USE_WAVE,publicSurface:'#/path',integration:'contextual-next-step-cards'}));
  }
  const outcomeCounts={};allowed.forEach(outcome=>{outcomeCounts[outcome]=0;});
  const dimensionCounts={};dimensions.forEach(id=>{dimensionCounts[id]={considered:0,added:0,covered:0,queued:0,privateOnly:0,notApplicable:0,blocked:0,ruledOut:0};});
@@ -2092,9 +2093,9 @@ function patchMinedAdditions(){
    const dc=dimensionCounts[dimension];if(dc){dc.considered+=1;const key=keyFor[outcome]||outcome;if(Object.prototype.hasOwnProperty.call(dc,key))dc[key]+=1;}
   }
  }
- const remining=Object.assign({},progress.remining,{auditRows:Object.freeze(rows.map(row=>Object.freeze(Object.assign({},row,{decisions:Object.freeze(row.decisions||{})})))),outcomeCounts:Object.freeze(outcomeCounts),dimensionCounts:Object.freeze(Object.fromEntries(Object.entries(dimensionCounts).map(([key,value])=>[key,Object.freeze(value)]))),minedAdditions:Object.freeze(additions),latestBatchMode:'mine-then-use',latestBatchResolvedQueuedGaps:additions.reduce((total,row)=>total+row.implementedFeatureIds.length,0),dashboardNote:'v9.54 Linux findings were mined and converted into tangible Next Steps path mechanics in the same pass.'});
+ const remining=Object.assign({},progress.remining,{auditRows:Object.freeze(rows.map(row=>Object.freeze(Object.assign({},row,{decisions:Object.freeze(row.decisions||{})})))),outcomeCounts:Object.freeze(outcomeCounts),dimensionCounts:Object.freeze(Object.fromEntries(Object.entries(dimensionCounts).map(([key,value])=>[key,Object.freeze(value)]))),minedAdditions:Object.freeze(additions),latestBatchMode:'mine-then-contextualize',latestBatchResolvedQueuedGaps:additions.reduce((total,row)=>total+row.implementedCardIds.length+row.implementedAnalyzerIds.length,0),dashboardNote:'v9.54 Linux findings were mined into contextual Next Steps cards and an online-brute enhancement, not a standalone generic panel.'});
  root.OBOL_PRODUCT_HARDENING_NOTE_PROGRESS=Object.freeze(Object.assign({},progress,{remining:Object.freeze(remining)}));
- root.OBOL_PRODUCT_HARDENING_MINED_ADDITIONS=Object.freeze({schemaVersion:'1.0.0',reviewWave:MINE_THEN_USE_WAVE,publicSurface:'#/path',additions:Object.freeze(additions)});
+ root.OBOL_PRODUCT_HARDENING_MINED_ADDITIONS=Object.freeze({schemaVersion:'1.1.0',reviewWave:MINE_THEN_USE_WAVE,publicSurface:'#/path',integration:'contextual-next-step-cards',additions:Object.freeze(additions)});
  return true;
 }
 function renderDashboard(){
@@ -2144,7 +2145,7 @@ function decorateRoute(){
  stripBuildMetrics();
  announceCurrentPaint();
 }
-root.OBOL_CURRENT_WORKFLOW=Object.freeze({version:'1.2.0',decorateRoute,renderHome,renderDashboard,decoratePath,ensureDashboardNav,syncVisibleReleaseIdentity,announceCurrentPaint,patchMinedAdditions});
+root.OBOL_CURRENT_WORKFLOW=Object.freeze({version:'1.3.0',decorateRoute,renderHome,renderDashboard,decoratePath,ensureDashboardNav,syncVisibleReleaseIdentity,announceCurrentPaint,patchMinedAdditions});
 for(const t of [0,80,260,900,2200])setTimeout(decorateRoute,t);
 })(typeof window!=='undefined'?window:globalThis);
 ;
