@@ -1,6 +1,5 @@
 'use strict';
-// v9.54 regression: Linux privilege-escalation source re-mining batch 1
-// must become contextual Next Steps behavior, not a generic Path page panel.
+// v9.54 regression: source re-mining must become contextual, operator-facing path behavior.
 const assert=require('assert');
 const fs=require('fs');
 const path=require('path');
@@ -31,6 +30,18 @@ for(const expected of [
  assert(docs.includes(expected),`agent workflow must include ${expected}`);
 }
 
+const cardUiDoc=read('docs/CARD-UI-STANDARD.md');
+for(const expected of [
+ 'Cards are for operators working a lab, not for agents explaining implementation decisions.',
+ 'Every command shown on a card needs a useful explanation.',
+ 'Boilerplate warnings are not enough.',
+ 'Do not hide the only useful command block behind awkward scaffolding.',
+ 'Commands and checks',
+ 'Direct card route'
+]){
+ assert(cardUiDoc.includes(expected),`card UI standard must include ${expected}`);
+}
+
 const releaseDoc=read('docs/v9.54.md');
 for(const expected of [
  'contextual path behavior',
@@ -44,6 +55,12 @@ for(const expected of [
  'public route still renders `Unknown card`',
  'operator-facing inspection content',
  'no implementation-plumbing explanation is shown to users',
+ 'complete HTB packet 03 material',
+ 'web-parameter-fuzzing',
+ 'file-inclusion-proof-chain',
+ 'php-wrapper-source-review',
+ 'upload-to-include-chain-review',
+ 'file-upload-proof-boundary',
  'added `linux-user-trail-secret-review`',
  'added `linux-process-traffic-secret-review`',
  'added `linux-sudo-list-review`',
@@ -75,41 +92,66 @@ for(const expected of [
  assert(credentialSource.includes(expected),`credential/path owner must include ${expected}`);
 }
 assert(!credentialSource.includes('data-linux-source-mined-mechanics'),'v9.54 findings must not be parked in a standalone generic path panel');
-const cardIds=['linux-sudo-list-review','linux-cron-proof-chain','linux-user-trail-secret-review','linux-process-traffic-secret-review','candidate-credential-validation','credential-pattern-wordlist-helper'];
-for(const cardId of cardIds){
+const linuxCardIds=['linux-sudo-list-review','linux-cron-proof-chain','linux-user-trail-secret-review','linux-process-traffic-secret-review','candidate-credential-validation','credential-pattern-wordlist-helper'];
+for(const cardId of linuxCardIds){
  const marker="id:'"+cardId+"'";
  assert(credentialSource.includes(marker),`missing contextual path card definition ${cardId}`);
  const start=credentialSource.indexOf(marker);
  const segment=credentialSource.slice(start,Math.min(credentialSource.length,start+9000));
- assert(segment.includes('sourceMined54'),`${cardId} must carry source-mined provenance`);
+ assert(segment.includes('sourceMined54'),`${cardId} must carry source-mined provenance in data, not as user-facing copy`);
  assert(segment.includes('prereq:'),`${cardId} must be gated by lab state`);
  assert(segment.includes('commands:'),`${cardId} must carry operator-facing command guidance`);
 }
 assert(credentialSource.includes("card=cardById('online-brute')"),'existing online-brute card must be enhanced in place');
-assert(credentialSource.includes('Source-mined v9.54 reminder'),'online-brute must carry the mined credential-validation reminder');
+assert(credentialSource.includes('Source-mined v9.54 reminder'),'online-brute must carry the mined credential-validation reminder in data');
 
 const directRouteSource=read('assets/source-mined-card-route-current.js');
 for(const expected of [
  'OBOL_SOURCE_MINED_CARD_ROUTE',
  'source-mined-direct-card-route',
  'installLinuxSourceMinedPathCards',
- 'Unknown card',
- 'When to use this',
- 'guided step'
+ 'installWebSourceMinedPathCards',
+ 'patchLinuxCommandNotes',
+ 'polishSourceMinedCardUi',
+ 'Command checks',
+ 'Purpose:',
+ 'OBOL_WEB_SOURCE_MINED_PATH_CARDS',
+ 'Unknown card'
 ]){
  assert(directRouteSource.includes(expected),`direct source-mined card route owner must include ${expected}`);
 }
 for(const forbidden of [
  'Why this route exists',
+ 'When to use this',
+ 'Tool action stack',
+ 'Raw legacy commands',
+ 'Current builders stay up front',
  'inserted dynamically',
  'startup card index',
  'This card is inserted',
- 'source-mined v9.54</span>'
+ 'source-mined v9.54</span>',
+ 'Only inspect processes you are authorized to inspect. Environment findings are candidate material and need service-scoped validation.'
 ]){
- assert(!directRouteSource.includes(forbidden),`direct source-mined card route must not expose developer-facing copy: ${forbidden}`);
+ assert(!directRouteSource.includes(forbidden),`direct source-mined card route must not expose weak or developer-facing copy: ${forbidden}`);
 }
-for(const cardId of cardIds){
+const webCardIds=['web-parameter-fuzzing','file-inclusion-proof-chain','php-wrapper-source-review','upload-to-include-chain-review','file-upload-proof-boundary'];
+for(const cardId of linuxCardIds.concat(webCardIds)){
  assert(directRouteSource.includes(cardId),`direct route owner must know ${cardId}`);
+}
+for(const expected of [
+ 'complete sequential packets',
+ 'htb-penetration-tester-03.json',
+ 'website-discovery',
+ 'file-upload',
+ 'lfi-probe',
+ 'web-shells',
+ 'content-discovery',
+ 'accepted by the form, stored by the server, reachable over HTTP, interpreted by the backend',
+ 'parameter that actually controls server-side content selection',
+ 'wrapper success is not the same as command execution',
+ 'A successful include is a bridge between upload storage and server-side interpretation'
+]){
+ assert(directRouteSource.includes(expected),`robust web re-mine route owner must include ${expected}`);
 }
 const runtimeSource=read('assets/runtime-current.js');
 for(const expected of [
@@ -138,6 +180,33 @@ for(const expected of [
 ]){
  assert(workflowSource.includes(expected),`dashboard workflow owner must include ${expected}`);
 }
+
+const backfill=read('data/product-hardening/note-mechanic-backfill-v9.38.js');
+for(const expected of [
+ "schemaVersion:'1.1.0'",
+ 'robustReread:true',
+ 'complete sequential packets',
+ 'data/review-packets/htb-penetration-tester-03.json',
+ 'htb-penetration-tester-db1367c3cb696693',
+ 'htb-penetration-tester-dcf44979c5cbeb28',
+ 'htb-penetration-tester-c234c00d18a235f3',
+ 'htb-penetration-tester-b90fb6ba8060ca62',
+ 'htb-penetration-tester-4d269654772ade3f',
+ 'htb-penetration-tester-c89f8281ca7b1cb6',
+ 'htb-penetration-tester-999330f41a434b37',
+ 'htb-penetration-tester-bf66c6300266b4d0',
+ 'htb-penetration-tester-eb9ed63c6680ecdd',
+ 'web-parameter-fuzzing',
+ 'file-inclusion-proof-chain',
+ 'php-wrapper-source-review',
+ 'upload-to-include-chain-review',
+ 'file-upload-proof-boundary',
+ 'Complete packet text shows the reusable value',
+ 'Claude kept only a builder mechanic'
+]){
+ assert(backfill.includes(expected),`robust Claude-backfill re-mine must include ${expected}`);
+}
+assert(!backfill.includes("decision:'guidance-only',guidanceOnlyReason:'Upload acceptance is already represented"),'Claude-era guidance-only upload disposition must be replaced by robust packet re-mine');
 
 const notesImpact=read('data/product-hardening/notes-impact-current.js');
 for(const expected of [

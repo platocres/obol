@@ -30,6 +30,7 @@ for(const rel of [
  'docs/NOTE-MINING-RUBRIC.md',
  'docs/AGENT-WORKFLOW.md',
  'docs/NOTES-IMPACT.md',
+ 'docs/CARD-UI-STANDARD.md',
  'README.md'
 ])requireFile(rel);
 
@@ -71,6 +72,14 @@ requireAnyText('docs/AGENT-WORKFLOW.md',['## 4. Derive the value, do not copy th
 requireText('docs/AGENT-WORKFLOW.md','Use the private notes as source knowledge, not public text.');
 requireText('docs/AGENT-WORKFLOW.md','Mark an item `private-only` only for the raw/private substance that cannot be safely published, not for the durable lesson that can be rewritten.');
 requireText('docs/AGENT-WORKFLOW.md','`CHANGELOG.md` is release narrative only. Current re-mining status lives in `data/product-hardening/note-progress-current.js`');
+
+requireText('docs/CARD-UI-STANDARD.md','Cards are for operators working a lab, not for agents explaining implementation decisions.');
+requireText('docs/CARD-UI-STANDARD.md','Every command shown on a card needs a useful explanation.');
+requireText('docs/CARD-UI-STANDARD.md','Boilerplate warnings are not enough.');
+requireText('docs/CARD-UI-STANDARD.md','Do not hide the only useful command block behind awkward scaffolding.');
+requireText('docs/CARD-UI-STANDARD.md','Tool action stack');
+requireText('docs/CARD-UI-STANDARD.md','Raw legacy commands');
+requireText('docs/CARD-UI-STANDARD.md','Direct card route');
 
 requireText('docs/NOTES-IMPACT.md','The derivation rule is: extract the educational value fully, then re-author the public output into Obol-owned form.');
 requireText('docs/NOTES-IMPACT.md','This does not excuse discarding reusable educational value that can be re-authored safely.');
