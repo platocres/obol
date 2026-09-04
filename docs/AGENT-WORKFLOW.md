@@ -6,7 +6,7 @@ This is the detailed, do-this-now workflow for an agent told to "read the README
 
 1. Read `README.md`, this file, and [`BUILDING.md`](../BUILDING.md).
 2. Confirm there is no open release/product-hardening PR. If one exists, continue it instead of opening another. There must be only one open release/product-hardening PR at a time.
-3. Open `#/dashboard` (or inspect `data/product-hardening/product-hardening-queue.js`, `data/product-hardening/note-progress-current.js`, and `data/product-hardening/work-packages.js`) to see Product Build Next and the recommended coherent work package.
+3. Open `#/dashboard` (or inspect `data/product-hardening/product-hardening-queue.js`, `data/product-hardening/source-review-packets-current.js`, `data/product-hardening/note-progress-current.js`, and `data/product-hardening/work-packages.js`) to see Product Build Next, complete packet metrics, and the recommended coherent work package.
 
 ## 2. Pick the work
 
@@ -14,20 +14,55 @@ This is the detailed, do-this-now workflow for an agent told to "read the README
 - Burn down as many items as safely fit the **same ownership area**, architectural context, and test surface. Stop expanding when the next item changes ownership area, migration risk, or test strategy.
 - Every item advanced or closed still needs its own acceptance criteria, validation commands, proof files, and item-specific tests in `data/product-hardening/item-test-contracts.js`.
 
-## 3. Notes work is raw-source re-mining
+## 3. Notes work is source re-mining from complete material
 
-The active notes work is **source re-mining**, not reading the public Field Note, prior rationale, prior disposition, or output IDs. Re-mine the **original private raw notes**:
+The active notes work is **source re-mining**, not reading the public Field Note, prior rationale, prior disposition, old themed packet artifact, or output IDs. Re-mine from one of the complete private sources below.
 
-1. The private source repo is `platocres/obol-source-notes`. Add/clone it.
-2. The ENEX exports are Git LFS objects. The committed review packets under `data/review-packets/` are **truncated title/tag shortlists** — do not make a high-confidence product claim from them. Pull the real bodies:
+### Preferred route: raw ENEX through Git LFS
+
+1. The private source repo is [`platocres/obol-source-notes`](https://github.com/platocres/obol-source-notes). The raw ENEX exports live at [`https://github.com/platocres/obol-source-notes/tree/main/sources/raw`](https://github.com/platocres/obol-source-notes/tree/main/sources/raw). Start there instead of stopping at the public Obol README, the source repo root, or old packet shortlists.
+2. The ENEX exports are Git LFS objects. Pull the real bodies and prove the HTB file materialized:
    ```bash
    git lfs install
-   git lfs pull            # fetches sources/raw/*.enex (large; be patient)
+   git lfs pull --include="sources/raw/HTB - Penetration Tester.enex,sources/raw/OffSec PEN-200.enex"
    python scripts/verify_sources.py
    ```
-3. Extract the full body of a note by `note_id` (`<source_id>-<sha256(content)[:16]}`) from the ENEX and read it end to end. `scripts/build_review_packets.py` shows the ENML-cleaning and note-id derivation.
-4. For each already-reviewed note, re-mine against every extraction dimension: path bindings, tool cards, GUI switches, scripts/one-liners, command templates, terminal-output analyzers, Evidence expectations, path movement, lesson boxes, examples, troubleshooting, cleanup, report guidance, product mechanics, product gaps, and additive Orange baseline.
-5. Check the live tracking source before choosing or closing a re-mining packet. `CHANGELOG.md` is release narrative only. Current re-mining status lives in `data/product-hardening/note-progress-current.js`, Product Build Next, and the Product Hardening Dashboard.
+   The HTB proof line must show `bytes=194191214` and `sha256=ceeab3da0770ecd3709bcd2693b7a26a6390ad45c5bbada0234079e6eb2ff06f`. A 134-byte file beginning with `version https://git-lfs.github.com/spec/v1` is only the pointer and is not source access.
+3. Extract the full body of a note by `note_id` (`<source_id>-<sha256(content)[:16]}`) from the ENEX and read it end to end. The source repo extractor `scripts/extract_enex_review_packets.py` shows the ENML-cleaning and note-id derivation.
+
+### Connector fallback: complete sequential packets
+
+If the agent runtime cannot clone GitHub, resolve GitHub DNS, run Git LFS, or read large ENEX binaries directly, use the complete sequential packets committed in the private source repo:
+
+```text
+platocres/obol-source-notes@agent/review-packets:data/review-packets/manifest.json
+```
+
+Before using this fallback, verify the manifest says:
+
+```text
+schema_version=2
+review_text_policy=complete_cleaned_text
+truncation_policy=none
+note_count=556
+unique_note_count=556
+truncated_note_count=0
+window_marker_count=0
+packet_count=29
+review_text_chars=8725188
+```
+
+Then read the packet files listed in `manifest.packets[*].file`. They are sequential all-note packets generated from verified raw ENEX, not themed search packets. They cover 556/556 notes, preserve complete cleaned note text, and are acceptable for text-based source re-mining when direct raw ENEX access is impossible in the current runtime.
+
+Do **not** use the older themed `review-packets-fulltext` workflow artifact to close review/re-mining work. It can help with theme discovery, but it omits unmatched notes and can truncate text.
+
+Full mechanics and proof rules: [`docs/RAW-NOTES-LFS.md`](RAW-NOTES-LFS.md).
+
+### Mine the complete source material
+
+For each already-reviewed note, re-mine against every extraction dimension: path bindings, tool cards, GUI switches, scripts/one-liners, command templates, terminal-output analyzers, Evidence expectations, path movement, lesson boxes, examples, troubleshooting, cleanup, report guidance, product mechanics, product gaps, and additive Orange baseline.
+
+Check the live tracking source before choosing or closing a re-mining packet. `CHANGELOG.md` is release narrative only. Current re-mining status lives in `data/product-hardening/note-progress-current.js`, Product Build Next, and the Product Hardening Dashboard. Current packet metrics live in `data/product-hardening/source-review-packets-current.js`.
 
 ## 4. Derive the value, do not copy the expression
 
@@ -65,10 +100,10 @@ Every re-mined note dimension must resolve to one auditable outcome: `added`, `c
 Every product build is a versioned release. In the same PR:
 
 - bump `data/current-release.js`, then run `node tools/sync-current-release.js --write` (updates README + `index.html`);
-- add `docs/vX.Y.md` and a `## vX.Y — …` entry at the top of [`CHANGELOG.md`](../CHANGELOG.md);
+- add `docs/vX.Y.md` and a `## vX.Y - ...` entry at the top of [`CHANGELOG.md`](../CHANGELOG.md);
 - add `tests/run-vX.Y-tests.js` (invokes `tools/validate-release-pr.js`; assert the current release version-agnostically);
 - demote the previous release's test off any live-current assertion (README release token, `index.html` shell tokens, and `data/current-release.js` literals all become version-agnostic checks). `tools/validate-historical-tests.js` catches the common cases;
-- regenerate generated owners after any manifest/fragment change, and run `node tools/sync-product-build-next.js --write` whenever queue or work-package state changes.
+- regenerate generated owners after any manifest/fragment change, and run `node tools/sync-product-build-next.js --write` whenever queue, work-package, or source-packet metric state changes.
 
 Docs-only clarification PRs do not need to bump the public site release number unless they change product behavior, queue state, generated outputs, or the visible website release identity.
 

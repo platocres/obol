@@ -14,6 +14,7 @@ const notePacketsFile = path.join(root, 'data', 'note-integration-packets.js');
 const noteBackfillFile = path.join(root, 'data', 'product-hardening', 'note-mechanic-backfill-v9.38.js');
 const noteProgressFile = path.join(root, 'data', 'product-hardening', 'note-progress-current.js');
 const noteImpactFile = path.join(root, 'data', 'product-hardening', 'notes-impact-current.js');
+const sourceReviewPacketsFile = path.join(root, 'data', 'product-hardening', 'source-review-packets-current.js');
 const runtimeManifestFile = path.join(root, 'data', 'runtime-manifest.js');
 const runtimeConsolidationFile = path.join(root, 'data', 'runtime-consolidation-current.js');
 const readmeFile = path.join(root, 'README.md');
@@ -29,12 +30,14 @@ if (fs.existsSync(notePacketsFile)) vm.runInContext(fs.readFileSync(notePacketsF
 if (fs.existsSync(noteBackfillFile)) vm.runInContext(fs.readFileSync(noteBackfillFile, 'utf8'), sandbox, { filename: noteBackfillFile });
 if (fs.existsSync(noteProgressFile)) vm.runInContext(fs.readFileSync(noteProgressFile, 'utf8'), sandbox, { filename: noteProgressFile });
 if (fs.existsSync(noteImpactFile)) vm.runInContext(fs.readFileSync(noteImpactFile, 'utf8'), sandbox, { filename: noteImpactFile });
+if (fs.existsSync(sourceReviewPacketsFile)) vm.runInContext(fs.readFileSync(sourceReviewPacketsFile, 'utf8'), sandbox, { filename: sourceReviewPacketsFile });
 vm.runInContext(fs.readFileSync(runtimeManifestFile, 'utf8'), sandbox, { filename: runtimeManifestFile });
 vm.runInContext(fs.readFileSync(runtimeConsolidationFile, 'utf8'), sandbox, { filename: runtimeConsolidationFile });
 
 const q = sandbox.window.OBOL_PRODUCT_HARDENING;
 const workPackages = sandbox.window.OBOL_PRODUCT_HARDENING_WORK_PACKAGES;
 const noteImpact = sandbox.window.OBOL_PRODUCT_HARDENING_NOTES_IMPACT;
+const sourceReviewPackets = sandbox.window.OBOL_SOURCE_REVIEW_PACKETS;
 const runtimeConsolidation = sandbox.window.OBOL_RUNTIME_CONSOLIDATION;
 if (!runtimeConsolidation) throw new Error('Runtime consolidation projection not exposed');
 if (!q) throw new Error('Product-hardening queue not exposed');
@@ -45,6 +48,7 @@ if (noteImpact) {
   const failures = noteImpact.validate();
   if (failures.length) throw new Error('Invalid notes-impact projection:\n- ' + failures.join('\n- '));
 }
+if (sourceReviewPackets && !sourceReviewPackets.isComplete) throw new Error('Private source review packets are not complete');
 const runtimeFailures = runtimeConsolidation.validate();
 if (runtimeFailures.length) throw new Error('Invalid runtime-consolidation projection:\n- ' + runtimeFailures.join('\n- '));
 
@@ -84,11 +88,19 @@ function noteImpactLines() {
   ];
 }
 
+function sourceReviewPacketLines() {
+  if (!sourceReviewPackets) return [];
+  const p = sourceReviewPackets;
+  const htb = (p.sources || []).find(src => src.sourceId === 'htb-penetration-tester');
+  return [
+    '**Private review packets:** `' + p.pointer + '` — ' + p.packetizedNotes + '/' + p.expectedNotes + ' notes in ' + p.packetCount + ' complete-text packets, ' + p.truncatedNotes + ' truncated, ' + Number(p.reviewTextChars).toLocaleString('en-US') + ' cleaned text chars.',
+    '**Raw source proof:** workflow run ' + p.proofRunId + ' verified ' + (htb ? 'HTB ENEX ' + Number(htb.bytes).toLocaleString('en-US') + ' bytes sha256 `' + htb.sha256.slice(0, 16) + '…`' : 'raw ENEX identity') + ' before packet generation.'
+  ];
+}
+
 function runtimeConsolidationLines() {
   const p = runtimeConsolidation.projection();
   if (!p) return [];
-  const startup = p.areas.filter(area => area.scope === 'startup');
-  const lazy = p.areas.filter(area => area.scope === 'lazy');
   return [
     '**Runtime consolidation:** ' + p.startupRequests.after + ' operator startup requests, down from ' + p.startupRequests.before + ' (' + p.startupRequests.reductionPct + '% fewer).',
     '**Current runtime ownership areas:** ' + p.areas.length + ' owners account for ' + p.consolidatedFragments + ' historical fragments — ' + p.flattenedHistoricalFragments + ' semantically flattened, ' + p.liveHistoricalFragments + ' still exact-owned; ' + p.retiredFragments + ' fragments stay retired in the frozen ledger.',
@@ -96,6 +108,11 @@ function runtimeConsolidationLines() {
     '**Measured in Chromium (' + p.measured.release + '):** ' + p.measured.routes.map(route => route.label + ' ' + route.before + '→' + route.after).join(' · ') + ' JavaScript/CSS requests.',
     '**Runtime compaction contract:** `docs/RUNTIME-COMPACTION.md`.'
   ];
+}
+
+function sourceLink(repo) {
+  const url = 'https://github.com/' + repo + '/tree/main/sources/raw';
+  return '[`' + url + '`](' + url + ')';
 }
 
 function block() {
@@ -109,7 +126,8 @@ function block() {
     'Runtime consolidation figures come from `data/runtime-consolidation-current.js`, the same projection the Product Hardening Dashboard renders.',
     '',
     '**Current product-hardening queue:** ' + totals.complete + '/' + totals.total + ' complete (' + totals.pct + '%), ' + totals.queued + ' queued, ' + totals.modeled + ' foundation items modeled.',
-    '**Private notes source:** `' + q.notes.privateRepo + '` — ' + totals.notes + ' notes and ' + totals.resources + ' embedded resources accounted.',
+    '**Private notes source:** ' + sourceLink(q.notes.privateRepo) + ' — ' + totals.notes + ' notes and ' + totals.resources + ' embedded resources accounted.',
+    ...sourceReviewPacketLines(),
     ...noteImpactLines(),
     ...runtimeConsolidationLines(),
     '',

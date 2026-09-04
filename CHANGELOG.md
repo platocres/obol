@@ -1,3 +1,13 @@
+## v9.53 — Fixes the private source-note handoff so future agents stop relying on incomplete themed review artifacts
+
+- Added complete private source-packet metrics through `data/product-hardening/source-review-packets-current.js`.
+- Added a Product Hardening Dashboard card for complete private review packet coverage.
+- Updated the README generated Product Build Next block to show the complete packet source, 556/556 note coverage, zero truncation, and raw ENEX proof metrics.
+- Added `docs/RAW-NOTES-LFS.md` to document direct Git LFS verification, the complete sequential packet fallback, and why the old themed artifact is not source of truth.
+- Updated `docs/AGENT-WORKFLOW.md` so agents know to use raw ENEX when possible and complete sequential packets when connector/runtime limits block direct LFS access.
+- Added `.github/workflows/sync-release-artifacts.yml` so release branches can regenerate README, `index.html`, and `assets/obol-app-current.js` from the release authority instead of hand-editing generated runtime output.
+- Added regression coverage in `tests/run-v9.53-tests.js` and hardened the v9.52 source-handoff checks.
+
 ## v9.52 — Windows privilege-escalation source re-mining and release-identity synchronization
 
 - Began actual full-spectrum source re-mining: re-read all 15 already-reviewed Windows privilege-escalation notes from the original private ENEX sources (not the public Field Note or prior rationale) and published per-note, per-dimension audit rows in `data/product-hardening/note-progress-current.js` (`remining.auditRows`). Outcomes: 7 added, 114 covered, 16 queued, 17 private-only, 86 not-applicable, computed rather than hand-maintained.

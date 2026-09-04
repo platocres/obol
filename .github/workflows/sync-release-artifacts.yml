@@ -1,0 +1,58 @@
+name: Sync generated release artifacts
+
+on:
+  push:
+    branches:
+      - 'release/obol-*'
+    paths:
+      - '.github/workflows/sync-release-artifacts.yml'
+      - 'BUILDING.md'
+      - 'data/current-release.js'
+      - 'data/runtime-manifest.js'
+      - 'docs/v*.md'
+      - 'tools/sync-current-release.js'
+      - 'tools/sync-current-changelog.js'
+      - 'tools/sync-release-docs.js'
+      - 'tools/sync-app-current.js'
+      - 'assets/workflow-current.js'
+      - 'assets/operator-route-current.js'
+
+permissions:
+  contents: write
+
+jobs:
+  sync:
+    if: github.actor != 'github-actions[bot]'
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout release branch
+        uses: actions/checkout@v4
+        with:
+          ref: ${{ github.ref_name }}
+          fetch-depth: 0
+
+      - name: Set up Node
+        uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+
+      - name: Synchronize generated release artifacts
+        run: |
+          node tools/sync-current-release.js --write
+          node tools/sync-app-current.js --write
+          node tools/sync-current-changelog.js --write
+          node tools/sync-release-docs.js --write
+
+      - name: Commit generated artifacts
+        shell: bash
+        run: |
+          set -euo pipefail
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add README.md index.html assets/obol-app-current.js CHANGELOG.md BUILDING.md
+          if git diff --cached --quiet; then
+            echo "Generated release artifacts already current."
+            exit 0
+          fi
+          git commit -m "Sync generated release artifacts"
+          git push origin HEAD:${{ github.ref_name }}
