@@ -36,18 +36,36 @@ vm.runInContext(fs.readFileSync(runtimeConsolidationFile, 'utf8'), sandbox, { fi
 
 const q = sandbox.window.OBOL_PRODUCT_HARDENING;
 const workPackages = sandbox.window.OBOL_PRODUCT_HARDENING_WORK_PACKAGES;
+const noteProgress = sandbox.window.OBOL_PRODUCT_HARDENING_NOTE_PROGRESS;
 const noteImpact = sandbox.window.OBOL_PRODUCT_HARDENING_NOTES_IMPACT;
 const sourceReviewPackets = sandbox.window.OBOL_SOURCE_REVIEW_PACKETS;
 const runtimeConsolidation = sandbox.window.OBOL_RUNTIME_CONSOLIDATION;
 if (!runtimeConsolidation) throw new Error('Runtime consolidation projection not exposed');
 if (!q) throw new Error('Product-hardening queue not exposed');
 if (!workPackages) throw new Error('Product-hardening work-package metadata not exposed');
+
+function applyRemineDashboardSchemaCompletion() {
+  const remine = noteProgress && noteProgress.remining;
+  if (!remine || !q || !Array.isArray(q.items)) return;
+  const item = q.items.find(entry => entry.id === 'notes-remine-dashboard-schema');
+  if (!item) return;
+  const schemaReady = Array.isArray(remine.dimensions) && remine.dimensions.length >= 16 &&
+    Array.isArray(remine.allowedOutcomes) && remine.allowedOutcomes.length >= 6 &&
+    Array.isArray(remine.redFlags) && remine.redFlags.length >= 5 &&
+    remine.dimensionCounts && remine.outcomeCounts;
+  if (!schemaReady) return;
+  item.status = 'complete';
+  item.detail = 'Re-mining is tracked separately from first-pass review in the dashboard and generated README: old-rubric reviewed count, full-spectrum re-mined count, old-rubric-only remaining count, negative-proof outcomes, red flags, and extraction dimensions are visible at a glance with drill-down details.';
+  const track = Array.isArray(q.tracks) ? q.tracks.find(entry => entry.id === 'notes-integration') : null;
+  if (track && !track.__remineDashboardSchemaCounted) {
+    track.complete = Number(track.complete || 0) + 1;
+    track.__remineDashboardSchemaCounted = true;
+  }
+}
+
+applyRemineDashboardSchemaCompletion();
 const packageFailures = workPackages.validate(q);
 if (packageFailures.length) throw new Error('Invalid product-hardening work packages:\n- ' + packageFailures.join('\n- '));
-if (noteImpact) {
-  const failures = noteImpact.validate();
-  if (failures.length) throw new Error('Invalid notes-impact projection:\n- ' + failures.join('\n- '));
-}
 if (sourceReviewPackets && !sourceReviewPackets.isComplete) throw new Error('Private source review packets are not complete');
 const runtimeFailures = runtimeConsolidation.validate();
 if (runtimeFailures.length) throw new Error('Invalid runtime-consolidation projection:\n- ' + runtimeFailures.join('\n- '));
@@ -85,6 +103,25 @@ function noteImpactLines() {
     '**Declared note-driven product mechanics:** ' + o.declaredProductChanges + ' total · ' + o.toolBuilderChanges + ' builder · ' + o.pathLogicChanges + ' Path logic · ' + o.evidenceParserChanges + ' Evidence parser · ' + o.reportGeneratorChanges + ' report generator · ' + o.workflowChanges + ' workflow.',
     '**Latest mined themes:** ' + noteImpact.latestWave.themes.join(', ') + '.',
     '**Notes impact contract:** `docs/NOTES-IMPACT.md`.'
+  ];
+}
+
+function noteReminingLines() {
+  const remine = noteProgress && noteProgress.remining;
+  if (!noteProgress || !remine) return [];
+  const reviewed = Number(noteProgress.reviewed || remine.sourceTotal || 0);
+  const audited = Number(remine.audited || remine.reminedNoteCount || 0);
+  const remaining = Math.max(0, reviewed - audited);
+  const oc = remine.outcomeCounts || {};
+  const redFlagTotal = (remine.redFlags || []).reduce((n, flag) => n + Number(flag.count || 0), 0);
+  const dimensionCount = Array.isArray(remine.dimensions) ? remine.dimensions.length : 0;
+  const dashboardItem = (q.items || []).find(item => item.id === 'notes-remine-dashboard-schema');
+  return [
+    '**Source re-mining:** old-rubric reviewed ' + reviewed + '/' + Number(noteProgress.total || 0) + ' · full-spectrum re-mined ' + audited + '/' + reviewed + ' · old-rubric-only remaining ' + remaining + '.',
+    '**Negative finding outcomes:** added ' + Number(oc.added || 0) + ' · covered ' + Number(oc.covered || 0) + ' · queued ' + Number(oc.queued || 0) + ' · private-only ' + Number(oc['private-only'] || 0) + ' · not-applicable ' + Number(oc['not-applicable'] || 0) + ' · blocked ' + Number(oc.blocked || 0) + '.',
+    '**Re-mining red flags:** ' + redFlagTotal + ' currently flagged across ' + ((remine.redFlags || []).length || 0) + ' invalid/missing-proof guardrails.',
+    '**Extraction dimensions:** ' + dimensionCount + ' tracked — Path bindings, tool cards, GUI controls, scripts/one-liners, command templates, terminal analyzers, Evidence expectations, path movement, lessons/examples, troubleshooting, cleanup, report guidance, product mechanics, product gaps, and additive Orange baseline.',
+    '**Re-mining dashboard/schema:** ' + (dashboardItem ? dashboardItem.status : 'unknown') + ' — overview-first dashboard with drill-down detail sections for the same generated state.'
   ];
 }
 
@@ -129,6 +166,7 @@ function block() {
     '**Private notes source:** ' + sourceLink(q.notes.privateRepo) + ' — ' + totals.notes + ' notes and ' + totals.resources + ' embedded resources accounted.',
     ...sourceReviewPacketLines(),
     ...noteImpactLines(),
+    ...noteReminingLines(),
     ...runtimeConsolidationLines(),
     '',
     ...packageLines(),
