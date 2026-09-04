@@ -12,7 +12,7 @@ has('assets/app-v2-views.js','storeCardEvidenceIntent');
 has('assets/app-v2-views.js','obol-card-evidence-source');
 has('assets/app-v2-views.js','Apply evidence from ');
 has('assets/app-v2-views.js','cardScopedSource(src,r.mode)');
-has('assets/app-v2-views.js','card:<card-id>:intake:<mode>');
+has('assets/app-v2-views.js',"'card:'+src.cardId+':intake:'+mode");
 has('assets/app-v2-views.js','osAllowed(card,fs)');
 has('assets/app-v2-views.js','osFilterRanked');
 has('assets/app-v2-views.js','installWindowsPrivescCards');
