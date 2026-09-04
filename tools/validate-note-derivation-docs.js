@@ -76,10 +76,13 @@ requireText('docs/AGENT-WORKFLOW.md','`CHANGELOG.md` is release narrative only. 
 requireText('docs/CARD-UI-STANDARD.md','Cards are for operators working a lab, not for agents explaining implementation decisions.');
 requireText('docs/CARD-UI-STANDARD.md','Every command shown on a card needs a useful explanation.');
 requireText('docs/CARD-UI-STANDARD.md','Boilerplate warnings are not enough.');
-requireText('docs/CARD-UI-STANDARD.md','Do not hide the only useful command block behind awkward scaffolding.');
+requireText('docs/CARD-UI-STANDARD.md','Do not hide useful command blocks behind awkward scaffolding.');
 requireText('docs/CARD-UI-STANDARD.md','Tool action stack');
 requireText('docs/CARD-UI-STANDARD.md','Raw legacy commands');
 requireText('docs/CARD-UI-STANDARD.md','Direct card route');
+requireText('docs/CARD-UI-STANDARD.md','queue controls, tried/succeeded controls, intake evidence, evidence textarea, execution context, and implementation selection');
+requireText('docs/CARD-UI-STANDARD.md','Current-owner or dynamically inserted cards must register into the shared card index');
+requireText('docs/CARD-UI-STANDARD.md','A fake fallback that imitates a card but skips normal controls is not acceptable.');
 
 requireText('docs/NOTES-IMPACT.md','The derivation rule is: extract the educational value fully, then re-author the public output into Obol-owned form.');
 requireText('docs/NOTES-IMPACT.md','This does not excuse discarding reusable educational value that can be re-authored safely.');
