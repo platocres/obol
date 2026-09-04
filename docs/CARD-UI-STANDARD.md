@@ -35,6 +35,20 @@ Only run this when authorized. Save output as evidence.
 
 Authorization, scope, and candidate-material warnings still matter, but they belong in the card hypothesis, failure routing, defender view, report guidance, or engagement banner. They should not replace the per-command explanation.
 
+## Evidence flow rule
+
+Every real card needs an obvious evidence path. A card that asks the user to run a command must let the user paste output on the card and send that output to Intake with the originating card ID preserved.
+
+The required flow is card → paste command output → `Analyze pasted evidence` → Intake shows the source card → reviewed evidence applies as `card:<card-id>:intake:<mode>` → Path recalculates from that card-scoped evidence.
+
+Generic `intake:<mode>` is acceptable only when the user opens Intake directly. Evidence launched from a card must not lose the card source. Tests should fail if a source-mined or current-owner card has commands but no evidence textarea, no analyze action, no tried/succeeded controls, or no card-scoped Intake source.
+
+## OS routing rule
+
+Linux-only and Windows-only local privilege cards must be gated by the target operating system. Linux-only cards require Linux foothold or Linux OS evidence. Windows-only cards require Windows foothold or Windows OS evidence. Metadata like `os:['linux']` or `os:['windows']` is not decorative; the Path view must use it to keep Linux and Windows local privilege recommendations separated.
+
+Cross-platform credential cards can remain service/evidence gated, but local privilege cards must not appear merely because a generic `privesc.leads` fact exists on the wrong operating system.
+
 ## Layout rule
 
 Do not hide useful command blocks behind awkward scaffolding. Labels such as `Tool action stack`, `Raw legacy commands`, `Current builders stay up front`, and similar implementation-shaped copy should not appear in operator card UI. Use plain labels such as `Commands`, `Commands and checks`, or `Guided builder`.
