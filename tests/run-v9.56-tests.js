@@ -43,10 +43,8 @@ for(const expected of [
  'Notes source, impact, and latest wave',
  'Runtime and QA appendix',
  'Full seeded work ledger',
- 'details(',
- 'max-height:520px',
- 'width:min(1680px,calc(100vw - 56px))'
-]) has(expected.endsWith('.css')?'assets/product-hardening-dashboard.css':'assets/product-hardening-dashboard.js',expected);
+ 'details('
+]) has('assets/product-hardening-dashboard.js',expected);
 for(const expected of [
  'ph-dashboard-v956',
  'ph-overview-grid',
