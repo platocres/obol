@@ -46,7 +46,7 @@ jobs:
   preflight:
     runs-on: ubuntu-latest
     env:
-      SHOULD_PREFLIGHT: ${{ github.event_name == 'push' && startsWith(github.ref, 'refs/heads/release/') && (contains(github.event.head_commit.message, '[preflight]') || contains(github.event.head_commit.message, '[release-final]')) }}
+      SHOULD_PREFLIGHT: ${{ github.event_name == 'push' && startsWith(github.ref, 'refs/heads/release/') && (contains(github.event.head_commit.message, '[preflight]') || contains(github.event.head_commit.message, '[full-regression]')) }}
     steps:
       - name: Checkout
         uses: actions/checkout@v4
@@ -60,13 +60,13 @@ jobs:
           if [[ "${SHOULD_PREFLIGHT}" == "true" ]]; then
             node tools/release-preflight.js
           else
-            echo "Preflight runs only for release pushes containing [preflight] or [release-final]; no-op for this event."
+            echo "Preflight runs only for release pushes containing [preflight] or [full-regression]; no-op for this event."
           fi
 
   test:
     runs-on: ubuntu-latest
     env:
-      SHOULD_FULL_TEST: ${{ github.ref == 'refs/heads/main' || github.event_name == 'workflow_dispatch' || github.event_name == 'schedule' || (github.event_name == 'push' && startsWith(github.ref, 'refs/heads/release/') && contains(github.event.head_commit.message, '[release-final]')) }}
+      SHOULD_FULL_TEST: ${{ github.ref == 'refs/heads/main' || github.event_name == 'workflow_dispatch' || github.event_name == 'schedule' || (github.event_name == 'push' && startsWith(github.ref, 'refs/heads/release/') && contains(github.event.head_commit.message, '[full-regression]')) }}
     steps:
       - name: Checkout
         uses: actions/checkout@v4
@@ -99,7 +99,10 @@ jobs:
 # Tiered release validation keeps PRs fast without deleting historical protection.
 # Pull requests run release-smoke plus the matching release-specific suite when the
 # branch name is release/obol-vX.Y. Main, scheduled runs, manual workflow_dispatch
-# runs, and [release-final] release pushes run the complete historical chain.
+# runs, and [full-regression] release pushes run the complete historical chain.
+# [release-final] is intentionally not a CI trigger because agents had been using
+# it on routine work-in-progress pushes. Use [full-regression] only for the exact
+# head that needs full preservation proof.
 # Historical tests remain the preservation gate for old release behavior, Evidence
 # conservatism, Next Steps contracts, dashboard ownership, runtime flattening, and
 # no-sediment/no-wrapper guarantees.
