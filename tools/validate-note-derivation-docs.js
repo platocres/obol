@@ -49,7 +49,9 @@ requireText('docs/NOTE-MINING-RUBRIC.md','confirmation that reusable educational
 
 requireText('docs/AGENT-WORKFLOW.md','## 4. Mine, then use it in the same pass');
 requireText('docs/AGENT-WORKFLOW.md','public-safe useful finding');
-requireText('docs/AGENT-WORKFLOW.md','Build those findings into the actual site in the same pass');
+requireText('docs/AGENT-WORKFLOW.md','attach the finding to an existing Next Steps item');
+requireText('docs/AGENT-WORKFLOW.md','create a new gated Next Steps item');
+requireText('docs/AGENT-WORKFLOW.md','A generic panel on `#/path` is not enough');
 requireText('docs/AGENT-WORKFLOW.md','Queued is not a successful resting state');
 requireText('docs/AGENT-WORKFLOW.md','we mine, then we take what we mined and use it');
 requireAnyText('docs/AGENT-WORKFLOW.md',['## 4. Derive the value, do not copy the expression','## 5. Derive the value, do not copy the expression']);
