@@ -55,7 +55,7 @@ has('assets/ad-pivoting-current.js','OBOL_AD_PIVOTING_SOURCE_MINED_CARDS');
 has('assets/ad-pivoting-current.js','SharpHound/BloodHound collection is a graph snapshot');
 has('assets/ad-pivoting-current.js','A BloodHound path is a hypothesis queue');
 has('assets/ad-pivoting-current.js','Kerberoasting has four proof states');
-has('assets/ad-pivoting-current.js','Tunnel-up, scan-through, and authenticated-service-use as separate Evidence');
+has('assets/ad-pivoting-current.js','tunnel-up, scan-through, and authenticated-service-use as separate Evidence');
 lacks('assets/ad-pivoting-current.js','Why this route exists');
 lacks('assets/ad-pivoting-current.js','Tool action stack');
 lacks('assets/ad-pivoting-current.js','Raw legacy commands');
