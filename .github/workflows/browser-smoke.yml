@@ -67,7 +67,15 @@ jobs:
           cat /tmp/obol-http.log
           exit 1
 
-      - name: Run browser smoke
+      - name: Run fast browser route smoke
+        if: env.SHOULD_DEEP_BROWSER != 'true'
+        env:
+          OBOL_SMOKE_BASE_URL: http://127.0.0.1:4173/index.html
+          OBOL_SMOKE_OUTPUT: artifacts/playwright-smoke
+        run: node tests/playwright-route-smoke.js
+
+      - name: Run full browser smoke
+        if: env.SHOULD_DEEP_BROWSER == 'true'
         env:
           OBOL_SMOKE_BASE_URL: http://127.0.0.1:4173/index.html
           OBOL_SMOKE_OUTPUT: artifacts/playwright-smoke
