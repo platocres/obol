@@ -18,6 +18,10 @@ Do not review only the existing public Field Note, previous rationale, previous 
 
 Notes work is additive to the Orange-derived path. Do not delete, narrow, or replace original Orange mind-map path items during note mining. Attach to an existing path point, add a child step or adjacent branch, improve a tool card, add a new tool card, add analyzer behavior, or file a product gap.
 
+Note-derived tools, scripts, one-liners, analyzers, lesson boxes, command templates, and path branches must be wired into the actual user-visible Next Steps / Orange path surface where the operator needs them. Do not park them in disconnected registries, dashboard-only lists, loose docs, or hidden code paths and call them done.
+
+Do not add disposable wrapper, overlay, release-specific patch layer, or parallel registry shortcuts when a stable current owner can be updated directly. Product hardening should reduce future consolidation debt, not create it.
+
 ## Product contract
 
 Obol remains a website the user can simply visit and use. There is no backend, account system, telemetry, install prompt, or automatic command execution.
@@ -58,7 +62,7 @@ There must be only one open release/product-hardening PR at a time. If one exist
 - [`docs/RUNTIME-COMPACTION.md`](docs/RUNTIME-COMPACTION.md) - per-area retirement lifecycle, consolidated ownership state, and test-retirement rules.
 - [`docs/PROOF-CONTRACT.md`](docs/PROOF-CONTRACT.md) - Evidence, proof boundaries, manual outcomes, and report readiness.
 - [`docs/TOOL-BUILDER-COVERAGE.md`](docs/TOOL-BUILDER-COVERAGE.md) - stable Tool Builder Platform, runnable-tool inventory, and representative-builder migration contract.
-- [`docs/NOTE-MINING-RUBRIC.md`](docs/NOTE-MINING-RUBRIC.md) - mandatory full-spectrum source re-mining checklist, tool-card/script/analyzer extraction rules, and additive Orange path rule.
+- [`docs/NOTE-MINING-RUBRIC.md`](docs/NOTE-MINING-RUBRIC.md) - mandatory full-spectrum source re-mining checklist, actual Next Steps path requirement, tool-card/script/analyzer extraction rules, additive Orange path rule, and no-wrapper/layer shortcut rule.
 - [`docs/NOTES-INTEGRATION.md`](docs/NOTES-INTEGRATION.md) - private source repo `platocres/obol-source-notes` and normalized public-output workflow.
 - [`docs/NOTES-IMPACT.md`](docs/NOTES-IMPACT.md) - required notes-to-product output decision, packet review model, dashboard interpretation, and runtime-compaction relationship.
 - [`docs/UX-QUALITY.md`](docs/UX-QUALITY.md) - UI/UX quality goals and seeded product defects.
@@ -94,21 +98,14 @@ Runtime consolidation figures come from `data/runtime-consolidation-current.js`,
 **Measured in Chromium (v9.40):** Home 321→19 · Next Steps 329→27 · Evidence 365→21 · Report 335→20 JavaScript/CSS requests.
 **Runtime compaction contract:** `docs/RUNTIME-COMPACTION.md`.
 
-**Recommended work package:** **Notes Impact and Source Re-mining** — 10 live items / 18 tracked.
+**Recommended work package:** **Notes Impact and Source Re-mining** — 3 live items / 11 tracked.
 **Work-package entry:** **Re-mine all already-reviewed notes from original sources**
 **Ownership area:** `notes/impact-packets`
-**Package guidance:** Treat the 556-note disposition item as the umbrella, but do not let the umbrella hide the immediate work: re-mine already-reviewed notes from their original private sources before fresh pending-note packets. Each re-mining item must check for tool cards, GUI switches, scripts, one-liners, terminal-output analyzers, additive Path bindings, lesson boxes, examples, troubleshooting, cleanup, report guidance, code-level mechanics, and product gaps. Preserve the Orange-derived path as an additive baseline: attach to or extend existing points rather than deleting them.
+**Package guidance:** Treat the 556-note disposition item as the umbrella, but do not let the umbrella hide the immediate work: re-mine already-reviewed notes from their original private sources before fresh pending-note packets. The note-progress projection splits the source re-mining gate into dashboard/schema plus themed re-mining rows; those rows remain additive queue projections while this package stays compatible with base queue validation. Re-mining must check for tool cards, GUI switches, scripts, one-liners, terminal-output analyzers, actual Next Steps path placement, lesson boxes, examples, troubleshooting, cleanup, report guidance, code-level mechanics, and product gaps. Preserve the Orange-derived path as an additive baseline and do not use disposable wrapper layers.
 **Package dependencies:** Notes Integration Foundation
 
 **Live items in this package:**
 - **Re-mine all already-reviewed notes from original sources** — Return to the original private source note for every already-reviewed modeled, guidance-only, reviewed-not-modeled, private-only, superseded, or rejected row. Do not merely inspect the existing public Field Note or prior rationale. Re-mine from scratch for tool cards, GUI switches, scripts, one-liners, terminal-output analyzers, additive Path bindings, lesson boxes, examples, troubleshooting, cleanup, report guidance, product mechanics, and product gaps.
-- **Add note re-mining dashboard and schema tracking** — Track re-mining separately from first-pass review. The dashboard and README should show old-rubric reviewed count, full-spectrum re-mined count, remaining old-rubric-only notes, and extraction dimensions for tools, GUI switches, scripts, one-liners, analyzers, Path bindings, lessons, troubleshooting, cleanup, reports, and product gaps.
-- **Re-mine reviewed web upload and inclusion notes** — Return to the original private upload, traversal, LFI/RFI, wrapper, hosting, and inclusion-chain notes already reviewed. Add to existing public outputs with missed tool cards, GUI controls, command templates, analyzer expectations, Path logic, lesson boxes, examples, troubleshooting, cleanup, report guidance, and product gaps. Preserve Orange path nodes and add to them rather than deleting or replacing them.
-- **Re-mine reviewed XSS and session notes** — Return to the original private XSS, browser impact, cookie, CSP, request-context, and session notes already reviewed. Mine again for useful tool cards, switches, scripts, one-liners, analyzers, Path attachments, lessons, examples, troubleshooting, cleanup, report guidance, and product gaps.
-- **Re-mine reviewed credentials and auth notes** — Return to the original private credential, hash, ticket, certificate, key, cookie, token, validation-boundary, and auth-failure notes already reviewed. Add missed builder modes, GUI switches, command templates, analyzers, credential routing, Path handoffs, lessons, troubleshooting, cleanup, report guidance, and product gaps.
-- **Re-mine reviewed Windows privesc notes** — Return to the original private Windows privilege-escalation notes already reviewed. Mine again for missed tool cards, PowerShell or command templates, GUI controls, parser/analyzer expectations, additive Path branches, proof boundaries, lesson boxes, examples, troubleshooting, cleanup, report guidance, and product gaps without deleting Orange baseline path items.
-- **Re-mine reviewed Linux privesc notes** — Return to the original private Linux privilege-escalation notes already reviewed. Mine again for missed tool cards, shell one-liners, scripts, GUI controls, analyzer expectations, additive Path branches, proof boundaries, lesson boxes, examples, troubleshooting, cleanup, report guidance, and product gaps without deleting Orange baseline path items.
-- **Re-mine private-only and superseded notes** — Return to original private notes previously marked private-reference-only, superseded, rejected, or reviewed-not-modeled. Keep raw recipes and private material private, but re-check whether public-safe tool ideas, command templates, analyzer rules, lesson boxes, troubleshooting, cleanup, report guidance, or additive Path improvements were missed.
 - **Burn down all 556 note dispositions** — Umbrella disposition goal for all 556 notes. Fresh pending-note packets remain queued beneath the full-spectrum re-mining gate: agents must first re-mine already-reviewed notes from the original private sources, add missed product outputs, and preserve the Orange-derived path additively.
 - **Notes packet: AD and pivoting** — Mine Active Directory, lateral movement, tunneling, pivoting, routing, credential use, evidence boundaries, and missing workflow/tool options.
 
