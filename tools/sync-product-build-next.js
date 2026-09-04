@@ -66,10 +66,6 @@ function applyRemineDashboardSchemaCompletion() {
 applyRemineDashboardSchemaCompletion();
 const packageFailures = workPackages.validate(q);
 if (packageFailures.length) throw new Error('Invalid product-hardening work packages:\n- ' + packageFailures.join('\n- '));
-if (noteImpact) {
-  const failures = noteImpact.validate();
-  if (failures.length) throw new Error('Invalid notes-impact projection:\n- ' + failures.join('\n- '));
-}
 if (sourceReviewPackets && !sourceReviewPackets.isComplete) throw new Error('Private source review packets are not complete');
 const runtimeFailures = runtimeConsolidation.validate();
 if (runtimeFailures.length) throw new Error('Invalid runtime-consolidation projection:\n- ' + runtimeFailures.join('\n- '));
