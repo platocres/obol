@@ -77,6 +77,7 @@ assert(browserWorkflow.includes('SHOULD_DEEP_BROWSER'));
 assert(browserWorkflow.includes('Install Playwright package'));
 assert(browserWorkflow.includes('Resolve system browser for fast smoke'));
 assert(browserWorkflow.includes('Install Playwright Chromium for deep browser proof'));
+assert(browserWorkflow.includes("Install Playwright Chromium for deep browser proof\n        if: env.SHOULD_DEEP_BROWSER == 'true'\n        run: npx playwright install --with-deps chromium"));
 assert(browserWorkflow.includes('OBOL_SMOKE_BROWSER_PATH=${browser}'));
 assert(browserWorkflow.includes('Run fast browser route smoke'));
 assert(browserWorkflow.includes('Run full browser smoke'));
@@ -88,9 +89,9 @@ assert(browserWorkflow.includes("if: failure() || env.SHOULD_DEEP_BROWSER == 'tr
 assert(browserWorkflow.includes('validate-app-dom-equivalence.js'));
 assert(browserWorkflow.includes('[full-regression]'));
 assert(!browserWorkflow.includes("contains(github.event.head_commit.message, '[release-final]')"));
-assert(!/npx playwright install --with-deps chromium\s+\n\s+- name: Serve Obol/.test(browserWorkflow));
 assert(fastRouteSmoke.includes('Fast Playwright route smoke'));
 assert(fastRouteSmoke.includes('#/dashboard'));
 assert(fastRouteSmoke.includes('data-product-dashboard-owner'));
+assert(fastRouteSmoke.includes('Home, Next Steps, and Dashboard current-owner render'));
 assert(!fastRouteSmoke.includes('fullPage: true });\n      await page.close();'));
 console.log('v9.51 source re-mining dashboard, negative-proof validator, fast browser route smoke split, and explicit full-regression CI tests passed.');
