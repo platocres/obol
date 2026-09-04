@@ -33,10 +33,26 @@ jobs:
         with:
           node-version: 24
 
-      - name: Install Playwright
+      - name: Install Playwright package
+        run: npm install --no-save --no-package-lock playwright@1.62.1
+
+      - name: Resolve system browser for fast smoke
+        if: env.SHOULD_DEEP_BROWSER != 'true'
         run: |
-          npm install --no-save --no-package-lock playwright@1.62.1
-          npx playwright install --with-deps chromium
+          set -euo pipefail
+          for browser in /usr/bin/google-chrome-stable /usr/bin/google-chrome /usr/bin/chromium-browser /usr/bin/chromium; do
+            if [[ -x "${browser}" ]]; then
+              echo "OBOL_SMOKE_BROWSER_PATH=${browser}" >> "${GITHUB_ENV}"
+              echo "Using system browser for fast PR smoke: ${browser}"
+              exit 0
+            fi
+          done
+          echo "No system Chrome or Chromium binary found for fast browser smoke." >&2
+          exit 1
+
+      - name: Install Playwright Chromium for deep browser proof
+        if: env.SHOULD_DEEP_BROWSER == 'true'
+        run: npx playwright install --with-deps chromium
 
       - name: Serve Obol
         run: |
@@ -58,51 +74,31 @@ jobs:
         run: node tests/playwright-smoke.js
 
       - name: Prove the v9.43 application retirement in a browser
+        if: env.SHOULD_DEEP_BROWSER == 'true'
         env:
           OBOL_SMOKE_BASE_URL: http://127.0.0.1:4173/index.html
-        run: |
-          set -euo pipefail
-          if [[ "${SHOULD_DEEP_BROWSER}" != "true" ]]; then
-            echo "Deep browser proof runs on main, workflow_dispatch, schedule, or release [full-regression]; PRs and ordinary release pushes keep route smoke fast."
-            exit 0
-          fi
-          node tools/validate-app-dom-equivalence.js
+        run: node tools/validate-app-dom-equivalence.js
 
       - name: Prove the v9.45 semantic stylesheet in a browser
+        if: env.SHOULD_DEEP_BROWSER == 'true'
         env:
           OBOL_SMOKE_BASE_URL: http://127.0.0.1:4173/index.html
-        run: |
-          set -euo pipefail
-          if [[ "${SHOULD_DEEP_BROWSER}" != "true" ]]; then
-            echo "Deep browser proof runs on main, workflow_dispatch, schedule, or release [full-regression]; PRs and ordinary release pushes keep route smoke fast."
-            exit 0
-          fi
-          node tools/validate-style-visual-equivalence.js
+        run: node tools/validate-style-visual-equivalence.js
 
       - name: Prove the v9.46 single-paint current boot in a browser
+        if: env.SHOULD_DEEP_BROWSER == 'true'
         env:
           OBOL_SMOKE_BASE_URL: http://127.0.0.1:4173/index.html
-        run: |
-          set -euo pipefail
-          if [[ "${SHOULD_DEEP_BROWSER}" != "true" ]]; then
-            echo "Deep browser proof runs on main, workflow_dispatch, schedule, or release [full-regression]; PRs and ordinary release pushes keep route smoke fast."
-            exit 0
-          fi
-          node tools/validate-single-paint-boot-browser.js
+        run: node tools/validate-single-paint-boot-browser.js
 
       - name: Prove v9.47 semantic application ownership across the historical timer horizon
+        if: env.SHOULD_DEEP_BROWSER == 'true'
         env:
           OBOL_SMOKE_BASE_URL: http://127.0.0.1:4173/index.html
-        run: |
-          set -euo pipefail
-          if [[ "${SHOULD_DEEP_BROWSER}" != "true" ]]; then
-            echo "Deep browser proof runs on main, workflow_dispatch, schedule, or release [full-regression]; PRs and ordinary release pushes keep route smoke fast."
-            exit 0
-          fi
-          node tools/validate-app-semantic-boot-browser.js
+        run: node tools/validate-app-semantic-boot-browser.js
 
       - name: Upload browser screenshots
-        if: always()
+        if: failure() || env.SHOULD_DEEP_BROWSER == 'true'
         uses: actions/upload-artifact@v4
         with:
           name: obol-browser-smoke-${{ github.run_id }}
