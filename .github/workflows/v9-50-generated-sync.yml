@@ -21,53 +21,7 @@ jobs:
         with:
           node-version: 24
       - name: Repair current handoff documentation
-        run: |
-          set -euo pipefail
-          python - <<'PY'
-          from pathlib import Path
-
-          changelog = Path('CHANGELOG.md')
-          text = changelog.read_text()
-          repairs = {
-            "- Defined the role tokens the flattened cascade references but never defined — `--muted` (~140 uses), plus `--card`, `--surface`, `--hover`, `--bad`, `--ok`, `--green`, `--gold`, and `--warn` — once in the always-loaded current-owner sheet `assets/responsive-current.css`, each mapped to an existing base token. Muted captions and role-colored surfaces regain their intended hierarchy app-wide. The frozen historical cascade and its equivalence proof are untouched.":
-            "- Defined the role tokens the flattened cascade references but never defined — `--muted` (~140 uses), `--card`, `--surface`, `--hover`, `--bad`, `--ok`, `--green`, `--gold`, `--warn` — once in the always-loaded current-owner sheet `assets/responsive-current.css`, each mapped to an existing base token. Muted captions and role-colored surfaces regain their intended hierarchy app-wide. The frozen historical cascade and its equivalence proof are untouched.",
-            "recognizes release intent from either a `Obol vX.Y` or `Release vX.Y` title":
-            "recognizes release intent from either an `Obol vX.Y` or `Release vX.Y` title",
-            "explicit execution context, semantic controls, conservative Evidence profiles":
-            "explicit execution context, conservative Evidence profiles",
-          }
-          for old, new in repairs.items():
-            if old not in text:
-              raise SystemExit(f'missing CHANGELOG repair target: {old[:80]}')
-            text = text.replace(old, new, 1)
-          changelog.write_text(text)
-
-          notes = Path('docs/NOTES-INTEGRATION.md')
-          text = notes.read_text()
-          old = """## Current themed packet state
-
-The current public-safe ledger has **127/556** notes reviewed: **95 modeled**, **27 private-reference-only**, **5 superseded**, **0 rejected**, and **429 pending**. Completed subject packets are web upload/file inclusion, XSS/session behavior, credentials/authentication, and Windows privilege escalation. Linux privilege escalation and AD/pivoting remain the next named subject packets beneath the 556-note umbrella.
-
-The Windows privilege-escalation packet was selected after substantive review of the private title/tag shortlist (**32 candidates**) and private full-text sweep (**95 candidates**), then curated to **16** reusable subject sources. One source was already terminal from the credentials work and fifteen reached new terminal dispositions. Public guidance now covers Windows privilege-enumeration triage, access-token/integrity proof, privileged service/task/DLL execution preconditions, secret-hunting boundaries, and local-exploit risk/proof without publishing private course recipes.
-"""
-          new = """## Current themed packet state
-
-The current public-safe ledger has **135/556** notes reviewed: **102 modeled**, **28 private-reference-only**, **5 superseded**, **0 rejected**, and **421 pending**. Completed subject packets are web upload/file inclusion, XSS/session behavior, credentials/authentication, Windows privilege escalation, and Linux privilege escalation. AD/pivoting is the next named subject packet beneath the 556-note umbrella.
-
-The Windows privilege-escalation packet was selected after substantive review of the private title/tag shortlist (**32 candidates**) and private full-text sweep (**95 candidates**), then curated to **16** reusable subject sources. One source was already terminal from the credentials work and fifteen reached new terminal dispositions. Public guidance covers Windows privilege-enumeration triage, access-token/integrity proof, privileged service/task/DLL execution preconditions, secret-hunting boundaries, and local-exploit risk/proof without publishing private course recipes.
-
-The v9.50 Linux privilege-escalation packet curated **8** reusable private-source candidates. Seven reached `modeled` with rewritten public-safe Field Notes and one exploit-specific walkthrough reached `private-reference-only`. The public guidance covers manual enumeration triage, privileged process/service observation, user-trail secret hunting, cron execution preconditions, sudo authorization and proof, SUID/capability boundaries, and kernel-exploit compatibility/stability proof. Each modeled row records an explicit guidance-only reason because the review did not expose a missing Tool Builder control, Path primitive, Evidence parser behavior, report-generator behavior, or workflow state that justified a new code-level mechanic.
-"""
-          if old not in text:
-            raise SystemExit('missing current themed packet section')
-          text = text.replace(old, new, 1)
-          marker = "- complete accounting of the 47-source web upload/inclusion packet, including its one explicit cross-theme deferral;\n"
-          addition = marker + "- completed Windows and Linux privilege-escalation packet accounting, including terminal source/output lineage and explicit guidance-only decisions for the v9.50 Linux rows;\n"
-          if marker not in text:
-            raise SystemExit('missing permanent-validation packet marker')
-          text = text.replace(marker, addition, 1)
-          notes.write_text(text)
-          PY
+        run: node tools/v9-50-temp-sync.js
       - name: Synchronize generated current-state outputs
         run: |
           set -euo pipefail
