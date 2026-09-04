@@ -72,6 +72,9 @@ function isDashboardRoute(){return routeName()==='dashboard';}
 function runSourceMinedCardRoute(){
  try{if(root.OBOL_SOURCE_MINED_CARD_ROUTE&&typeof root.OBOL_SOURCE_MINED_CARD_ROUTE.decorate==='function')root.OBOL_SOURCE_MINED_CARD_ROUTE.decorate();}catch(_err){}
 }
+function runCardEvidenceUI(){
+ try{if(root.OBOL_CARD_EVIDENCE_UI&&typeof root.OBOL_CARD_EVIDENCE_UI.decorate==='function')root.OBOL_CARD_EVIDENCE_UI.decorate();}catch(_err){}
+}
 function innerHtmlDescriptor(node){
  let proto=node;
  while(proto){
@@ -157,7 +160,7 @@ function ensureRoute(page){
  return names.reduce((chain,name)=>chain.then(()=>loadGroup(name)),Promise.resolve()).then(()=>names.slice());
 }
 function rerenderAfterLazy(){
- try{if(typeof root.route==='function')root.route();runSourceMinedCardRoute();}catch(err){setTimeout(()=>{try{if(typeof root.route==='function')root.route();runSourceMinedCardRoute();}catch(e){}},0);}
+ try{if(typeof root.route==='function')root.route();runSourceMinedCardRoute();runCardEvidenceUI();}catch(err){setTimeout(()=>{try{if(typeof root.route==='function')root.route();runSourceMinedCardRoute();runCardEvidenceUI();}catch(e){}},0);}
 }
 function toolBuilderBaseReady(){return !!(root.OBOL_TOOL_BUILDER_SCHEMA&&root.OBOL_TOOL_BUILDER_INVENTORY&&root.OBOL_TOOL_BUILDER&&root.OBOL_TOOL_BUILDERS);}
 function loadCredentialMaterial(attempt){
@@ -165,17 +168,17 @@ function loadCredentialMaterial(attempt){
   if(typeof root.OBOL_CREDENTIAL_MATERIAL.installCore==='function')root.OBOL_CREDENTIAL_MATERIAL.installCore();
   if(typeof root.OBOL_CREDENTIAL_MATERIAL.installReportBoundary==='function')root.OBOL_CREDENTIAL_MATERIAL.installReportBoundary();
   if(root.OBOL_CREDENTIAL_MATERIAL_UI&&typeof root.OBOL_CREDENTIAL_MATERIAL_UI.decorate==='function')root.OBOL_CREDENTIAL_MATERIAL_UI.decorate();
-  runSourceMinedCardRoute();
+  runSourceMinedCardRoute();runCardEvidenceUI();
   return Promise.resolve(['credentialMaterial','credentialModes']);
  }
  if(credentialMaterialLoad)return credentialMaterialLoad;
  const n=Number(attempt||0);
  if(!root.OBOL_CORE_V2){if(n>=100)return Promise.resolve([]);return new Promise(resolve=>setTimeout(resolve,20)).then(()=>loadCredentialMaterial(n+1));}
- credentialMaterialLoad=appendScripts(['data/credential-material.js','data/credential-modes.js','assets/credential-material-current.js','assets/source-mined-card-route-current.js']).then(()=>{
+ credentialMaterialLoad=appendScripts(['data/credential-material.js','data/credential-modes.js','assets/credential-material-current.js','assets/source-mined-card-route-current.js','assets/ad-pivoting-current.js','assets/card-evidence-current.js']).then(()=>{
   if(root.OBOL_CREDENTIAL_MATERIAL&&typeof root.OBOL_CREDENTIAL_MATERIAL.installCore==='function')root.OBOL_CREDENTIAL_MATERIAL.installCore();
   if(root.OBOL_CREDENTIAL_MATERIAL&&typeof root.OBOL_CREDENTIAL_MATERIAL.installReportBoundary==='function')root.OBOL_CREDENTIAL_MATERIAL.installReportBoundary();
-  runSourceMinedCardRoute();
-  return root.OBOL_CREDENTIAL_MATERIAL&&root.OBOL_CREDENTIAL_MODES?['credentialMaterial','credentialModes']:[];
+  runSourceMinedCardRoute();runCardEvidenceUI();
+  return root.OBOL_CREDENTIAL_MATERIAL&&root.OBOL_CREDENTIAL_MODES?['credentialMaterial','credentialModes']:[ ];
  }).finally(()=>{if(!root.OBOL_CREDENTIAL_MATERIAL||!root.OBOL_CREDENTIAL_MODES)credentialMaterialLoad=null;});
  return credentialMaterialLoad;
 }
@@ -191,7 +194,7 @@ function loadManualOutcomes(attempt){
  manualOutcomeLoad=appendScripts(['data/manual-outcomes.js','assets/manual-outcomes-current.js']).then(()=>{
   if(root.OBOL_MANUAL_OUTCOMES_UI&&typeof root.OBOL_MANUAL_OUTCOMES_UI.installReportBoundary==='function')root.OBOL_MANUAL_OUTCOMES_UI.installReportBoundary();
   if(root.OBOL_MANUAL_OUTCOMES_UI&&typeof root.OBOL_MANUAL_OUTCOMES_UI.decorate==='function')root.OBOL_MANUAL_OUTCOMES_UI.decorate();
-  return root.OBOL_MANUAL_OUTCOMES?['manualOutcomes']:[];
+  return root.OBOL_MANUAL_OUTCOMES?['manualOutcomes']:[ ];
  }).finally(()=>{if(!root.OBOL_MANUAL_OUTCOMES)manualOutcomeLoad=null;});
  return manualOutcomeLoad;
 }
