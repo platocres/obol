@@ -23,17 +23,22 @@ const PRODUCT_HARDENING_FALLBACK=[
 ];
 
 function list(v){return Array.isArray(v)?v.filter(Boolean):v?[v]:[];}
+function unique(list){return Array.from(new Set(list.filter(Boolean)));}
 function hasText(v,min){return typeof v==='string'&&v.trim().length>=(min||1);}
 function execute(file){vm.runInThisContext(fs.readFileSync(file,'utf8'),{filename:file});}
 function loadIfExists(root,rel){
  const file=path.join(root,rel);
  if(fs.existsSync(file))execute(file);
 }
+function productHardeningDataFiles(){
+ const manifestFiles=MANIFEST&&MANIFEST.lazy&&Array.isArray(MANIFEST.lazy.productHardening)?MANIFEST.lazy.productHardening:[];
+ const explicit=PRODUCT_HARDENING_FALLBACK;
+ const extra=manifestFiles.filter(rel=>/\.js$/.test(rel)&&rel.startsWith('data/')&&!explicit.includes(rel));
+ return unique([...explicit,...extra]);
+}
 function loadProgressProjection(root){
  if(global.OBOL_PRODUCT_HARDENING_NOTE_PROGRESS)return;
- const manifestFiles=MANIFEST&&MANIFEST.lazy&&Array.isArray(MANIFEST.lazy.productHardening)?MANIFEST.lazy.productHardening:PRODUCT_HARDENING_FALLBACK;
- const files=manifestFiles.filter(rel=>/\.js$/.test(rel)&&!rel.startsWith('assets/'));
- for(const rel of files)loadIfExists(root,rel);
+ for(const rel of productHardeningDataFiles())loadIfExists(root,rel);
  if(!global.OBOL_PRODUCT_HARDENING_NOTE_PROGRESS)loadIfExists(root,'data/product-hardening/note-progress-current.js');
 }
 function decisionFor(row,dimension){
