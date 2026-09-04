@@ -134,6 +134,8 @@ A blank entry, omitted dimension, generic "none," generic "no change," or vague 
 
 Negative proof must be specific enough that a future agent can return to the same original source note and challenge the decision. The goal is not impossible omniscience. The goal is reproducible audit work that makes lazy misses visible.
 
+`tools/validate-note-remining-audits.js` enforces the published re-mining projection. Run it before claiming a note re-mining packet is complete. This release permits an empty `auditRows` list only because it creates the schema before actual source re-mining resumes; future re-mining rows must publish per-note, per-dimension outcomes that pass the validator.
+
 ## Re-mining audit record
 
 Every re-mined source note should leave an explicit audit record that answers, at minimum:
