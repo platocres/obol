@@ -1,6 +1,8 @@
 'use strict';
 
+const fs=require('fs');
 const path=require('path');
+const vm=require('vm');
 const {loadCurrent}=require('./current-runtime');
 
 const DEFAULT_DIMENSIONS=[
@@ -11,6 +13,12 @@ const GENERIC_NEGATIVES=new Set(['','none','no','no change','not useful','n/a','
 
 function list(v){return Array.isArray(v)?v.filter(Boolean):v?[v]:[];}
 function hasText(v,min){return typeof v==='string'&&v.trim().length>=(min||1);}
+function execute(file){vm.runInThisContext(fs.readFileSync(file,'utf8'),{filename:file});}
+function loadProgressProjection(root){
+ if(global.OBOL_PRODUCT_HARDENING_NOTE_PROGRESS)return;
+ const file=path.join(root,'data','product-hardening','note-progress-current.js');
+ if(fs.existsSync(file))execute(file);
+}
 function decisionFor(row,dimension){
  const decisions=row.decisions||row.dimensions||row.dimensionOutcomes||{};
  return decisions[dimension];
@@ -97,6 +105,7 @@ function validateReMiningAudits(progress){
 if(require.main===module){
  const root=path.join(__dirname,'..');
  loadCurrent(root);
+ loadProgressProjection(root);
  const failures=validateReMiningAudits(global.OBOL_PRODUCT_HARDENING_NOTE_PROGRESS);
  if(failures.length){
   console.error('Note re-mining audit validation failed:');
@@ -106,4 +115,4 @@ if(require.main===module){
  console.log('Note re-mining audit validation passed.');
 }
 
-module.exports={validateReMiningAudits,ALLOWED_OUTCOMES,DEFAULT_DIMENSIONS};
+module.exports={validateReMiningAudits,ALLOWED_OUTCOMES,DEFAULT_DIMENSIONS,loadProgressProjection};
