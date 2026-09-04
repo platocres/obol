@@ -1,6 +1,9 @@
 name: Obol regression tests
 
 on:
+  workflow_dispatch:
+  schedule:
+    - cron: '17 8 * * *'
   push:
     branches:
       - main
@@ -32,16 +35,18 @@ jobs:
       - name: Run lightweight release smoke validation when applicable
         run: |
           set -euo pipefail
-          if [[ "${GITHUB_EVENT_NAME}" == "push" && "${GITHUB_REF}" == refs/heads/release/* ]]; then
+          if [[ "${GITHUB_EVENT_NAME}" == "pull_request" ]]; then
+            node tools/release-smoke.js
+          elif [[ "${GITHUB_EVENT_NAME}" == "push" && "${GITHUB_REF}" == refs/heads/release/* ]]; then
             node tools/release-smoke.js
           else
-            echo "Smoke validation is release-branch push only; no-op for this event."
+            echo "Smoke validation runs for pull requests and release-branch pushes; no-op for this event."
           fi
 
   preflight:
     runs-on: ubuntu-latest
     env:
-      SHOULD_PREFLIGHT: ${{ github.event_name == 'push' && startsWith(github.ref, 'refs/heads/release/') && (contains(github.event.head_commit.message, '[preflight]') || contains(github.event.head_commit.message, '[release-final]')) }}
+      SHOULD_PREFLIGHT: ${{ github.event_name == 'push' && startsWith(github.ref, 'refs/heads/release/') && (contains(github.event.head_commit.message, '[preflight]') || contains(github.event.head_commit.message, '[full-regression]')) }}
     steps:
       - name: Checkout
         uses: actions/checkout@v4
@@ -55,13 +60,13 @@ jobs:
           if [[ "${SHOULD_PREFLIGHT}" == "true" ]]; then
             node tools/release-preflight.js
           else
-            echo "Preflight runs only for release pushes containing [preflight] or [release-final]; no-op for this event."
+            echo "Preflight runs only for release pushes containing [preflight] or [full-regression]; no-op for this event."
           fi
 
   test:
     runs-on: ubuntu-latest
     env:
-      SHOULD_FULL_TEST: ${{ github.ref == 'refs/heads/main' || (github.event_name == 'pull_request' && github.event.pull_request.draft == false) || (github.event_name == 'push' && startsWith(github.ref, 'refs/heads/release/') && contains(github.event.head_commit.message, '[release-final]')) }}
+      SHOULD_FULL_TEST: ${{ github.ref == 'refs/heads/main' || github.event_name == 'workflow_dispatch' || github.event_name == 'schedule' || (github.event_name == 'push' && startsWith(github.ref, 'refs/heads/release/') && contains(github.event.head_commit.message, '[full-regression]')) }}
     steps:
       - name: Checkout
         uses: actions/checkout@v4
@@ -69,19 +74,38 @@ jobs:
         uses: actions/setup-node@v4
         with:
           node-version: '24'
-      - name: Run complete historical regression chain when applicable
+      - name: Run targeted PR gate or complete historical regression chain
         run: |
           set -euo pipefail
-          if [[ "${SHOULD_FULL_TEST}" != "true" ]]; then
-            echo "Full regression gate runs on main, ready PRs, and [release-final] release pushes; no-op for this event."
+          if [[ "${SHOULD_FULL_TEST}" == "true" ]]; then
+            echo "Running complete historical regression chain."
+            node tools/run-historical-contracts.js
             exit 0
           fi
-          node tools/run-historical-contracts.js
+          echo "Running targeted current-release gate instead of the complete historical chain."
+          node tools/release-smoke.js
+          ref_name="${GITHUB_HEAD_REF:-${GITHUB_REF_NAME:-}}"
+          if [[ "${ref_name}" =~ release/obol-v([0-9]+[.][0-9]+([.][0-9]+)?) ]]; then
+            suite="tests/run-v${BASH_REMATCH[1]}-tests.js"
+            if [[ -f "${suite}" ]]; then
+              node "${suite}"
+            else
+              echo "No release-specific suite found at ${suite}; release smoke already ran."
+            fi
+          else
+            echo "No release branch version detected; release smoke already ran."
+          fi
 
-# Tiered release validation keeps incremental development visible without turning every
-# work-in-progress commit into a full regression event. Ordinary release pushes run smoke;
-# [preflight] runs the current-release gate; [release-final] runs preflight plus the complete
-# historical chain. Ready-for-review PRs and main retain the complete protected test job.
+# Tiered release validation keeps PRs fast without deleting historical protection.
+# Pull requests run release-smoke plus the matching release-specific suite when the
+# branch name is release/obol-vX.Y. Main, scheduled runs, manual workflow_dispatch
+# runs, and [full-regression] release pushes run the complete historical chain.
+# [release-final] is intentionally not a CI trigger because agents had been using
+# it on routine work-in-progress pushes. Use [full-regression] only for the exact
+# head that needs full preservation proof.
+# Historical tests remain the preservation gate for old release behavior, Evidence
+# conservatism, Next Steps contracts, dashboard ownership, runtime flattening, and
+# no-sediment/no-wrapper guarantees.
 # Job-level conditions are intentionally avoided so pull requests do not show noisy skipped
 # check rows; non-applicable stages no-op successfully inside their jobs.
 # Historical CI contract markers retained for release-specific tests.

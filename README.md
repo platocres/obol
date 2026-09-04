@@ -10,6 +10,20 @@ Open `#/dashboard` for the active Product Hardening Dashboard and Product Build 
 
 The README is not a changelog. Release history lives in [`CHANGELOG.md`](CHANGELOG.md). Detailed build workflow lives in [`BUILDING.md`](BUILDING.md).
 
+## Current agent directive
+
+The next notes work is **source re-mining**, not fresh note mining. Re-mine already-reviewed notes from the original private source notes before starting new pending-note packets unless the user explicitly overrides that order.
+
+Do not review only the existing public Field Note, previous rationale, previous disposition, or output IDs. Return to the original private note and mine it again for tool cards, GUI switches, scripts, one-liners, terminal-output analyzers, additive Path bindings, lesson boxes, examples, troubleshooting, cleanup, report guidance, code-level mechanics, and product gaps.
+
+Notes work is additive to the Orange-derived path. Do not delete, narrow, or replace original Orange mind-map path items during note mining. Attach to an existing path point, add a child step or adjacent branch, improve a tool card, add a new tool card, add analyzer behavior, or file a product gap.
+
+Note-derived tools, scripts, one-liners, analyzers, lesson boxes, command templates, and path branches must be wired into the actual user-visible Next Steps / Orange path surface where the operator needs them. Do not park them in disconnected registries, dashboard-only lists, loose docs, or hidden code paths and call them done.
+
+Negative findings require proof. Every re-mined note dimension must resolve to `added`, `covered`, `queued`, `private-only`, `not-applicable`, or `blocked` with the required owner, queue, reason, proof, blocker, or next-action data. Blank or generic `none`, `no change`, or `not useful` entries are invalid.
+
+Do not add disposable wrapper, overlay, release-specific patch layer, or parallel registry shortcuts when a stable current owner can be updated directly. Product hardening should reduce future consolidation debt, not create it.
+
 ## Product contract
 
 Obol remains a website the user can simply visit and use. There is no backend, account system, telemetry, install prompt, or automatic command execution.
@@ -29,15 +43,15 @@ Before building:
 1. Read this README.
 2. Read [`BUILDING.md`](BUILDING.md) for release workflow, exact-head validation, and merge-readiness rules.
 3. Read [`docs/PRODUCT-HARDENING.md`](docs/PRODUCT-HARDENING.md) for the v9 product vision, queue rules, coherent work-package model, and Definition of Done.
-4. If the work touches private-source notes, read [`docs/NOTES-INTEGRATION.md`](docs/NOTES-INTEGRATION.md) and [`docs/NOTES-IMPACT.md`](docs/NOTES-IMPACT.md) before reviewing a packet. Reviewed-note counts are not enough: modeled notes must declare the product output they created or why contextual guidance is sufficient.
-5. Open `#/dashboard` or inspect `data/product-hardening/product-hardening-queue.js` plus `data/product-hardening/work-packages.js` for Product Build Next.
+4. If the work touches private-source notes, read [`docs/NOTE-MINING-RUBRIC.md`](docs/NOTE-MINING-RUBRIC.md), [`docs/NOTES-INTEGRATION.md`](docs/NOTES-INTEGRATION.md), and [`docs/NOTES-IMPACT.md`](docs/NOTES-IMPACT.md) before reviewing a packet. Reviewed-note counts are not enough: modeled notes must declare the product output they created or why contextual guidance is sufficient after full-spectrum extraction and negative-finding proof were completed.
+5. Open `#/dashboard` or inspect `data/product-hardening/product-hardening-queue.js`, `data/product-hardening/note-progress-current.js`, and `data/product-hardening/work-packages.js` for Product Build Next.
 6. Confirm there is no open release/product-hardening PR. If one exists, continue it instead of opening another.
 7. If no release PR exists, create the release branch and open one normal, **non-draft** release PR as early as GitHub permits. Keep that same PR for the entire build. Required checks, not Draft status, prevent premature merge.
 8. Start with the highest-priority Product Build Next item unless the user directs otherwise. Treat it as the entry point into the recommended coherent work package, not as a one-item limit.
 9. Inspect related, adjacent, and dependency-linked items in the same ownership area. Complete as many as safely fit the same architectural context and blast radius. Do not stop merely because the first item's acceptance criteria are satisfied if closely related work can be completed and fully tested in the same PR.
 10. Keep queue-item accountability atomic. Every item advanced or closed still needs its own acceptance criteria, validation commands, proof files, and item-specific tests.
 11. Do not batch unrelated work. Stop expanding the package when the next item materially changes ownership area, architectural context, migration risk, or test strategy.
-12. Use `node tools/scope-check.js` while developing the current work package. The complete historical chain remains a final/main preservation gate rather than a manual per-edit checklist.
+12. Use `node tools/scope-check.js` while developing the current work package. The complete historical chain remains a full-regression/main preservation gate rather than a manual per-edit checklist.
 13. Sync generated Product Build Next output, run the required validation, and keep the entire coherent work package in the one active release/product-hardening PR until the exact final head is green.
 
 There must be only one open release/product-hardening PR at a time. If one exists, continue it or close it as superseded before opening another. CI enforces this with `tools/validate-open-pr-uniqueness.js`. Do not use a Draft -> Ready transition as part of the release process and do not replace a healthy PR merely to move between review states.
@@ -50,6 +64,7 @@ There must be only one open release/product-hardening PR at a time. If one exist
 - [`docs/RUNTIME-COMPACTION.md`](docs/RUNTIME-COMPACTION.md) - per-area retirement lifecycle, consolidated ownership state, and test-retirement rules.
 - [`docs/PROOF-CONTRACT.md`](docs/PROOF-CONTRACT.md) - Evidence, proof boundaries, manual outcomes, and report readiness.
 - [`docs/TOOL-BUILDER-COVERAGE.md`](docs/TOOL-BUILDER-COVERAGE.md) - stable Tool Builder Platform, runnable-tool inventory, and representative-builder migration contract.
+- [`docs/NOTE-MINING-RUBRIC.md`](docs/NOTE-MINING-RUBRIC.md) - mandatory full-spectrum source re-mining checklist, actual Next Steps path requirement, tool-card/script/analyzer extraction rules, additive Orange path rule, negative-finding proof, and no-wrapper/layer shortcut rule.
 - [`docs/NOTES-INTEGRATION.md`](docs/NOTES-INTEGRATION.md) - private source repo `platocres/obol-source-notes` and normalized public-output workflow.
 - [`docs/NOTES-IMPACT.md`](docs/NOTES-IMPACT.md) - required notes-to-product output decision, packet review model, dashboard interpretation, and runtime-compaction relationship.
 - [`docs/UX-QUALITY.md`](docs/UX-QUALITY.md) - UI/UX quality goals and seeded product defects.
@@ -61,7 +76,7 @@ Pinned Orange Cyber Defense mind map provenance remains `https://orange-cyberdef
 
 ## Active product queue
 
-Product Build Next is the only active development queue. Its atomic item source of truth is `data/product-hardening/product-hardening-queue.js`; coherent multi-item package metadata lives in `data/product-hardening/work-packages.js`. The README and Product Hardening Dashboard consume both so the highest-priority item remains the entry point while agents are encouraged to burn down a meaningful same-ownership work package rather than nibbling one checkbox at a time.
+Product Build Next is the only active development queue. Its atomic item source of truth is `data/product-hardening/product-hardening-queue.js`; current notes packet/re-mining projections live in `data/product-hardening/note-progress-current.js`; coherent multi-item package metadata lives in `data/product-hardening/work-packages.js`. The README and Product Hardening Dashboard consume these sources so the highest-priority item remains the entry point while agents are encouraged to burn down a meaningful same-ownership work package rather than nibbling one checkbox at a time.
 
 Queue tracks, work-package rules, notes-integration policy, and runtime-compaction status live in [`docs/PRODUCT-HARDENING.md`](docs/PRODUCT-HARDENING.md); the completed Orange methodology/source accounting is regression-protected baseline in [`docs/NORTH-STAR.md`](docs/NORTH-STAR.md).
 
@@ -72,7 +87,7 @@ This block is generated from `data/product-hardening/product-hardening-queue.js`
 Recommended work-package metadata comes from `data/product-hardening/work-packages.js`.
 Runtime consolidation figures come from `data/runtime-consolidation-current.js`, the same projection the Product Hardening Dashboard renders.
 
-**Current product-hardening queue:** 219/653 complete (34%), 9 queued, 9 foundation items modeled.
+**Current product-hardening queue:** 219/653 complete (34%), 16 queued, 9 foundation items modeled.
 **Private notes source:** `platocres/obol-source-notes` — 556 notes and 1326 embedded resources accounted.
 **Notes Integration:** 135/556 reviewed — 102 modeled, 28 private-only, 421 pending.
 **Derived note guidance:** 55 Field Notes · 50 tool-bound · 52 Path-bound · 17 Evidence · 5 Report.
@@ -85,28 +100,28 @@ Runtime consolidation figures come from `data/runtime-consolidation-current.js`,
 **Measured in Chromium (v9.40):** Home 321→19 · Next Steps 329→27 · Evidence 365→21 · Report 335→20 JavaScript/CSS requests.
 **Runtime compaction contract:** `docs/RUNTIME-COMPACTION.md`.
 
-**Recommended work package:** **Notes Impact and Themed Burn-down** — 3 live items / 11 tracked.
-**Work-package entry:** **Burn down all 556 note dispositions**
+**Recommended work package:** **Notes Impact and Source Re-mining** — 3 live items / 11 tracked.
+**Work-package entry:** **Re-mine all already-reviewed notes from original sources**
 **Ownership area:** `notes/impact-packets`
-**Package guidance:** Treat the 556-note disposition item as the umbrella. Fix the conversion engine first: every modeled note must produce a declared product mechanic or a justified guidance-only reason (notes-conversion-rubric), backfill mechanics from already-modeled notes (notes-mechanic-backfill), and track script outputs as first-class (notes-script-category). Then burn remaining notes down in coherent themed packets, recording for every modeled source which Field Note, tool-bound or Path-bound guidance, Evidence/report/troubleshooting output, code-level product change, or explicit product gap it produced.
+**Package guidance:** Treat the 556-note disposition item as the umbrella, but do not let the umbrella hide the immediate work: re-mine already-reviewed notes from their original private sources before fresh pending-note packets. The note-progress projection splits the source re-mining gate into dashboard/schema plus themed re-mining rows; those rows remain additive queue projections while this package stays compatible with base queue validation. Re-mining must check for tool cards, GUI switches, scripts, one-liners, terminal-output analyzers, actual Next Steps path placement, lesson boxes, examples, troubleshooting, cleanup, report guidance, code-level mechanics, and product gaps. Preserve the Orange-derived path as an additive baseline and do not use disposable wrapper layers.
 **Package dependencies:** Notes Integration Foundation
 
 **Live items in this package:**
-- **Burn down all 556 note dispositions** — Umbrella disposition goal. Review work should be executed in themed packets and must record what each modeled note changed in Field Notes, tools, Path, Evidence, reports, troubleshooting, or product gaps.
-- **Re-audit all reviewed notes for missed mechanics** — Re-audit every note already processed under the old rubric — all 127 reviewed, not only the 95 modeled — because the defect was the review standard itself. Re-judge modeled, guidance-only, reviewed-not-modeled, and private-only dispositions against the new bar and convert to declared product changes (tool toggle, Path branch, evidence rule, report/workflow change) wherever one was missed. Cheaper than fresh review since rationales already exist; distinct from the first-pass review of the 429 pending notes.
+- **Re-mine all already-reviewed notes from original sources** — Return to the original private source note for every already-reviewed modeled, guidance-only, reviewed-not-modeled, private-only, superseded, or rejected row. Do not merely inspect the existing public Field Note or prior rationale. Re-mine from scratch for tool cards, GUI switches, scripts, one-liners, terminal-output analyzers, additive Path bindings, lesson boxes, examples, troubleshooting, cleanup, report guidance, product mechanics, and product gaps.
+- **Burn down all 556 note dispositions** — Umbrella disposition goal for all 556 notes. Fresh pending-note packets remain queued beneath the full-spectrum re-mining gate: agents must first re-mine already-reviewed notes from the original private sources, add missed product outputs, preserve the Orange-derived path additively, and prove every negative finding with an auditable per-dimension outcome.
 - **Notes packet: AD and pivoting** — Mine Active Directory, lateral movement, tunneling, pivoting, routing, credential use, evidence boundaries, and missing workflow/tool options.
 
 **Related items to consider, not automatically in scope:** Design contextual field-notes disclosure.
 
 **Highest-priority live items:**
-1. **Burn down all 556 note dispositions** — Umbrella disposition goal. Review work should be executed in themed packets and must record what each modeled note changed in Field Notes, tools, Path, Evidence, reports, troubleshooting, or product gaps.
-2. **Re-audit all reviewed notes for missed mechanics** — Re-audit every note already processed under the old rubric — all 127 reviewed, not only the 95 modeled — because the defect was the review standard itself. Re-judge modeled, guidance-only, reviewed-not-modeled, and private-only dispositions against the new bar and convert to declared product changes (tool toggle, Path branch, evidence rule, report/workflow change) wherever one was missed. Cheaper than fresh review since rationales already exist; distinct from the first-pass review of the 429 pending notes.
-3. **Notes packet: AD and pivoting** — Mine Active Directory, lateral movement, tunneling, pivoting, routing, credential use, evidence boundaries, and missing workflow/tool options.
-4. **UI quality audit rubric** — Add a fixed per-screen audit checklist under docs/visual-qa/ (hierarchy, density, consistency, affordance, state feedback, accessibility). Run once per primary screen and file each finding as its own queue item instead of ad-hoc fixes.
-5. **Quiet service worker caching** — Improve repeat-load and offline behavior without prompting users to install anything.
-6. **IndexedDB workspace storage** — Support durable larger local workspaces, multiple engagements, and cached indexes while remaining browser-local.
-7. **Web Workers for heavy tasks** — Move evidence parsing, search indexing, and report generation off the UI thread.
-8. **Non-intrusive update notice** — When cached app updates are available, notify users without install nagging.
+1. **Re-mine all already-reviewed notes from original sources** — Return to the original private source note for every already-reviewed modeled, guidance-only, reviewed-not-modeled, private-only, superseded, or rejected row. Do not merely inspect the existing public Field Note or prior rationale. Re-mine from scratch for tool cards, GUI switches, scripts, one-liners, terminal-output analyzers, additive Path bindings, lesson boxes, examples, troubleshooting, cleanup, report guidance, product mechanics, and product gaps.
+2. **Add note re-mining dashboard and schema tracking** — Track re-mining separately from first-pass review. The dashboard and README should show old-rubric reviewed count, full-spectrum re-mined count, remaining old-rubric-only notes, negative finding outcome counts, invalid-negative-proof red flags, and extraction dimensions for tools, GUI switches, scripts, one-liners, analyzers, Path bindings, lessons, troubleshooting, cleanup, reports, and product gaps.
+3. **Re-mine reviewed web upload and inclusion notes** — Return to the original private upload, traversal, LFI/RFI, wrapper, hosting, and inclusion-chain notes already reviewed. Add to existing public outputs with missed tool cards, GUI controls, command templates, analyzer expectations, Path logic, lesson boxes, examples, troubleshooting, cleanup, report guidance, and product gaps. Preserve Orange path nodes and add to them rather than deleting or replacing them.
+4. **Re-mine reviewed XSS and session notes** — Return to the original private XSS, browser impact, cookie, CSP, request-context, and session notes already reviewed. Mine again for useful tool cards, switches, scripts, one-liners, analyzers, Path attachments, lessons, examples, troubleshooting, cleanup, report guidance, and product gaps.
+5. **Re-mine reviewed credentials and auth notes** — Return to the original private credential, hash, ticket, certificate, key, cookie, token, validation-boundary, and auth-failure notes already reviewed. Add missed builder modes, GUI switches, command templates, analyzers, credential routing, Path handoffs, lessons, troubleshooting, cleanup, report guidance, and product gaps.
+6. **Re-mine reviewed Windows privesc notes** — Return to the original private Windows privilege-escalation notes already reviewed. Mine again for missed tool cards, PowerShell or command templates, GUI controls, parser/analyzer expectations, additive Path branches, proof boundaries, lesson boxes, examples, troubleshooting, cleanup, report guidance, and product gaps without deleting Orange baseline path items.
+7. **Re-mine reviewed Linux privesc notes** — Return to the original private Linux privilege-escalation notes already reviewed. Mine again for missed tool cards, shell one-liners, scripts, GUI controls, analyzer expectations, additive Path branches, proof boundaries, lesson boxes, examples, troubleshooting, cleanup, report guidance, and product gaps without deleting Orange baseline path items.
+8. **Re-mine private-only and superseded notes** — Return to original private notes previously marked private-reference-only, superseded, rejected, or reviewed-not-modeled. Keep raw recipes and private material private, but re-check whether public-safe tool ideas, command templates, analyzer rules, lesson boxes, troubleshooting, cleanup, report guidance, or additive Path improvements were missed.
 
 **Track status:**
 - **Critical correctness:** 5/5 complete (100%), 0 modeled.
@@ -136,15 +151,16 @@ Use the focused current-work-package check during development:
 node tools/scope-check.js
 ```
 
-Use [`BUILDING.md`](BUILDING.md) for preflight and release-final requirements. CI owns the complete historical regression chain on final release heads and `main`; agents should not manually copy and run every `run-vX.Y-tests.js` file for each small edit.
+Use [`BUILDING.md`](BUILDING.md) for preflight and full-regression requirements. CI owns the complete historical regression chain on explicit full-regression heads and `main`; agents should not manually copy and run every `run-vX.Y-tests.js` file for each small edit.
 
 The permanent notes-impact checks are:
 
 ```bash
 node tools/validate-notes-impact.js
 node tools/validate-note-integration.js
+node tools/validate-note-remining-audits.js
 node tools/sync-product-build-next.js --check
-node tests/run-v9.35-tests.js
+node tests/run-v9.51-tests.js
 ```
 
 The permanent runtime-consolidation checks are:

@@ -1,10 +1,10 @@
 # Obol Build and Release Workflow
 
-This file is a mandatory companion to `README.md` for future Obol build work. Read `docs/PRODUCT-HARDENING.md` for the active v9 engineering contract, then consult the owner docs relevant to the change: `docs/ARCHITECTURE.md`, `docs/NORTH-STAR.md`, `docs/PROOF-CONTRACT.md`, `docs/NOTES-INTEGRATION.md`, `docs/NOTES-IMPACT.md`, `docs/RUNTIME-COMPACTION.md`, `docs/UX-QUALITY.md`, and `docs/ORANGE-SOURCE-DEPTH.md`.
+This file is a mandatory companion to `README.md` for future Obol build work. Read `docs/PRODUCT-HARDENING.md` for the active v9 engineering contract, then consult the owner docs relevant to the change: `docs/ARCHITECTURE.md`, `docs/NORTH-STAR.md`, `docs/PROOF-CONTRACT.md`, `docs/NOTE-MINING-RUBRIC.md`, `docs/NOTES-INTEGRATION.md`, `docs/NOTES-IMPACT.md`, `docs/RUNTIME-COMPACTION.md`, `docs/UX-QUALITY.md`, and `docs/ORANGE-SOURCE-DEPTH.md`.
 
 ## Incremental release policy
 
-**Use one normal, non-draft release PR from the start. Ordinary release-branch commits run lightweight smoke validation. `[preflight]` runs the current-release gate. `[release-final]` runs smoke, preflight, and the complete historical chain. Required checks and exact-head validation prevent premature merge; Draft status is not part of the Obol release workflow.**
+**Use one normal, non-draft release PR from the start. Ordinary release-branch commits run lightweight smoke and targeted current-release validation. `[preflight]` runs the current-release readiness gate. `[full-regression]` is the only release-branch commit marker that intentionally runs the complete historical regression chain and deep browser proof stack. `[release-final]` is not a CI trigger because agents had been overusing it on routine work-in-progress pushes. Required checks and exact-head validation prevent premature merge; Draft status is not part of the Obol release workflow.**
 
 **Every build is a versioned release — bump the version across the board, every time, not only for large changes.** Each merged build must, in the same PR:
 
@@ -25,9 +25,11 @@ The intended release flow is:
 - keep exactly one open release/product-hardening PR at a time;
 - never use Draft status as a release gate, and never close/recreate a healthy release PR merely to transition between Draft and Ready states;
 - push incremental, coherent commits to that same PR;
-- ordinary release commits run `node tools/release-smoke.js`;
+- ordinary release commits run `node tools/release-smoke.js` plus the targeted current-release suite when CI can infer the release version from the branch;
 - while developing a coherent package, use `node tools/scope-check.js` as the focused inner-loop gate instead of manually running every historical release suite;
 - use `[preflight]` when a coherent current-release snapshot is ready;
+- use `[full-regression]` only on the exact head that needs complete historical and deep-browser preservation proof;
+- do not use `[release-final]` as a routine commit marker and do not rely on it to trigger the expensive historical stack;
 - do not create a second build/release/product-hardening PR to work around a failed check;
 - when the product release changes, update `data/current-release.js`, synchronize README with `node tools/sync-current-release.js --write`, and validate the authority with `node tools/validate-current-release.js`;
 - regenerate the active Product Build Next block with `node tools/sync-product-build-next.js --write` whenever queue state changes or work-package metadata changes;
@@ -36,7 +38,7 @@ The intended release flow is:
 - preserve canonical, frozen-baseline, file-level, and atomic denominators as historical milestones without forcing their detailed accounting into the current README;
 - audited source units must end as explicitly `modeled`, `superseded`, or `rejected` with rationale and required review dimensions accounted for;
 - product-hardening queue items may not move to `modeled`, `complete`, `superseded`, or `rejected` unless the applicable item-test contract names acceptance criteria, validation commands, and proof files for that item;
-- make the exact final release commit with `[release-final]` only after code, tests, docs, README, changelog or dedicated release documentation, and PR description form one coherent snapshot;
+- make the exact final release proof commit with `[full-regression]` only after code, tests, docs, README, changelog or dedicated release documentation, and PR description form one coherent snapshot;
 - require smoke, preflight, historical-test future safety, the complete historical regression chain, release-quality gate, release-contract validation, open-PR uniqueness validation, current-release synchronization, and generated Product Build Next synchronization on that exact head;
 - require the non-draft PR's required checks to pass on that same exact final head before calling the release merge-ready;
 - treat any later commit as a new head that must be validated again.
@@ -46,9 +48,10 @@ The intended release flow is:
 The validation tiers are:
 
 1. **Focused scope check** - `node tools/scope-check.js` during active package development; proves the current ownership area without forcing the whole historical archive through every small edit.
-2. **Smoke** - every release-branch push; JavaScript syntax plus local index asset-reference sanity.
-3. **Preflight** - `[preflight]` and `[release-final]`; current-release wiring, historical-test future safety, release contract, quality debt, current release regressions, and generated queue synchronization.
-4. **Final historical validation** - `[release-final]`, non-draft release pull requests, and `main`; `node tools/run-historical-contracts.js` owns the complete historical regressions plus the permanent quality and synchronization gates.
+2. **Smoke** - every pull request and release-branch push; JavaScript syntax plus local index asset-reference sanity.
+3. **Targeted current-release gate** - pull requests and ordinary release-branch pushes; runs release smoke plus the matching `tests/run-vX.Y-tests.js` suite when the branch is `release/obol-vX.Y`.
+4. **Preflight** - `[preflight]` and `[full-regression]`; current-release wiring, historical-test future safety, release contract, quality debt, current release regressions, and generated queue synchronization.
+5. **Final historical validation** - `[full-regression]`, workflow-dispatch runs, scheduled proof runs, and `main`; `node tools/run-historical-contracts.js` owns the complete historical regressions plus the permanent quality and synchronization gates.
 
 Do not maintain or instruct agents to manually copy a giant list of `tests/run-vX.Y-tests.js` commands into their normal development loop. The named historical runner owns discovery and ordered execution of those preservation suites. Historical tests remain real gates; the change is that their orchestration has one owner instead of being duplicated across README, CI, and agent instructions.
 
@@ -81,7 +84,7 @@ When burning down Product Build Next:
 1. Start from the highest-priority unblocked queued item unless the user explicitly directs otherwise.
 2. Inspect its recommended work package plus related and dependency-linked items.
 3. Complete as many queued items as safely fit the same ownership area, architectural context, migration boundary, and test strategy while that context is already loaded.
-4. Do not stop merely because the entry item's acceptance criteria have been satisfied if additional package items can be implemented and fully proven without materially increasing blast radius.
+4. Do not stop merely because the entry item's acceptance criteria are satisfied if additional package items can be implemented and fully proven without materially increasing blast radius.
 5. Keep every queue item atomic for status and proof. Each item advanced or closed still requires its own acceptance criteria, validation commands, proof files, and item-specific tests.
 6. Do not batch unrelated work just to increase item count. Stop expanding the package when the next item changes ownership area, requires a different architectural context, introduces a distinct migration risk, or would make the PR harder to reason about and roll back.
 7. Package dependencies guide sequencing; `relatedItems` are suggestions for consideration, not automatic scope. `parallelSafe` is descriptive metadata, not permission to violate the one-open-release-PR rule.

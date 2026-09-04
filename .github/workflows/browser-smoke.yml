@@ -1,6 +1,9 @@
 name: Obol browser smoke
 
 on:
+  workflow_dispatch:
+  schedule:
+    - cron: '42 8 * * *'
   pull_request:
     types: [opened, synchronize, reopened, ready_for_review]
   push:
@@ -19,6 +22,8 @@ jobs:
   browser-smoke:
     runs-on: ubuntu-latest
     timeout-minutes: 15
+    env:
+      SHOULD_DEEP_BROWSER: ${{ github.ref == 'refs/heads/main' || github.event_name == 'workflow_dispatch' || github.event_name == 'schedule' || (github.event_name == 'push' && startsWith(github.ref, 'refs/heads/release/') && contains(github.event.head_commit.message, '[full-regression]')) }}
     steps:
       - name: Checkout
         uses: actions/checkout@v4
@@ -28,10 +33,26 @@ jobs:
         with:
           node-version: 24
 
-      - name: Install Playwright
+      - name: Install Playwright package
+        run: npm install --no-save --no-package-lock playwright@1.62.1
+
+      - name: Resolve system browser for fast smoke
+        if: env.SHOULD_DEEP_BROWSER != 'true'
         run: |
-          npm install --no-save --no-package-lock playwright@1.62.1
-          npx playwright install --with-deps chromium
+          set -euo pipefail
+          for browser in /usr/bin/google-chrome-stable /usr/bin/google-chrome /usr/bin/chromium-browser /usr/bin/chromium; do
+            if [[ -x "${browser}" ]]; then
+              echo "OBOL_SMOKE_BROWSER_PATH=${browser}" >> "${GITHUB_ENV}"
+              echo "Using system browser for fast PR smoke: ${browser}"
+              exit 0
+            fi
+          done
+          echo "No system Chrome or Chromium binary found for fast browser smoke." >&2
+          exit 1
+
+      - name: Install Playwright Chromium for deep browser proof
+        if: env.SHOULD_DEEP_BROWSER == 'true'
+        run: npx playwright install --with-deps chromium
 
       - name: Serve Obol
         run: |
@@ -46,34 +67,46 @@ jobs:
           cat /tmp/obol-http.log
           exit 1
 
-      - name: Run browser smoke
+      - name: Run fast browser route smoke
+        if: env.SHOULD_DEEP_BROWSER != 'true'
+        env:
+          OBOL_SMOKE_BASE_URL: http://127.0.0.1:4173/index.html
+          OBOL_SMOKE_OUTPUT: artifacts/playwright-smoke
+        run: node tests/playwright-route-smoke.js
+
+      - name: Run full browser smoke
+        if: env.SHOULD_DEEP_BROWSER == 'true'
         env:
           OBOL_SMOKE_BASE_URL: http://127.0.0.1:4173/index.html
           OBOL_SMOKE_OUTPUT: artifacts/playwright-smoke
         run: node tests/playwright-smoke.js
 
       - name: Prove the v9.43 application retirement in a browser
+        if: env.SHOULD_DEEP_BROWSER == 'true'
         env:
           OBOL_SMOKE_BASE_URL: http://127.0.0.1:4173/index.html
         run: node tools/validate-app-dom-equivalence.js
 
       - name: Prove the v9.45 semantic stylesheet in a browser
+        if: env.SHOULD_DEEP_BROWSER == 'true'
         env:
           OBOL_SMOKE_BASE_URL: http://127.0.0.1:4173/index.html
         run: node tools/validate-style-visual-equivalence.js
 
       - name: Prove the v9.46 single-paint current boot in a browser
+        if: env.SHOULD_DEEP_BROWSER == 'true'
         env:
           OBOL_SMOKE_BASE_URL: http://127.0.0.1:4173/index.html
         run: node tools/validate-single-paint-boot-browser.js
 
       - name: Prove v9.47 semantic application ownership across the historical timer horizon
+        if: env.SHOULD_DEEP_BROWSER == 'true'
         env:
           OBOL_SMOKE_BASE_URL: http://127.0.0.1:4173/index.html
         run: node tools/validate-app-semantic-boot-browser.js
 
       - name: Upload browser screenshots
-        if: always()
+        if: failure() || env.SHOULD_DEEP_BROWSER == 'true'
         uses: actions/upload-artifact@v4
         with:
           name: obol-browser-smoke-${{ github.run_id }}

@@ -10,7 +10,7 @@ Raw source material lives in the private repository:
 platocres/obol-source-notes
 ```
 
-Public Obol must not commit the raw ENEX files. Public Obol receives only normalized, derived guidance, schema updates, tool-builder improvements, path changes, Evidence expectations, troubleshooting notes, and report guidance.
+Public Obol must not commit the raw ENEX files. Public Obol receives only normalized, derived guidance, schema updates, tool-builder improvements, path changes, Evidence expectations, troubleshooting notes, cleanup guidance, script and one-liner templates, terminal-output analyzer expectations, lesson-box content, and report guidance.
 
 ## Current source inventory
 
@@ -51,6 +51,35 @@ Public source references must not contain raw ENEX paths, course text, flags, sc
 The private repository owns bounded review packets generated from the Git LFS ENEX sources. Review packets include opaque note IDs plus enough private note substance for a real review decision. They are review inputs only.
 
 Never publish packet `review_text`, code blocks, course flags, lab targets, copied walkthrough prose, screenshots, or raw source paths in public Obol. Public Obol stores only terminal disposition metadata, rationale, opaque lineage, and rewritten product guidance.
+
+## Full-spectrum source re-mining requirement
+
+The current corrective notes work is **source re-mining**, not a review of earlier public output. When a note has already been reviewed, modeled, marked private-reference-only, superseded, rejected, or otherwise analyzed under the older rubric, the next pass must return to the original private source note and mine it again from scratch under [`NOTE-MINING-RUBRIC.md`](NOTE-MINING-RUBRIC.md).
+
+Existing public Field Notes, output IDs, rationales, packet rows, and previous dispositions are useful context, but they are not the source. A re-mining pass must not limit itself to asking whether the prior summary was reasonable. It must ask what useful product material the original note contains that was missed.
+
+Every reviewed or re-mined note must be checked for:
+
+- Path guidance, branches, blockers, unlocks, and decision rules;
+- tool cards to add or improve;
+- GUI switches, modes, presets, credential modes, output options, warnings, and execution-context controls;
+- reusable scripts, one-liners, and command templates;
+- terminal-output analyzers that can interpret pasted operator output and advance or refine Next Steps;
+- Evidence expectations and proof boundaries;
+- contextual lesson boxes with public-safe rewritten examples;
+- troubleshooting and failure-mode guidance;
+- cleanup and rollback guidance;
+- report, notes, and command-output guidance;
+- explicit product gaps when the note exposes a capability Obol cannot yet represent;
+- private-only material that must remain outside the public repo.
+
+If no script, one-liner, tool-card change, GUI control, analyzer, or Path mechanic is added from a modeled source, the audit record must explicitly say those dimensions were reviewed and why guidance-only output is sufficient.
+
+## Additive Orange baseline rule
+
+The Orange-derived methodology path is a regression-protected baseline. Notes are mined to enrich the path, not to erase it.
+
+During note mining or re-mining, agents must not delete, narrow, or replace an original Orange mind-map path item. If a source note adds useful context, attach it to the appropriate existing path point, add a child step or adjacent branch, improve an existing tool card, add a missing tool card, add GUI switches or analyzer expectations, add a lesson box, or file a product gap. If a source suggests a better framing, preserve the original path node and add constraints, context, or decision logic around it unless a separate explicit migration item authorizes structural replacement and proves equivalence.
 
 ## v9.25 Notes Integration Foundation
 
@@ -189,11 +218,12 @@ Contextual Field Notes on Tool and Path routes now lazy-load the packet layer as
 
 ## Current themed packet state
 
-The current public-safe ledger has **135/556** notes reviewed: **102 modeled**, **28 private-reference-only**, **5 superseded**, **0 rejected**, and **421 pending**. Completed subject packets are web upload/file inclusion, XSS/session behavior, credentials/authentication, Windows privilege escalation, and Linux privilege escalation. AD/pivoting is the next named subject packet beneath the 556-note umbrella.
+The current public-safe ledger has **135/556** notes reviewed: **102 modeled**, **28 private-reference-only**, **5 superseded**, **0 rejected**, and **421 pending**. Completed subject packets are web upload/file inclusion, XSS/session behavior, credentials/authentication, Windows privilege escalation, and Linux privilege escalation. AD/pivoting is the next named fresh subject packet beneath the 556-note umbrella, but full-spectrum re-mining of already-reviewed notes now takes priority over fresh packet review.
 
 The Windows privilege-escalation packet was selected after substantive review of the private title/tag shortlist (**32 candidates**) and private full-text sweep (**95 candidates**), then curated to **16** reusable subject sources. One source was already terminal from the credentials work and fifteen reached new terminal dispositions. Public guidance covers Windows privilege-enumeration triage, access-token/integrity proof, privileged service/task/DLL execution preconditions, secret-hunting boundaries, and local-exploit risk/proof without publishing private course recipes.
 
 The v9.50 Linux privilege-escalation packet curated **8** reusable private-source candidates. Seven reached `modeled` with rewritten public-safe Field Notes and one exploit-specific walkthrough reached `private-reference-only`. The public guidance covers manual enumeration triage, privileged process/service observation, user-trail secret hunting, cron execution preconditions, sudo authorization and proof, SUID/capability boundaries, and kernel-exploit compatibility/stability proof. Each modeled row records an explicit guidance-only reason because the review did not expose a missing Tool Builder control, Path primitive, Evidence parser behavior, report-generator behavior, or workflow state that justified a new code-level mechanic.
+
 ## Dispositions
 
 Each note must eventually end in one of these terminal states:
@@ -208,17 +238,19 @@ Before terminal review, a note remains `pending-review` in the public-safe ledge
 Modeled notes should produce one or more normalized Obol artifacts when the reviewed source genuinely adds product value:
 
 - path/action improvement;
-- tool-builder toggle or mode;
+- tool-builder toggle, mode, preset, warning, or output option;
+- new or improved tool card;
 - credential-mode handling;
-- Evidence parser expectation;
+- Evidence parser expectation or terminal-output analyzer rule;
 - troubleshooting hint;
 - cleanup/restoration hint;
+- reusable script or one-liner template;
 - report guidance;
-- contextual Field Note content.
+- contextual lesson-box or Field Note content.
 
 A modeled source note is product-development lineage only. It does not establish any fact, access, exploitation success, Manual Outcome success, or report proof in an operator workspace.
 
-`private-reference-only` is a real terminal disposition for material that remains useful for private lookup but should not be frozen into the public product, including navigation indexes, volatile catalogs, lab-specific outcome records, or recipe-heavy cheat sheets whose durable lessons are already normalized elsewhere.
+`private-reference-only` is a real terminal disposition for material that remains useful for private lookup but should not be frozen into the public product, including navigation indexes, volatile catalogs, lab-specific outcome records, or recipe-heavy cheat sheets whose durable lessons are already normalized elsewhere. During re-mining, even a previous private-reference-only row must be re-read from source to determine whether public-safe tools, lessons, analyzers, one-liners, or path improvements were missed.
 
 ## Permanent validation
 
@@ -234,9 +266,11 @@ A modeled source note is product-development lineage only. It does not establish
 - explicit v9.29+ guidance-only versus code-level product-change decisions;
 - no output from non-modeled dispositions;
 - contextual Tool and Path bindings, including packet-derived Field Notes on workflow routes;
-- public-safe metadata atomization;
+- public-safe atomization;
 - exclusion of raw source paths, ENEX markup, flags, lab targets, copied private content, and packet review bodies;
 - the no-execution boundary.
+
+The next validation expansion should make re-mining status first-class: each already-reviewed source must show that the original source was re-read under the expanded rubric and that tools, GUI controls, scripts, one-liners, analyzers, path logic, lessons, examples, troubleshooting, cleanup, report guidance, and product gaps were considered.
 
 ## Rule against raw course dumping
 
