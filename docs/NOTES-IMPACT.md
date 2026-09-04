@@ -4,6 +4,8 @@ This document is the operating contract for turning private source notes into ob
 
 The 556-note disposition ledger remains the source-accounting umbrella. A reviewed count is not, by itself, evidence that the product improved. Every modeled note must identify what the durable lesson became and where that output lives.
 
+The derivation rule is: extract the educational value fully, then re-author the public output into Obol-owned form. Do not copy or lightly paraphrase course prose, walkthroughs, screenshots, target details, flags, credentials, or exact solution chains. See [`NOTE-DERIVATION-STANDARD.md`](NOTE-DERIVATION-STANDARD.md).
+
 ## Required decision for every reviewed note
 
 Every reviewed source note ends in one terminal disposition: `modeled`, `superseded`, `rejected`, or `private-reference-only`.
@@ -24,7 +26,7 @@ When the disposition is `modeled`, the reviewer must decide which output classes
 | Report Change | Reporting, remediation, notes, commands, or proof wording requires report behavior to change. |
 | Troubleshooting or Cleanup | Failure-mode guidance, rollback commands, restoration notes, or state-changing cautions are added to the relevant path/tool context. |
 | Product Gap | The note exposes a capability Obol should have but the current pass cannot implement; the gap must be recorded concretely. |
-| Private Only | The source remains useful for private lookup but should not create public product material. |
+| Private Only | Raw/private source material remains useful for private lookup but cannot itself be public. This does not excuse discarding reusable educational value that can be re-authored safely. |
 
 A modeled note must not stop at a Field Note when the reviewed source clearly exposes a missing tool card, GUI control, reusable command, realistic Path branch, Evidence rule, output analyzer, cleanup step, report improvement, or product gap. If contextual guidance is sufficient, that decision must be explicit rather than assumed.
 
@@ -49,7 +51,7 @@ For each re-mined source, the audit record must answer whether the original sour
 - cleanup and rollback guidance;
 - report, notes, and command-log guidance;
 - product gaps;
-- private-only material that cannot be published.
+- private-only material that cannot be published directly, after checking whether its durable lesson can be rewritten safely.
 
 A re-mined note can add outputs to an existing modeled note. The goal is to add missed useful product material, not to replace the original public guidance unless it is wrong.
 
@@ -111,7 +113,7 @@ Reducing review count is not progress if it grows the backlog; the ratchet makes
 
 The Product Hardening Dashboard renders this projection directly. README generation consumes the same projection for its compact Notes Integration summary.
 
-The next projection expansion should report re-mining progress separately from first-pass source review so a note can be visibly marked as reviewed under the old rubric but not yet re-mined under the full product-extraction rubric.
+`data/product-hardening/note-progress-current.js` is the live source for re-mining status, including `remining.auditRows`, outcome counts, old-rubric-only notes, and red flags. `CHANGELOG.md` is release narrative only and must not be used to decide what remains to be re-mined.
 
 ## Packet-based review
 
@@ -151,7 +153,8 @@ For re-mining work, the dashboard should additionally show:
 1. how many already-reviewed notes have been re-mined from original source;
 2. how many notes remain old-rubric only;
 3. how many tool cards, GUI controls, scripts, one-liners, analyzers, lesson boxes, troubleshooting notes, cleanup items, report improvements, and product gaps were extracted;
-4. whether fresh pending-note packets are blocked until re-mining is complete.
+4. whether fresh pending-note packets are blocked until re-mining is complete;
+5. whether private-only outcomes still cite safe rewritten owners, covered owners, or public-safe reasons.
 
 This is why `modeled`, `context-bound`, `product-mechanics-changed`, and `re-mined-under-full-rubric` are separate concepts.
 
