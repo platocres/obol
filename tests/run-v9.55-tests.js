@@ -141,7 +141,7 @@ for(const expected of [
 for(const expected of [
  '# Obol v9.55',
  'AD and pivoting source re-mining',
- 'card preview evidence actions',
+ 'Card preview evidence actions',
  'Add evidence',
  'ad-sharphound-collection-review',
  'ad-bloodhound-edge-proof-review',
