@@ -23,7 +23,7 @@ jobs:
     runs-on: ubuntu-latest
     timeout-minutes: 15
     env:
-      SHOULD_DEEP_BROWSER: ${{ github.ref == 'refs/heads/main' || github.event_name == 'workflow_dispatch' || github.event_name == 'schedule' || (github.event_name == 'push' && startsWith(github.ref, 'refs/heads/release/') && contains(github.event.head_commit.message, '[release-final]')) }}
+      SHOULD_DEEP_BROWSER: ${{ github.ref == 'refs/heads/main' || github.event_name == 'workflow_dispatch' || github.event_name == 'schedule' || (github.event_name == 'push' && startsWith(github.ref, 'refs/heads/release/') && contains(github.event.head_commit.message, '[full-regression]')) }}
     steps:
       - name: Checkout
         uses: actions/checkout@v4
@@ -63,7 +63,7 @@ jobs:
         run: |
           set -euo pipefail
           if [[ "${SHOULD_DEEP_BROWSER}" != "true" ]]; then
-            echo "Deep browser proof runs on main, workflow_dispatch, schedule, or release [release-final]; PRs keep route smoke fast."
+            echo "Deep browser proof runs on main, workflow_dispatch, schedule, or release [full-regression]; PRs and ordinary release pushes keep route smoke fast."
             exit 0
           fi
           node tools/validate-app-dom-equivalence.js
@@ -74,7 +74,7 @@ jobs:
         run: |
           set -euo pipefail
           if [[ "${SHOULD_DEEP_BROWSER}" != "true" ]]; then
-            echo "Deep browser proof runs on main, workflow_dispatch, schedule, or release [release-final]; PRs keep route smoke fast."
+            echo "Deep browser proof runs on main, workflow_dispatch, schedule, or release [full-regression]; PRs and ordinary release pushes keep route smoke fast."
             exit 0
           fi
           node tools/validate-style-visual-equivalence.js
@@ -85,7 +85,7 @@ jobs:
         run: |
           set -euo pipefail
           if [[ "${SHOULD_DEEP_BROWSER}" != "true" ]]; then
-            echo "Deep browser proof runs on main, workflow_dispatch, schedule, or release [release-final]; PRs keep route smoke fast."
+            echo "Deep browser proof runs on main, workflow_dispatch, schedule, or release [full-regression]; PRs and ordinary release pushes keep route smoke fast."
             exit 0
           fi
           node tools/validate-single-paint-boot-browser.js
@@ -96,7 +96,7 @@ jobs:
         run: |
           set -euo pipefail
           if [[ "${SHOULD_DEEP_BROWSER}" != "true" ]]; then
-            echo "Deep browser proof runs on main, workflow_dispatch, schedule, or release [release-final]; PRs keep route smoke fast."
+            echo "Deep browser proof runs on main, workflow_dispatch, schedule, or release [full-regression]; PRs and ordinary release pushes keep route smoke fast."
             exit 0
           fi
           node tools/validate-app-semantic-boot-browser.js
