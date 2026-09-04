@@ -57,6 +57,8 @@ requireText('docs/AGENT-WORKFLOW.md','which existing cards should precede it');
 requireText('docs/AGENT-WORKFLOW.md','which neighboring cards it should sit beside');
 requireText('docs/AGENT-WORKFLOW.md','which later cards it should unlock or inform');
 requireText('docs/AGENT-WORKFLOW.md','A new mined card is not complete until the PR proves where it appears in the path');
+requireText('docs/AGENT-WORKFLOW.md','A dynamically inserted or current-owner card must also be inspectable from its direct route');
+requireText('docs/AGENT-WORKFLOW.md','the user-visible card route still renders `Unknown card`');
 requireText('docs/AGENT-WORKFLOW.md','A generic panel on `#/path` is not enough');
 requireText('docs/AGENT-WORKFLOW.md','broad-lane append cards');
 requireText('docs/AGENT-WORKFLOW.md','Queued is not a successful resting state');

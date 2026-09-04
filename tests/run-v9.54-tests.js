@@ -19,6 +19,8 @@ for(const expected of [
  'which neighboring cards it should sit beside',
  'which later cards it should unlock or inform',
  'A new mined card is not complete until the PR proves where it appears in the path',
+ 'A dynamically inserted or current-owner card must also be inspectable from its direct route',
+ 'the user-visible card route still renders `Unknown card`',
  'A generic panel on `#/path` is not enough',
  'broad-lane append cards',
  'Queued is not a successful resting state',
@@ -35,6 +37,9 @@ for(const expected of [
  'neighboring cards',
  'downstream unlocks',
  'produced facts',
+ 'direct inspection for the dynamically inserted source-mined cards',
+ 'assets/source-mined-card-route-current.js',
+ 'public route still renders `Unknown card`',
  'added `linux-user-trail-secret-review`',
  'added `linux-process-traffic-secret-review`',
  'added `linux-sudo-list-review`',
@@ -78,6 +83,31 @@ for(const cardId of cardIds){
 }
 assert(credentialSource.includes("card=cardById('online-brute')"),'existing online-brute card must be enhanced in place');
 assert(credentialSource.includes('Source-mined v9.54 reminder'),'online-brute must carry the mined credential-validation reminder');
+
+const directRouteSource=read('assets/source-mined-card-route-current.js');
+for(const expected of [
+ 'OBOL_SOURCE_MINED_CARD_ROUTE',
+ 'source-mined-direct-card-route',
+ 'installLinuxSourceMinedPathCards',
+ 'Unknown card',
+ 'live lane data',
+ '#/card/<card-id>'
+]){
+ assert(directRouteSource.includes(expected),`direct source-mined card route owner must include ${expected}`);
+}
+for(const cardId of cardIds){
+ assert(directRouteSource.includes(cardId),`direct route owner must know ${cardId}`);
+}
+const runtimeSource=read('assets/runtime-current.js');
+for(const expected of [
+ 'assets/source-mined-card-route-current.js',
+ 'runSourceMinedCardRoute',
+ 'OBOL_SOURCE_MINED_CARD_ROUTE',
+ 'rerenderAfterLazy',
+ 'credentials.length'
+]){
+ assert(runtimeSource.includes(expected),`runtime loader must include ${expected}`);
+}
 
 const workflowSource=read('assets/workflow-current.js');
 for(const expected of [
