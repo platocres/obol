@@ -11,8 +11,8 @@ This file is a mandatory companion to `README.md` for future Obol build work. Re
 - bump `data/current-release.js` to the next `vX.Y` (patch `vX.Y.Z` only for a follow-up fix to an unreleased head);
 - add a `docs/vX.Y.md` release doc whose first heading is `# Obol vX.Y`;
 - add a `tests/run-vX.Y-tests.js` suite that invokes `tools/validate-release-pr.js` and asserts the current release version-agnostically (never hard-code the current `Current release: **vX.Y**` token — mirror the previous release's test, which was demoted to `rp[0]===9&&rp[1]>=N`);
-- add a `## vX.Y — …` entry at the top of `CHANGELOG.md` (release narratives live here, never in README);
-- run `node tools/sync-current-release.js --write` and `node tools/sync-product-build-next.js --write`, then validate with `node tools/validate-current-release.js` and `node tools/validate-release-pr.js`.
+- author release notes in `docs/vX.Y.md` under `## What changed`, then run `node tools/sync-current-changelog.js --write` to mirror that authored summary into the top `## vX.Y — …` `CHANGELOG.md` entry. The sync is a guardrail, not permission to skip release notes;
+- run `node tools/sync-current-release.js --write`, `node tools/sync-current-changelog.js --write`, and `node tools/sync-product-build-next.js --write`, then validate with `node tools/validate-current-release.js` and `node tools/validate-release-pr.js`.
 
 Product-hardening releases are delta-based: do **not** create `core-vX.Y.js`, `app-vX.Y.js`, `project-model-vX.Y.js`, or `obol-vX.Y.css` overlays. When bumping, demote the previous release's test off any live-current assertion (`release.version` equality and the exact README release token both become version-agnostic checks) so the historical suite keeps passing.
 
@@ -31,7 +31,7 @@ The intended release flow is:
 - use `[full-regression]` only on the exact head that needs complete historical and deep-browser preservation proof;
 - do not use `[release-final]` as a routine commit marker and do not rely on it to trigger the expensive historical stack;
 - do not create a second build/release/product-hardening PR to work around a failed check;
-- when the product release changes, update `data/current-release.js`, synchronize README with `node tools/sync-current-release.js --write`, and validate the authority with `node tools/validate-current-release.js`;
+- when the product release changes, update `data/current-release.js`, author `docs/vX.Y.md`, synchronize README/index/app-current with `node tools/sync-current-release.js --write`, synchronize `CHANGELOG.md` with `node tools/sync-current-changelog.js --write`, and validate the authority with `node tools/validate-current-release.js`;
 - regenerate the active Product Build Next block with `node tools/sync-product-build-next.js --write` whenever queue state changes or work-package metadata changes;
 - validate the retired Orange methodology/source projection with `node tools/sync-readme-build-next.js --check`; while that queue remains complete, the historical block is intentionally absent from README;
 - require `implemented-quality = 0` and `mapped-delivery = 0` before methodology expansion is merge-ready;
