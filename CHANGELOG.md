@@ -1,3 +1,17 @@
+## v9.52 — Windows privilege-escalation source re-mining and release-identity synchronization
+
+- Began actual full-spectrum source re-mining: re-read all 15 already-reviewed Windows privilege-escalation notes from the original private ENEX sources (not the public Field Note or prior rationale) and published per-note, per-dimension audit rows in `data/product-hardening/note-progress-current.js` (`remining.auditRows`). Outcomes: 7 added, 114 covered, 16 queued, 17 private-only, 86 not-applicable, computed rather than hand-maintained.
+- Added the operator-facing Field Note `note-windows-service-trigger-tool-proof` on the Windows local-privilege path node: a writable service binary, unquoted service path, modifiable scheduled task, or hijackable DLL location is only a lead until trigger capability (restart rights, or auto-start plus a reboot privilege) and ACL intent are proven, and automated helpers (PowerUp, WinPEAS, Seatbelt) are leads that can be AV-blocked or false-negative. Wired additively to the existing Orange path; the frozen v9.35 Windows packet and its milestone are unchanged.
+- Filed the analyzer and operator-logging-exposure product gaps surfaced by re-mining as queued outcomes; the Product Hardening Dashboard now renders real re-mining counts instead of the placeholder zero copy.
+- Hardened the release-identity demotion contract that v9.51 shipped stale: demoted the v9.50 test's hard-coded README token and the v9.51 test's README/`index.html`/`data/current-release.js` literals to a version-agnostic synchronization invariant, regenerated the stale `assets/obol-app-current.js`, and extended `tools/validate-historical-tests.js` to also reject hard-coded `index.html` release-shell tokens in historical suites.
+- Decluttered the README into an action-first handoff and moved the detailed build loop, including raw-source re-mining mechanics (`git lfs pull` of the private ENEX), into the new `docs/AGENT-WORKFLOW.md`. README and dashboard stay sourced from the same queue data.
+
+## v9.51 — Source re-mining handoff, dashboard, and negative-proof enforcement
+
+- Turned source re-mining into the visible queue and dashboard priority: already-reviewed notes must be re-mined from the original private sources under the full-spectrum rubric before fresh pending-note packets. Documented the rubric in `docs/NOTE-MINING-RUBRIC.md`.
+- Required auditable negative-finding proof for every extraction dimension (`added`, `covered`, `queued`, `private-only`, `not-applicable`, or `blocked`) and published the re-mining schema, dashboard metrics, and red flags. Added `tools/validate-note-remining-audits.js` (permitting an empty audit list until re-mining resumed).
+- Tiered CI so `[full-regression]` is the explicit historical/deep-browser trigger, split the fast browser route smoke from the deep browser proof, and locked release-identity synchronization in the v9.51 tests.
+
 ## v9.50 — Linux privilege-escalation notes packet
 
 - Completed the Linux privilege-escalation subject packet with eight curated private-source candidates: seven modeled into public-safe guidance and one exploit-specific walkthrough retained as private-reference-only.
