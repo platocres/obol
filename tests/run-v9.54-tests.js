@@ -13,7 +13,14 @@ for(const expected of [
  'public-safe useful finding',
  'attach the finding to an existing Next Steps item',
  'create a new gated Next Steps item',
+ 'only after analyzing where it belongs in the lab path',
+ 'Do not merely append a card to a broad lane',
+ 'which existing cards should precede it',
+ 'which neighboring cards it should sit beside',
+ 'which later cards it should unlock or inform',
+ 'A new mined card is not complete until the PR proves where it appears in the path',
  'A generic panel on `#/path` is not enough',
+ 'broad-lane append cards',
  'Queued is not a successful resting state',
  'we mine, then we take what we mined and use it'
 ]){
@@ -23,7 +30,11 @@ for(const expected of [
 const releaseDoc=read('docs/v9.54.md');
 for(const expected of [
  'contextual path behavior',
- 'future gaps or a generic Path page panel',
+ 'future gaps, broad-lane append cards, or a generic Path page panel',
+ 'surrounding lab path',
+ 'neighboring cards',
+ 'downstream unlocks',
+ 'produced facts',
  'added `linux-user-trail-secret-review`',
  'added `linux-process-traffic-secret-review`',
  'added `linux-sudo-list-review`',
