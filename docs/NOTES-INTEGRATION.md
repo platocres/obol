@@ -189,10 +189,11 @@ Contextual Field Notes on Tool and Path routes now lazy-load the packet layer as
 
 ## Current themed packet state
 
-The current public-safe ledger has **127/556** notes reviewed: **95 modeled**, **27 private-reference-only**, **5 superseded**, **0 rejected**, and **429 pending**. Completed subject packets are web upload/file inclusion, XSS/session behavior, credentials/authentication, and Windows privilege escalation. Linux privilege escalation and AD/pivoting remain the next named subject packets beneath the 556-note umbrella.
+The current public-safe ledger has **135/556** notes reviewed: **102 modeled**, **28 private-reference-only**, **5 superseded**, **0 rejected**, and **421 pending**. Completed subject packets are web upload/file inclusion, XSS/session behavior, credentials/authentication, Windows privilege escalation, and Linux privilege escalation. AD/pivoting is the next named subject packet beneath the 556-note umbrella.
 
-The Windows privilege-escalation packet was selected after substantive review of the private title/tag shortlist (**32 candidates**) and private full-text sweep (**95 candidates**), then curated to **16** reusable subject sources. One source was already terminal from the credentials work and fifteen reached new terminal dispositions. Public guidance now covers Windows privilege-enumeration triage, access-token/integrity proof, privileged service/task/DLL execution preconditions, secret-hunting boundaries, and local-exploit risk/proof without publishing private course recipes.
+The Windows privilege-escalation packet was selected after substantive review of the private title/tag shortlist (**32 candidates**) and private full-text sweep (**95 candidates**), then curated to **16** reusable subject sources. One source was already terminal from the credentials work and fifteen reached new terminal dispositions. Public guidance covers Windows privilege-enumeration triage, access-token/integrity proof, privileged service/task/DLL execution preconditions, secret-hunting boundaries, and local-exploit risk/proof without publishing private course recipes.
 
+The v9.50 Linux privilege-escalation packet curated **8** reusable private-source candidates. Seven reached `modeled` with rewritten public-safe Field Notes and one exploit-specific walkthrough reached `private-reference-only`. The public guidance covers manual enumeration triage, privileged process/service observation, user-trail secret hunting, cron execution preconditions, sudo authorization and proof, SUID/capability boundaries, and kernel-exploit compatibility/stability proof. Each modeled row records an explicit guidance-only reason because the review did not expose a missing Tool Builder control, Path primitive, Evidence parser behavior, report-generator behavior, or workflow state that justified a new code-level mechanic.
 ## Dispositions
 
 Each note must eventually end in one of these terminal states:
@@ -228,6 +229,7 @@ A modeled source note is product-development lineage only. It does not establish
 - current disposition reconciliation and the 76-reviewed v9.30 packet baseline;
 - immutable historical milestones, including the frozen v9.28 55-note state and the first v9.30 65-note wave;
 - complete accounting of the 47-source web upload/inclusion packet, including its one explicit cross-theme deferral;
+- completed Windows and Linux privilege-escalation packet accounting, including terminal source/output lineage and explicit guidance-only decisions for the v9.50 Linux rows;
 - reciprocal modeled-source-to-public-output lineage;
 - explicit v9.29+ guidance-only versus code-level product-change decisions;
 - no output from non-modeled dispositions;
