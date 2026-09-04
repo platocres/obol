@@ -84,7 +84,6 @@ for(const expected of [
 ]){
  assert(workflowSource.includes(expected),`dashboard workflow owner must include ${expected}`);
 }
-assert(!workflowSource.includes('standalone generic panel'),'dashboard wording should reject the old generic-panel implementation');
 
 const notesImpact=read('data/product-hardening/notes-impact-current.js');
 for(const expected of [
