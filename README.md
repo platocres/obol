@@ -77,7 +77,7 @@ Runtime consolidation figures come from `data/runtime-consolidation-current.js`,
 **Notes Integration:** 135/556 reviewed — 102 modeled, 28 private-only, 421 pending.
 **Derived note guidance:** 55 Field Notes · 50 tool-bound · 52 Path-bound · 17 Evidence · 5 Report.
 **Declared note-driven product mechanics:** 2 total · 2 builder · 0 Path logic · 0 Evidence parser · 0 report generator · 0 workflow.
-**Latest mined themes:** Linux local privilege escalation, Credentials / auth material.
+**Latest mined themes:** Linux local privilege escalation, Credentials / auth material, Object authorization / IDOR, Windows local privilege escalation.
 **Notes impact contract:** `docs/NOTES-IMPACT.md`.
 **Runtime consolidation:** 5 operator startup requests, down from 286 (98% fewer).
 **Current runtime ownership areas:** 7 owners account for 272 historical fragments — 215 semantically flattened, 57 still exact-owned; 55 fragments stay retired in the frozen ledger.
