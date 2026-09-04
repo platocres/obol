@@ -171,7 +171,7 @@ function loadCredentialMaterial(attempt){
  if(credentialMaterialLoad)return credentialMaterialLoad;
  const n=Number(attempt||0);
  if(!root.OBOL_CORE_V2){if(n>=100)return Promise.resolve([]);return new Promise(resolve=>setTimeout(resolve,20)).then(()=>loadCredentialMaterial(n+1));}
- credentialMaterialLoad=appendScripts(['data/credential-material.js','data/credential-modes.js','assets/credential-material-current.js','assets/source-mined-card-route-current.js']).then(()=>{
+ credentialMaterialLoad=appendScripts(['data/credential-material.js','data/credential-modes.js','assets/credential-material-current.js','assets/source-mined-card-route-current.js','assets/ad-pivoting-current.js']).then(()=>{
   if(root.OBOL_CREDENTIAL_MATERIAL&&typeof root.OBOL_CREDENTIAL_MATERIAL.installCore==='function')root.OBOL_CREDENTIAL_MATERIAL.installCore();
   if(root.OBOL_CREDENTIAL_MATERIAL&&typeof root.OBOL_CREDENTIAL_MATERIAL.installReportBoundary==='function')root.OBOL_CREDENTIAL_MATERIAL.installReportBoundary();
   runSourceMinedCardRoute();
