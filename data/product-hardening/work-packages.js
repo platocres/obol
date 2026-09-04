@@ -86,9 +86,9 @@ const packages=[
   guidance:'Build extraction, atomization, contextual display, tool/path influence, and ledger proof around the private notes source as one durable ingestion system.'
  },
  {
-  id:'notes-impact-burn-down',title:'Notes Impact and Themed Burn-down',priority:'high',ownershipArea:'notes/impact-packets',
-  itemIds:['notes-impact-dashboard','notes-disposition-burn-down','notes-conversion-rubric','notes-mechanic-backfill','notes-script-category','notes-packet-web-upload-inclusion','notes-packet-xss-session','notes-packet-credentials-auth','notes-packet-windows-privesc','notes-packet-linux-privesc','notes-packet-ad-pivoting'],dependencies:['notes-integration-platform'],relatedItems:['ux-progressive-notes'],parallelSafe:false,recommendedBatch:true,
-  guidance:'Treat the 556-note disposition item as the umbrella. Fix the conversion engine first: every modeled note must produce a declared product mechanic or a justified guidance-only reason (notes-conversion-rubric), backfill mechanics from already-modeled notes (notes-mechanic-backfill), and track script outputs as first-class (notes-script-category). Then burn remaining notes down in coherent themed packets, recording for every modeled source which Field Note, tool-bound or Path-bound guidance, Evidence/report/troubleshooting output, code-level product change, or explicit product gap it produced.'
+  id:'notes-impact-burn-down',title:'Notes Impact and Source Re-mining',priority:'high',ownershipArea:'notes/impact-packets',
+  itemIds:['notes-impact-dashboard','notes-disposition-burn-down','notes-conversion-rubric','notes-mechanic-backfill','notes-remine-dashboard-schema','notes-remine-web-upload-inclusion','notes-remine-xss-session','notes-remine-credentials-auth','notes-remine-windows-privesc','notes-remine-linux-privesc','notes-remine-private-superseded','notes-script-category','notes-packet-web-upload-inclusion','notes-packet-xss-session','notes-packet-credentials-auth','notes-packet-windows-privesc','notes-packet-linux-privesc','notes-packet-ad-pivoting'],dependencies:['notes-integration-platform'],relatedItems:['ux-progressive-notes'],parallelSafe:false,recommendedBatch:true,
+  guidance:'Treat the 556-note disposition item as the umbrella, but do not let the umbrella hide the immediate work: re-mine already-reviewed notes from their original private sources before fresh pending-note packets. Each re-mining item must check for tool cards, GUI switches, scripts, one-liners, terminal-output analyzers, additive Path bindings, lesson boxes, examples, troubleshooting, cleanup, report guidance, code-level mechanics, and product gaps. Preserve the Orange-derived path as an additive baseline: attach to or extend existing points rather than deleting them.'
  },
  {
   id:'offline-browser-platform',title:'Offline and Browser Performance Platform',priority:'normal',ownershipArea:'browser/offline-storage-workers',
@@ -125,5 +125,5 @@ function validate(q){
  if(top&&(!rec||!rec.entryItem||rec.entryItem.id!==top.id))failures.push('recommended work package does not begin with the highest-priority queued item');
  return failures;
 }
-root.OBOL_PRODUCT_HARDENING_WORK_PACKAGES={schemaVersion:'1.1.0',packages,packageForItem,liveItems,recommend,validate,applyCurrentReleaseCompletions};
+root.OBOL_PRODUCT_HARDENING_WORK_PACKAGES={schemaVersion:'1.2.0',packages,packageForItem,liveItems,recommend,validate,applyCurrentReleaseCompletions};
 })(typeof window!=='undefined'?window:globalThis);
