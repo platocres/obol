@@ -22,6 +22,7 @@ function validateDocs(failures) {
   const agentWorkflow = read('docs/AGENT-WORKFLOW.md');
   const readme = read('README.md');
   const productHardening = read('docs/PRODUCT-HARDENING.md');
+  const prTemplate = read('.github/pull_request_template.md');
 
   [
     'No orphan artifacts',
@@ -30,6 +31,15 @@ function validateDocs(failures) {
     'Live cards / surfaces',
   ].forEach((needle) => {
     if (!doneGate.includes(needle)) failures.push(`done-gate doc missing required phrase: ${needle}`);
+  });
+
+  [
+    'Live cards / surfaces',
+    'Live Integration Done Gate',
+    'Tests assert both the data artifact and the live integration path that consumes it',
+    'node tools/validate-live-integration-done-gate.js data/product-hardening/<artifact>.js',
+  ].forEach((needle) => {
+    if (!prTemplate.includes(needle)) failures.push(`PR template missing completion gate phrase: ${needle}`);
   });
 
   [
