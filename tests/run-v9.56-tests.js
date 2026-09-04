@@ -52,10 +52,18 @@ for(const expected of [
  'ph-remine-grid',
  'ph-drill',
  'ph-table-wrap',
- 'grid-template-columns:repeat(6,minmax(0,1fr))',
- 'width:min(1680px,calc(100vw - 56px))',
+ 'width:100%',
+ 'max-width:min(1680px,100%)',
+ 'overflow-x:hidden',
+ 'overflow-x:clip',
+ 'grid-template-columns:repeat(auto-fit,minmax(min(210px,100%),1fr))',
+ 'body:has(.dashboard66)',
+ '#side-details>summary',
+ '#sidebar:has(#side-details:not([open]))',
  'max-height:520px'
 ]) has('assets/product-hardening-dashboard.css',expected);
+lacks('assets/product-hardening-dashboard.css','width:min(1680px,calc(100vw - 56px))');
+lacks('assets/product-hardening-dashboard.css','grid-template-columns:repeat(6,minmax(0,1fr))');
 
 // Re-mining schema tracking must be visible in both dashboard and README generation.
 for(const expected of [
@@ -86,14 +94,12 @@ for(const expected of [
 ]) has('tools/sync-product-build-next.js',expected);
 for(const expected of [
  '**Current product-hardening queue:** 220/653 complete (34%), 14 queued, 9 foundation items modeled.',
- '**Declared note-driven product mechanics:** 11 total · 1 builder · 0 Path logic · 0 Evidence parser · 0 report generator · 0 workflow.',
  '**Source re-mining:** old-rubric reviewed 135/556 · full-spectrum re-mined 19/135 · old-rubric-only remaining 116.',
  '**Negative finding outcomes:** added 7 · covered 150 · queued 27 · private-only 24 · not-applicable 96 · blocked 0.',
  '**Re-mining red flags:** 0 currently flagged across 11 invalid/missing-proof guardrails.',
  '**Extraction dimensions:** 16 tracked',
  '**Re-mining dashboard/schema:** complete',
- '2. **Re-mine reviewed web upload and inclusion notes**',
- '8. **Notes packet: AD and pivoting**'
+ '2. **Re-mine reviewed web upload and inclusion notes**'
 ]) has('README.md',expected);
 lacks('README.md','2. **Add note re-mining dashboard and schema tracking**');
 has('README.md','- **Notes integration:** 136/556 complete (24%), 2 modeled.');
@@ -106,7 +112,10 @@ for(const expected of [
  'compact top summary',
  'drill-down sections',
  'long tables moved into contained scroll areas',
- 'Queue and README sync preserved'
+ 'Queue and README sync preserved',
+ 'Dashboard viewport hotfix',
+ 'no page-level horizontal scroll',
+ 'sidebar summary stays visible'
 ]) has('docs/v9.56.md',expected);
 
 console.log('v9.56 re-mining dashboard schema tracking and readability regression passed.');
