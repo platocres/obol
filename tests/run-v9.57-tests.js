@@ -152,4 +152,8 @@ const impactIndex = manifest.lazy.productHardening.indexOf('data/product-hardeni
 assert.ok(progressIndex > -1 && xssIndex > progressIndex, 'XSS re-mining should load after base note progress');
 assert.ok(impactIndex > -1 && xssIndex < impactIndex, 'XSS re-mining should load before notes impact/dashboard projection');
 
+require('../data/current-release.js');
+assert.strictEqual(global.OBOL_CURRENT_RELEASE.label, 'v9.57');
+assert.strictEqual(global.OBOL_CURRENT_RELEASE.version, '9.57.0');
+
 console.log('v9.57 XSS/session re-mining live integration checks passed');
