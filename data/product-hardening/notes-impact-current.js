@@ -143,4 +143,171 @@ function validate(){
  return failures;
 }
 root.OBOL_PRODUCT_HARDENING_NOTES_IMPACT=Object.freeze({schemaVersion:'1.7.0',review,outputCounts,rubric,outputs,sourceDecisions,declaredProductChanges,themes,latestWave,gaps,summary,allowedImpactTypes,allowedProductChangeTypes,reviewWaveAtLeast,validate});
+
+function extendLinuxReMiningProgress(){
+ const progress=root.OBOL_PRODUCT_HARDENING_NOTE_PROGRESS;
+ if(!progress||!progress.remining)return;
+ const dimensions=Array.from(progress.remining.dimensions||[]);
+ const allowedOutcomes=Array.from(progress.remining.allowedOutcomes||[]);
+ const wave='v9.54-linux-privesc-remine-batch1';
+ function d(outcome,fields){return Object.freeze(Object.assign({outcome},fields||{}));}
+ const common=Object.freeze({
+  gui:d('not-applicable',{reason:'The source contributes command-line interpretation and workflow proof guidance rather than a missing schema-driven GUI control.'}),
+  mechanics:d('not-applicable',{reason:'Re-mining confirmed guidance-only or gap-tracking value for this batch; no current Tool Builder, Path, Evidence parser, report generator, or workflow code mechanic was changed.'}),
+  pathMovement:d('covered',{ownerIds:['path'],note:'Movement into the Linux local-privilege path is already modeled; this batch sharpens evidence interpretation and follow-up decisions.'}),
+  orange:d('covered',{ownerIds:['path'],note:'Existing Orange-derived local-privilege path items are retained; this re-mining batch only adds audit proof and additive context.'})
+ });
+ const rowsToAdd=[
+  Object.freeze({
+   noteId:'offsec-pen-200-7d8319c3e311e160',
+   title:'Inspecting Service Footprints',
+   theme:'linux-privesc',
+   reviewWave:wave,
+   sourcePacket:'platocres/obol-source-notes@agent/review-packets:data/review-packets/offsec-pen-200-05.json',
+   sourcePacketCommit:'agent/review-packets',
+   originalSourceReread:true,
+   decisions:Object.freeze({
+    'path-bindings':d('covered',{ownerIds:['note-linux-service-process-proof'],note:'Existing Linux service/process guidance is already bound to the path surface.'}),
+    'tool-cards':d('covered',{ownerIds:['ps','watch','tcpdump','grep'],note:'The relevant command-line tools are treated as human-run probes; no duplicate tool card is needed.'}),
+    'gui-controls':common.gui,
+    'scripts-one-liners':d('covered',{ownerIds:['note-linux-service-process-proof'],note:'Process refresh and local packet-inspection command shapes are represented as operator-run observations, not copied recipes.'}),
+    'command-templates':d('covered',{ownerIds:['note-linux-service-process-proof'],note:'The reusable command shape is already captured as proof-boundary guidance rather than a new executable template.'}),
+    'terminal-analyzers':d('queued',{gapIds:['gap-linux-process-traffic-secret-analyzer'],note:'Obol still lacks a parser that can reduce ps/watch/tcpdump/grep output into credential-like observations, source scope, and follow-up validation prompts.'}),
+    'evidence-expectations':d('covered',{ownerIds:['note-linux-service-process-proof'],note:'Privileged process visibility, traffic capture, candidate material, and credential validity remain separate Evidence states.'}),
+    'path-movement':common.pathMovement,
+    'lesson-boxes':d('covered',{ownerIds:['note-linux-service-process-proof'],note:'The process-observation-versus-access lesson already appears as contextual guidance.'}),
+    'examples':d('private-only',{reason:'The worked examples contain lab targets, accounts, flags, and credential-like material; only the generalized observation model belongs in public Obol.'}),
+    'troubleshooting':d('covered',{ownerIds:['note-linux-service-process-proof'],note:'The note already warns operators not to promote an observed secret-like value to access proof without validation.'}),
+    'cleanup':d('not-applicable',{reason:'The reusable public-safe value is read-only observation; no state-changing cleanup is implied.'}),
+    'report-guidance':d('covered',{ownerIds:['note-linux-service-process-proof'],note:'Reports should record source context and redact candidate secrets while separating observation from validated access.'}),
+    'product-mechanics':common.mechanics,
+    'product-gaps':d('queued',{gapIds:['gap-linux-process-traffic-secret-analyzer'],note:'A Linux process/traffic secret-observation analyzer remains a concrete product gap.'}),
+    'orange-baseline':common.orange
+   })
+  }),
+  Object.freeze({
+   noteId:'offsec-pen-200-37660dafbcec416c',
+   title:'Inspecting User Trails',
+   theme:'linux-privesc',
+   reviewWave:wave,
+   sourcePacket:'platocres/obol-source-notes@agent/review-packets:data/review-packets/offsec-pen-200-05.json',
+   sourcePacketCommit:'agent/review-packets',
+   originalSourceReread:true,
+   decisions:Object.freeze({
+    'path-bindings':d('covered',{ownerIds:['note-linux-secret-hunting-boundary'],note:'Existing Linux secret-hunting guidance is already bound to the path surface.'}),
+    'tool-cards':d('queued',{gapIds:['gap-hydra-credential-validation-builder'],note:'The source exposes a public-safe Hydra/online-validation workflow gap; no current Hydra tool card was found in the public repo.'}),
+    'gui-controls':d('queued',{gapIds:['gap-hydra-credential-validation-builder','gap-credential-pattern-wordlist-builder'],note:'Credential pattern generation, validation scope, service selection, threads/rate, verbosity, and output handling should become guided controls before publishing command templates.'}),
+    'scripts-one-liners':d('private-only',{reason:'The raw command sequence contains lab-specific targets, accounts, passwords, and flags; the safe output is a generalized credential-validation gap and boundary lesson.'}),
+    'command-templates':d('queued',{gapIds:['gap-credential-pattern-wordlist-builder'],note:'Obol lacks a public-safe pattern-wordlist builder that turns a discovered credential hint into a bounded validation workflow without copying lab specifics.'}),
+    'terminal-analyzers':d('queued',{gapIds:['gap-linux-user-trail-secret-analyzer'],note:'Obol still lacks an analyzer for env/history/dotfile snippets that extracts candidate material, source file, apparent scope, and redaction needs.'}),
+    'evidence-expectations':d('covered',{ownerIds:['note-linux-secret-hunting-boundary'],note:'Candidate secret discovery, account/service scope, authentication validity, and elevated access stay separate Evidence states.'}),
+    'path-movement':common.pathMovement,
+    'lesson-boxes':d('covered',{ownerIds:['note-linux-secret-hunting-boundary'],note:'The candidate-secret-not-access lesson already exists as contextual path guidance.'}),
+    'examples':d('private-only',{reason:'The source examples contain private lab users, targets, credentials, and flags; no synthetic public example was added in this batch.'}),
+    'troubleshooting':d('covered',{ownerIds:['note-linux-secret-hunting-boundary'],note:'The existing note captures the main failure mode: discovered material may be stale, scoped to another service, or invalid until tested narrowly.'}),
+    'cleanup':d('not-applicable',{reason:'Secret discovery is read-only in the public-safe workflow; no cleanup mechanic is implied.'}),
+    'report-guidance':d('covered',{ownerIds:['note-linux-secret-hunting-boundary'],note:'Existing guidance requires redaction and narrow validation before reporting recovered material as usable access.'}),
+    'product-mechanics':common.mechanics,
+    'product-gaps':d('queued',{gapIds:['gap-hydra-credential-validation-builder','gap-credential-pattern-wordlist-builder','gap-linux-user-trail-secret-analyzer'],note:'Re-mining exposed missing credential-validation, wordlist-pattern, and user-trail analyzer capabilities.'}),
+    'orange-baseline':common.orange
+   })
+  }),
+  Object.freeze({
+   noteId:'offsec-pen-200-ea0ee100f0506b3f',
+   title:'Abusing Cron Jobs',
+   theme:'linux-privesc',
+   reviewWave:wave,
+   sourcePacket:'platocres/obol-source-notes@agent/review-packets:data/review-packets/offsec-pen-200-05.json',
+   sourcePacketCommit:'agent/review-packets',
+   originalSourceReread:true,
+   decisions:Object.freeze({
+    'path-bindings':d('covered',{ownerIds:['note-linux-privileged-execution-preconditions'],note:'Existing cron/privileged-execution guidance is already bound to the path surface.'}),
+    'tool-cards':d('covered',{ownerIds:['grep','ls','cat','nc'],note:'The reusable tool surface is basic file/log inspection plus operator-managed listener setup; no new card is required for the private recipe.'}),
+    'gui-controls':common.gui,
+    'scripts-one-liners':d('private-only',{reason:'The reverse-shell append sequence and lab-specific paths are exploit-recipe material; public Obol keeps the proof chain rather than the recipe.'}),
+    'command-templates':d('covered',{ownerIds:['note-linux-privileged-execution-preconditions'],note:'The public-safe template is the proof chain: identify trigger, principal, writable dependency, effect, and restore plan.'}),
+    'terminal-analyzers':d('queued',{gapIds:['gap-linux-cron-chain-analyzer'],note:'Obol still lacks a parser that can connect cron log lines, scheduled script paths, file permissions, and trigger cadence into a single proof chain.'}),
+    'evidence-expectations':d('covered',{ownerIds:['note-linux-privileged-execution-preconditions'],note:'Schedule, execution principal, writable script/dependency, trigger, elevated effect, and restoration remain separate Evidence states.'}),
+    'path-movement':common.pathMovement,
+    'lesson-boxes':d('covered',{ownerIds:['note-linux-privileged-execution-preconditions'],note:'The privileged-execution preconditions lesson already explains why a scheduled root job is only a lead.'}),
+    'examples':d('private-only',{reason:'The source examples contain lab paths, target identifiers, callback values, and flags; they stay private while the generic chain remains public.'}),
+    'troubleshooting':d('covered',{ownerIds:['note-linux-privileged-execution-preconditions'],note:'Existing guidance covers waiting for the trigger and proving the effective identity separately from file writability.'}),
+    'cleanup':d('covered',{ownerIds:['note-linux-privileged-execution-preconditions'],note:'Existing guidance already requires restoring temporary changes after testing privileged execution chains.'}),
+    'report-guidance':d('covered',{ownerIds:['note-linux-privileged-execution-preconditions'],note:'Reports should show the exact writable dependency and trigger/effective identity proof rather than only a shell result.'}),
+    'product-mechanics':common.mechanics,
+    'product-gaps':d('queued',{gapIds:['gap-linux-cron-chain-analyzer'],note:'A cron/scheduled-execution proof-chain analyzer remains a concrete product gap.'}),
+    'orange-baseline':common.orange
+   })
+  }),
+  Object.freeze({
+   noteId:'offsec-pen-200-dcd4a16bbbfe100e',
+   title:'Abusing Sudo',
+   theme:'linux-privesc',
+   reviewWave:wave,
+   sourcePacket:'platocres/obol-source-notes@agent/review-packets:data/review-packets/offsec-pen-200-04.json',
+   sourcePacketCommit:'agent/review-packets',
+   originalSourceReread:true,
+   decisions:Object.freeze({
+    'path-bindings':d('covered',{ownerIds:['note-linux-sudo-proof-boundary'],note:'Existing sudo proof-boundary guidance is already bound to the path surface.'}),
+    'tool-cards':d('covered',{ownerIds:['sudo'],note:'sudo is already represented as the human-run authorization-inspection tool for this path context.'}),
+    'gui-controls':common.gui,
+    'scripts-one-liners':d('private-only',{reason:'The raw escalation commands depend on permitted binaries and lab-specific targets; public Obol keeps constrained-authorization reasoning instead.'}),
+    'command-templates':d('covered',{ownerIds:['note-linux-sudo-proof-boundary'],note:'The reusable command shape is sudo authorization review followed by constrained proof, not a copied GTFOBins recipe.'}),
+    'terminal-analyzers':d('queued',{gapIds:['gap-linux-sudo-list-analyzer'],note:'Obol still lacks an analyzer for sudo -l output that distinguishes target user, password requirement, argument constraints, environment handling, and likely follow-up paths.'}),
+    'evidence-expectations':d('covered',{ownerIds:['note-linux-sudo-proof-boundary'],note:'Allowed command, argument constraints, password requirement, environment, effective identity, and privileged operation remain distinct Evidence states.'}),
+    'path-movement':common.pathMovement,
+    'lesson-boxes':d('covered',{ownerIds:['note-linux-sudo-proof-boundary'],note:'The constrained-authorization lesson is already public-safe contextual guidance.'}),
+    'examples':d('private-only',{reason:'The examples include exercise-specific allowed binaries, users, targets, and flags; they are not published.'}),
+    'troubleshooting':d('covered',{ownerIds:['note-linux-sudo-proof-boundary'],note:'The existing note prevents treating a listed sudo rule as automatic root proof before testing its constraints.'}),
+    'cleanup':d('not-applicable',{reason:'Authorization inspection is read-only; exploit-specific state changes are private recipe material and no public cleanup output was added.'}),
+    'report-guidance':d('covered',{ownerIds:['note-linux-sudo-proof-boundary'],note:'Reports should record the sudoers rule and the effective operation separately from a generic root claim.'}),
+    'product-mechanics':common.mechanics,
+    'product-gaps':d('queued',{gapIds:['gap-linux-sudo-list-analyzer'],note:'A sudo-list terminal analyzer remains a concrete product gap.'}),
+    'orange-baseline':common.orange
+   })
+  })
+ ];
+ const priorRows=Array.from(progress.remining.auditRows||[]);
+ const priorKeys=new Set(priorRows.map(row=>String(row.noteId||'')+'|'+String(row.reviewWave||'')));
+ const mergedRows=priorRows.concat(rowsToAdd.filter(row=>!priorKeys.has(String(row.noteId||'')+'|'+String(row.reviewWave||''))));
+ const outcomeCounts={};
+ allowedOutcomes.forEach(outcome=>{outcomeCounts[outcome]=0;});
+ const dimensionCounts={};
+ dimensions.forEach(id=>{dimensionCounts[id]={considered:0,added:0,covered:0,queued:0,privateOnly:0,notApplicable:0,blocked:0,ruledOut:0};});
+ const keyFor=Object.freeze({'private-only':'privateOnly','not-applicable':'notApplicable'});
+ for(const row of mergedRows){
+  for(const dimension of dimensions){
+   const decision=row.decisions&&row.decisions[dimension];
+   const outcome=decision&&decision.outcome;
+   if(!outcome)continue;
+   if(Object.prototype.hasOwnProperty.call(outcomeCounts,outcome))outcomeCounts[outcome]+=1;
+   const dc=dimensionCounts[dimension];
+   if(dc){
+    dc.considered+=1;
+    const key=keyFor[outcome]||outcome;
+    if(Object.prototype.hasOwnProperty.call(dc,key))dc[key]+=1;
+   }
+  }
+ }
+ dimensions.forEach(id=>{dimensionCounts[id]=Object.freeze(dimensionCounts[id]);});
+ const themes=Object.freeze(Array.from(new Set(mergedRows.map(row=>row.theme).filter(Boolean))));
+ const completedThemes=Object.freeze(Array.from(new Set(progress.remining.completedReminedThemes||[])));
+ root.OBOL_PRODUCT_HARDENING_NOTE_PROGRESS=Object.freeze(Object.assign({},progress,{
+  schemaVersion:'1.8.0',
+  remining:Object.freeze(Object.assign({},progress.remining,{
+   dimensionCounts:Object.freeze(dimensionCounts),
+   outcomeCounts:Object.freeze(outcomeCounts),
+   auditRows:Object.freeze(mergedRows.map(row=>Object.freeze(Object.assign({},row,{decisions:Object.freeze(row.decisions||{})})))),
+   audited:mergedRows.length,
+   reminedNoteCount:mergedRows.length,
+   reminedThemes:themes,
+   completedReminedThemes:completedThemes,
+   latestWave:wave,
+   latestBatchCount:rowsToAdd.length,
+   latestBatchSource:'complete sequential packets',
+   latestBatchPackets:Object.freeze(['data/review-packets/offsec-pen-200-04.json','data/review-packets/offsec-pen-200-05.json'])
+  }))
+ }));
+}
+extendLinuxReMiningProgress();
 })(typeof window!=='undefined'?window:globalThis);
