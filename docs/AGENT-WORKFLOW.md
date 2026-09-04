@@ -75,12 +75,14 @@ The required loop is:
 1. Mine the source note or complete packet.
 2. Decide which public-safe findings are useful to operators.
 3. First try to attach the finding to an existing Next Steps item that should carry it during a real lab. Add or improve that item's commands, expected outputs, failure handling, proof boundary, report guidance, GUI controls, tool-builder behavior, or lesson text.
-4. If no existing item is the right owner, create a new gated Next Steps item in the correct lane with explicit `prereq` and `produces` facts, so it appears only when the lab state makes it relevant. Do not create always-visible clutter.
+4. If no existing item is the right owner, create a new gated Next Steps item only after analyzing where it belongs in the lab path. Do not merely append a card to a broad lane. Decide which evidence should unlock it, which existing cards should precede it, which neighboring cards it should sit beside, which later cards it should unlock or inform, and whether it belongs with enumeration, credential validation, privilege escalation, cleanup, or reporting. The new item must have explicit `prereq` and `produces` facts so it appears only when the lab state makes it relevant.
 5. Wire analyzers, builders, and examples to those item-level owners. A generic panel on `#/path` is not enough, because it does not prove the finding appears at the decision point where an operator needs it.
-6. Record the tangible additions in the Product Hardening Dashboard and the live re-mining projection with `added` outcomes that cite exact owner IDs, proof refs, card IDs, tool IDs, analyzer IDs, and Next Steps path integration.
+6. Record the tangible additions in the Product Hardening Dashboard and the live re-mining projection with `added` outcomes that cite exact owner IDs, proof refs, card IDs, tool IDs, analyzer IDs, neighboring path items, unlocks, and Next Steps path integration.
 7. Leave `queued` only for a clearly named blocker or genuinely larger capability that cannot safely fit the same coherent ownership area.
 
-Queued is not a successful resting state for a useful mined finding. A pass that only adds product-gap IDs, prose summaries, generic path-page widgets, or dashboard counters has not finished the source-mining assignment unless every deferred item names a blocker, blast-radius reason, missing source proof, or private-only constraint. The default expectation is: **we mine, then we take what we mined and use it.**
+A new mined card is not complete until the PR proves where it appears in the path, why it appears there, what evidence gates it, what it produces, and which neighboring path items it improves, precedes, sits beside, or unlocks.
+
+Queued is not a successful resting state for a useful mined finding. A pass that only adds product-gap IDs, prose summaries, generic path-page widgets, broad-lane append cards, or dashboard counters has not finished the source-mining assignment unless every deferred item names a blocker, blast-radius reason, missing source proof, or private-only constraint. The default expectation is: **we mine, then we take what we mined and use it.**
 
 ## 5. Derive the value, do not copy the expression
 
@@ -106,7 +108,8 @@ See [`docs/NOTE-DERIVATION-STANDARD.md`](NOTE-DERIVATION-STANDARD.md) for the fu
 
 - Notes work is **additive** to the Orange-derived path. Do not delete, narrow, or replace Orange path items.
 - Attach note-derived value to existing path items when those items are the correct lab-flow owner. Improve their commands, tool cards, GUI switches, analyzers, lesson boxes, troubleshooting, cleanup, or report guidance.
-- Create a new gated Next Steps item only when no existing item is the right owner. The item must live in the correct lane, declare relevant `prereq` and `produces` facts, and appear only when current Evidence makes it useful.
+- Create a new gated Next Steps item only when no existing item is the right owner. Before adding it, analyze the surrounding path flow and choose the exact path placement: the lane, ordering behavior, preceding evidence, neighboring cards, downstream unlocks, failure routing, and produced facts. The item must declare relevant `prereq` and `produces` facts and appear only when current Evidence makes it useful.
+- Do not satisfy this requirement by appending a new card somewhere in the broad lane without proving why that is the right decision point. The PR must show where the card appears, why it appears there, what gates it, and which existing path items it improves, precedes, sits beside, or unlocks.
 - Wire note-derived tools, scripts, one-liners, analyzers, lesson boxes, command templates, and path branches into the **actual user-visible Next Steps / Orange path surface** through item-level owners, current Tool Builder owners, Evidence analyzers, report owners, or current workflow owners. Do not park them in disconnected registries, dashboard-only lists, loose docs, hidden code paths, or a generic catch-all panel.
 - Update stable current owners directly when possible, for example `data/note-integration-packets.js` for packet-derived Field Notes and `data/product-hardening/note-progress-current.js` for the re-mining projection. Do not add disposable wrapper, overlay, release-specific patch, or parallel-registry shortcuts.
 - Keep raw course text, targets, flags, credentials, screenshots, and exploit recipes out of public Obol. Publish only normalized, non-verbatim derived guidance.
