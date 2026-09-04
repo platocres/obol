@@ -1,0 +1,40 @@
+name: v9.50 generated sync
+
+on:
+  push:
+    branches:
+      - release/obol-v9.50
+
+permissions:
+  contents: write
+
+jobs:
+  sync:
+    if: github.actor != 'github-actions[bot]'
+    runs-on: ubuntu-24.04
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: release/obol-v9.50
+          fetch-depth: 0
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 24
+      - name: Synchronize generated current-state outputs
+        run: |
+          set -euo pipefail
+          node tools/sync-app-current.js --write
+          node tools/sync-product-build-next.js --write
+          node tools/sync-current-release.js --write
+      - name: Commit generated outputs
+        run: |
+          set -euo pipefail
+          if git diff --quiet; then
+            echo "Generated outputs already synchronized."
+            exit 0
+          fi
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add assets/obol-app-current.js README.md index.html
+          git commit -m "Sync v9.50 generated outputs"
+          git push origin HEAD:release/obol-v9.50
