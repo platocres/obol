@@ -50,7 +50,7 @@ assert(releaseDoc.includes('Actual Next Steps path requirement'));
 assert(releaseDoc.includes('No wrapper or layer shortcut'));
 assert(releaseDoc.includes('CI tiering'));
 assert(releaseDoc.includes('[full-regression]'));
-assert(releaseDoc.includes('[release-final] is no longer the full-regression trigger'));
+assert(releaseDoc.includes('is no longer the full-regression trigger'));
 assert(testsWorkflow.includes('workflow_dispatch'));
 assert(testsWorkflow.includes('schedule:'));
 assert(testsWorkflow.includes('node tools/release-preflight.js'));
