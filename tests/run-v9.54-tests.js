@@ -46,7 +46,8 @@ const dashboardSandbox={
  location:{hash:'#/dashboard'},
  setTimeout(){},
  MutationObserver:undefined,
- console
+ console,
+ addEventListener(){}
 };
 dashboardSandbox.window=dashboardSandbox;
 vm.runInNewContext(workflowSource,dashboardSandbox,{filename:'assets/workflow-current.js'});
