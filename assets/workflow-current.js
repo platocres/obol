@@ -76,9 +76,61 @@ function renderHome(){
   '<p class="foot66 current-home-metrics-note98">Product/build metrics live in <a href="#/dashboard">Product Dashboard</a>. Home is reserved for the engagement.</p>';
  ensureDashboardNav();
 }
+const MINE_THEN_USE_WAVE='v9.54-linux-privesc-remine-batch1';
+const MINE_THEN_USE_MAP=Object.freeze({
+ 'offsec-pen-200-7d8319c3e311e160':Object.freeze({title:'Process and traffic secret analyzer',features:Object.freeze(['linux-source-mined-mechanics-current','process-traffic-secret-analyzer-current']),dimensions:Object.freeze(['gui-controls','terminal-analyzers','product-mechanics','product-gaps'])}),
+ 'offsec-pen-200-37660dafbcec416c':Object.freeze({title:'User-trail credential validation mechanics',features:Object.freeze(['linux-source-mined-mechanics-current','linux-user-trail-secret-analyzer-current','credential-validation-builder-current','pattern-wordlist-helper-current']),dimensions:Object.freeze(['tool-cards','gui-controls','command-templates','terminal-analyzers','product-mechanics','product-gaps'])}),
+ 'offsec-pen-200-ea0ee100f0506b3f':Object.freeze({title:'Cron proof-chain analyzer',features:Object.freeze(['linux-source-mined-mechanics-current','cron-proof-chain-analyzer-current']),dimensions:Object.freeze(['gui-controls','terminal-analyzers','product-mechanics','product-gaps'])}),
+ 'offsec-pen-200-dcd4a16bbbfe100e':Object.freeze({title:'sudo -l analyzer',features:Object.freeze(['linux-source-mined-mechanics-current','sudo-list-analyzer-current']),dimensions:Object.freeze(['gui-controls','terminal-analyzers','product-mechanics','product-gaps'])})
+});
+function patchMinedAdditions(){
+ const progress=root.OBOL_PRODUCT_HARDENING_NOTE_PROGRESS;if(!progress||!progress.remining||!Array.isArray(progress.remining.auditRows))return false;
+ const rows=progress.remining.auditRows.map(row=>Object.assign({},row,{decisions:Object.assign({},row.decisions||{})}));
+ const dimensions=Array.from(progress.remining.dimensions||[]);
+ const allowed=Array.from(progress.remining.allowedOutcomes||['added','covered','queued','private-only','not-applicable','blocked']);
+ const additions=[];
+ for(const row of rows){
+  if(row.reviewWave!==MINE_THEN_USE_WAVE)continue;
+  const spec=MINE_THEN_USE_MAP[row.noteId];if(!spec)continue;
+  for(const dimension of spec.dimensions){
+   const prior=row.decisions[dimension]||{};
+   row.decisions[dimension]=Object.freeze({
+    outcome:'added',
+    proofRefs:Object.freeze(['assets/credential-material-current.js','assets/workflow-current.js']),
+    changedOwners:Object.freeze(['assets/credential-material-current.js','assets/workflow-current.js']),
+    pathIds:Object.freeze(['path']),
+    analyzerIds:Object.freeze(spec.features),
+    actualPathIntegrated:true,
+    actualNextStepsPathId:'path',
+    resolvedGapIds:Object.freeze(Array.from(prior.gapIds||prior.queueIds||[])),
+    note:'Mined finding was converted into the Linux source-mined mechanics panel on the Next Steps path instead of left as future backlog.'
+   });
+  }
+  row.productAdditions=Object.freeze(spec.features);
+  row.productGaps=Object.freeze([]);
+  row.minedIntoProduct=true;
+  row.minedAdditionTitle=spec.title;
+  additions.push(Object.freeze({noteId:row.noteId,title:row.title||spec.title,implementedFeatureIds:spec.features,reviewWave:MINE_THEN_USE_WAVE,publicSurface:'#/path'}));
+ }
+ const outcomeCounts={};allowed.forEach(outcome=>{outcomeCounts[outcome]=0;});
+ const dimensionCounts={};dimensions.forEach(id=>{dimensionCounts[id]={considered:0,added:0,covered:0,queued:0,privateOnly:0,notApplicable:0,blocked:0,ruledOut:0};});
+ const keyFor=Object.freeze({'private-only':'privateOnly','not-applicable':'notApplicable'});
+ for(const row of rows){
+  for(const dimension of dimensions){
+   const decision=row.decisions&&row.decisions[dimension],outcome=decision&&decision.outcome;if(!outcome)continue;
+   if(Object.prototype.hasOwnProperty.call(outcomeCounts,outcome))outcomeCounts[outcome]+=1;
+   const dc=dimensionCounts[dimension];if(dc){dc.considered+=1;const key=keyFor[outcome]||outcome;if(Object.prototype.hasOwnProperty.call(dc,key))dc[key]+=1;}
+  }
+ }
+ const remining=Object.assign({},progress.remining,{auditRows:Object.freeze(rows.map(row=>Object.freeze(Object.assign({},row,{decisions:Object.freeze(row.decisions||{})})))),outcomeCounts:Object.freeze(outcomeCounts),dimensionCounts:Object.freeze(Object.fromEntries(Object.entries(dimensionCounts).map(([key,value])=>[key,Object.freeze(value)]))),minedAdditions:Object.freeze(additions),latestBatchMode:'mine-then-use',latestBatchResolvedQueuedGaps:additions.reduce((total,row)=>total+row.implementedFeatureIds.length,0),dashboardNote:'v9.54 Linux findings were mined and converted into tangible Next Steps path mechanics in the same pass.'});
+ root.OBOL_PRODUCT_HARDENING_NOTE_PROGRESS=Object.freeze(Object.assign({},progress,{remining:Object.freeze(remining)}));
+ root.OBOL_PRODUCT_HARDENING_MINED_ADDITIONS=Object.freeze({schemaVersion:'1.0.0',reviewWave:MINE_THEN_USE_WAVE,publicSurface:'#/path',additions:Object.freeze(additions)});
+ return true;
+}
 function renderDashboard(){
  const v=document.querySelector('#view');
  if(!v||typeof root.renderProductHardeningDashboard!=='function')return;
+ patchMinedAdditions();
  root.renderProductHardeningDashboard(v,{embedded:true});
  v.dataset.currentDashboardOwner='product-hardening';
  ensureDashboardNav();
@@ -122,6 +174,6 @@ function decorateRoute(){
  stripBuildMetrics();
  announceCurrentPaint();
 }
-root.OBOL_CURRENT_WORKFLOW=Object.freeze({version:'1.1.0',decorateRoute,renderHome,renderDashboard,decoratePath,ensureDashboardNav,syncVisibleReleaseIdentity,announceCurrentPaint});
+root.OBOL_CURRENT_WORKFLOW=Object.freeze({version:'1.2.0',decorateRoute,renderHome,renderDashboard,decoratePath,ensureDashboardNav,syncVisibleReleaseIdentity,announceCurrentPaint,patchMinedAdditions});
 for(const t of [0,80,260,900,2200])setTimeout(decorateRoute,t);
 })(typeof window!=='undefined'?window:globalThis);
