@@ -1,6 +1,6 @@
 # Live Integration Done Gate
 
-This is the hard stop that prevents orphan artifacts from being counted as completed Product Hardening work.
+No orphan artifacts. This is the hard stop that prevents orphan artifacts from being counted as completed Product Hardening work.
 
 ## Rule
 
