@@ -1,5 +1,6 @@
 'use strict';
 // Resolves current-owner source-mined cards from #/card/<card-id> after their owners load.
+// Web re-mine source route: complete sequential packets. No raw note text is published.
 (function(root){
 const LINUX_CARD_IDS=['linux-sudo-list-review','linux-cron-proof-chain','linux-user-trail-secret-review','linux-process-traffic-secret-review','candidate-credential-validation','credential-pattern-wordlist-helper'];
 const WEB_CARD_IDS=['web-parameter-fuzzing','file-inclusion-proof-chain','php-wrapper-source-review','upload-to-include-chain-review','file-upload-proof-boundary'];
@@ -17,7 +18,7 @@ function insertAfter(lane,afterId,card){if(!lane||!card||cardById(card.id))retur
 function appendUnique(list,row,identity){const out=Array.isArray(list)?list:[];const key=identity(row);if(!out.some(item=>identity(item)===key))out.push(row);return out;}
 function addExpected(card,value){card.expected=appendUnique(card.expected||[],value,String);}
 function addCommand(card,row){card.commands=appendUnique(card.commands||[],row,item=>String(item.tool)+'|'+String(item.run));}
-function markSource(card,noteIds){card.robustRemine54={packet:WEB_REVIEW_PACKET,noteIds:Object.freeze(noteIds.slice())};return card;}
+function markSource(card,noteIds){card.robustRemine54={sourceRoute:'complete sequential packets',packet:WEB_REVIEW_PACKET,noteIds:Object.freeze(noteIds.slice())};return card;}
 const LINUX_COMMAND_NOTES=Object.freeze({
  'linux-user-trail-secret-review':['Searches shell history, profiles, SSH material, and dotfiles for words that usually mark credentials or service hints. Use the file path and surrounding lines to understand what system or account the value belongs to.','Finds nearby config-style files in home, application, and web directories so you can inspect likely sources first instead of dumping the entire filesystem.'],
  'linux-process-traffic-secret-review':['Lists full process command lines and filters for credential-like terms or service clients. This is useful for spotting secrets passed as arguments and for identifying which service account or daemon owns the clue.','Prints one selected process environment as separate lines. Use it after choosing a specific PID from process output to check whether the service received secrets through environment variables.','Captures printable traffic for a scoped host/interface. Use it to confirm whether credentials, cookies, tokens, or protocol data are traveling in plaintext before promoting a network clue into Evidence.'],
@@ -70,5 +71,5 @@ function renderFallback(){
 function decorate(){installAllCards();renderFallback();polishSourceMinedCardUi();}
 function start(){decorate();for(const delay of [0,50,180,500,1200])root.setTimeout&&root.setTimeout(decorate,delay);}
 if(typeof window!=='undefined'){window.addEventListener('hashchange',start);if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',start,{once:true});else start();}
-root.OBOL_SOURCE_MINED_CARD_ROUTE=Object.freeze({version:'1.1.1',cardIds:SOURCE_CARD_IDS,linuxCardIds:LINUX_CARD_IDS,webCardIds:WEB_CARD_IDS,decorate,renderFallback,sourceCardById,installWebSourceMinedPathCards,polishSourceMinedCardUi});
+root.OBOL_SOURCE_MINED_CARD_ROUTE=Object.freeze({version:'1.1.2',cardIds:SOURCE_CARD_IDS,linuxCardIds:LINUX_CARD_IDS,webCardIds:WEB_CARD_IDS,decorate,renderFallback,sourceCardById,installWebSourceMinedPathCards,polishSourceMinedCardUi});
 })(typeof window!=='undefined'?window:globalThis);
