@@ -26,10 +26,10 @@ run(['tools/validate-release-pr.js','--repo-only','--release-version=9.52']);
 
 // load current runtime data
 const sandbox={window:{},globalThis:null};sandbox.globalThis=sandbox.window;vm.createContext(sandbox);
-for(const rel of ['data/current-release.js','data/note-integration.js','data/note-integration-reviews.js','data/note-integration-packets.js','data/product-hardening/product-hardening-queue.js','data/product-hardening/work-packages.js','data/product-hardening/note-progress-current.js','data/field-notes.js'])vm.runInContext(read(rel),sandbox,{filename:rel});
+for(const rel of ['data/current-release.js','data/note-integration.js','data/note-integration-reviews.js','data/note-integration-packets.js','data/product-hardening/product-hardening-queue.js','data/product-hardening/work-packages.js','data/product-hardening/note-progress-current.js','data/product-hardening/source-review-packets-current.js','data/field-notes.js'])vm.runInContext(read(rel),sandbox,{filename:rel});
 const w=sandbox.window;
-const release=w.OBOL_CURRENT_RELEASE,notes=w.OBOL_NOTE_INTEGRATION,q=w.OBOL_PRODUCT_HARDENING,progress=w.OBOL_PRODUCT_HARDENING_NOTE_PROGRESS,field=w.OBOL_FIELD_NOTES;
-assert(release&&notes&&q&&progress&&field,'v9.52 current owners load');
+const release=w.OBOL_CURRENT_RELEASE,notes=w.OBOL_NOTE_INTEGRATION,q=w.OBOL_PRODUCT_HARDENING,progress=w.OBOL_PRODUCT_HARDENING_NOTE_PROGRESS,sourcePackets=w.OBOL_SOURCE_REVIEW_PACKETS,field=w.OBOL_FIELD_NOTES;
+assert(release&&notes&&q&&progress&&sourcePackets&&field,'v9.52 current owners load');
 
 // release identity is v9.52+ and internally synchronized (version-agnostic)
 const rp=String(release.version).split('.').map(Number);
@@ -73,13 +73,31 @@ assert.strictEqual(notes.milestones['v9.35-windows-privesc'].reviewedCount,127,'
 assert(q.items.find(i=>i.id==='notes-packet-windows-privesc').status==='complete','v9.35 Windows packet stays complete');
 assert(q.items.find(i=>i.id==='notes-remine-windows-privesc').status==='complete','the Windows re-mining item is complete');
 
-// the raw-source breadcrumb stays explicit in the README and detailed workflow
+// the raw-source breadcrumb and complete packet route stay explicit
 const rawNotesUrl='https://github.com/platocres/obol-source-notes/tree/main/sources/raw';
 const workflow=read('docs/AGENT-WORKFLOW.md');
+const rawLfsDoc=read('docs/RAW-NOTES-LFS.md');
+const routeOwner=read('assets/dashboard-route-current.js');
+const packetDashboard=read('assets/source-review-packets-dashboard.js');
 assert(readme.includes(rawNotesUrl),'README deep-links agents to the raw note sources directory');
 assert(workflow.includes(rawNotesUrl),'AGENT-WORKFLOW deep-links agents to the raw note sources directory');
 assert(readme.includes('[`'+rawNotesUrl+'`]'),'README labels the raw-source breadcrumb with the exact URL');
 assert(readme.includes('**Private notes source:** [`'+rawNotesUrl+'`]'),'generated Product Build Next block exposes the exact raw source URL');
+assert(sourcePackets.isComplete===true,'complete source packet metric must be marked complete');
+assert.strictEqual(sourcePackets.packetizedNotes,556,'complete packets cover every source note');
+assert.strictEqual(sourcePackets.uniqueNotes,556,'complete packets publish unique note coverage');
+assert.strictEqual(sourcePackets.packetCount,29,'complete packets are grouped into 29 sequential review files');
+assert.strictEqual(sourcePackets.truncatedNotes,0,'complete packets have zero truncation');
+assert.strictEqual(sourcePackets.windowMarkerCount,0,'complete packets have no old review-window markers');
+assert.strictEqual(sourcePackets.reviewTextPolicy,'complete_cleaned_text','complete packets expose complete cleaned text');
+assert.strictEqual(sourcePackets.reviewTextChars,8725188,'complete packet metrics preserve total cleaned text length');
+assert(readme.includes('**Private review packets:** `'+sourcePackets.pointer+'`'),'README generated block exposes the complete packet manifest pointer');
+assert(readme.includes('556/556 notes in 29 complete-text packets, 0 truncated, 8,725,188 cleaned text chars'),'README generated block exposes complete packet metrics');
+assert(rawLfsDoc.includes('Do not use the old themed artifact as source of truth'),'RAW-NOTES-LFS rejects the old themed artifact for exhaustive source re-mining');
+assert(rawLfsDoc.includes('schema_version=2')&&rawLfsDoc.includes('review_text_policy=complete_cleaned_text')&&rawLfsDoc.includes('truncated_note_count=0'),'RAW-NOTES-LFS documents the complete packet proof contract');
+assert(routeOwner.includes('data/product-hardening/source-review-packets-current.js'),'dashboard route loads the complete packet metrics');
+assert(routeOwner.includes('assets/source-review-packets-dashboard.js'),'dashboard route loads the complete packet dashboard augmentation');
+assert(packetDashboard.includes('Complete private review packets')&&packetDashboard.includes('Do not use the older themed full-text artifact'),'dashboard explicitly surfaces complete packet metrics and rejects the old themed artifact');
 
 // the demotion guard was hardened for index shell tokens
 const guard=read('tools/validate-historical-tests.js');
@@ -96,4 +114,4 @@ assert(changelog.includes('## v9.51 '),'CHANGELOG restores the skipped v9.51 ent
 assert(workflow.includes('git lfs pull')&&workflow.includes('platocres/obol-source-notes'),'AGENT-WORKFLOW documents raw-source re-mining mechanics');
 assert(readme.includes('[`docs/AGENT-WORKFLOW.md`](docs/AGENT-WORKFLOW.md)'),'README links the agent workflow doc');
 
-console.log('v9.52 Windows-privesc source re-mining, release-identity synchronization hardening, README declutter, and raw-source handoff tests passed.');
+console.log('v9.52 Windows-privesc source re-mining, release-identity synchronization hardening, README declutter, raw-source handoff, and complete source-packet metric tests passed.');
