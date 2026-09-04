@@ -12,31 +12,24 @@ The README is a current-state entry point, not a changelog. Release history live
 
 ## Continue developing (start here)
 
-Told to "read the README and keep developing"? Do this, no further instruction required:
+Told to "read the README and keep developing"? This is the single agent quickstart. Do this, no further instruction required:
 
-1. **One PR.** Confirm there is no open release/product-hardening PR (continue it if there is); otherwise open exactly one non-draft release PR.
-2. **Do the queue.** Work the highest-priority Product Build Next item below and its recommended coherent work package (see [Future-agent quickstart](#future-agent-quickstart)).
-3. **Re-mine raw notes, not summaries.** The active notes work is source re-mining. Clone the private source repo `platocres/obol-source-notes`, run `git lfs pull` to fetch the raw `*.enex`, and read the **actual raw note bodies** — the committed review packets are truncated shortlists. Full mechanics: [`docs/AGENT-WORKFLOW.md`](docs/AGENT-WORKFLOW.md) and [`docs/NOTE-MINING-RUBRIC.md`](docs/NOTE-MINING-RUBRIC.md).
-4. **Land it additively and prove it.** Wire new outputs into the actual Next Steps / Orange path surface; record a per-note, per-dimension re-mining outcome (`added`, `covered`, `queued`, `private-only`, `not-applicable`, or `blocked`) with proof. Do not add wrapper, overlay, or parallel-registry shortcuts.
-5. **Release every build.** Bump the version, sync generated outputs, add the release doc, CHANGELOG entry, and test suite, and keep the exact final head green. See [`BUILDING.md`](BUILDING.md).
+1. **One PR.** Confirm there is no open release/product-hardening PR. Continue it if one exists; otherwise open exactly one non-draft release/product-hardening PR. Do not use a Draft to Ready transition as a release gate.
+2. **Read the operating docs.** Read this README, [`BUILDING.md`](BUILDING.md), [`docs/AGENT-WORKFLOW.md`](docs/AGENT-WORKFLOW.md), and [`docs/PRODUCT-HARDENING.md`](docs/PRODUCT-HARDENING.md). For notes work also read [`docs/NOTE-DERIVATION-STANDARD.md`](docs/NOTE-DERIVATION-STANDARD.md), [`docs/NOTE-MINING-RUBRIC.md`](docs/NOTE-MINING-RUBRIC.md), [`docs/NOTES-INTEGRATION.md`](docs/NOTES-INTEGRATION.md), and [`docs/NOTES-IMPACT.md`](docs/NOTES-IMPACT.md).
+3. **Do the queue.** Start with the highest-priority Product Build Next item below unless the user directs otherwise. Treat it as the entry point into the recommended coherent work package, then complete as many items as safely fit the same ownership area, architectural context, and blast radius.
+4. **Re-mine raw notes, not summaries.** The active notes work is source re-mining. Clone the private source repo `platocres/obol-source-notes`, run `git lfs pull` to fetch the raw `*.enex`, and read the **actual raw note bodies**. The committed review packets are truncated shortlists, not enough for a high-confidence product decision. Full mechanics: [`docs/AGENT-WORKFLOW.md`](docs/AGENT-WORKFLOW.md).
+5. **Extract the value, not the wording.** Use the source's educational content aggressively: methodology, decision logic, proof boundaries, failure modes, examples, troubleshooting, cleanup, report guidance, tool behavior, command patterns, and missing product capabilities. Public Obol must contain Obol-owned rewritten guidance, synthetic examples, generalized templates, path logic, tool cards, analyzers, and lessons. Do not copy or lightly paraphrase course prose, walkthroughs, screenshots, target details, flags, credentials, or exact solution chains. See [`docs/NOTE-DERIVATION-STANDARD.md`](docs/NOTE-DERIVATION-STANDARD.md).
+6. **Land it additively and prove it.** Wire new outputs into the actual user-visible Next Steps / Orange path surface where relevant. Record a per-note, per-dimension re-mining outcome (`added`, `covered`, `queued`, `private-only`, `not-applicable`, or `blocked`) with proof. Do not add wrapper, overlay, release-specific patch, or parallel-registry shortcuts.
+7. **Check the live tracking source.** Do not use `CHANGELOG.md` to decide what remains to be re-mined. CHANGELOG is release narrative only. Current tracking lives in `data/product-hardening/note-progress-current.js`, Product Build Next, and the Product Hardening Dashboard. A note is not complete just because an older release mentioned it.
+8. **Release every product build.** Bump the version when the product changes, sync generated outputs, add the release doc, CHANGELOG entry, and test suite, and keep the exact final head green. See [`BUILDING.md`](BUILDING.md).
 
 ## Current agent directive
 
-Re-mine already-reviewed notes from the original private source notes before starting new pending-note packets, unless the user explicitly overrides that order. Return to the raw note, not the existing public Field Note or prior disposition. Notes work is additive to the Orange-derived path — attach to or extend existing points, never delete or narrow them. Every re-mined dimension needs auditable negative proof; blank or generic `none` or `no change` entries are invalid. Details: [`docs/NOTE-MINING-RUBRIC.md`](docs/NOTE-MINING-RUBRIC.md), [`docs/NOTES-INTEGRATION.md`](docs/NOTES-INTEGRATION.md), [`docs/NOTES-IMPACT.md`](docs/NOTES-IMPACT.md).
+Re-mine already-reviewed notes from the original private source notes before starting new pending-note packets, unless the user explicitly overrides that order. Return to the raw note, not the existing public Field Note or prior disposition. Notes work is additive to the Orange-derived path: attach to or extend existing points, never delete or narrow them. Extract all durable educational and product value, but re-author it into Obol-owned public-safe guidance rather than copying or lightly paraphrasing source/course expression. Every re-mined dimension needs auditable negative proof; blank or generic `none` or `no change` entries are invalid. Details: [`docs/NOTE-DERIVATION-STANDARD.md`](docs/NOTE-DERIVATION-STANDARD.md), [`docs/NOTE-MINING-RUBRIC.md`](docs/NOTE-MINING-RUBRIC.md), [`docs/NOTES-INTEGRATION.md`](docs/NOTES-INTEGRATION.md), [`docs/NOTES-IMPACT.md`](docs/NOTES-IMPACT.md).
 
 ## Product contract
 
 Obol remains a website the user can simply visit and use: no backend, account system, telemetry, install prompt, or automatic command execution. **Human-run commands only** — Obol builds and explains commands; the operator runs them externally in an authorized environment and returns output for Evidence review. The normal loop is `Targets -> Evidence -> Next Steps -> operator runs command externally -> Evidence review -> Next Steps recalculation -> Report`. Command recognition is not success; durable facts come only from explicit supported Evidence. See [`docs/PROOF-CONTRACT.md`](docs/PROOF-CONTRACT.md).
-
-## Future-agent quickstart
-
-Before building, read this README, [`BUILDING.md`](BUILDING.md), and [`docs/PRODUCT-HARDENING.md`](docs/PRODUCT-HARDENING.md); for notes work also read [`docs/AGENT-WORKFLOW.md`](docs/AGENT-WORKFLOW.md), [`docs/NOTE-MINING-RUBRIC.md`](docs/NOTE-MINING-RUBRIC.md), [`docs/NOTES-INTEGRATION.md`](docs/NOTES-INTEGRATION.md), and [`docs/NOTES-IMPACT.md`](docs/NOTES-IMPACT.md).
-
-- There must be only one open release/product-hardening PR at a time; CI enforces this with `tools/validate-open-pr-uniqueness.js`. Continue the active one or close it as superseded before opening another. Do not use a Draft to Ready transition as a release gate.
-- Start with the highest-priority Product Build Next item unless the user directs otherwise. Treat it as the entry point into the recommended coherent work package, then complete as many items as safely fit the same ownership area, architectural context, and blast radius.
-- Keep queue-item accountability atomic. Every item advanced or closed still needs its own acceptance criteria, validation commands, proof files, and item-specific tests.
-- Do not batch unrelated work; stop when the next item changes ownership area, architecture, migration risk, or test strategy.
-- Use `node tools/scope-check.js` during development; sync generated Product Build Next output and keep the whole work package in the one active PR until the exact final head is green.
 
 ## Required context map
 
@@ -46,10 +39,11 @@ Before building, read this README, [`BUILDING.md`](BUILDING.md), and [`docs/PROD
 - [`docs/ARCHITECTURE.md`](docs/ARCHITECTURE.md) and [`docs/RUNTIME-COMPACTION.md`](docs/RUNTIME-COMPACTION.md) - runtime ownership and the retirement lifecycle.
 - [`docs/PROOF-CONTRACT.md`](docs/PROOF-CONTRACT.md) - Evidence, proof boundaries, manual outcomes, and report readiness.
 - [`docs/TOOL-BUILDER-COVERAGE.md`](docs/TOOL-BUILDER-COVERAGE.md) - the Tool Builder Platform and runnable-tool inventory.
+- [`docs/NOTE-DERIVATION-STANDARD.md`](docs/NOTE-DERIVATION-STANDARD.md) - the rule for extracting all useful source lessons while re-authoring public Obol content into original guidance.
 - [`docs/NOTE-MINING-RUBRIC.md`](docs/NOTE-MINING-RUBRIC.md), [`docs/NOTES-INTEGRATION.md`](docs/NOTES-INTEGRATION.md), and [`docs/NOTES-IMPACT.md`](docs/NOTES-IMPACT.md) - source re-mining rubric, the private-source boundary (`platocres/obol-source-notes`), and the notes-to-product decision model.
 - [`docs/UX-QUALITY.md`](docs/UX-QUALITY.md) and [`docs/CORRECTIVE-PLAN.md`](docs/CORRECTIVE-PLAN.md) - UX goals and the durable corrective roadmap.
 - [`docs/NORTH-STAR.md`](docs/NORTH-STAR.md) and [`docs/ORANGE-SOURCE-DEPTH.md`](docs/ORANGE-SOURCE-DEPTH.md) - completed Orange methodology/source accounting and the regression baseline.
-- [`CHANGELOG.md`](CHANGELOG.md) - release history.
+- [`CHANGELOG.md`](CHANGELOG.md) - release history only, not the live re-mining tracker.
 
 ## Active product queue
 

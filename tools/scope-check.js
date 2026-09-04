@@ -3,6 +3,7 @@ const cp=require('child_process');
 const path=require('path');
 const root=path.join(__dirname,'..');
 const checks=[
+ ['tools/validate-note-derivation-docs.js'],
  ['tools/validate-notes-impact.js'],
  ['tools/validate-note-integration.js'],
  ['tools/validate-note-mechanic-backfill.js'],

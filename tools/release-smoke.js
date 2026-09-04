@@ -15,6 +15,11 @@ function syntax(rel){
   if(r.error)throw r.error;
   if(r.status!==0)fail(`JavaScript syntax failed: ${rel}\n${String(r.stderr||r.stdout||'').trim()}`);
 }
+function runCheck(args,label){
+  const result=cp.spawnSync(process.execPath,args,{cwd:root,encoding:'utf8'});
+  if(result.error)throw result.error;
+  if(result.status!==0)fail(`${label} failed:\n${String(result.stdout||'')}${String(result.stderr||'')}`.trim());
+}
 
 const js=[];
 for(const dir of ['assets','data','tools','tests']){
@@ -48,6 +53,8 @@ if(exists('index.html')){
     if(!exists(rel))fail(`index.html references a missing local asset: ${rel}`);
   }
 }
+
+if(exists('tools/validate-note-derivation-docs.js'))runCheck(['tools/validate-note-derivation-docs.js'],'Note derivation documentation validation');
 
 if(failures.length){
   console.error('Release smoke validation failed:');
