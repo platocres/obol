@@ -1,4 +1,5 @@
 'use strict';
+// Resolves v9.54 source-mined cards from #/card/<card-id> after their dynamic owner loads.
 (function(root){
 const SOURCE_CARD_IDS=['linux-sudo-list-review','linux-cron-proof-chain','linux-user-trail-secret-review','linux-process-traffic-secret-review','candidate-credential-validation','credential-pattern-wordlist-helper'];
 function e(v){return String(v==null?'':v).replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));}
