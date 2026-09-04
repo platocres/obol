@@ -28,16 +28,16 @@ const releaseDoc=read('docs/v9.51.md');
 const testsWorkflow=read('.github/workflows/tests.yml');
 const browserWorkflow=read('.github/workflows/browser-smoke.yml');
 const fastRouteSmoke=read('tests/playwright-route-smoke.js');
-assert(readme.includes('Current release: **v9.51**'));
-assert(!readme.includes('Current release: **v9.50**'));
-assert(currentRelease.includes("version:'9.51.0'"));
-assert(currentRelease.includes("label:'v9.51'"));
-assert(!currentRelease.includes("version:'9.50.0'"));
-assert(!currentRelease.includes("label:'v9.50'"));
-assert(index.includes('<title>Obol v9.51 — Product Hardening</title>'));
-assert(index.includes('Offensive Box Operations Ledger · v9.51'));
-assert(!index.includes('<title>Obol v9.50 — Product Hardening</title>'));
-assert(!index.includes('Offensive Box Operations Ledger · v9.50</p>'));
+// v9.51 locked release-identity synchronization. This suite is historical from v9.52 on,
+// so it must prove the durable synchronization invariant version-agnostically rather than
+// pin the mutable v9.51 tokens the release process demotes at the next bump.
+const releaseLabel=(currentRelease.match(/label:'(v\d+\.\d+(?:\.\d+)?)'/)||[])[1];
+const releaseVersion=(currentRelease.match(/version:'(\d+\.\d+\.\d+)'/)||[])[1];
+assert(releaseLabel&&releaseVersion,'current-release authority exposes a label and version');
+assert.strictEqual(releaseVersion.split('.').slice(0,2).join('.'),releaseLabel.replace(/^v/,'').split('.').slice(0,2).join('.'),'authority version and label agree');
+assert(readme.includes('Current release: **'+releaseLabel+'**'),'README current release matches the authority');
+assert(index.includes('<title>Obol '+releaseLabel+' — Product Hardening</title>'),'index title matches the authority');
+assert(index.includes('Offensive Box Operations Ledger · '+releaseLabel),'index tagline matches the authority');
 assert(index.includes('obol-runtime-history'));
 assert(index.includes('OBOL-RUNTIME-MANIFEST-PROJECTION:START'));
 assert(index.includes('app-v2.4-route.js'));

@@ -45,6 +45,8 @@ for(const name of fs.readdirSync(path.join(root,'tests')).filter(x=>/^run-v\d+\.
   const text=fs.readFileSync(path.join(root,'tests',name),'utf8');
 
   if(new RegExp('Current(?: Obol)? release:\\s*\\*\\*v[0-9]+\\.[0-9]+(?:\\.[0-9]+)?(?:[^*]*)?\\*\\*').test(text))add(name,'hard-codes a README current-release token');
+  if(/<title>Obol v[0-9]+\.[0-9]+(?:\.[0-9]+)?\s+[—-]/.test(text))add(name,'hard-codes the index release-shell <title> token; assert it against the loaded current-release label instead');
+  if(/Offensive Box Operations Ledger\s*·\s*v[0-9]+\.[0-9]+(?:\.[0-9]+)?/.test(text))add(name,'hard-codes the index release-shell tagline token; assert it against the loaded current-release label instead');
   for(const literal of includeLiterals(text,'readme')){
     if(new RegExp('Current(?: Obol)? release:.*\\*\\*v[0-9]+\\.[0-9]+(?:\\.[0-9]+)?(?:[^*]*)?\\*\\*').test(literal))add(name,'asserts a live README version literal instead of a historical invariant');
   }
