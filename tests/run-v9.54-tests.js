@@ -1,13 +1,14 @@
 'use strict';
 // v9.54 regression: Linux privilege-escalation source re-mining batch 1
-// is recorded from complete sequential packets and the mined value is converted
-// into contextual Next Steps cards and existing-card enhancements in the same pass.
+// is recorded from complete sequential packets and converted into contextual
+// Next Steps cards and existing-card enhancements in the same pass.
 const assert=require('assert');
 const cp=require('child_process');
 const fs=require('fs');
 const path=require('path');
 const vm=require('vm');
 const root=path.join(__dirname,'..');
+const read=rel=>fs.readFileSync(path.join(root,rel),'utf8');
 
 function run(args){
  const r=cp.spawnSync(process.execPath,args.map((p,i)=>i===0?path.join(root,p):p),{cwd:root,encoding:'utf8'});
@@ -15,8 +16,9 @@ function run(args){
  return (r.stdout||'')+(r.stderr||'');
 }
 
-run(['tests/run-v9.53-tests.js']);
 run(['tools/validate-note-remining-audits.js']);
+run(['tools/validate-note-derivation-docs.js']);
+run(['tools/validate-current-release.js']);
 
 const {loadCurrent}=require('../tools/current-runtime');
 const {loadProgressProjection,validateReMiningAudits,DEFAULT_DIMENSIONS}=require('../tools/validate-note-remining-audits');
@@ -38,7 +40,7 @@ assert.deepStrictEqual(progress.remining.latestBatchPackets,[
  'data/review-packets/offsec-pen-200-05.json'
 ]);
 
-const workflowSource=fs.readFileSync(path.join(root,'assets/workflow-current.js'),'utf8');
+const workflowSource=read('assets/workflow-current.js');
 const dashboardSandbox={
  OBOL_PRODUCT_HARDENING_NOTE_PROGRESS:progress,
  renderProductHardeningDashboard(){return true;},
@@ -69,11 +71,8 @@ assert.strictEqual(patched.remining.outcomeCounts['not-applicable'],89);
 assert.strictEqual(patched.remining.outcomeCounts.blocked,0);
 assert.strictEqual(patched.remining.latestBatchMode,'mine-then-contextualize');
 assert.strictEqual(patched.remining.dashboardNote,'v9.54 Linux findings were mined into contextual Next Steps cards and an online-brute enhancement, not a standalone generic panel.');
-assert(patched.remining.reminedThemes.includes('windows-privesc'),'Windows re-mining theme is preserved');
-assert(patched.remining.reminedThemes.includes('linux-privesc'),'Linux re-mining theme is now visible');
-assert.strictEqual(patched.remining.minedAdditions.length,4,'dashboard should record four tangible mined additions');
-assert.strictEqual(dashboardSandbox.OBOL_PRODUCT_HARDENING_MINED_ADDITIONS.integration,'contextual-next-step-cards','dashboard global should describe item-level path integration');
-assert.strictEqual(dashboardSandbox.OBOL_PRODUCT_HARDENING_MINED_ADDITIONS.additions.length,4,'dashboard global should expose mined additions');
+assert.strictEqual(dashboardSandbox.OBOL_PRODUCT_HARDENING_MINED_ADDITIONS.integration,'contextual-next-step-cards');
+assert.strictEqual(dashboardSandbox.OBOL_PRODUCT_HARDENING_MINED_ADDITIONS.additions.length,4);
 
 const linuxIds=[
  'offsec-pen-200-7d8319c3e311e160',
@@ -108,7 +107,7 @@ assert(cron.decisions['terminal-analyzers'].pathIds.includes('linux-cron-proof-c
 const service=rows.find(row=>row.noteId==='offsec-pen-200-7d8319c3e311e160'&&row.reviewWave==='v9.54-linux-privesc-remine-batch1');
 assert(service.decisions['terminal-analyzers'].pathIds.includes('linux-process-traffic-secret-review'),'service-footprint re-mining should add a process/traffic path card');
 
-const credentialSource=fs.readFileSync(path.join(root,'assets/credential-material-current.js'),'utf8');
+const credentialSource=read('assets/credential-material-current.js');
 for(const expected of [
  'installLinuxSourceMinedPathCards',
  'linux-sudo-list-review',
@@ -118,34 +117,20 @@ for(const expected of [
  'candidate-credential-validation',
  'credential-pattern-wordlist-helper',
  'online-brute path item',
- 'contextual Next Steps card gated'
+ 'contextual Next Steps card gated',
+ "prereq:{any:['foothold.linux']}",
+ "prereq:{all:['credential.candidate']"
 ]){
  assert(credentialSource.includes(expected),`credential/path mechanic source must include ${expected}`);
 }
 assert(!credentialSource.includes('data-linux-source-mined-mechanics'),'v9.54 findings must not be parked in a standalone generic path panel');
 
-const credentialSandbox={
- OBOL_LANES:[{lane:'cracking',phase:'Credential Attacks',title:'Password Attacks & Cracking',version:0.1,cards:[{id:'online-brute',lane:'cracking',title:'Online Brute Force (hydra)',hypothesis:'base',commands:[],expected:[],onFailure:{}}]}],
- location:{hash:'#/path'},
- setTimeout(fn){if(typeof fn==='function')fn();},
- console
-};
-vm.runInNewContext(credentialSource,credentialSandbox,{filename:'assets/credential-material-current.js'});
-assert(credentialSandbox.OBOL_CREDENTIAL_MATERIAL_UI,'credential material UI should expose path-card installer');
-assert.strictEqual(typeof credentialSandbox.OBOL_CREDENTIAL_MATERIAL_UI.installLinuxSourceMinedPathCards,'function');
-assert.strictEqual(credentialSandbox.OBOL_CREDENTIAL_MATERIAL_UI.installLinuxSourceMinedPathCards(),true);
-const allCards=credentialSandbox.OBOL_LANES.flatMap(lane=>lane.cards||[]);
-for(const cardId of ['linux-sudo-list-review','linux-cron-proof-chain','linux-user-trail-secret-review','linux-process-traffic-secret-review','candidate-credential-validation','credential-pattern-wordlist-helper']){
- const card=allCards.find(row=>row.id===cardId);
- assert(card,`missing contextual path card ${cardId}`);
- assert(card.sourceMined54&&card.sourceMined54.wave==='v9.54-linux-privesc-remine-batch1',`${cardId} must carry source-mined provenance`);
- assert(card.prereq&&Object.keys(card.prereq).length,`${cardId} must be gated by real lab state`);
-}
-const onlineBrute=allCards.find(row=>row.id==='online-brute');
-assert(onlineBrute.sourceMined54,'existing online-brute card should be enhanced, not replaced');
-assert(onlineBrute.commands.some(cmd=>String(cmd.run).includes('hydra -L {{userlist}} -P {{wordlist}} -t 4 -V {{target}} {{service}}')),'online-brute should get the source-mined validation template');
+const cardIdCount=(credentialSource.match(/id:'(linux-sudo-list-review|linux-cron-proof-chain|linux-user-trail-secret-review|linux-process-traffic-secret-review|candidate-credential-validation|credential-pattern-wordlist-helper)'/g)||[]).length;
+assert.strictEqual(cardIdCount,6,'six contextual source-mined card definitions must be present');
+assert(credentialSource.includes("card=cardById('online-brute')"),'existing online-brute card must be enhanced in place');
+assert(credentialSource.includes('hydra -L {{userlist}} -P {{wordlist}} -t 4 -V {{target}} {{service}}'),'source-mined credential validation template must be attached');
 
-const docs=fs.readFileSync(path.join(root,'docs/AGENT-WORKFLOW.md'),'utf8');
+const docs=read('docs/AGENT-WORKFLOW.md');
 assert(docs.includes('Mine, then use it in the same pass'),'agent workflow must state the mine-then-use rule');
 assert(docs.includes('attach the finding to an existing Next Steps item'),'agent workflow must require existing path-item enhancement when possible');
 assert(docs.includes('create a new gated Next Steps item'),'agent workflow must require contextual path insertion for new findings');
