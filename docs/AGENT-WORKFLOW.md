@@ -74,11 +74,13 @@ The required loop is:
 
 1. Mine the source note or complete packet.
 2. Decide which public-safe findings are useful to operators.
-3. Build those findings into the actual site in the same pass: path logic, Field Notes, tool cards, builders, GUI controls, terminal-output analyzers, report guidance, or dashboard-visible product mechanics.
-4. Record the tangible additions in the Product Hardening Dashboard and the live re-mining projection with `added` outcomes that cite actual owners, proof refs, and Next Steps path integration.
-5. Leave `queued` only for a clearly named blocker or genuinely larger capability that cannot safely fit the same coherent ownership area.
+3. First try to attach the finding to an existing Next Steps item that should carry it during a real lab. Add or improve that item's commands, expected outputs, failure handling, proof boundary, report guidance, GUI controls, tool-builder behavior, or lesson text.
+4. If no existing item is the right owner, create a new gated Next Steps item in the correct lane with explicit `prereq` and `produces` facts, so it appears only when the lab state makes it relevant. Do not create always-visible clutter.
+5. Wire analyzers, builders, and examples to those item-level owners. A generic panel on `#/path` is not enough, because it does not prove the finding appears at the decision point where an operator needs it.
+6. Record the tangible additions in the Product Hardening Dashboard and the live re-mining projection with `added` outcomes that cite exact owner IDs, proof refs, card IDs, tool IDs, analyzer IDs, and Next Steps path integration.
+7. Leave `queued` only for a clearly named blocker or genuinely larger capability that cannot safely fit the same coherent ownership area.
 
-Queued is not a successful resting state for a useful mined finding. A pass that only adds product-gap IDs, prose summaries, or dashboard counters has not finished the source-mining assignment unless every deferred item names a blocker, blast-radius reason, missing source proof, or private-only constraint. The default expectation is: **we mine, then we take what we mined and use it.**
+Queued is not a successful resting state for a useful mined finding. A pass that only adds product-gap IDs, prose summaries, generic path-page widgets, or dashboard counters has not finished the source-mining assignment unless every deferred item names a blocker, blast-radius reason, missing source proof, or private-only constraint. The default expectation is: **we mine, then we take what we mined and use it.**
 
 ## 5. Derive the value, do not copy the expression
 
@@ -102,8 +104,10 @@ See [`docs/NOTE-DERIVATION-STANDARD.md`](NOTE-DERIVATION-STANDARD.md) for the fu
 
 ## 6. Land the findings the right way
 
-- Notes work is **additive** to the Orange-derived path. Do not delete, narrow, or replace Orange path items. Attach to an existing path point, add a child step or adjacent branch, improve or add a tool card, add analyzer behavior, or file a product gap only when a blocker is explicit.
-- Wire note-derived tools, scripts, one-liners, analyzers, lesson boxes, command templates, and path branches into the **actual user-visible Next Steps / Orange path surface**: the `publicFieldNotes` / Field Notes surface bound to `path`, current Tool Builder owners, Evidence analyzers, report owners, or current workflow owners. Do not park them in disconnected registries, dashboard-only lists, loose docs, or hidden code paths.
+- Notes work is **additive** to the Orange-derived path. Do not delete, narrow, or replace Orange path items.
+- Attach note-derived value to existing path items when those items are the correct lab-flow owner. Improve their commands, tool cards, GUI switches, analyzers, lesson boxes, troubleshooting, cleanup, or report guidance.
+- Create a new gated Next Steps item only when no existing item is the right owner. The item must live in the correct lane, declare relevant `prereq` and `produces` facts, and appear only when current Evidence makes it useful.
+- Wire note-derived tools, scripts, one-liners, analyzers, lesson boxes, command templates, and path branches into the **actual user-visible Next Steps / Orange path surface** through item-level owners, current Tool Builder owners, Evidence analyzers, report owners, or current workflow owners. Do not park them in disconnected registries, dashboard-only lists, loose docs, hidden code paths, or a generic catch-all panel.
 - Update stable current owners directly when possible, for example `data/note-integration-packets.js` for packet-derived Field Notes and `data/product-hardening/note-progress-current.js` for the re-mining projection. Do not add disposable wrapper, overlay, release-specific patch, or parallel-registry shortcuts.
 - Keep raw course text, targets, flags, credentials, screenshots, and exploit recipes out of public Obol. Publish only normalized, non-verbatim derived guidance.
 
