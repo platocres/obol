@@ -27,7 +27,7 @@ assert(rubric.includes('actual Next Steps path node updated'));
 assert(dashboard.includes('Source re-mining gate'));
 assert(dashboard.includes('Actual path integration required'));
 assert(dashboard.includes('No disposable wrapper/layer shortcut'));
-assert(dashboard.includes('tool/script-not-in-path'));
+assert(dashboard.includes('tool-or-script-not-in-path'));
 assert(dashboard.includes('wrapper-layer-added'));
 assert(dashboard.includes('Full-spectrum extraction matrix'));
 assert(progress.includes('actualPathRequired:true'));
