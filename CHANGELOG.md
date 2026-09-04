@@ -1,3 +1,12 @@
+## v9.50 — Linux privilege-escalation notes packet
+
+- Completed the Linux privilege-escalation subject packet with eight curated private-source candidates: seven modeled into public-safe guidance and one exploit-specific walkthrough retained as private-reference-only.
+- Advanced the current notes ledger to 135/556 reviewed: 102 modeled, 28 private-reference-only, 5 superseded, 0 rejected, and 421 pending.
+- Added normalized guidance for Linux privilege-enumeration triage, privileged process/service observation, user-trail secret hunting, cron execution preconditions, sudo authorization, SUID/capability proof boundaries, and kernel-exploit compatibility/stability proof.
+- Required an explicit guidance-only decision for every newly modeled source. The reviewed packet exposed no missing Tool Builder, Path primitive, Evidence parser, report-generator, or workflow mechanic that justified redundant code-level behavior.
+- Extended current Field Note delivery so Card, Tool, and Path routes load the current Linux packet projection, and added item-specific v9.50 proof plus future-safe preservation of the frozen v9.35 Windows packet milestone.
+- Closed `notes-packet-linux-privesc` while leaving the 556-note umbrella, the pre-v9.29 mechanics backfill, and AD/pivoting packet live. Raw course prose, targets, flags, credentials, screenshots, and exploit recipes remain outside public Obol.
+
 ## v9.49 — Next Steps style delivery repair and design-token integrity
 
 - Fixed the Next Steps formatting regression left by runtime layer consolidation. Inlining `assets/operator-route-current.js` into the startup application owner made it publish `OBOL_OPERATOR_ROUTES` at startup, so `ensureOperatorRoutes88()` short-circuited before it could inject `assets/operator-route-current.css`; the operator hero, metric tiles, mode bar, and recommendation cards rendered completely unstyled.

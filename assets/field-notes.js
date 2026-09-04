@@ -1,6 +1,6 @@
 'use strict';
 (function(root){
-const STYLE='assets/field-notes.css',INTEGRATION='data/note-integration.js',REVIEWS='data/note-integration-reviews.js',PACKETS='data/note-integration-packets.js';
+const STYLE='assets/field-notes.css',INTEGRATION='data/note-integration.js',REVIEWS='data/note-integration-reviews.js',PACKETS='data/note-integration-packets.js',CURRENT='data/product-hardening/note-progress-current.js';
 let integrationLoading=null;
 function e(v){return String(v==null?'':v).replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));}
 function ensureStyle(){if(document.querySelector('link[data-obol-field-notes]')||document.querySelector('link[href="'+STYLE+'"]'))return;const l=document.createElement('link');l.rel='stylesheet';l.href=STYLE;l.dataset.obolFieldNotes='1';document.head.appendChild(l);}
@@ -8,7 +8,7 @@ function addScript(src,marker){if(document.querySelector('script[src="'+src+'"]'
 function schemaAtLeast(value,major,minor){const parts=String(value||'0.0').split('.').map(Number);return (parts[0]||0)>major||((parts[0]||0)===major&&(parts[1]||0)>=minor);}
 function integrationReady(){
  const n=root.OBOL_NOTE_INTEGRATION;
- return !!(n&&schemaAtLeast(n.schemaVersion,1,5)&&Array.isArray(n.reviewedDispositions)&&Array.isArray(n.publicFieldNotes)&&typeof n.reviewedDisposition==='function'&&n.packetReviews&&n.packetReviews['web-upload-inclusion']);
+ return !!(n&&schemaAtLeast(n.schemaVersion,1,9)&&Array.isArray(n.reviewedDispositions)&&Array.isArray(n.publicFieldNotes)&&typeof n.reviewedDisposition==='function'&&n.packetReviews&&n.packetReviews['web-upload-inclusion']&&n.packetReviews['linux-privesc']);
 }
 function ensureIntegration(){
  if(integrationReady())return Promise.resolve(root.OBOL_NOTE_INTEGRATION);
@@ -16,7 +16,8 @@ function ensureIntegration(){
  const loadBase=root.OBOL_NOTE_INTEGRATION?Promise.resolve():addScript(INTEGRATION,'obolFieldNotesIntegration');
  integrationLoading=loadBase
   .then(()=>schemaAtLeast(root.OBOL_NOTE_INTEGRATION&&root.OBOL_NOTE_INTEGRATION.schemaVersion,1,4)?null:addScript(REVIEWS,'obolFieldNotesReviews'))
-  .then(()=>integrationReady()?null:addScript(PACKETS,'obolFieldNotesPackets'))
+  .then(()=>root.OBOL_NOTE_INTEGRATION&&root.OBOL_NOTE_INTEGRATION.packetReviews&&root.OBOL_NOTE_INTEGRATION.packetReviews['windows-privesc']?null:addScript(PACKETS,'obolFieldNotesPackets'))
+  .then(()=>integrationReady()?null:addScript(CURRENT,'obolFieldNotesCurrent'))
   .then(()=>root.OBOL_NOTE_INTEGRATION||null)
   .finally(()=>{if(!integrationReady())integrationLoading=null;});
  return integrationLoading;
@@ -60,7 +61,7 @@ function decoratePath(){
 }
 function decorateNow(){ensureStyle();decorateCards();decorateTools();decoratePath();}
 function decorate(){ensureIntegration().then(decorateNow).catch(()=>{});}
-root.OBOL_FIELD_NOTES_UI=Object.freeze({version:'1.4.0',decorate,notesFor,html,cardContext,toolContext,ensureIntegration});
+root.OBOL_FIELD_NOTES_UI=Object.freeze({version:'1.5.0',decorate,notesFor,html,cardContext,toolContext,ensureIntegration});
 for(const t of [0,80,240,700,1600])setTimeout(decorate,t);
 window.addEventListener('hashchange',()=>{for(const t of [20,120,420])setTimeout(decorate,t);});
 })(typeof window!=='undefined'?window:globalThis);

@@ -4,7 +4,7 @@ Obol is a static, browser-local workspace for OSCP-style labs, Active Directory 
 
 Live site: `https://platocres.github.io/obol/`
 
-Current release: **v9.49**
+Current release: **v9.50**
 
 Open `#/dashboard` for the active Product Hardening Dashboard and Product Build Next queue.
 
@@ -40,7 +40,7 @@ Before building:
 12. Use `node tools/scope-check.js` while developing the current work package. The complete historical chain remains a final/main preservation gate rather than a manual per-edit checklist.
 13. Sync generated Product Build Next output, run the required validation, and keep the entire coherent work package in the one active release/product-hardening PR until the exact final head is green.
 
-There must be only one open release/product-hardening PR at a time. If one exists, continue it or close it as superseded before opening another. CI enforces this with `tools/validate-open-pr-uniqueness.js`. Do not use a Draft -> Ready transition as part of the release process and do not replace a healthy PR merely to change review state.
+There must be only one open release/product-hardening PR at a time. If one exists, continue it or close it as superseded before opening another. CI enforces this with `tools/validate-open-pr-uniqueness.js`. Do not use a Draft -> Ready transition as part of the release process and do not replace a healthy PR merely to move between review states.
 
 ## Required context map
 
@@ -72,12 +72,12 @@ This block is generated from `data/product-hardening/product-hardening-queue.js`
 Recommended work-package metadata comes from `data/product-hardening/work-packages.js`.
 Runtime consolidation figures come from `data/runtime-consolidation-current.js`, the same projection the Product Hardening Dashboard renders.
 
-**Current product-hardening queue:** 211/653 complete (32%), 10 queued, 9 foundation items modeled.
+**Current product-hardening queue:** 219/653 complete (34%), 9 queued, 9 foundation items modeled.
 **Private notes source:** `platocres/obol-source-notes` — 556 notes and 1326 embedded resources accounted.
-**Notes Integration:** 127/556 reviewed — 95 modeled, 27 private-only, 429 pending.
-**Derived note guidance:** 48 Field Notes · 43 tool-bound · 45 Path-bound · 14 Evidence · 5 Report.
+**Notes Integration:** 135/556 reviewed — 102 modeled, 28 private-only, 421 pending.
+**Derived note guidance:** 55 Field Notes · 50 tool-bound · 52 Path-bound · 17 Evidence · 5 Report.
 **Declared note-driven product mechanics:** 2 total · 2 builder · 0 Path logic · 0 Evidence parser · 0 report generator · 0 workflow.
-**Latest mined themes:** Windows local privilege escalation.
+**Latest mined themes:** Linux local privilege escalation, Credentials / auth material, Object authorization / IDOR, Windows local privilege escalation.
 **Notes impact contract:** `docs/NOTES-IMPACT.md`.
 **Runtime consolidation:** 5 operator startup requests, down from 286 (98% fewer).
 **Current runtime ownership areas:** 7 owners account for 272 historical fragments — 215 semantically flattened, 57 still exact-owned; 55 fragments stay retired in the frozen ledger.
@@ -85,7 +85,7 @@ Runtime consolidation figures come from `data/runtime-consolidation-current.js`,
 **Measured in Chromium (v9.40):** Home 321→19 · Next Steps 329→27 · Evidence 365→21 · Report 335→20 JavaScript/CSS requests.
 **Runtime compaction contract:** `docs/RUNTIME-COMPACTION.md`.
 
-**Recommended work package:** **Notes Impact and Themed Burn-down** — 4 live items / 11 tracked.
+**Recommended work package:** **Notes Impact and Themed Burn-down** — 3 live items / 11 tracked.
 **Work-package entry:** **Burn down all 556 note dispositions**
 **Ownership area:** `notes/impact-packets`
 **Package guidance:** Treat the 556-note disposition item as the umbrella. Fix the conversion engine first: every modeled note must produce a declared product mechanic or a justified guidance-only reason (notes-conversion-rubric), backfill mechanics from already-modeled notes (notes-mechanic-backfill), and track script outputs as first-class (notes-script-category). Then burn remaining notes down in coherent themed packets, recording for every modeled source which Field Note, tool-bound or Path-bound guidance, Evidence/report/troubleshooting output, code-level product change, or explicit product gap it produced.
@@ -94,7 +94,6 @@ Runtime consolidation figures come from `data/runtime-consolidation-current.js`,
 **Live items in this package:**
 - **Burn down all 556 note dispositions** — Umbrella disposition goal. Review work should be executed in themed packets and must record what each modeled note changed in Field Notes, tools, Path, Evidence, reports, troubleshooting, or product gaps.
 - **Re-audit all reviewed notes for missed mechanics** — Re-audit every note already processed under the old rubric — all 127 reviewed, not only the 95 modeled — because the defect was the review standard itself. Re-judge modeled, guidance-only, reviewed-not-modeled, and private-only dispositions against the new bar and convert to declared product changes (tool toggle, Path branch, evidence rule, report/workflow change) wherever one was missed. Cheaper than fresh review since rationales already exist; distinct from the first-pass review of the 429 pending notes.
-- **Notes packet: Linux privilege escalation** — Mine Linux privilege-escalation discovery, evidence, tool options, failure modes, path branches, proof boundaries, and reporting guidance.
 - **Notes packet: AD and pivoting** — Mine Active Directory, lateral movement, tunneling, pivoting, routing, credential use, evidence boundaries, and missing workflow/tool options.
 
 **Related items to consider, not automatically in scope:** Design contextual field-notes disclosure.
@@ -102,12 +101,12 @@ Runtime consolidation figures come from `data/runtime-consolidation-current.js`,
 **Highest-priority live items:**
 1. **Burn down all 556 note dispositions** — Umbrella disposition goal. Review work should be executed in themed packets and must record what each modeled note changed in Field Notes, tools, Path, Evidence, reports, troubleshooting, or product gaps.
 2. **Re-audit all reviewed notes for missed mechanics** — Re-audit every note already processed under the old rubric — all 127 reviewed, not only the 95 modeled — because the defect was the review standard itself. Re-judge modeled, guidance-only, reviewed-not-modeled, and private-only dispositions against the new bar and convert to declared product changes (tool toggle, Path branch, evidence rule, report/workflow change) wherever one was missed. Cheaper than fresh review since rationales already exist; distinct from the first-pass review of the 429 pending notes.
-3. **Notes packet: Linux privilege escalation** — Mine Linux privilege-escalation discovery, evidence, tool options, failure modes, path branches, proof boundaries, and reporting guidance.
-4. **Notes packet: AD and pivoting** — Mine Active Directory, lateral movement, tunneling, pivoting, routing, credential use, evidence boundaries, and missing workflow/tool options.
-5. **UI quality audit rubric** — Add a fixed per-screen audit checklist under docs/visual-qa/ (hierarchy, density, consistency, affordance, state feedback, accessibility). Run once per primary screen and file each finding as its own queue item instead of ad-hoc fixes.
-6. **Quiet service worker caching** — Improve repeat-load and offline behavior without prompting users to install anything.
-7. **IndexedDB workspace storage** — Support durable larger local workspaces, multiple engagements, and cached indexes while remaining browser-local.
-8. **Web Workers for heavy tasks** — Move evidence parsing, search indexing, and report generation off the UI thread.
+3. **Notes packet: AD and pivoting** — Mine Active Directory, lateral movement, tunneling, pivoting, routing, credential use, evidence boundaries, and missing workflow/tool options.
+4. **UI quality audit rubric** — Add a fixed per-screen audit checklist under docs/visual-qa/ (hierarchy, density, consistency, affordance, state feedback, accessibility). Run once per primary screen and file each finding as its own queue item instead of ad-hoc fixes.
+5. **Quiet service worker caching** — Improve repeat-load and offline behavior without prompting users to install anything.
+6. **IndexedDB workspace storage** — Support durable larger local workspaces, multiple engagements, and cached indexes while remaining browser-local.
+7. **Web Workers for heavy tasks** — Move evidence parsing, search indexing, and report generation off the UI thread.
+8. **Non-intrusive update notice** — When cached app updates are available, notify users without install nagging.
 
 **Track status:**
 - **Critical correctness:** 5/5 complete (100%), 0 modeled.
@@ -116,7 +115,7 @@ Runtime consolidation figures come from `data/runtime-consolidation-current.js`,
 - **Tool GUI builders:** 19/19 complete (100%), 0 modeled.
 - **Credential modes:** 14/14 complete (100%), 0 modeled.
 - **Manual outcomes:** 8/8 complete (100%), 0 modeled.
-- **Notes integration:** 127/556 complete (23%), 2 modeled.
+- **Notes integration:** 135/556 complete (24%), 2 modeled.
 - **Offline / performance:** 1/6 complete (17%), 0 modeled.
 - **Testing / visual QA:** 8/12 complete (67%), 3 modeled.
 
