@@ -1,3 +1,11 @@
+## v9.54 — Begins Linux privilege-escalation source re-mining from the complete sequential private-note packets
+
+- Added the first Linux privilege-escalation re-mining batch to the current note-progress projection without claiming raw Git LFS access from this agent runtime.
+- Re-read four already-reviewed Linux privilege-escalation sources from the complete packet fallback and published per-note, per-dimension audit rows for service-footprint review, user-trail secret hunting, cron execution chains, and sudo authorization.
+- Queued concrete public-safe product gaps for Linux terminal-output analyzers: process/traffic secret observations, user-trail secret extraction, cron proof-chain reconstruction, sudo `-l` interpretation, Hydra credential-validation builder support, and credential-pattern wordlist generation.
+- Preserved existing Linux Field Notes and Orange-derived path bindings additively rather than replacing the v9.50 Linux packet or publishing private recipe material.
+- Added `tests/run-v9.54-tests.js` to assert the expanded 19-row re-mining projection, complete-packet lineage, allowed negative-proof outcomes, and the permanent audit validator.
+
 ## v9.53 — Fixes the private source-note handoff so future agents stop relying on incomplete themed review artifacts
 
 - Added complete private source-packet metrics through `data/product-hardening/source-review-packets-current.js`.
