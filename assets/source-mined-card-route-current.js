@@ -27,15 +27,11 @@ function prereqText(prereq){
  return parts.join(' · ');
 }
 function commandHtml(card){
- return (card.commands||[]).map((cmd,i)=>'<div class="cmd-block" data-source-mined-command="'+e(card.id+'-'+i)+'"><span class="tool">'+e(cmd.tool||'sh')+'</span><br><code>'+e(cmd.run||'')+'</code>'+(cmd.note?'<div class="note">→ '+e(cmd.note)+'</div>':'')+'</div>').join('');
+ return (card.commands||[]).map((cmd,i)=>'<div class="cmd-block" data-source-mined-command="'+e(card.id+'-'+i)+'"><span class="tool">'+e(cmd.tool||'sh')+'</span><br><code>'+e(cmd.run||'')+'</code>'+(cmd.note?'<div class="note"><b>Purpose:</b> '+e(cmd.note)+'</div>':'')+'</div>').join('');
 }
 function failureHtml(card){
  const entries=Object.entries(card.onFailure||{});
  return entries.length?'<div class="wl-box"><div class="wl-title">Failure routing</div>'+entries.map(([pat,fb])=>'<div class="failure"><span class="pat">'+e(pat)+'</span> — '+e(fb&&fb.note||'')+'</div>').join('')+'</div>':'';
-}
-function useGuidance(card){
- const gate=prereqText(card&&card.prereq);
- return '<div class="why-box"><b>When to use this:</b> Use this step when the current evidence supports the branch'+(gate?' shown in the gates below':'')+'. Preserve source context, run only the scoped checks that fit the lab state, and promote outcomes only when the pasted evidence proves them.</div>';
 }
 function renderFallback(){
  const id=wantedCardId();
@@ -48,9 +44,9 @@ function renderFallback(){
  const unknown=/Unknown card/i.test(view.textContent||'');
  const already=view.querySelector('[data-source-mined-direct-card-route="'+id+'"]');
  if(already&&!unknown)return true;
- view.innerHTML='<p><a href="#/path" style="color:var(--info)">← Next Steps</a></p><br>'+
+ view.innerHTML='<p><a href="#/path" style="color:var(--info)">← Next Steps</a></p><br>'+ 
   '<section class="card" data-source-mined-direct-card-route="'+e(id)+'"><div class="card-head"><span class="badge applicable">guided step</span> <span class="title">'+e(card.title||id)+'</span></div><div class="card-body">'+
-  '<p class="hyp">'+e(card.hypothesis||'')+'</p>'+useGuidance(card)+
+  '<p class="hyp">'+e(card.hypothesis||'')+'</p>'+ 
   '<div class="signals"><b>Placement:</b> <code>'+e(card.laneLabel||card.lane||'Next Steps')+'</code>'+(prereqText(card.prereq)?' <b>Gated by:</b> <code>'+e(prereqText(card.prereq))+'</code>':'')+'</div>'+factList('Produces',card.produces)+commandHtml(card)+failureHtml(card)+(card.defender?'<div class="defender"><b>Defender’s view:</b> '+e(card.defender)+'</div>':'')+'</div></section>';
  root.__OBOL_SOURCE_MINED_DIRECT_CARD_ROUTE__='rendered:'+id;
  return true;
@@ -58,5 +54,5 @@ function renderFallback(){
 function decorate(){renderFallback();}
 function start(){decorate();for(const delay of [0,50,180,500,1200])root.setTimeout&&root.setTimeout(decorate,delay);}
 if(typeof window!=='undefined'){window.addEventListener('hashchange',start);if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',start,{once:true});else start();}
-root.OBOL_SOURCE_MINED_CARD_ROUTE=Object.freeze({version:'1.0.1',cardIds:SOURCE_CARD_IDS,decorate,renderFallback,sourceCardById});
+root.OBOL_SOURCE_MINED_CARD_ROUTE=Object.freeze({version:'1.0.2',cardIds:SOURCE_CARD_IDS,decorate,renderFallback,sourceCardById});
 })(typeof window!=='undefined'?window:globalThis);
