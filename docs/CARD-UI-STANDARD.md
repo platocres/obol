@@ -43,6 +43,8 @@ The required flow is card → paste command output → `Analyze pasted evidence`
 
 Generic `intake:<mode>` is acceptable only when the user opens Intake directly. Evidence launched from a card must not lose the card source. Tests should fail if a source-mined or current-owner card has commands but no evidence textarea, no analyze action, no tried/succeeded controls, or no card-scoped Intake source.
 
+Card previews in Path and Lanes must not hide evidence entry behind a silent click-through. A collapsed card should show an explicit `Open card` action and an explicit `Add evidence` action. `Add evidence` must preserve the card ID in Intake even when the user has not opened the expanded card yet. Expanded cards still need the full textarea plus `Analyze pasted evidence` flow.
+
 ## OS routing rule
 
 Linux-only and Windows-only local privilege cards must be gated by the target operating system. Linux-only cards require Linux foothold or Linux OS evidence. Windows-only cards require Windows foothold or Windows OS evidence. Metadata like `os:['linux']` or `os:['windows']` is not decorative; the Path view must use it to keep Linux and Windows local privilege recommendations separated.
