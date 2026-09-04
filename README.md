@@ -20,6 +20,8 @@ Notes work is additive to the Orange-derived path. Do not delete, narrow, or rep
 
 Note-derived tools, scripts, one-liners, analyzers, lesson boxes, command templates, and path branches must be wired into the actual user-visible Next Steps / Orange path surface where the operator needs them. Do not park them in disconnected registries, dashboard-only lists, loose docs, or hidden code paths and call them done.
 
+Negative findings require proof. Every re-mined note dimension must resolve to `added`, `covered`, `queued`, `private-only`, `not-applicable`, or `blocked` with the required owner, queue, reason, proof, blocker, or next-action data. Blank or generic `none`, `no change`, or `not useful` entries are invalid.
+
 Do not add disposable wrapper, overlay, release-specific patch layer, or parallel registry shortcuts when a stable current owner can be updated directly. Product hardening should reduce future consolidation debt, not create it.
 
 ## Product contract
@@ -41,7 +43,7 @@ Before building:
 1. Read this README.
 2. Read [`BUILDING.md`](BUILDING.md) for release workflow, exact-head validation, and merge-readiness rules.
 3. Read [`docs/PRODUCT-HARDENING.md`](docs/PRODUCT-HARDENING.md) for the v9 product vision, queue rules, coherent work-package model, and Definition of Done.
-4. If the work touches private-source notes, read [`docs/NOTE-MINING-RUBRIC.md`](docs/NOTE-MINING-RUBRIC.md), [`docs/NOTES-INTEGRATION.md`](docs/NOTES-INTEGRATION.md), and [`docs/NOTES-IMPACT.md`](docs/NOTES-IMPACT.md) before reviewing a packet. Reviewed-note counts are not enough: modeled notes must declare the product output they created or why contextual guidance is sufficient after full-spectrum extraction was considered.
+4. If the work touches private-source notes, read [`docs/NOTE-MINING-RUBRIC.md`](docs/NOTE-MINING-RUBRIC.md), [`docs/NOTES-INTEGRATION.md`](docs/NOTES-INTEGRATION.md), and [`docs/NOTES-IMPACT.md`](docs/NOTES-IMPACT.md) before reviewing a packet. Reviewed-note counts are not enough: modeled notes must declare the product output they created or why contextual guidance is sufficient after full-spectrum extraction and negative-finding proof were completed.
 5. Open `#/dashboard` or inspect `data/product-hardening/product-hardening-queue.js`, `data/product-hardening/note-progress-current.js`, and `data/product-hardening/work-packages.js` for Product Build Next.
 6. Confirm there is no open release/product-hardening PR. If one exists, continue it instead of opening another.
 7. If no release PR exists, create the release branch and open one normal, **non-draft** release PR as early as GitHub permits. Keep that same PR for the entire build. Required checks, not Draft status, prevent premature merge.
@@ -49,7 +51,7 @@ Before building:
 9. Inspect related, adjacent, and dependency-linked items in the same ownership area. Complete as many as safely fit the same architectural context and blast radius. Do not stop merely because the first item's acceptance criteria are satisfied if closely related work can be completed and fully tested in the same PR.
 10. Keep queue-item accountability atomic. Every item advanced or closed still needs its own acceptance criteria, validation commands, proof files, and item-specific tests.
 11. Do not batch unrelated work. Stop expanding the package when the next item materially changes ownership area, architectural context, migration risk, or test strategy.
-12. Use `node tools/scope-check.js` while developing the current work package. The complete historical chain remains a final/main preservation gate rather than a manual per-edit checklist.
+12. Use `node tools/scope-check.js` while developing the current work package. The complete historical chain remains a full-regression/main preservation gate rather than a manual per-edit checklist.
 13. Sync generated Product Build Next output, run the required validation, and keep the entire coherent work package in the one active release/product-hardening PR until the exact final head is green.
 
 There must be only one open release/product-hardening PR at a time. If one exists, continue it or close it as superseded before opening another. CI enforces this with `tools/validate-open-pr-uniqueness.js`. Do not use a Draft -> Ready transition as part of the release process and do not replace a healthy PR merely to move between review states.
@@ -62,7 +64,7 @@ There must be only one open release/product-hardening PR at a time. If one exist
 - [`docs/RUNTIME-COMPACTION.md`](docs/RUNTIME-COMPACTION.md) - per-area retirement lifecycle, consolidated ownership state, and test-retirement rules.
 - [`docs/PROOF-CONTRACT.md`](docs/PROOF-CONTRACT.md) - Evidence, proof boundaries, manual outcomes, and report readiness.
 - [`docs/TOOL-BUILDER-COVERAGE.md`](docs/TOOL-BUILDER-COVERAGE.md) - stable Tool Builder Platform, runnable-tool inventory, and representative-builder migration contract.
-- [`docs/NOTE-MINING-RUBRIC.md`](docs/NOTE-MINING-RUBRIC.md) - mandatory full-spectrum source re-mining checklist, actual Next Steps path requirement, tool-card/script/analyzer extraction rules, additive Orange path rule, and no-wrapper/layer shortcut rule.
+- [`docs/NOTE-MINING-RUBRIC.md`](docs/NOTE-MINING-RUBRIC.md) - mandatory full-spectrum source re-mining checklist, actual Next Steps path requirement, tool-card/script/analyzer extraction rules, additive Orange path rule, negative-finding proof, and no-wrapper/layer shortcut rule.
 - [`docs/NOTES-INTEGRATION.md`](docs/NOTES-INTEGRATION.md) - private source repo `platocres/obol-source-notes` and normalized public-output workflow.
 - [`docs/NOTES-IMPACT.md`](docs/NOTES-IMPACT.md) - required notes-to-product output decision, packet review model, dashboard interpretation, and runtime-compaction relationship.
 - [`docs/UX-QUALITY.md`](docs/UX-QUALITY.md) - UI/UX quality goals and seeded product defects.
@@ -106,14 +108,14 @@ Runtime consolidation figures come from `data/runtime-consolidation-current.js`,
 
 **Live items in this package:**
 - **Re-mine all already-reviewed notes from original sources** — Return to the original private source note for every already-reviewed modeled, guidance-only, reviewed-not-modeled, private-only, superseded, or rejected row. Do not merely inspect the existing public Field Note or prior rationale. Re-mine from scratch for tool cards, GUI switches, scripts, one-liners, terminal-output analyzers, additive Path bindings, lesson boxes, examples, troubleshooting, cleanup, report guidance, product mechanics, and product gaps.
-- **Burn down all 556 note dispositions** — Umbrella disposition goal for all 556 notes. Fresh pending-note packets remain queued beneath the full-spectrum re-mining gate: agents must first re-mine already-reviewed notes from the original private sources, add missed product outputs, and preserve the Orange-derived path additively.
+- **Burn down all 556 note dispositions** — Umbrella disposition goal for all 556 notes. Fresh pending-note packets remain queued beneath the full-spectrum re-mining gate: agents must first re-mine already-reviewed notes from the original private sources, add missed product outputs, preserve the Orange-derived path additively, and prove every negative finding with an auditable per-dimension outcome.
 - **Notes packet: AD and pivoting** — Mine Active Directory, lateral movement, tunneling, pivoting, routing, credential use, evidence boundaries, and missing workflow/tool options.
 
 **Related items to consider, not automatically in scope:** Design contextual field-notes disclosure.
 
 **Highest-priority live items:**
 1. **Re-mine all already-reviewed notes from original sources** — Return to the original private source note for every already-reviewed modeled, guidance-only, reviewed-not-modeled, private-only, superseded, or rejected row. Do not merely inspect the existing public Field Note or prior rationale. Re-mine from scratch for tool cards, GUI switches, scripts, one-liners, terminal-output analyzers, additive Path bindings, lesson boxes, examples, troubleshooting, cleanup, report guidance, product mechanics, and product gaps.
-2. **Add note re-mining dashboard and schema tracking** — Track re-mining separately from first-pass review. The dashboard and README should show old-rubric reviewed count, full-spectrum re-mined count, remaining old-rubric-only notes, and extraction dimensions for tools, GUI switches, scripts, one-liners, analyzers, Path bindings, lessons, troubleshooting, cleanup, reports, and product gaps.
+2. **Add note re-mining dashboard and schema tracking** — Track re-mining separately from first-pass review. The dashboard and README should show old-rubric reviewed count, full-spectrum re-mined count, remaining old-rubric-only notes, negative finding outcome counts, invalid-negative-proof red flags, and extraction dimensions for tools, GUI switches, scripts, one-liners, analyzers, Path bindings, lessons, troubleshooting, cleanup, reports, and product gaps.
 3. **Re-mine reviewed web upload and inclusion notes** — Return to the original private upload, traversal, LFI/RFI, wrapper, hosting, and inclusion-chain notes already reviewed. Add to existing public outputs with missed tool cards, GUI controls, command templates, analyzer expectations, Path logic, lesson boxes, examples, troubleshooting, cleanup, report guidance, and product gaps. Preserve Orange path nodes and add to them rather than deleting or replacing them.
 4. **Re-mine reviewed XSS and session notes** — Return to the original private XSS, browser impact, cookie, CSP, request-context, and session notes already reviewed. Mine again for useful tool cards, switches, scripts, one-liners, analyzers, Path attachments, lessons, examples, troubleshooting, cleanup, report guidance, and product gaps.
 5. **Re-mine reviewed credentials and auth notes** — Return to the original private credential, hash, ticket, certificate, key, cookie, token, validation-boundary, and auth-failure notes already reviewed. Add missed builder modes, GUI switches, command templates, analyzers, credential routing, Path handoffs, lessons, troubleshooting, cleanup, report guidance, and product gaps.
@@ -149,15 +151,16 @@ Use the focused current-work-package check during development:
 node tools/scope-check.js
 ```
 
-Use [`BUILDING.md`](BUILDING.md) for preflight and release-final requirements. CI owns the complete historical regression chain on final release heads and `main`; agents should not manually copy and run every `run-vX.Y-tests.js` file for each small edit.
+Use [`BUILDING.md`](BUILDING.md) for preflight and full-regression requirements. CI owns the complete historical regression chain on explicit full-regression heads and `main`; agents should not manually copy and run every `run-vX.Y-tests.js` file for each small edit.
 
 The permanent notes-impact checks are:
 
 ```bash
 node tools/validate-notes-impact.js
 node tools/validate-note-integration.js
+node tools/validate-note-remining-audits.js
 node tools/sync-product-build-next.js --check
-node tests/run-v9.35-tests.js
+node tests/run-v9.51-tests.js
 ```
 
 The permanent runtime-consolidation checks are:
