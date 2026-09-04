@@ -14,12 +14,22 @@ for(const rel of [
  'assets/app-v2-views.js',
  'assets/runtime-current.js',
  'assets/ad-pivoting-current.js',
+ 'data/current-release.js',
  'data/product-hardening/windows-privesc-remining-v9.55.js',
  'data/product-hardening/ad-pivoting-remining-v9.55.js',
  'docs/CARD-UI-STANDARD.md',
  'docs/V9.55-CARD-EVIDENCE-OS-WINDOWS.md',
- 'docs/v9.55.md'
+ 'docs/v9.55.md',
+ 'README.md',
+ 'index.html',
+ 'CHANGELOG.md'
 ]) assert(fs.existsSync(path.join(root,rel)),`${rel} must exist`);
+
+for(const expected of ["version:'9.55.0'","label:'v9.55'"]) has('data/current-release.js',expected);
+has('README.md','Current release: **v9.55**');
+has('index.html','<title>Obol v9.55 — Product Hardening</title>');
+has('index.html','Offensive Box Operations Ledger · v9.55');
+has('CHANGELOG.md','## v9.55 — Product-hardening release for the Notes Impact and Source Re-mining package');
 
 // Preserve the v9.55 evidence-flow and OS-routing contracts from the prior hotfix.
 for(const expected of [
@@ -119,4 +129,4 @@ for(const expected of [
  'zero truncated notes'
 ]) has('docs/v9.55.md',expected);
 
-console.log('v9.55 evidence flow, OS routing, Windows privesc, and AD/pivoting re-mining regression passed.');
+console.log('v9.55 evidence flow, OS routing, Windows privesc, AD/pivoting re-mining, and release identity regression passed.');
