@@ -62,7 +62,7 @@ Full mechanics and proof rules: [`docs/RAW-NOTES-LFS.md`](RAW-NOTES-LFS.md).
 
 For each already-reviewed note, re-mine against every extraction dimension: path bindings, tool cards, GUI switches, scripts/one-liners, command templates, terminal-output analyzers, Evidence expectations, path movement, lesson boxes, examples, troubleshooting, cleanup, report guidance, product mechanics, product gaps, and additive Orange baseline.
 
-Check the live tracking source before choosing or closing a re-mining packet. `CHANGELOG.md` is release narrative only. Current packet metrics live in `data/product-hardening/source-review-packets-current.js`; current re-mining status lives in `data/product-hardening/note-progress-current.js`, Product Build Next, and the Product Hardening Dashboard.
+Check the live tracking source before choosing or closing a re-mining packet. `CHANGELOG.md` is release narrative only. Current re-mining status lives in `data/product-hardening/note-progress-current.js`, Product Build Next, and the Product Hardening Dashboard. Current packet metrics live in `data/product-hardening/source-review-packets-current.js`.
 
 ## 4. Derive the value, do not copy the expression
 
@@ -93,7 +93,7 @@ See [`docs/NOTE-DERIVATION-STANDARD.md`](NOTE-DERIVATION-STANDARD.md) for the fu
 
 ## 6. Prove negative findings
 
-Every re-mined note dimension must resolve to one auditable outcome: `added`, `covered`, `queued`, `private-only`, `not-applicable`, or `blocked`, published as a per-note, per-dimension row in `data/product-hardening/note-progress-current.js` (`remining.auditRows`). Blank or generic `none`, `no change`, or `not useful` entries are invalid. `covered` cites the owner ID, `queued` cites the queue/product-gap ID, `private-only`/`not-applicable` give a public-safe reason, `blocked` gives the blocker and next action, and `added` cites proof plus actual Next Steps path integration. `tools/validate-note-remining-audits.js` enforces this. See [`docs/NOTE-MINING-RUBRIC.md`](NOTE-MINING-RUBRIC.md).
+Every re-mined note dimension must resolve to one auditable outcome: `added`, `covered`, `queued`, `private-only`, or `blocked`, published as a per-note, per-dimension row in `data/product-hardening/note-progress-current.js` (`remining.auditRows`). Blank or generic `none`, `no change`, or `not useful` entries are invalid. `covered` cites the owner ID, `queued` cites the queue/product-gap ID, `private-only` gives a public-safe reason, `blocked` gives the blocker and next action, and `added` cites proof plus actual Next Steps path integration. `tools/validate-note-remining-audits.js` enforces this. See [`docs/NOTE-MINING-RUBRIC.md`](NOTE-MINING-RUBRIC.md).
 
 ## 7. Release every product build
 
