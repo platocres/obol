@@ -3,21 +3,38 @@
 const fs=require('fs');
 const path=require('path');
 const vm=require('vm');
-const {loadCurrent}=require('./current-runtime');
+const {loadCurrent,MANIFEST}=require('./current-runtime');
 
 const DEFAULT_DIMENSIONS=[
  'path-bindings','tool-cards','gui-controls','scripts-one-liners','command-templates','terminal-analyzers','evidence-expectations','path-movement','lesson-boxes','examples','troubleshooting','cleanup','report-guidance','product-mechanics','product-gaps','orange-baseline'
 ];
 const ALLOWED_OUTCOMES=['added','covered','queued','private-only','not-applicable','blocked'];
 const GENERIC_NEGATIVES=new Set(['','none','no','no change','not useful','n/a','na','null','undefined']);
+const PRODUCT_HARDENING_FALLBACK=[
+ 'data/runtime-consolidation-current.js',
+ 'data/current-release.js',
+ 'data/product-hardening/product-hardening-queue.js',
+ 'data/product-hardening/work-packages.js',
+ 'data/note-integration.js',
+ 'data/note-integration-reviews.js',
+ 'data/note-integration-packets.js',
+ 'data/product-hardening/note-progress-current.js',
+ 'data/product-hardening/notes-impact-current.js'
+];
 
 function list(v){return Array.isArray(v)?v.filter(Boolean):v?[v]:[];}
 function hasText(v,min){return typeof v==='string'&&v.trim().length>=(min||1);}
 function execute(file){vm.runInThisContext(fs.readFileSync(file,'utf8'),{filename:file});}
+function loadIfExists(root,rel){
+ const file=path.join(root,rel);
+ if(fs.existsSync(file))execute(file);
+}
 function loadProgressProjection(root){
  if(global.OBOL_PRODUCT_HARDENING_NOTE_PROGRESS)return;
- const file=path.join(root,'data','product-hardening','note-progress-current.js');
- if(fs.existsSync(file))execute(file);
+ const manifestFiles=MANIFEST&&MANIFEST.lazy&&Array.isArray(MANIFEST.lazy.productHardening)?MANIFEST.lazy.productHardening:PRODUCT_HARDENING_FALLBACK;
+ const files=manifestFiles.filter(rel=>/\.js$/.test(rel)&&!rel.startsWith('assets/'));
+ for(const rel of files)loadIfExists(root,rel);
+ if(!global.OBOL_PRODUCT_HARDENING_NOTE_PROGRESS)loadIfExists(root,'data/product-hardening/note-progress-current.js');
 }
 function decisionFor(row,dimension){
  const decisions=row.decisions||row.dimensions||row.dimensionOutcomes||{};
