@@ -80,9 +80,8 @@ requireText('docs/CARD-UI-STANDARD.md','Do not hide useful command blocks behind
 requireText('docs/CARD-UI-STANDARD.md','Tool action stack');
 requireText('docs/CARD-UI-STANDARD.md','Raw legacy commands');
 requireText('docs/CARD-UI-STANDARD.md','Direct card route');
-requireText('docs/CARD-UI-STANDARD.md','queue controls, tried/succeeded controls, intake evidence, evidence textarea, execution context, and implementation selection');
-requireText('docs/CARD-UI-STANDARD.md','Current-owner or dynamically inserted cards must register into the shared card index');
-requireText('docs/CARD-UI-STANDARD.md','A fake fallback that imitates a card but skips normal controls is not acceptable.');
+requireText('docs/CARD-UI-STANDARD.md','Card pages must not be rewritten into a separate tool-stack layout after the shared card renderer runs.');
+requireText('docs/CARD-UI-STANDARD.md',"must not move the card's primary commands into a collapsed legacy section");
 
 requireText('docs/NOTES-IMPACT.md','The derivation rule is: extract the educational value fully, then re-author the public output into Obol-owned form.');
 requireText('docs/NOTES-IMPACT.md','This does not excuse discarding reusable educational value that can be re-authored safely.');
