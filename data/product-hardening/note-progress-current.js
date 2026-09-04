@@ -77,5 +77,31 @@ for(const [packetId,itemId] of Object.entries(packetItemMap)){
  const item=(q.items||[]).find(entry=>entry.id===itemId);
  if(packet&&packet.status==='complete'&&item)item.status='complete';
 }
-root.OBOL_PRODUCT_HARDENING_NOTE_PROGRESS=Object.freeze({schemaVersion:'1.4.0',reviewed:Number(notes.ledger.reviewedCount||0),total:Number(notes.ledger.expectedNotes||0),completedPackets:Object.freeze(Object.keys(packetItemMap).filter(id=>notes.packetReviews&&notes.packetReviews[id]&&notes.packetReviews[id].status==='complete'))});
+function upsertQueueItem(item){
+ if(!q.items)return;
+ const existing=q.items.find(entry=>entry.id===item.id);
+ if(existing)Object.assign(existing,item);
+ else q.items.push(item);
+}
+const mechanicBackfill=(q.items||[]).find(entry=>entry.id==='notes-mechanic-backfill');
+if(mechanicBackfill){
+ mechanicBackfill.priority=86.8;
+ mechanicBackfill.label='Re-mine all already-reviewed notes from original sources';
+ mechanicBackfill.detail='Return to the original private source note for every already-reviewed modeled, guidance-only, reviewed-not-modeled, private-only, superseded, or rejected row. Do not merely inspect the existing public Field Note or prior rationale. Re-mine from scratch for tool cards, GUI switches, scripts, one-liners, terminal-output analyzers, additive Path bindings, lesson boxes, examples, troubleshooting, cleanup, report guidance, product mechanics, and product gaps.';
+}
+const umbrella=(q.items||[]).find(entry=>entry.id==='notes-disposition-burn-down');
+if(umbrella){
+ umbrella.priority=87.9;
+ umbrella.detail='Umbrella disposition goal for all 556 notes. Fresh pending-note packets remain queued beneath the full-spectrum re-mining gate: agents must first re-mine already-reviewed notes from the original private sources, add missed product outputs, and preserve the Orange-derived path additively.';
+}
+[
+ {id:'notes-remine-dashboard-schema',track:'notes-integration',status:'queued',priority:86.81,label:'Add note re-mining dashboard and schema tracking',detail:'Track re-mining separately from first-pass review. The dashboard and README should show old-rubric reviewed count, full-spectrum re-mined count, remaining old-rubric-only notes, and extraction dimensions for tools, GUI switches, scripts, one-liners, analyzers, Path bindings, lessons, troubleshooting, cleanup, reports, and product gaps.'},
+ {id:'notes-remine-web-upload-inclusion',track:'notes-integration',status:'queued',priority:86.82,label:'Re-mine reviewed web upload and inclusion notes',detail:'Return to the original private upload, traversal, LFI/RFI, wrapper, hosting, and inclusion-chain notes already reviewed. Add to existing public outputs with missed tool cards, GUI controls, command templates, analyzer expectations, Path logic, lesson boxes, examples, troubleshooting, cleanup, report guidance, and product gaps. Preserve Orange path nodes and add to them rather than deleting or replacing them.'},
+ {id:'notes-remine-xss-session',track:'notes-integration',status:'queued',priority:86.83,label:'Re-mine reviewed XSS and session notes',detail:'Return to the original private XSS, browser impact, cookie, CSP, request-context, and session notes already reviewed. Mine again for useful tool cards, switches, scripts, one-liners, analyzers, Path attachments, lessons, examples, troubleshooting, cleanup, report guidance, and product gaps.'},
+ {id:'notes-remine-credentials-auth',track:'notes-integration',status:'queued',priority:86.84,label:'Re-mine reviewed credentials and auth notes',detail:'Return to the original private credential, hash, ticket, certificate, key, cookie, token, validation-boundary, and auth-failure notes already reviewed. Add missed builder modes, GUI switches, command templates, analyzers, credential routing, Path handoffs, lessons, troubleshooting, cleanup, report guidance, and product gaps.'},
+ {id:'notes-remine-windows-privesc',track:'notes-integration',status:'queued',priority:86.85,label:'Re-mine reviewed Windows privesc notes',detail:'Return to the original private Windows privilege-escalation notes already reviewed. Mine again for missed tool cards, PowerShell or command templates, GUI controls, parser/analyzer expectations, additive Path branches, proof boundaries, lesson boxes, examples, troubleshooting, cleanup, report guidance, and product gaps without deleting Orange baseline path items.'},
+ {id:'notes-remine-linux-privesc',track:'notes-integration',status:'queued',priority:86.86,label:'Re-mine reviewed Linux privesc notes',detail:'Return to the original private Linux privilege-escalation notes already reviewed. Mine again for missed tool cards, shell one-liners, scripts, GUI controls, analyzer expectations, additive Path branches, proof boundaries, lesson boxes, examples, troubleshooting, cleanup, report guidance, and product gaps without deleting Orange baseline path items.'},
+ {id:'notes-remine-private-superseded',track:'notes-integration',status:'queued',priority:86.87,label:'Re-mine private-only and superseded notes',detail:'Return to original private notes previously marked private-reference-only, superseded, rejected, or reviewed-not-modeled. Keep raw recipes and private material private, but re-check whether public-safe tool ideas, command templates, analyzer rules, lesson boxes, troubleshooting, cleanup, report guidance, or additive Path improvements were missed.'}
+].forEach(upsertQueueItem);
+root.OBOL_PRODUCT_HARDENING_NOTE_PROGRESS=Object.freeze({schemaVersion:'1.5.0',reviewed:Number(notes.ledger.reviewedCount||0),total:Number(notes.ledger.expectedNotes||0),completedPackets:Object.freeze(Object.keys(packetItemMap).filter(id=>notes.packetReviews&&notes.packetReviews[id]&&notes.packetReviews[id].status==='complete')),remining:Object.freeze({sourceRequired:true,additiveOrangeBaseline:true,active:true,blockedFreshPacketsUntilComplete:true,rubric:'docs/NOTE-MINING-RUBRIC.md'})});
 })(typeof window!=='undefined'?window:globalThis);
