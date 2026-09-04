@@ -8,7 +8,9 @@ on:
       - '.github/workflows/sync-release-artifacts.yml'
       - 'data/current-release.js'
       - 'data/runtime-manifest.js'
+      - 'docs/v*.md'
       - 'tools/sync-current-release.js'
+      - 'tools/sync-current-changelog.js'
       - 'tools/sync-app-current.js'
       - 'assets/workflow-current.js'
       - 'assets/operator-route-current.js'
@@ -36,6 +38,7 @@ jobs:
         run: |
           node tools/sync-current-release.js --write
           node tools/sync-app-current.js --write
+          node tools/sync-current-changelog.js --write
 
       - name: Commit generated artifacts
         shell: bash
@@ -43,7 +46,7 @@ jobs:
           set -euo pipefail
           git config user.name "github-actions[bot]"
           git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
-          git add README.md index.html assets/obol-app-current.js
+          git add README.md index.html assets/obol-app-current.js CHANGELOG.md
           if git diff --cached --quiet; then
             echo "Generated release artifacts already current."
             exit 0
