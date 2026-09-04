@@ -26,7 +26,9 @@ const PRODUCT_SCRIPTS=[
  'data/product-hardening/note-mechanic-backfill-v9.38.js',
  'data/product-hardening/note-progress-current.js',
  'data/product-hardening/notes-impact-current.js',
- 'assets/product-hardening-dashboard.js'
+ 'data/product-hardening/source-review-packets-current.js',
+ 'assets/product-hardening-dashboard.js',
+ 'assets/source-review-packets-dashboard.js'
 ];
 const FRESH_QUERY='obol-dashboard';
 function instanceCurrent(){return root.__OBOL_CURRENT_DASHBOARD_ROUTE_INSTANCE__===INSTANCE;}
@@ -48,7 +50,9 @@ const READY={
  'data/product-hardening/note-mechanic-backfill-v9.38.js':()=>!!root.OBOL_NOTE_MECHANIC_BACKFILL_V938,
  'data/product-hardening/note-progress-current.js':()=>!!root.OBOL_PRODUCT_HARDENING_NOTE_PROGRESS,
  'data/product-hardening/notes-impact-current.js':()=>!!root.OBOL_PRODUCT_HARDENING_NOTES_IMPACT,
- 'assets/product-hardening-dashboard.js':()=>typeof root.renderProductHardeningDashboard==='function'
+ 'data/product-hardening/source-review-packets-current.js':()=>!!root.OBOL_SOURCE_REVIEW_PACKETS,
+ 'assets/product-hardening-dashboard.js':()=>typeof root.renderProductHardeningDashboard==='function',
+ 'assets/source-review-packets-dashboard.js':()=>!!root.OBOL_SOURCE_REVIEW_PACKETS_DASHBOARD
 };
 let assetsLoading=null,observer=null,repairScheduled=false,renderGeneration=0,assetSequence=0,activeAssetCycle=0;
 
