@@ -6,7 +6,7 @@ This is the detailed, do-this-now workflow for an agent told to "read the README
 
 1. Read `README.md`, this file, and [`BUILDING.md`](../BUILDING.md).
 2. Confirm there is no open release/product-hardening PR. If one exists, continue it instead of opening another. There must be only one open release/product-hardening PR at a time.
-3. Open `#/dashboard` (or inspect `data/product-hardening/product-hardening-queue.js`, `data/product-hardening/source-review-packets-current.js`, `data/product-hardening/note-progress-current.js`, and `data/product-hardening/work-packages.js`) to see Product Build Next, complete packet metrics, and the recommended coherent work package.
+3. Open `#/dashboard` or inspect `data/product-hardening/product-hardening-queue.js`, `data/product-hardening/source-review-packets-current.js`, `data/product-hardening/note-progress-current.js`, and `data/product-hardening/work-packages.js` to see Product Build Next, complete packet metrics, and the recommended coherent work package.
 
 ## 2. Pick the work
 
@@ -64,7 +64,27 @@ For each already-reviewed note, re-mine against every extraction dimension: path
 
 Check the live tracking source before choosing or closing a re-mining packet. `CHANGELOG.md` is release narrative only. Current re-mining status lives in `data/product-hardening/note-progress-current.js`, Product Build Next, and the Product Hardening Dashboard. Current packet metrics live in `data/product-hardening/source-review-packets-current.js`.
 
-## 4. Derive the value, do not copy the expression
+## 4. Mine, then use it in the same pass
+
+Source re-mining is a product-development loop, not a backlog-writing exercise. When the README says "continue development," an agent must mine useful source value and then incorporate that value into Obol before the pass is considered complete.
+
+A **public-safe useful finding** is any durable lesson, workflow, proof boundary, command pattern, analyzer rule, tool option, GUI switch, path branch, troubleshooting step, cleanup step, report expectation, or product capability that can be rewritten into original Obol-owned guidance without exposing private/course expression, lab targets, flags, credentials, screenshots, or exact solution chains.
+
+The required loop is:
+
+1. Mine the source note or complete packet.
+2. Decide which public-safe findings are useful to operators.
+3. First try to attach the finding to an existing Next Steps item that should carry it during a real lab. Add or improve that item's commands, expected outputs, failure handling, proof boundary, report guidance, GUI controls, tool-builder behavior, or lesson text.
+4. If no existing item is the right owner, create a new gated Next Steps item only after analyzing where it belongs in the lab path. Do not merely append a card to a broad lane. Decide which evidence should unlock it, which existing cards should precede it, which neighboring cards it should sit beside, which later cards it should unlock or inform, and whether it belongs with enumeration, credential validation, privilege escalation, cleanup, or reporting. The new item must have explicit `prereq` and `produces` facts so it appears only when the lab state makes it relevant.
+5. Wire analyzers, builders, and examples to those item-level owners. A generic panel on `#/path` is not enough, because it does not prove the finding appears at the decision point where an operator needs it.
+6. Record the tangible additions in the Product Hardening Dashboard and the live re-mining projection with `added` outcomes that cite exact owner IDs, proof refs, card IDs, tool IDs, analyzer IDs, neighboring path items, unlocks, and Next Steps path integration.
+7. Leave `queued` only for a clearly named blocker or genuinely larger capability that cannot safely fit the same coherent ownership area.
+
+A new mined card is not complete until the PR proves where it appears in the path, why it appears there, what evidence gates it, what it produces, and which neighboring path items it improves, precedes, sits beside, or unlocks.
+
+Queued is not a successful resting state for a useful mined finding. A pass that only adds product-gap IDs, prose summaries, generic path-page widgets, broad-lane append cards, or dashboard counters has not finished the source-mining assignment unless every deferred item names a blocker, blast-radius reason, missing source proof, or private-only constraint. The default expectation is: **we mine, then we take what we mined and use it.**
+
+## 5. Derive the value, do not copy the expression
 
 Use the private notes as source knowledge, not public text. The goal is to extract the educational and product value fully while writing new Obol-owned material.
 
@@ -84,30 +104,44 @@ Do **not** publish raw source expression: course prose, copied walkthrough parag
 
 See [`docs/NOTE-DERIVATION-STANDARD.md`](NOTE-DERIVATION-STANDARD.md) for the full standard.
 
-## 5. Land the findings the right way
+## 6. Land the findings the right way
 
-- Notes work is **additive** to the Orange-derived path. Do not delete, narrow, or replace Orange path items. Attach to an existing path point, add a child step or adjacent branch, improve or add a tool card, add analyzer behavior, or file a product gap.
-- Wire note-derived tools, scripts, one-liners, analyzers, lesson boxes, command templates, and path branches into the **actual user-visible Next Steps / Orange path surface** (the `publicFieldNotes` / Field Notes surface bound to `path`). Do not park them in disconnected registries, dashboard-only lists, loose docs, or hidden code paths.
-- Update stable current owners directly (for example `data/note-integration-packets.js` for packet-derived Field Notes, `data/product-hardening/note-progress-current.js` for the re-mining projection). Do not add disposable wrapper, overlay, release-specific patch, or parallel-registry shortcuts.
+- Notes work is **additive** to the Orange-derived path. Do not delete, narrow, or replace Orange path items.
+- Attach note-derived value to existing path items when those items are the correct lab-flow owner. Improve their commands, tool cards, GUI switches, analyzers, lesson boxes, troubleshooting, cleanup, or report guidance.
+- Create a new gated Next Steps item only when no existing item is the right owner. Before adding it, analyze the surrounding path flow and choose the exact path placement: the lane, ordering behavior, preceding evidence, neighboring cards, downstream unlocks, failure routing, and produced facts. The item must declare relevant `prereq` and `produces` facts and appear only when current Evidence makes it useful.
+- Do not satisfy this requirement by appending a new card somewhere in the broad lane without proving why that is the right decision point. The PR must show where the card appears, why it appears there, what gates it, and which existing path items it improves, precedes, sits beside, or unlocks.
+- Wire note-derived tools, scripts, one-liners, analyzers, lesson boxes, command templates, and path branches into the **actual user-visible Next Steps / Orange path surface** through item-level owners, current Tool Builder owners, Evidence analyzers, report owners, or current workflow owners. Do not park them in disconnected registries, dashboard-only lists, loose docs, hidden code paths, or a generic catch-all panel.
+- Update stable current owners directly when possible, for example `data/note-integration-packets.js` for packet-derived Field Notes and `data/product-hardening/note-progress-current.js` for the re-mining projection. Do not add disposable wrapper, overlay, release-specific patch, or parallel-registry shortcuts.
 - Keep raw course text, targets, flags, credentials, screenshots, and exploit recipes out of public Obol. Publish only normalized, non-verbatim derived guidance.
 
-## 6. Prove negative findings
+## 7. Prove negative findings
 
-Every re-mined note dimension must resolve to one auditable outcome: `added`, `covered`, `queued`, `private-only`, `not-applicable`, or `blocked`, published as a per-note, per-dimension row in `data/product-hardening/note-progress-current.js` (`remining.auditRows`). Blank or generic `none`, `no change`, or `not useful` entries are invalid. `covered` cites the owner ID, `queued` cites the queue/product-gap ID, `private-only`/`not-applicable` give a public-safe reason, `blocked` gives the blocker and next action, and `added` cites proof plus actual Next Steps path integration. `tools/validate-note-remining-audits.js` enforces this. See [`docs/NOTE-MINING-RUBRIC.md`](NOTE-MINING-RUBRIC.md).
+Every re-mined note dimension must resolve to one auditable outcome: `added`, `covered`, `queued`, `private-only`, `not-applicable`, or `blocked`, published as a per-note, per-dimension row in `data/product-hardening/note-progress-current.js` or the current live re-mining projection (`remining.auditRows`). Blank or generic `none`, `no change`, or `not useful` entries are invalid.
 
-## 7. Release every product build
+Outcome proof requirements:
+
+- `added` cites proof plus actual Next Steps path integration, changed owners, tool IDs, analyzer IDs, report IDs, or path IDs.
+- `covered` cites the existing owner ID.
+- `queued` cites the queue or product-gap ID and names why it could not be built in the same pass.
+- `private-only` gives a public-safe reason.
+- `not-applicable` gives a specific reason.
+- `blocked` gives the blocker and next action.
+
+`tools/validate-note-remining-audits.js` enforces this. See [`docs/NOTE-MINING-RUBRIC.md`](NOTE-MINING-RUBRIC.md).
+
+## 8. Release every product build
 
 Every product build is a versioned release. In the same PR:
 
-- bump `data/current-release.js`, then run `node tools/sync-current-release.js --write` (updates README + `index.html`);
+- bump `data/current-release.js`, then run `node tools/sync-current-release.js --write` to update README and `index.html`;
 - add `docs/vX.Y.md` and a `## vX.Y - ...` entry at the top of [`CHANGELOG.md`](../CHANGELOG.md);
-- add `tests/run-vX.Y-tests.js` (invokes `tools/validate-release-pr.js`; assert the current release version-agnostically);
-- demote the previous release's test off any live-current assertion (README release token, `index.html` shell tokens, and `data/current-release.js` literals all become version-agnostic checks). `tools/validate-historical-tests.js` catches the common cases;
+- add `tests/run-vX.Y-tests.js` that invokes `tools/validate-release-pr.js` and asserts the current release version-agnostically;
+- demote the previous release's test off any live-current assertion. README release token, `index.html` shell tokens, and `data/current-release.js` literals all become version-agnostic checks. `tools/validate-historical-tests.js` catches the common cases;
 - regenerate generated owners after any manifest/fragment change, and run `node tools/sync-product-build-next.js --write` whenever queue, work-package, or source-packet metric state changes.
 
 Docs-only clarification PRs do not need to bump the public site release number unless they change product behavior, queue state, generated outputs, or the visible website release identity.
 
-## 8. Validate and keep it green
+## 9. Validate and keep it green
 
 - Inner loop: `node tools/scope-check.js`.
 - Notes/queue gates: `node tools/validate-notes-impact.js`, `node tools/validate-note-integration.js`, `node tools/validate-note-remining-audits.js`, `node tools/validate-note-derivation-docs.js`, `node tools/sync-product-build-next.js --check`, `node tools/validate-product-hardening-queue.js`.
