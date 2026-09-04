@@ -32,12 +32,30 @@ For every source note reviewed or re-mined, the agent must explicitly consider e
 
 A note can produce more than one output. Agents must not pick one comfortable category and stop when the source clearly supports more.
 
+## Actual Next Steps path requirement
+
+A note-derived tool, script, one-liner, analyzer, lesson, or path branch is not fully productized if it lives only in an isolated data table, hidden registry, loose documentation page, dashboard-only list, or disconnected code path.
+
+When re-mining finds a useful addition for the operator workflow, the agent must wire it into the actual user-visible Next Steps / Orange path surface so Brandon can open the Obol website, go to Next Steps, and see the relevant tool, explanation, action, analyzer, or lesson at the appropriate point in the path.
+
+Valid additive destinations include:
+
+- an existing Next Steps path point with added tool, script, analyzer, or lesson context;
+- a child step beneath an existing Orange-derived path point;
+- an adjacent branch connected to the relevant Orange-derived path point;
+- an existing tool card shown by that path point;
+- a new tool card that is discoverable from that path point;
+- an Evidence analyzer that accepts pasted output from the tool or command and updates the path recommendation;
+- a contextual lesson box rendered from that path or tool point.
+
+Do not park note-derived capabilities somewhere else and call them done. The public dashboard may track the output, but the operator-facing path must expose it when it is relevant.
+
 ## Tool-card extraction contract
 
 When a source note implies a useful tool, the reviewer must decide whether to add a new tool card, update an existing one, or record a concrete product gap. A tool-card candidate should capture:
 
 - tool name and purpose;
-- where it belongs in the path;
+- where it belongs in the actual Next Steps / Orange path surface;
 - execution context such as Kali, Windows, target-local shell, pivoted shell, or proxy-routed session;
 - required inputs;
 - optional switches, modes, presets, and output controls;
@@ -59,6 +77,8 @@ Reusable command material must be extracted deliberately. Public Obol may includ
 Do not publish raw private commands when they contain lab targets, flags, credentials, screenshots, copied walkthrough text, private paths, or exploit-recipe specificity. Rewrite the durable command pattern into an Obol-owned template and explain the inputs.
 
 If no reusable command material is added from a modeled note, the note's audit record must say that scripts and one-liners were reviewed and why nothing was added, such as already-covered builder behavior, lab-specific recipe material, unsafe automation scope, or private-only content.
+
+If reusable command material is added, it must be wired into the actual Next Steps path context where an operator would need it. A script output that exists only as a Field Note, code registry, or dashboard metric is incomplete unless the relevant path/tool point exposes it.
 
 ## Expandable lesson boxes
 
@@ -91,6 +111,12 @@ Agents must not delete, narrow, or replace an original Orange mind-map path item
 
 If a note appears to contradict an existing path item, preserve the baseline and add context, constraints, or a decision rule. Do not remove the original path item as part of notes work.
 
+## No disposable wrapper or layer shortcut
+
+Do not implement note-mining, dashboard, path, tool, Evidence, or report work by adding a temporary wrapper, overlay, release-specific patch layer, or parallel registry when the stable current owner can be updated directly.
+
+Product-hardening work should strengthen current owners and reduce future consolidation debt. New wrappers are allowed only when a documented migration boundary proves they are temporary, names the owner they will replace, and adds validation that prevents the wrapper from becoming another sedimentary layer.
+
 ## Re-mining audit record
 
 Every re-mined source note should leave an explicit audit record that answers, at minimum:
@@ -100,6 +126,7 @@ Every re-mined source note should leave an explicit audit record that answers, a
 - re-mining wave or packet;
 - whether the original note was re-read from source;
 - path nodes considered;
+- actual Next Steps path node updated, child step added, adjacent branch added, or product gap filed;
 - tool cards considered or changed;
 - GUI switches, modes, and presets considered or changed;
 - scripts and one-liners considered or added;
@@ -109,7 +136,9 @@ Every re-mined source note should leave an explicit audit record that answers, a
 - product gaps filed;
 - public-safe rewritten outputs;
 - private-only material retained privately;
-- rationale for guidance-only or private-only decisions.
+- rationale for guidance-only or private-only decisions;
+- confirmation that Orange-derived path items were preserved additively;
+- confirmation that no disposable wrapper/layer shortcut was introduced.
 
 A previous terminal disposition is not enough. The re-mining pass must explain what the expanded rubric found when the original source was reviewed again.
 
