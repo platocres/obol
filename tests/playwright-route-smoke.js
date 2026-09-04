@@ -16,8 +16,10 @@ const routes = [
   { id: 'report', hash: '#/report', marker: /report/i },
   { id: 'dashboard', hash: '#/dashboard', marker: /Product Hardening/i, dashboard: true }
 ];
+const ASSET = /\.(?:js|css)(?:[?#]|$)/;
+const BENIGN_RESOURCE_CONSOLE = /^Failed to load resource: the server responded with a status of 404 \(File not found\)$/;
 
-function localRequestFailure(url) {
+function isLocal(url) {
   try {
     const target = new URL(url);
     const base = new URL(baseUrl);
@@ -37,11 +39,18 @@ function localRequestFailure(url) {
       const page = await context.newPage();
       const routeFailures = [];
       page.on('console', message => {
-        if (message.type() === 'error') routeFailures.push('console error: ' + message.text());
+        const text = message.text();
+        if (message.type() === 'error' && !BENIGN_RESOURCE_CONSOLE.test(text)) routeFailures.push('console error: ' + text);
       });
       page.on('pageerror', error => routeFailures.push('page error: ' + error.message));
+      page.on('response', response => {
+        const url = response.url();
+        if (isLocal(url) && ASSET.test(url) && !response.ok()) {
+          routeFailures.push('local asset returned HTTP ' + response.status() + ': ' + url);
+        }
+      });
       page.on('requestfailed', request => {
-        if (localRequestFailure(request.url())) {
+        if (isLocal(request.url())) {
           routeFailures.push('local request failed: ' + request.url() + ' (' + ((request.failure() || {}).errorText || 'unknown') + ')');
         }
       });
