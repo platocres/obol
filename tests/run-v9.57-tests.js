@@ -156,4 +156,8 @@ require('../data/current-release.js');
 assert.strictEqual(global.OBOL_CURRENT_RELEASE.label, 'v9.57');
 assert.strictEqual(global.OBOL_CURRENT_RELEASE.version, '9.57.0');
 
+const validateLiveIntegrationDoneGate = require('../tools/validate-live-integration-done-gate.js');
+const doneGateFailures = validateLiveIntegrationDoneGate(['data/product-hardening/xss-session-remining-v9.57.js']);
+assert.deepStrictEqual(doneGateFailures, []);
+
 console.log('v9.57 XSS/session re-mining live integration checks passed');
