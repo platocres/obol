@@ -1,6 +1,9 @@
 name: Obol browser smoke
 
 on:
+  workflow_dispatch:
+  schedule:
+    - cron: '42 8 * * *'
   pull_request:
     types: [opened, synchronize, reopened, ready_for_review]
   push:
@@ -19,6 +22,8 @@ jobs:
   browser-smoke:
     runs-on: ubuntu-latest
     timeout-minutes: 15
+    env:
+      SHOULD_DEEP_BROWSER: ${{ github.ref == 'refs/heads/main' || github.event_name == 'workflow_dispatch' || github.event_name == 'schedule' || (github.event_name == 'push' && startsWith(github.ref, 'refs/heads/release/') && contains(github.event.head_commit.message, '[release-final]')) }}
     steps:
       - name: Checkout
         uses: actions/checkout@v4
@@ -55,22 +60,46 @@ jobs:
       - name: Prove the v9.43 application retirement in a browser
         env:
           OBOL_SMOKE_BASE_URL: http://127.0.0.1:4173/index.html
-        run: node tools/validate-app-dom-equivalence.js
+        run: |
+          set -euo pipefail
+          if [[ "${SHOULD_DEEP_BROWSER}" != "true" ]]; then
+            echo "Deep browser proof runs on main, workflow_dispatch, schedule, or release [release-final]; PRs keep route smoke fast."
+            exit 0
+          fi
+          node tools/validate-app-dom-equivalence.js
 
       - name: Prove the v9.45 semantic stylesheet in a browser
         env:
           OBOL_SMOKE_BASE_URL: http://127.0.0.1:4173/index.html
-        run: node tools/validate-style-visual-equivalence.js
+        run: |
+          set -euo pipefail
+          if [[ "${SHOULD_DEEP_BROWSER}" != "true" ]]; then
+            echo "Deep browser proof runs on main, workflow_dispatch, schedule, or release [release-final]; PRs keep route smoke fast."
+            exit 0
+          fi
+          node tools/validate-style-visual-equivalence.js
 
       - name: Prove the v9.46 single-paint current boot in a browser
         env:
           OBOL_SMOKE_BASE_URL: http://127.0.0.1:4173/index.html
-        run: node tools/validate-single-paint-boot-browser.js
+        run: |
+          set -euo pipefail
+          if [[ "${SHOULD_DEEP_BROWSER}" != "true" ]]; then
+            echo "Deep browser proof runs on main, workflow_dispatch, schedule, or release [release-final]; PRs keep route smoke fast."
+            exit 0
+          fi
+          node tools/validate-single-paint-boot-browser.js
 
       - name: Prove v9.47 semantic application ownership across the historical timer horizon
         env:
           OBOL_SMOKE_BASE_URL: http://127.0.0.1:4173/index.html
-        run: node tools/validate-app-semantic-boot-browser.js
+        run: |
+          set -euo pipefail
+          if [[ "${SHOULD_DEEP_BROWSER}" != "true" ]]; then
+            echo "Deep browser proof runs on main, workflow_dispatch, schedule, or release [release-final]; PRs keep route smoke fast."
+            exit 0
+          fi
+          node tools/validate-app-semantic-boot-browser.js
 
       - name: Upload browser screenshots
         if: always()
