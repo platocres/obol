@@ -37,8 +37,10 @@ Authorization, scope, and candidate-material warnings still matter, but they bel
 
 ## Layout rule
 
-Do not hide the only useful command block behind awkward scaffolding. Labels such as `Tool action stack`, `Raw legacy commands`, `Current builders stay up front`, and similar implementation-shaped copy should not appear in operator card UI. Use plain labels such as `Commands`, `Commands and checks`, or `Guided builder`.
+Do not hide useful command blocks behind awkward scaffolding. Labels such as `Tool action stack`, `Raw legacy commands`, `Current builders stay up front`, and similar implementation-shaped copy should not appear in operator card UI. Use plain labels such as `Commands`, `Commands and checks`, or `Guided builder`.
 
-## Direct card route rule
+Card pages must not be rewritten into a separate tool-stack layout after the shared card renderer runs. Route decorators may improve styling or add genuinely useful controls, but they must not move the card's primary commands into a collapsed legacy section, hide the only actionable checks, or replace per-command explanations with implementation scaffolding.
 
-A direct card route is acceptable only when it renders the same kind of operator-facing content a user would expect from the normal path: title, hypothesis, gates, produced facts, commands with explanations, failure routing, and defender/reporting context.
+A Direct card route is acceptable only when it renders the same shared card UI a user would expect from the normal path: title, hypothesis, gates, produced facts, commands with explanations, failure routing, defender/reporting context, queue controls, tried/succeeded controls, intake evidence, evidence textarea, execution context, and implementation selection.
+
+Current-owner or dynamically inserted cards must register into the shared card index, or the card route must resolve them from the live lane model before rendering. A fake fallback that imitates a card but skips normal controls is not acceptable.
