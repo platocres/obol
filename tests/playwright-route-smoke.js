@@ -8,16 +8,18 @@ const baseUrl = process.env.OBOL_SMOKE_BASE_URL || 'http://127.0.0.1:4173/index.
 const outputDir = process.env.OBOL_SMOKE_OUTPUT || path.join(__dirname, '..', 'artifacts', 'playwright-smoke');
 const executablePath = process.env.OBOL_SMOKE_BROWSER_PATH || undefined;
 
+// Fast PR smoke should prove the app boots, the Next Steps surface still renders,
+// and the changed dashboard owner renders. Full multi-route freshness and browser
+// proof suites stay in tests/playwright-smoke.js and the [full-regression] path.
 const routes = [
   { id: 'home', hash: '#/home', marker: /Home/i },
-  { id: 'targets', hash: '#/boxes', marker: /target/i },
-  { id: 'evidence', hash: '#/intake', marker: /evidence/i },
   { id: 'next-steps', hash: '#/path', marker: /(next|path|recommend)/i },
-  { id: 'report', hash: '#/report', marker: /report/i },
   { id: 'dashboard', hash: '#/dashboard', marker: /Product Hardening/i, dashboard: true }
 ];
 const ASSET = /\.(?:js|css)(?:[?#]|$)/;
 const BENIGN_RESOURCE_CONSOLE = /^Failed to load resource: the server responded with a status of 404 \(File not found\)$/;
+const NAV_TIMEOUT = 8000;
+const RENDER_TIMEOUT = 5000;
 
 function isLocal(url) {
   try {
@@ -36,6 +38,7 @@ function isLocal(url) {
 
   try {
     for (const route of routes) {
+      console.log('Checking fast route: ' + route.id);
       const page = await context.newPage();
       const routeFailures = [];
       page.on('console', message => {
@@ -55,15 +58,15 @@ function isLocal(url) {
         }
       });
 
-      const response = await page.goto(baseUrl + route.hash, { waitUntil: 'domcontentloaded', timeout: 10000 });
+      const response = await page.goto(baseUrl + route.hash, { waitUntil: 'domcontentloaded', timeout: NAV_TIMEOUT });
       if (response && !response.ok()) routeFailures.push('navigation returned HTTP ' + response.status());
-      await page.waitForSelector('#view', { state: 'visible', timeout: 7000 });
+      await page.waitForSelector('#view', { state: 'visible', timeout: RENDER_TIMEOUT });
       await page.waitForFunction(() => {
         const view = document.querySelector('#view');
         return !!(view && view.innerText && view.innerText.trim().length > 20);
-      }, null, { timeout: 7000 });
+      }, null, { timeout: RENDER_TIMEOUT });
       if (route.dashboard) {
-        await page.waitForSelector('[data-product-dashboard-owner="current"]', { state: 'visible', timeout: 7000 });
+        await page.waitForSelector('[data-product-dashboard-owner="current"]', { state: 'visible', timeout: RENDER_TIMEOUT });
       }
       const viewText = (await page.locator('#view').innerText()).trim();
       if (!route.marker.test(viewText)) routeFailures.push('route marker did not match rendered content: ' + JSON.stringify(viewText.slice(0, 180)));
@@ -87,5 +90,5 @@ function isLocal(url) {
     process.exit(1);
   }
 
-  console.log('Fast Playwright route smoke passed for Home, Targets, Evidence, Next Steps, Report, and Dashboard current-owner render.');
+  console.log('Fast Playwright route smoke passed for Home, Next Steps, and Dashboard current-owner render.');
 })();
