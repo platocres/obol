@@ -14,6 +14,7 @@ for(const rel of [
  'assets/app-v2-views.js',
  'assets/runtime-current.js',
  'assets/ad-pivoting-current.js',
+ 'assets/card-evidence-current.js',
  'data/current-release.js',
  'data/product-hardening/windows-privesc-remining-v9.55.js',
  'data/product-hardening/ad-pivoting-remining-v9.55.js',
@@ -52,6 +53,26 @@ for(const expected of [
  'windows-credential-trail-review',
  'windows-token-privilege-review'
 ]) has('assets/app-v2-views.js',expected);
+
+// Collapsed cards in Path/Lanes must visibly expose evidence entry, not hide it behind tribal knowledge.
+for(const expected of [
+ 'assets/card-evidence-current.js',
+ 'runCardEvidenceUI',
+ 'OBOL_CARD_EVIDENCE_UI'
+]) has('assets/runtime-current.js',expected);
+for(const expected of [
+ 'card-preview-actions',
+ 'data-card-evidence-current',
+ 'data-card-evidence-open',
+ 'data-card-evidence-intake',
+ 'Open card',
+ 'Add evidence',
+ 'obol-card-evidence-source',
+ "location.hash='#/intake'",
+ 'MutationObserver',
+ 'textarea.evidence'
+]) has('assets/card-evidence-current.js',expected);
+for(const forbidden of ['Why this route exists','Tool action stack','Raw legacy commands','Current builders stay up front','startup card index']) lacks('assets/card-evidence-current.js',forbidden);
 
 for(const expected of [
  'v9.55-windows-privesc-full-pass',
@@ -104,6 +125,9 @@ for(const expected of [
  'OS routing rule',
  'card → paste command output → `Analyze pasted evidence`',
  'card:<card-id>:intake:<mode>',
+ 'Card previews in Path and Lanes must not hide evidence entry',
+ 'Open card',
+ 'Add evidence',
  'must not appear merely because a generic `privesc.leads` fact exists on the wrong operating system'
 ]) has('docs/CARD-UI-STANDARD.md',expected);
 lacks('docs/CARD-UI-STANDARD.md','source-mined cards can use a fake fallback');
@@ -117,6 +141,8 @@ for(const expected of [
 for(const expected of [
  '# Obol v9.55',
  'AD and pivoting source re-mining',
+ 'card preview evidence actions',
+ 'Add evidence',
  'ad-sharphound-collection-review',
  'ad-bloodhound-edge-proof-review',
  'ad-domain-share-secret-triage',
@@ -129,4 +155,4 @@ for(const expected of [
  'zero truncated notes'
 ]) has('docs/v9.55.md',expected);
 
-console.log('v9.55 evidence flow, OS routing, Windows privesc, AD/pivoting re-mining, and release identity regression passed.');
+console.log('v9.55 evidence flow, preview evidence actions, OS routing, Windows privesc, AD/pivoting re-mining, and release identity regression passed.');
