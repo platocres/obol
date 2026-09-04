@@ -8,6 +8,18 @@ Until the re-mining queue is complete, the next notes work is **not** fresh note
 
 Re-mining means returning to the original private source note and reading it again from scratch under this expanded rubric. Do not merely inspect the existing public Field Note, prior rationale, previous disposition, or already-created output IDs. Those records are useful context, but they are not the source.
 
+## Derivation standard
+
+Extract the value fully. Do not copy the expression.
+
+Agents must use the private source notes as source knowledge and mine them aggressively for durable educational and product value: methodology, decision logic, proof boundaries, failure modes, troubleshooting, cleanup, report guidance, command patterns, tool behavior, path movement, analyzer opportunities, lesson-box material, and product gaps.
+
+Public Obol must contain Obol-owned outputs. That means new wording, generalized concepts, synthetic examples, variable-based command templates, and product behavior that stands on its own without exposing or mimicking the private note. Light paraphrase is not enough. Swapping words, reordering sentences, or removing obvious target names while preserving the source's expression or solution flow is still copying.
+
+`private-only` is a boundary for raw/private source substance, not a discard bucket for reusable lessons. Before marking a dimension `private-only`, the agent must check whether the durable idea can be re-authored into public-safe path guidance, tool cards, GUI controls, command templates, analyzers, lesson boxes, troubleshooting, cleanup, report guidance, or a product gap.
+
+See [`NOTE-DERIVATION-STANDARD.md`](NOTE-DERIVATION-STANDARD.md) for the full standard.
+
 ## Full-spectrum extraction checklist
 
 For every source note reviewed or re-mined, the agent must explicitly consider every product surface below.
@@ -23,12 +35,12 @@ For every source note reviewed or re-mined, the agent must explicitly consider e
 | Evidence expectations | What output proves a fact, what remains only a lead, and what proof boundary must be preserved? |
 | Path movement logic | Given successful, failed, blocked, partial, or inconclusive output, what should the app recommend next? |
 | Lesson box | Should the relevant path point expose a collapsible study box explaining why this step matters and how to think about it? |
-| Examples | Can private examples be rewritten into public-safe synthetic examples that teach the durable idea without copying targets, flags, screenshots, or course text? |
+| Examples | Can private examples be rewritten into public-safe synthetic examples that teach the durable idea without copying targets, flags, screenshots, course text, or walkthrough flow? |
 | Troubleshooting | What failure modes, false positives, syntax issues, environmental blockers, or alternative checks should be captured? |
 | Cleanup and rollback | Does the note imply cleanup commands, restoration steps, or warnings about state-changing actions? |
 | Report guidance | Does this note change what Obol should record in notes, commands, Evidence summaries, remediation, or final reports? |
 | Product gaps | Does the note reveal something Obol cannot yet model, parse, generate, explain, or display? |
-| Private-only boundary | Which parts must remain private because they are lab-specific, copied course material, flags, targets, screenshots, exploit recipes, or raw walkthrough substance? |
+| Private-only boundary | Which raw/private parts must remain private because they are lab-specific, copied source expression, flags, targets, screenshots, credentials, exploit recipes, or walkthrough substance? What durable lesson can still be re-authored safely? |
 
 A note can produce more than one output. Agents must not pick one comfortable category and stop when the source clearly supports more.
 
@@ -76,7 +88,7 @@ Reusable command material must be extracted deliberately. Public Obol may includ
 
 Do not publish raw private commands when they contain lab targets, flags, credentials, screenshots, copied walkthrough text, private paths, or exploit-recipe specificity. Rewrite the durable command pattern into an Obol-owned template and explain the inputs.
 
-If no reusable command material is added from a modeled note, the note's audit record must say that scripts and one-liners were reviewed and why nothing was added, such as already-covered builder behavior, lab-specific recipe material, unsafe automation scope, or private-only content.
+If no reusable command material is added from a modeled note, the note's audit record must say that scripts and one-liners were reviewed and why nothing was added, such as already-covered builder behavior, lab-specific recipe material, unsafe automation scope, or private-only content whose reusable pattern has already been extracted elsewhere.
 
 If reusable command material is added, it must be wired into the actual Next Steps path context where an operator would need it. A script output that exists only as a Field Note, code registry, or dashboard metric is incomplete unless the relevant path/tool point exposes it.
 
@@ -89,7 +101,7 @@ Every important path point should eventually be able to expose a focused, collap
 - how to think about the inputs and expected output;
 - common mistakes and false positives;
 - what to do when the result is positive, negative, partial, or confusing;
-- public-safe examples derived from the private notes without copying private wording or lab identifiers.
+- public-safe examples derived from the private notes without copying private wording, lab identifiers, or solution flow.
 
 Field Notes are the delivery mechanism, but the expected product behavior is contextual education attached to the relevant path or tool point.
 
@@ -126,7 +138,7 @@ For every extraction dimension in the full-spectrum checklist, the audit record 
 - `added` means the product change was implemented and, when operator-facing, wired into the actual Next Steps / Orange path surface.
 - `covered` means the capability was already covered by an existing Obol owner, and the audit cites the exact path, tool, analyzer, report, or workflow owner ID.
 - `queued` means the capability was not implemented in this pass but was filed as a concrete product gap or queue item, and the audit cites that queue item ID.
-- `private-only` means useful material exists but cannot be public; the audit gives a public-safe reason without exposing raw private content.
+- `private-only` means useful raw/private material exists but cannot itself be public; the audit gives a public-safe reason and, when durable value was extracted elsewhere, cites the rewritten owner or explains why no additional public-safe output remains.
 - `not-applicable` means the source was re-read and the dimension genuinely does not apply; the audit gives a short reason.
 - `blocked` means the reviewer cannot decide from the available public-safe context; the audit names the blocker and the next required action.
 
@@ -158,6 +170,7 @@ Every re-mined source note should leave an explicit audit record that answers, a
 - public-safe rewritten outputs;
 - private-only material retained privately;
 - rationale for guidance-only or private-only decisions;
+- confirmation that reusable educational value was extracted or cited as already covered before anything was marked private-only;
 - confirmation that Orange-derived path items were preserved additively;
 - confirmation that no disposable wrapper/layer shortcut was introduced.
 
