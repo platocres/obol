@@ -4,8 +4,7 @@
  * Current changelog sync.
  *
  * Future agents must still author release notes. The release doc at docs/vX.Y.md
- * is the smaller authored source for a release summary; this tool mirrors that
- * authored release note into CHANGELOG.md so the required top-level changelog
+ * is the smaller authored source for a release summary; this tool mirrors that authored release note into CHANGELOG.md so the required top-level changelog
  * heading cannot be forgotten. It is a guardrail, not permission to skip
  * release-note authoring.
  */
