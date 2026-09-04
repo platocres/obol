@@ -63,7 +63,7 @@ Runtime consolidation figures come from `data/runtime-consolidation-current.js`,
 **Raw source proof:** workflow run 33877189291 verified HTB ENEX 194,191,214 bytes sha256 `ceeab3da0770ecd3…` before packet generation.
 **Notes Integration:** 135/556 reviewed — 102 modeled, 28 private-only, 421 pending.
 **Derived note guidance:** 56 Field Notes · 51 tool-bound · 53 Path-bound · 17 Evidence · 5 Report.
-**Declared note-driven product mechanics:** 11 total · 0 builder · 0 Path logic · 0 Evidence parser · 0 report generator · 0 workflow.
+**Declared note-driven product mechanics:** 11 total · 1 builder · 0 Path logic · 0 Evidence parser · 0 report generator · 0 workflow.
 **Latest mined themes:** Linux local privilege escalation, Credentials / auth material, Object authorization / IDOR, Windows local privilege escalation.
 **Notes impact contract:** `docs/NOTES-IMPACT.md`.
 **Source re-mining:** old-rubric reviewed 135/556 · full-spectrum re-mined 19/135 · old-rubric-only remaining 116.
@@ -98,7 +98,7 @@ Runtime consolidation figures come from `data/runtime-consolidation-current.js`,
 5. **Re-mine reviewed Linux privesc notes** — Return to the original private Linux privilege-escalation notes already reviewed. Mine again for missed tool cards, shell one-liners, scripts, GUI controls, analyzer expectations, additive Path branches, proof boundaries, lesson boxes, examples, troubleshooting, cleanup, report guidance, and product gaps without deleting Orange baseline path items.
 6. **Re-mine private-only and superseded notes** — Return to original private notes previously marked private-reference-only, superseded, rejected, or reviewed-not-modeled. Keep raw recipes and private material private, but re-check whether public-safe tool ideas, command templates, analyzer rules, lesson boxes, troubleshooting, cleanup, report guidance, or additive Path improvements were missed.
 7. **Burn down all 556 note dispositions** — Umbrella disposition goal for all 556 notes. Fresh pending-note packets remain queued beneath the full-spectrum re-mining gate: agents must first re-mine already-reviewed notes from the original private sources, add missed product outputs, preserve the Orange-derived path additively, and prove every negative finding with an auditable per-dimension outcome.
-8. **Notes packet: XSS and session impact** — Mine XSS, browser/session impact, cookie/CSP controls, request context, proof boundaries, remediation, and missing product branches.
+8. **Notes packet: AD and pivoting** — Mine Active Directory, lateral movement, tunneling, pivoting, routing, credential use, evidence boundaries, and missing workflow/tool options.
 
 **Track status:**
 - **Critical correctness:** 5/5 complete (100%), 0 modeled.
