@@ -15,11 +15,14 @@ cp.execFileSync(process.execPath,[path.join(root,'tools','validate-note-remining
 for(const rel of [
  'assets/product-hardening-dashboard.js',
  'assets/product-hardening-dashboard.css',
+ 'assets/dashboard-route-current.js',
  'data/current-release.js',
  'data/product-hardening/note-progress-current.js',
  'data/product-hardening/notes-impact-current.js',
+ 'data/product-hardening/build-next-queue-hygiene-current.js',
  'tools/sync-product-build-next.js',
  'docs/v9.56.md',
+ 'docs/BUILD-NEXT-QUEUE-HYGIENE.md',
  'README.md',
  'index.html',
  'CHANGELOG.md'
@@ -83,6 +86,10 @@ for(const expected of [
 ]) has('assets/product-hardening-dashboard.js',expected);
 for(const expected of [
  'applyRemineDashboardSchemaCompletion',
+ 'queueHygieneFile',
+ 'validateQueueHygiene',
+ 'Standing source re-mining gates',
+ 'Highest-priority concrete live items',
  'notes-remine-dashboard-schema',
  'old-rubric reviewed',
  'full-spectrum re-mined',
@@ -93,16 +100,40 @@ for(const expected of [
  'overview-first dashboard with drill-down detail sections'
 ]) has('tools/sync-product-build-next.js',expected);
 for(const expected of [
- '**Current product-hardening queue:** 220/653 complete (34%), 14 queued, 9 foundation items modeled.',
+ 'OBOL_PRODUCT_HARDENING_QUEUE_HYGIENE',
+ 'standingGateIds',
+ 'completedByReleasedProof',
+ 'concreteBuildNext',
+ 'standingBuildGates',
+ 'validateQueueHygiene',
+ 'notes-packet-ad-pivoting',
+ 'notes-packet-web-upload-inclusion',
+ 'notes-packet-windows-privesc',
+ 'notes-remine-web-upload-inclusion',
+ 'notes-remine-ad-pivoting'
+]) has('data/product-hardening/build-next-queue-hygiene-current.js',expected);
+for(const expected of [
+ 'data/product-hardening/build-next-queue-hygiene-current.js',
+ 'OBOL_PRODUCT_HARDENING_QUEUE_HYGIENE'
+]) has('assets/dashboard-route-current.js',expected);
+for(const expected of [
+ '**Current product-hardening queue:** 220/653 complete (34%), 9 concrete queued, 11 modeled/standing items.',
  '**Source re-mining:** old-rubric reviewed 135/556 · full-spectrum re-mined 19/135 · old-rubric-only remaining 116.',
  '**Negative finding outcomes:** added 7 · covered 150 · queued 27 · private-only 24 · not-applicable 96 · blocked 0.',
  '**Re-mining red flags:** 0 currently flagged across 11 invalid/missing-proof guardrails.',
  '**Extraction dimensions:** 16 tracked',
  '**Re-mining dashboard/schema:** complete',
- '2. **Re-mine reviewed web upload and inclusion notes**'
+ '**Standing source re-mining gates:**',
+ '**Highest-priority concrete live items:**',
+ '**Next concrete entry:** **Re-mine reviewed XSS and session notes**',
+ '1. **Re-mine reviewed XSS and session notes**',
+ '**Queue hygiene guardrail:** Completed packet work and standing umbrella gates must not appear as the next concrete build.'
 ]) has('README.md',expected);
+lacks('README.md','**Highest-priority live items:**');
+lacks('README.md','8. **Notes packet: AD and pivoting**');
+lacks('README.md','**Work-package entry:** **Re-mine all already-reviewed notes from original sources**');
 lacks('README.md','2. **Add note re-mining dashboard and schema tracking**');
-has('README.md','- **Notes integration:** 136/556 complete (24%), 2 modeled.');
+has('README.md','- **Notes integration:** 136/556 complete (24%), 4 modeled.');
 
 for(const expected of [
  '# Obol v9.56',
@@ -117,5 +148,12 @@ for(const expected of [
  'no page-level horizontal scroll',
  'sidebar summary stays visible'
 ]) has('docs/v9.56.md',expected);
+for(const expected of [
+ 'Standing gates',
+ 'Concrete live items',
+ 'Completed packet guardrail',
+ 'next concrete source-mining batch is XSS/session re-mining',
+ 'AD/pivoting remains live after the v9.55 AD/pivoting proof file exists'
+]) has('docs/BUILD-NEXT-QUEUE-HYGIENE.md',expected);
 
-console.log('v9.56 re-mining dashboard schema tracking and readability regression passed.');
+console.log('v9.56 re-mining dashboard schema tracking, readability, and queue hygiene regression passed.');

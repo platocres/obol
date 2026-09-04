@@ -13,6 +13,7 @@ const noteReviewsFile = path.join(root, 'data', 'note-integration-reviews.js');
 const notePacketsFile = path.join(root, 'data', 'note-integration-packets.js');
 const noteBackfillFile = path.join(root, 'data', 'product-hardening', 'note-mechanic-backfill-v9.38.js');
 const noteProgressFile = path.join(root, 'data', 'product-hardening', 'note-progress-current.js');
+const queueHygieneFile = path.join(root, 'data', 'product-hardening', 'build-next-queue-hygiene-current.js');
 const noteImpactFile = path.join(root, 'data', 'product-hardening', 'notes-impact-current.js');
 const sourceReviewPacketsFile = path.join(root, 'data', 'product-hardening', 'source-review-packets-current.js');
 const runtimeManifestFile = path.join(root, 'data', 'runtime-manifest.js');
@@ -29,6 +30,7 @@ if (fs.existsSync(noteReviewsFile)) vm.runInContext(fs.readFileSync(noteReviewsF
 if (fs.existsSync(notePacketsFile)) vm.runInContext(fs.readFileSync(notePacketsFile, 'utf8'), sandbox, { filename: notePacketsFile });
 if (fs.existsSync(noteBackfillFile)) vm.runInContext(fs.readFileSync(noteBackfillFile, 'utf8'), sandbox, { filename: noteBackfillFile });
 if (fs.existsSync(noteProgressFile)) vm.runInContext(fs.readFileSync(noteProgressFile, 'utf8'), sandbox, { filename: noteProgressFile });
+if (fs.existsSync(queueHygieneFile)) vm.runInContext(fs.readFileSync(queueHygieneFile, 'utf8'), sandbox, { filename: queueHygieneFile });
 if (fs.existsSync(noteImpactFile)) vm.runInContext(fs.readFileSync(noteImpactFile, 'utf8'), sandbox, { filename: noteImpactFile });
 if (fs.existsSync(sourceReviewPacketsFile)) vm.runInContext(fs.readFileSync(sourceReviewPacketsFile, 'utf8'), sandbox, { filename: sourceReviewPacketsFile });
 vm.runInContext(fs.readFileSync(runtimeManifestFile, 'utf8'), sandbox, { filename: runtimeManifestFile });
@@ -36,6 +38,7 @@ vm.runInContext(fs.readFileSync(runtimeConsolidationFile, 'utf8'), sandbox, { fi
 
 const q = sandbox.window.OBOL_PRODUCT_HARDENING;
 const workPackages = sandbox.window.OBOL_PRODUCT_HARDENING_WORK_PACKAGES;
+const queueHygiene = sandbox.window.OBOL_PRODUCT_HARDENING_QUEUE_HYGIENE;
 const noteProgress = sandbox.window.OBOL_PRODUCT_HARDENING_NOTE_PROGRESS;
 const noteImpact = sandbox.window.OBOL_PRODUCT_HARDENING_NOTES_IMPACT;
 const sourceReviewPackets = sandbox.window.OBOL_SOURCE_REVIEW_PACKETS;
@@ -64,6 +67,8 @@ function applyRemineDashboardSchemaCompletion() {
 }
 
 applyRemineDashboardSchemaCompletion();
+const hygieneFailures = q.validateQueueHygiene ? q.validateQueueHygiene() : ['Build Next queue hygiene owner did not initialize'];
+if (hygieneFailures.length) throw new Error('Invalid Build Next queue hygiene:\n- ' + hygieneFailures.join('\n- '));
 const packageFailures = workPackages.validate(q);
 if (packageFailures.length) throw new Error('Invalid product-hardening work packages:\n- ' + packageFailures.join('\n- '));
 if (sourceReviewPackets && !sourceReviewPackets.isComplete) throw new Error('Private source review packets are not complete');
@@ -82,15 +87,24 @@ function packageLines() {
   });
   const related = (rec.relatedItems || []).map(id => itemMap.get(id)).filter(Boolean);
   return [
-    '**Recommended work package:** **' + rec.title + '** — ' + live.length + ' live item' + (live.length === 1 ? '' : 's') + ' / ' + tracked.length + ' tracked.',
-    '**Work-package entry:** **' + rec.entryItem.label + '**',
+    '**Recommended work package:** **' + rec.title + '** — ' + live.length + ' concrete live item' + (live.length === 1 ? '' : 's') + ' / ' + tracked.length + ' tracked.',
+    '**Next concrete entry:** **' + rec.entryItem.label + '**',
     '**Ownership area:** `' + rec.ownershipArea + '`',
     '**Package guidance:** ' + rec.guidance,
     dependencies.length ? '**Package dependencies:** ' + dependencies.join(', ') : '**Package dependencies:** none.',
     '',
-    '**Live items in this package:**',
-    ...(live.length ? live.map(item => '- **' + item.label + '** — ' + item.detail) : ['- No queued items remain in this package.']),
+    '**Concrete live items in this package:**',
+    ...(live.length ? live.map(item => '- **' + item.label + '** — ' + item.detail) : ['- No concrete queued items remain in this package.']),
     ...(related.length ? ['', '**Related items to consider, not automatically in scope:** ' + related.map(item => item.label).join('; ') + '.'] : [])
+  ];
+}
+
+function standingGateLines() {
+  const gates = typeof q.standingBuildGates === 'function' ? q.standingBuildGates() : [];
+  if (!gates.length) return [];
+  return [
+    '**Standing source re-mining gates:**',
+    ...gates.map(item => '- **' + item.label + '** — standing gate, not the next concrete batch. ' + item.detail)
   ];
 }
 
@@ -155,14 +169,14 @@ function sourceLink(repo) {
 function block() {
   const totals = q.totals();
   const tracks = q.trackSummary();
-  const next = q.buildNext(8);
+  const next = typeof q.concreteBuildNext === 'function' ? q.concreteBuildNext(8) : q.buildNext(8);
   return [
     '<!-- OBOL-PRODUCT-BUILD-NEXT:START -->',
-    'This block is generated from `data/product-hardening/product-hardening-queue.js`. Do not edit it manually.',
+    'This block is generated from `data/product-hardening/product-hardening-queue.js` plus `data/product-hardening/build-next-queue-hygiene-current.js`. Do not edit it manually.',
     'Recommended work-package metadata comes from `data/product-hardening/work-packages.js`.',
     'Runtime consolidation figures come from `data/runtime-consolidation-current.js`, the same projection the Product Hardening Dashboard renders.',
     '',
-    '**Current product-hardening queue:** ' + totals.complete + '/' + totals.total + ' complete (' + totals.pct + '%), ' + totals.queued + ' queued, ' + totals.modeled + ' foundation items modeled.',
+    '**Current product-hardening queue:** ' + totals.complete + '/' + totals.total + ' complete (' + totals.pct + '%), ' + totals.queued + ' concrete queued, ' + totals.modeled + ' modeled/standing items.',
     '**Private notes source:** ' + sourceLink(q.notes.privateRepo) + ' — ' + totals.notes + ' notes and ' + totals.resources + ' embedded resources accounted.',
     ...sourceReviewPacketLines(),
     ...noteImpactLines(),
@@ -171,8 +185,12 @@ function block() {
     '',
     ...packageLines(),
     '',
-    '**Highest-priority live items:**',
+    ...standingGateLines(),
+    '',
+    '**Highest-priority concrete live items:**',
     ...next.map((i, idx) => (idx + 1) + '. **' + i.label + '** — ' + i.detail),
+    '',
+    '**Queue hygiene guardrail:** Completed packet work and standing umbrella gates must not appear as the next concrete build. `data/product-hardening/build-next-queue-hygiene-current.js` enforces this before README/dashboard rendering and CI validates it.',
     '',
     '**Track status:**',
     ...tracks.map(t => '- **' + t.label + ':** ' + t.complete + '/' + t.total + ' complete (' + t.pct + '%), ' + t.modeled + ' modeled.'),
