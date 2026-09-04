@@ -21,6 +21,8 @@ for(const expected of [
  'A new mined card is not complete until the PR proves where it appears in the path',
  'A dynamically inserted or current-owner card must also be inspectable from its direct route',
  'the user-visible card route still renders `Unknown card`',
+ 'User-visible cards must stay operator-facing',
+ 'Do not render implementation artifacts',
  'A generic panel on `#/path` is not enough',
  'broad-lane append cards',
  'Queued is not a successful resting state',
@@ -40,6 +42,8 @@ for(const expected of [
  'direct inspection for the dynamically inserted source-mined cards',
  'assets/source-mined-card-route-current.js',
  'public route still renders `Unknown card`',
+ 'operator-facing inspection content',
+ 'no implementation-plumbing explanation is shown to users',
  'added `linux-user-trail-secret-review`',
  'added `linux-process-traffic-secret-review`',
  'added `linux-sudo-list-review`',
@@ -90,10 +94,19 @@ for(const expected of [
  'source-mined-direct-card-route',
  'installLinuxSourceMinedPathCards',
  'Unknown card',
- 'live lane data',
- '#/card/<card-id>'
+ 'When to use this',
+ 'guided step'
 ]){
  assert(directRouteSource.includes(expected),`direct source-mined card route owner must include ${expected}`);
+}
+for(const forbidden of [
+ 'Why this route exists',
+ 'inserted dynamically',
+ 'startup card index',
+ 'This card is inserted',
+ 'source-mined v9.54</span>'
+]){
+ assert(!directRouteSource.includes(forbidden),`direct source-mined card route must not expose developer-facing copy: ${forbidden}`);
 }
 for(const cardId of cardIds){
  assert(directRouteSource.includes(cardId),`direct route owner must know ${cardId}`);

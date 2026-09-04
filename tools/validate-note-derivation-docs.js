@@ -59,6 +59,10 @@ requireText('docs/AGENT-WORKFLOW.md','which later cards it should unlock or info
 requireText('docs/AGENT-WORKFLOW.md','A new mined card is not complete until the PR proves where it appears in the path');
 requireText('docs/AGENT-WORKFLOW.md','A dynamically inserted or current-owner card must also be inspectable from its direct route');
 requireText('docs/AGENT-WORKFLOW.md','the user-visible card route still renders `Unknown card`');
+requireText('docs/AGENT-WORKFLOW.md','User-visible cards must stay operator-facing');
+requireText('docs/AGENT-WORKFLOW.md','Do not render implementation artifacts');
+requireText('docs/AGENT-WORKFLOW.md','owner names, runtime plumbing, route fallback explanations, startup index details, dashboard accounting notes, source-mining provenance');
+requireText('docs/AGENT-WORKFLOW.md','when to use this, what evidence gates it, what commands/checks to run, what success looks like, how failure routes, what it produces, and what detection/reporting caveats matter');
 requireText('docs/AGENT-WORKFLOW.md','A generic panel on `#/path` is not enough');
 requireText('docs/AGENT-WORKFLOW.md','broad-lane append cards');
 requireText('docs/AGENT-WORKFLOW.md','Queued is not a successful resting state');
