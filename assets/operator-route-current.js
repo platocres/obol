@@ -287,14 +287,14 @@ function compactToolList(scope,stack){
 function compactToolPanels(rootEl){
  if(typeof document==='undefined')return false;
  const p=page();
- if(p!=='card'&&p!=='tools')return false;
+ if(p!=='tools')return false;
  const scope=rootEl||document.getElementById('view')||document;
  const anchor=scope.querySelector('[data-current-tool-builder88], .cmd-block, #tool-list');
  if(!anchor&&!scope.querySelector('.operator-tool-stack31'))return false;
  const stack=ensureStack(scope,anchor);
  const movedBuilders=moveBuilders(scope,stack);
  const movedLegacy=moveLegacy(scope,stack);
- const compactedList=p==='tools'?compactToolList(scope,stack):false;
+ const compactedList=compactToolList(scope,stack);
  if(movedBuilders||movedLegacy||compactedList){
   scope.dataset.operatorToolsCompacted31='1';
   root.__OBOL_CURRENT_OPERATOR_TOOL_DECLUTTER__='compact-tool-stack';
@@ -318,9 +318,9 @@ function ensureOperatorStyle(){
 function decorateRoute(){
  ensureOperatorStyle();
  if(page()==='path')renderCurrentPath();
- if(page()==='card'||page()==='tools')compactToolPanels();
+ if(page()==='tools')compactToolPanels();
 }
-root.OBOL_OPERATOR_ROUTES=Object.freeze({version:'1.1.0',MAX_PRIMARY_BUILDERS,buildPathModel,renderSimplified,renderChecklist,renderLiveMap,renderCurrentPath,compactToolPanels,ensureOperatorStyle,decorateRoute});
+root.OBOL_OPERATOR_ROUTES=Object.freeze({version:'1.1.1',MAX_PRIMARY_BUILDERS,buildPathModel,renderSimplified,renderChecklist,renderLiveMap,renderCurrentPath,compactToolPanels,ensureOperatorStyle,decorateRoute});
 ensureOperatorStyle();
 for(const t of [0,80,260,900,1800])root.setTimeout&&root.setTimeout(decorateRoute,t);
 })(typeof window!=='undefined'?window:globalThis);
