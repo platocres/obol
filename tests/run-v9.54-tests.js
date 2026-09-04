@@ -52,7 +52,7 @@ for(const expected of [
  'direct inspection for the dynamically inserted source-mined cards',
  'assets/source-mined-card-route-current.js',
  'public route still renders `Unknown card`',
- 'operator-facing inspection content',
+ 'normal card controls',
  'complete HTB packet 03 material',
  'web-parameter-fuzzing',
  'file-inclusion-proof-chain',
