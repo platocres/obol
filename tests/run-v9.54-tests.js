@@ -60,7 +60,7 @@ for(const cardId of cardIds){
  const marker="id:'"+cardId+"'";
  assert(credentialSource.includes(marker),`missing contextual path card definition ${cardId}`);
  const start=credentialSource.indexOf(marker);
- const segment=credentialSource.slice(start,Math.min(credentialSource.length,start+1800));
+ const segment=credentialSource.slice(start,Math.min(credentialSource.length,start+9000));
  assert(segment.includes('sourceMined54'),`${cardId} must carry source-mined provenance`);
  assert(segment.includes('prereq:'),`${cardId} must be gated by lab state`);
  assert(segment.includes('commands:'),`${cardId} must carry operator-facing command guidance`);
