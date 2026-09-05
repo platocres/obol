@@ -11,7 +11,7 @@
  * suppresses historical schedulers and commits current route owners last.
  *
  * Historical fragment order sha256: 40e3006d9423d669acf5869b577ecf56a6ca2ee1629c95fd0fcc5d242d2c5f27
- * Generated body sha256: 1b07169d968c25508b6b17b60b8bec624725638ebf49073615eccb0e5d073783
+ * Generated body sha256: 0aad991834872fca3b33fec505c38cc8d02b60efd7b1dc71e662f30b8ddc70e9
  * First historical fragment: assets/report-v2.js
  * Last historical fragment:  assets/app-v8.8.js
  */
@@ -1993,8 +1993,8 @@ if(__nativeMutationObserver)root.MutationObserver=__nativeMutationObserver;
 'use strict';
 (function(root){
 const release=Object.freeze({
- version:'9.66.0',
- label:'v9.66',
+ version:'9.67.0',
+ label:'v9.67',
  phase:'product-hardening',
  phaseLabel:'Product Hardening',
  orangeBaseline:'v8.8',
@@ -2016,7 +2016,8 @@ const release=Object.freeze({
   'data/product-hardening/burp-intruder-route-guard-v9.65.js',
   'data/product-hardening/actionable-card-contract-v9.66.js',
   'data/product-hardening/actionable-card-contract-dashboard-settle-v9.66.js',
-  'data/product-hardening/actionable-card-contract-queue-note-v9.66.js'
+  'data/product-hardening/actionable-card-contract-queue-note-v9.66.js',
+  'data/product-hardening/action-first-card-cleanup-v9.67.js'
  ])
 });
 function stampState(target){
