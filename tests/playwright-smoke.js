@@ -121,17 +121,24 @@ async function installDashboardPaintObserver(page) {
         if (oldOwner) routeFailures.push('dashboard retained a non-current dashboard owner after render');
 
         // The README block is validated against the same projection offline, so proving the
-        // rendered dashboard matches it here is what keeps the two surfaces in sync.
+        // rendered dashboard matches it here is what keeps the two surfaces in sync. This
+        // intentionally reads the current responsive dashboard structure instead of the old
+        // pre-v9.61 ph-bar-head/ph-detail selectors.
         const consolidation = await page.evaluate(() => {
           const owner = window.OBOL_RUNTIME_CONSOLIDATION;
           const projected = owner && typeof owner.projection === 'function' ? owner.projection() : null;
-          const head = [...document.querySelectorAll('.ph-bar-head')].find(node => /Operator startup requests/.test(node.textContent || ''));
-          const value = head && head.querySelector('b');
+          const runtime = document.querySelector('#ph-runtime');
+          const text = runtime ? (runtime.textContent || '') : '';
+          const startupMatch = text.match(/Startup requests\s*(\d+)/i) || text.match(/Operator startup requests\s*(\d+)/i);
+          const areaRows = runtime ? [...runtime.querySelectorAll('table.ph-table tbody tr')].filter(row => {
+            const cells = row.querySelectorAll('td');
+            return cells.length >= 4 && /semantic|route|snapshot|replay|owner|current/i.test(row.textContent || '');
+          }) : [];
           return {
             projected: projected ? String(projected.startupRequests.after) : '',
-            rendered: value ? (value.textContent || '').trim() : '',
+            rendered: startupMatch ? startupMatch[1] : '',
             areas: projected ? projected.areas.length : 0,
-            renderedAreas: document.querySelectorAll('.ph-detail table.ph-table tr td code').length
+            renderedAreas: areaRows.length
           };
         });
         if (!consolidation.projected) routeFailures.push('dashboard did not load the runtime consolidation projection');
