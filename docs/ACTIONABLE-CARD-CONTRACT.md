@@ -48,7 +48,7 @@ Every note-derived card that can appear in Next Steps must have a real action sp
 Situation / trigger
 Concrete command-line action, GUI-tool workflow, or both
 Variable placeholders and tool settings
-Why this action is being taken
+Why this step now
 What output or UI state proves or narrows
 What to paste back
 Success meaning
@@ -65,6 +65,25 @@ Burp Suite, OWASP ZAP, BloodHound, CyberChef, browser DevTools, Metasploit conso
 If no real command-line or GUI-tool action can be generated, the output must be merged into an existing action-bearing card, published as field notes, attached to an analyzer, used as report/cleanup guidance, or deleted.
 
 It must also define expected evidence to paste back, failure modes, next-step guidance, path state it produces, and evidence/analyzer facts that make it relevant.
+
+## Why-now rule
+
+Every primary card should eventually receive a `why now` pass. The goal is not provenance. The goal is to explain why this command or GUI workflow appears at this exact point in the lab.
+
+Good why-now guidance is concrete and path-aware:
+
+```text
+Why this step now
+You have a domain, a Windows foothold, and credential context, but you have not mapped AD relationships yet. Run this collection step now so shares, SPNs, sessions, ACLs, and graph edges become evidence-backed next-step candidates instead of guesses.
+```
+
+Bad why-now guidance is internal filler:
+
+```text
+Why this now: fills an unresolved methodology gap in this context.
+```
+
+The first version belongs on the card. The second version belongs nowhere in the operator UI.
 
 ## Educational context rule
 
@@ -104,6 +123,8 @@ That useful action should still live in the most appropriate card. If the durabl
 ## UI regression rule
 
 Current card UI must look like normal Obol card UI. Do not show implementation labels such as release cleanup banners, patch panels, stabilizer messages, source-mining provenance, route-repair copy, dashboard accounting notes, `UNKNOWN` tool rows, blank recommended implementations, or copy explaining why a UI component exists.
+
+Operator-facing why-now guidance is allowed and encouraged when it explains the current facts, missing proof, produced facts, or path dependency that makes the step useful now. It must not say the card exists because of a release, source-mining batch, methodology gap, route guard, or documentation cleanup.
 
 A direct card route is not enough. The card must either be a retained primary action card or resolve into the retained parent card where its content now belongs.
 
