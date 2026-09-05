@@ -1,6 +1,8 @@
 'use strict';
 (function(root){
 const WAVE='v9.71-ad-msf-route-guard';
+const WHY_SRC='data/product-hardening/dynamic-why-now-v9.71.js';
+let whyNowLoading=false;
 const ROUTES=Object.freeze(['ad-enumeration-bloodhound-collection','metasploit-resource-pivot-workflow','web-upload-inclusion-proof-chain']);
 const DEMOTED=Object.freeze({'web-client-session-proof-chain':'web-authz-boundaries'});
 const MARKERS=Object.freeze({
@@ -25,6 +27,8 @@ function publish(card){if(!card)return false;const lane=ensureLane(card);if(type
  if(!lane.cards.some(c=>c&&c.id===card.id))lane.cards.push(card);if(root.CARDS&&typeof root.CARDS==='object')try{root.CARDS[card.id]=card;}catch(_){}return !!liveCard(card.id);}
 function viewEl(){try{return root.document&&root.document.getElementById&&root.document.getElementById('view');}catch(_){return null;}}
 function viewText(){try{const v=viewEl();return v&&v.innerText||'';}catch(_){return '';}}
+function runWhyNow(){try{if(root.OBOL_DYNAMIC_WHY_NOW&&typeof root.OBOL_DYNAMIC_WHY_NOW.decorate==='function'){root.OBOL_DYNAMIC_WHY_NOW.decorate();return true;}}catch(_){}return false;}
+function loadWhyNow(){if(runWhyNow())return true;if(typeof document==='undefined'||whyNowLoading)return false;try{let script=document.querySelector('script[src="'+WHY_SRC+'"],script[data-obol-extension="'+WHY_SRC+'"],script[data-obol-dynamic-why-now-loader="'+WHY_SRC+'"]');if(script){whyNowLoading=true;if(script.addEventListener)script.addEventListener('load',function(){whyNowLoading=false;runWhyNow();},{once:true});return false;}script=document.createElement('script');script.src=WHY_SRC;script.async=false;script.dataset.obolDynamicWhyNowLoader=WHY_SRC;script.onload=function(){whyNowLoading=false;runWhyNow();};script.onerror=function(){whyNowLoading=false;};(document.head||document.body||document.documentElement).appendChild(script);whyNowLoading=true;}catch(_){whyNowLoading=false;}return false;}
 function safeToRemove(el){return !!(el&&!(el.matches&&el.matches('[data-cardroot],.card,.card-body,.cmd-block,pre,code,textarea'))&&!el.querySelector('pre,code,textarea,.cmd-block,.evidence'))}
 function removeNearestScaffold(start){const view=viewEl();let node=start;while(node&&node!==view){const text=String(node.innerText||node.textContent||'').trim();if(text&&SCAFFOLD_COPY.test(text)&&safeToRemove(node)){node.remove();return 1;}node=node.parentElement;}if(start&&safeToRemove(start)){start.remove();return 1;}return 0;}
 function scrubInternalCardUi(){const view=viewEl();if(!view)return 0;let removed=0;
@@ -43,9 +47,9 @@ function repaint(id){let repaired=false;try{if(typeof root.viewCard==='function'
  }
  return repaired;
 }
-function repair(){const id=routeId();const installed=runInstall();let repaired=false;if(DEMOTED[id]){try{root.location.hash=cardHash(DEMOTED[id]);repaired=true;}catch(_){}}else if(ROUTES.includes(id)){publish(liveCard(id)||fallbackCard(id));repaired=repaint(id);}scrubInternalCardUi();
- const text=viewText();const marker=MARKERS[id];const waiting=ROUTES.includes(id)&&!(marker&&marker.test(text));const dirty=/fills an unresolved methodology gap|methodology gap|\bUNKNOWN\b/.test(text);root.OBOL_AD_MSF_ROUTE_GUARD_V971=Object.freeze({wave:WAVE,installed,repaired,waiting,dirty,route:id||pageId(),registered:ROUTES.map(r=>!!liveCard(r))});return {installed,repaired,waiting,dirty};}
-function patchViewCard(){if(typeof root.viewCard!=='function'||root.viewCard.__obolV971RouteGuard)return;const original=root.viewCard;root.viewCard=function guardedV971ViewCard(id){if(DEMOTED[String(id)])id=DEMOTED[String(id)];if(ROUTES.includes(String(id))){runInstall();publish(liveCard(String(id))||fallbackCard(String(id)));}const result=original.call(this,id);scrubInternalCardUi();if(typeof root.setTimeout==='function')root.setTimeout(scrubInternalCardUi,0);return result;};root.viewCard.__obolV971RouteGuard=true;}
-function loop(){let tries=0;const tick=function(){patchViewCard();const r=repair();tries+=1;const page=pageId();const active=/^(path|card|tools|boxes|intake|report|home)$/.test(page);if(tries<180&&(active&&(r.waiting||r.dirty||tries<24))&&typeof root.setTimeout==='function')root.setTimeout(tick,50);};tick();}
-loop();if(typeof root.addEventListener==='function'){root.addEventListener('hashchange',loop);root.addEventListener('DOMContentLoaded',loop);root.addEventListener('focus',loop);}if(typeof module!=='undefined'&&module.exports)module.exports={repair,publish,scrubInternalCardUi};
+function repair(){const id=routeId();const installed=runInstall();let repaired=false;if(DEMOTED[id]){try{root.location.hash=cardHash(DEMOTED[id]);repaired=true;}catch(_){}}else if(ROUTES.includes(id)){publish(liveCard(id)||fallbackCard(id));repaired=repaint(id);}scrubInternalCardUi();loadWhyNow();
+ const text=viewText();const marker=MARKERS[id];const waiting=ROUTES.includes(id)&&!(marker&&marker.test(text));const dirty=/fills an unresolved methodology gap|methodology gap|\bUNKNOWN\b/.test(text);root.OBOL_AD_MSF_ROUTE_GUARD_V971=Object.freeze({wave:WAVE,installed,repaired,waiting,dirty,route:id||pageId(),registered:ROUTES.map(r=>!!liveCard(r)),dynamicWhyNow:!!root.OBOL_DYNAMIC_WHY_NOW});return {installed,repaired,waiting,dirty};}
+function patchViewCard(){if(typeof root.viewCard!=='function'||root.viewCard.__obolV971RouteGuard)return;const original=root.viewCard;root.viewCard=function guardedV971ViewCard(id){if(DEMOTED[String(id)])id=DEMOTED[String(id)];if(ROUTES.includes(String(id))){runInstall();publish(liveCard(String(id))||fallbackCard(String(id)));}const result=original.call(this,id);scrubInternalCardUi();loadWhyNow();if(typeof root.setTimeout==='function'){root.setTimeout(scrubInternalCardUi,0);root.setTimeout(loadWhyNow,0);root.setTimeout(runWhyNow,50);}return result;};root.viewCard.__obolV971RouteGuard=true;}
+function loop(){let tries=0;const tick=function(){patchViewCard();const r=repair();tries+=1;const page=pageId();const active=/^(path|card|tools|boxes|intake|report|home)$/.test(page);if(tries<180&&(active&&(r.waiting||r.dirty||tries<24||!root.OBOL_DYNAMIC_WHY_NOW))&&typeof root.setTimeout==='function')root.setTimeout(tick,50);};tick();}
+loop();if(typeof root.addEventListener==='function'){root.addEventListener('hashchange',loop);root.addEventListener('DOMContentLoaded',loop);root.addEventListener('focus',loop);}if(typeof module!=='undefined'&&module.exports)module.exports={repair,publish,scrubInternalCardUi,loadWhyNow,runWhyNow};
 })(typeof window!=='undefined'?window:globalThis);
