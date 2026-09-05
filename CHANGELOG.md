@@ -1,3 +1,17 @@
+## v9.69 — Continues the notes-first Product Build Next queue by completing the first full 20-note old-rubric reviewed source re-mining batch
+
+- Added `data/product-hardening/web-upload-inclusion-remine-batch-v9.69.js`.
+- Re-read the selected web upload, file inclusion, web shell, and temporary transfer notes from the complete private review-packet route.
+- Published public-safe field notes for:
+  - staged upload/inclusion proof chains;
+  - upload serving and interpretation boundaries;
+  - file-inclusion source and transform boundaries;
+  - temporary transfer endpoint scope and cleanup.
+- Added the `web-upload-inclusion-proof-chain` card so the re-mined value appears in the normal operator path instead of remaining as loose note metadata.
+- Added the conservative `upload-inclusion-evidence-analyzer` for pasted Evidence that mentions upload acceptance, serving behavior, file-inclusion transforms, fuzzer signals, execution claims, or cleanup needs.
+- Advanced full-spectrum source re-mining from 67/135 to 87/135 reviewed notes, leaving 48 old-rubric-only reviewed notes before the fresh pending-note disposition work can become next.
+- Updated Build Next queue hygiene so the next generated batch advances to `notes-batch-old-rubric-reviewed-remine-002` instead of repeatedly showing batch 1.
+
 ## v9.68 — Is a corrective card-disposition release for the recent note-derived card work
 
 - Added `data/product-hardening/note-card-disposition-reconciliation-v9.68.js`.
