@@ -28,7 +28,8 @@ const release=Object.freeze({
   'data/product-hardening/action-first-card-cleanup-v9.67.js',
   'data/product-hardening/note-card-disposition-reconciliation-v9.68.js',
   'data/product-hardening/web-upload-inclusion-remine-batch-v9.69.js',
-  'data/product-hardening/client-session-remine-batch-v9.70.js'
+  'data/product-hardening/client-session-remine-batch-v9.70.js',
+  'data/product-hardening/client-session-route-guard-v9.70.js'
  ])
 });
 function stampState(target){
