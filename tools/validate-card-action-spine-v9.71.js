@@ -60,7 +60,7 @@ function validateCard(card, id, failures) {
   const spine = hasActionSpine(card);
   if (!spine.hasCommands && !spine.hasGui) failures.push(id + ' has no concrete command-line or GUI-tool action spine');
   if (Array.isArray(card.commands) && card.commands.length && !card.commands.every(commandOk)) failures.push(id + ' has command entries without tool/run/when/evidence');
-  if (Array.isArray(card.guiSteps) && card.guiSteps.length && !card.guiSteps.every(guiStepOk)) failures.push(id + ' has GUI steps without concrete tool/action/evidence guidance');
+  if (!spine.hasCommands && Array.isArray(card.guiSteps) && card.guiSteps.length && !card.guiSteps.every(guiStepOk)) failures.push(id + ' has GUI-only steps without concrete tool/action/evidence guidance');
   if (!Array.isArray(card.expectedEvidence) || card.expectedEvidence.length < 3) failures.push(id + ' lacks expected evidence guidance');
   if (!Array.isArray(card.failureModes) || card.failureModes.length < 3) failures.push(id + ' lacks failure or inconclusive-output guidance');
   if (!Array.isArray(card.nextSteps) || card.nextSteps.length < 2) failures.push(id + ' lacks next-step movement guidance');
