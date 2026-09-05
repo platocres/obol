@@ -28,6 +28,9 @@ const REQUIRED_VISIBLE_ROUTES = [
   'web-authz-boundaries',
   'encoded-parameter-review',
   'tool-generated-http-review',
+  'pass-the-hash-proof-chain',
+  'pth-remote-exec-artifacts',
+  'pth-token-filtering-check',
 ];
 
 function read(rel) {
@@ -42,10 +45,6 @@ function walk(dir, out = []) {
     else if (entry.isFile() && entry.name.endsWith('.js')) out.push(full);
   }
   return out;
-}
-
-function rel(file) {
-  return path.relative(root, file).replace(/\\/g, '/');
 }
 
 function quotedValues(chunk) {
