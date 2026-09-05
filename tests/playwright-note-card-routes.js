@@ -17,6 +17,9 @@ const routes = [
   { id: 'pass-the-hash-proof-chain', marker: /Pass-the-Hash Proof Chain|Scoped Authentication/i },
   { id: 'pth-remote-exec-artifacts', marker: /Remote Execution Artifacts|Hash-Based Remote Execution/i },
   { id: 'pth-token-filtering-check', marker: /Token Filtering|Account Scope|Remote UAC/i },
+  { id: 'burp-intruder-fuzzing-workflow', marker: /Burp Intruder Fuzzing Workflow|Web Fuzzer Candidate Triage/i },
+  { id: 'fuzzer-payload-position-review', marker: /Payload Position|Payload Position and Transforms/i },
+  { id: 'fuzzer-result-delta-review', marker: /Response Deltas|Manual Replay/i },
 ];
 
 fs.mkdirSync(outputDir, { recursive: true });
