@@ -27,7 +27,7 @@ const demotedRoutes = [
   { id: 'fuzzer-payload-position-review', canonical: 'burp-intruder-fuzzing-workflow', marker: /Burp Intruder Fuzzing Workflow|Web Fuzzer Candidate Triage|Burp Intruder \/ Web Fuzzer Workflow/i },
   { id: 'fuzzer-result-delta-review', canonical: 'burp-intruder-fuzzing-workflow', marker: /Burp Intruder Fuzzing Workflow|Web Fuzzer Candidate Triage|Burp Intruder \/ Web Fuzzer Workflow/i },
 ];
-const INTERNAL_CARD_SLOP = /fills an unresolved methodology gap|methodology gap|\bUNKNOWN\b/i;
+const INTERNAL_CARD_SLOP = /fills an unresolved methodology gap|methodology gap|source-mining|source re-mining|release cleanup|patch panel|stabilizer|\bUNKNOWN\b/i;
 
 fs.mkdirSync(outputDir, { recursive: true });
 
@@ -57,17 +57,25 @@ async function openCard(context, route, failures, options = {}) {
     const text = view && view.innerText ? view.innerText.trim() : '';
     return text.length > 20 && !/Unknown card/i.test(text);
   }, null, { timeout: 20000 });
-  await page.waitForTimeout(1600);
+  await page.waitForFunction(() => {
+    const view = document.querySelector('#view');
+    const text = view && view.innerText ? view.innerText : '';
+    return /Why this step now/i.test(text) && document.querySelectorAll('[data-obol-dynamic-why-now]').length === 1;
+  }, null, { timeout: 20000 });
+  await page.waitForTimeout(600);
 
   const state = await page.evaluate(() => {
     const view = document.querySelector('#view');
     const text = view ? (view.innerText || '').trim() : '';
     const disposition = window.OBOL_NOTE_CARD_DISPOSITION_RECONCILIATION_V968 || null;
     const v971 = window.OBOL_AD_MSF_REMINING_V971 || null;
+    const why = window.OBOL_DYNAMIC_WHY_NOW_LAST || null;
     return {
       text,
       hash: window.location.hash,
       patchPanelCount: document.querySelectorAll('.obol-action-first-v967,[data-obol-action-first-v967]').length,
+      whyNowCount: document.querySelectorAll('[data-obol-dynamic-why-now]').length,
+      dynamicWhyBody: why && why.body || '',
       demotedCardIds: disposition && disposition.demotedCardIds || [],
       v971,
     };
@@ -77,6 +85,8 @@ async function openCard(context, route, failures, options = {}) {
   if (!route.marker.test(state.text)) routeFailures.push('route marker did not match rendered content: ' + JSON.stringify((state.text || '').slice(0, 240)));
   if (state.patchPanelCount) routeFailures.push('route rendered a v9.67 action-first patch panel');
   if (INTERNAL_CARD_SLOP.test(state.text)) routeFailures.push('route leaks internal filler or UNKNOWN implementation copy');
+  if (state.whyNowCount !== 1 || !/Why this step now/i.test(state.text)) routeFailures.push('route does not render exactly one dynamic why-now section');
+  if (!/current path|You have|This card is relevant|missing proof|paste the result back/i.test(state.dynamicWhyBody)) routeFailures.push('dynamic why-now body is not grounded in path/evidence language');
   if (options.demoted) {
     if (!state.hash.includes('/card/' + route.canonical)) routeFailures.push(`demoted route did not canonicalize to ${route.canonical}; hash=${state.hash}`);
     if (route.id === 'web-client-session-proof-chain' && !(state.v971 && state.v971.clientSessionDemoted)) routeFailures.push('v9.71 did not report client/session demotion');
@@ -107,5 +117,5 @@ async function openCard(context, route, failures, options = {}) {
     process.exit(1);
   }
 
-  console.log('Note-derived card browser route smoke passed for ' + primaryRoutes.length + ' primary cards and ' + demotedRoutes.length + ' demoted route aliases.');
+  console.log('Note-derived card browser route smoke passed for ' + primaryRoutes.length + ' primary cards and ' + demotedRoutes.length + ' demoted route aliases with dynamic why-now guidance.');
 })();
