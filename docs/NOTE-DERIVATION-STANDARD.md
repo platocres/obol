@@ -58,6 +58,20 @@ Re-authored output should:
 
 Light paraphrase is not enough. Swapping words, changing sentence order, or hiding target names while preserving the original course expression or solution flow is still copying.
 
+## Card route requirement
+
+Do not put a new conceptual bucket into `cardIds` unless it resolves as a live Obol card route.
+
+`cardIds` means the operator can reasonably open `#/card/<id>` and see a real card. If the idea is only a taxonomy label, theme, subject area, or loose grouping, use `tags`, `pathIds`, `theme`, or product-gap metadata instead.
+
+When a re-mined note creates a new card-style proof chain, the same release must either:
+
+- add a real live card definition for that ID; or
+- reuse an existing live card ID; or
+- avoid `cardIds` and keep the concept as a tag/path/gap.
+
+`tools/validate-product-hardening-card-routes.js` checks this in CI for current Product Hardening extensions so future agents cannot quietly add another `Unknown card` route.
+
 ## Private-only does not mean no value
 
 `private-only` means useful raw source material exists but cannot itself be public. It should be used only after the agent has checked whether the durable lesson can be safely rewritten.
@@ -105,6 +119,7 @@ Run these before claiming a notes clarification or re-mining packet is complete:
 ```bash
 node tools/validate-note-derivation-docs.js
 node tools/validate-note-remining-audits.js
+node tools/validate-product-hardening-card-routes.js
 node tools/validate-notes-impact.js
 node tools/validate-note-integration.js
 ```
