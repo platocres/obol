@@ -9,15 +9,16 @@ const outputDir = process.env.OBOL_SMOKE_OUTPUT || path.join(__dirname, '..', 'a
 // requestBudget is the real proof that runtime consolidation holds in a browser.
 // Before consolidation these routes each fetched 321-365 JavaScript/CSS files. The
 // ceilings below include the note-derived route/path guards added in v9.64, the
-// v9.65 fuzzer route guard, and the v9.66 actionability contract/settle guards,
-// but still fail loudly if the historical fragment chain leaks back into loading.
+// v9.65 fuzzer route guard, the v9.66 actionability contract/settle guards, and
+// the v9.67 action-first cleanup overlay, but still fail loudly if the historical
+// fragment chain leaks back into loading.
 const routes = [
-  { id: 'home', hash: '#/home', marker: /Home/i, requestBudget: 44 },
-  { id: 'targets', hash: '#/boxes', marker: /target/i, requestBudget: 46 },
-  { id: 'evidence', hash: '#/intake', marker: /evidence/i, requestBudget: 46 },
-  { id: 'next-steps', hash: '#/path', marker: /(next|path|recommend)/i, requestBudget: 50 },
-  { id: 'report', hash: '#/report', marker: /report/i, requestBudget: 46 },
-  { id: 'dashboard', hash: '#/dashboard', marker: /Product Hardening/i, currentDashboard: true, settleMs: 5200, requestBudget: 44 }
+  { id: 'home', hash: '#/home', marker: /Home/i, requestBudget: 46 },
+  { id: 'targets', hash: '#/boxes', marker: /target/i, requestBudget: 48 },
+  { id: 'evidence', hash: '#/intake', marker: /evidence/i, requestBudget: 48 },
+  { id: 'next-steps', hash: '#/path', marker: /(next|path|recommend)/i, requestBudget: 52 },
+  { id: 'report', hash: '#/report', marker: /report/i, requestBudget: 48 },
+  { id: 'dashboard', hash: '#/dashboard', marker: /Product Hardening/i, currentDashboard: true, settleMs: 5200, requestBudget: 46 }
 ];
 const HISTORICAL_FRAGMENT = /\/(?:assets|data)\/(?:core|app|intake|report|nmap|review|methodology|orange-fidelity|project-model|dashboard|source-delivery|obol)-v[\d.]+[^/]*$/;
 

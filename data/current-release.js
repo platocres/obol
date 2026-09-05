@@ -1,8 +1,8 @@
 'use strict';
 (function(root){
 const release=Object.freeze({
- version:'9.66.0',
- label:'v9.66',
+ version:'9.67.0',
+ label:'v9.67',
  phase:'product-hardening',
  phaseLabel:'Product Hardening',
  orangeBaseline:'v8.8',
@@ -24,7 +24,8 @@ const release=Object.freeze({
   'data/product-hardening/burp-intruder-route-guard-v9.65.js',
   'data/product-hardening/actionable-card-contract-v9.66.js',
   'data/product-hardening/actionable-card-contract-dashboard-settle-v9.66.js',
-  'data/product-hardening/actionable-card-contract-queue-note-v9.66.js'
+  'data/product-hardening/actionable-card-contract-queue-note-v9.66.js',
+  'data/product-hardening/action-first-card-cleanup-v9.67.js'
  ])
 });
 function stampState(target){
