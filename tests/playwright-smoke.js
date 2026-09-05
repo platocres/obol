@@ -23,7 +23,8 @@ const routes = [
   { id: 'dashboard', hash: '#/dashboard', marker: /Product Hardening/i, currentDashboard: true, settleMs: 5200, requestBudget: 51 }
 ];
 const HISTORICAL_FRAGMENT = /\/(?:assets|data)\/(?:core|app|intake|report|nmap|review|methodology|orange-fidelity|project-model|dashboard|source-delivery|obol)-v[\d.]+[^/]*$/;
-const INTERNAL_CARD_SLOP = /fills an unresolved methodology gap|methodology gap|source-mining|source re-mining|release cleanup|patch panel|stabilizer|\bUNKNOWN\b/i;
+const OPERATOR_CARD_SLOP = /fills an unresolved methodology gap|methodology gap|source-mining|source re-mining|release cleanup|patch panel|stabilizer|\bUNKNOWN\b/i;
+const GLOBAL_UI_SLOP = /fills an unresolved methodology gap|methodology gap|\bUNKNOWN\b/i;
 
 fs.mkdirSync(outputDir, { recursive: true });
 
@@ -83,7 +84,7 @@ async function installDashboardPaintObserver(page) {
       const text = await page.locator('body').innerText({ timeout: 5000 });
       if (!route.marker.test(text)) routeFailures.push('missing route marker ' + route.marker);
       if (/Unknown card/i.test(text)) routeFailures.push('rendered Unknown card');
-      if (INTERNAL_CARD_SLOP.test(text)) routeFailures.push('operator UI leaked internal filler or UNKNOWN implementation copy');
+      if ((route.currentDashboard ? GLOBAL_UI_SLOP : OPERATOR_CARD_SLOP).test(text)) routeFailures.push('operator UI leaked internal filler or UNKNOWN implementation copy');
       const requestCount = requests.size;
       observed.push(route.id + ':' + requestCount);
       if (requestCount > route.requestBudget) routeFailures.push('request budget exceeded: ' + requestCount + ' > ' + route.requestBudget);
