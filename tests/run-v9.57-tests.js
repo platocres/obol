@@ -28,8 +28,10 @@ assert.ok(Array.isArray(packet.findings));
 assert.ok(packet.findings.length >= 5);
 assert.ok(Array.isArray(packet.fieldNotes));
 assert.ok(Array.isArray(packet.remineAuditRows));
+assert.ok(Array.isArray(packet.queuedProductGaps));
 assert.ok(packet.fieldNotes.length >= 3);
 assert.ok(packet.remineAuditRows.length >= 5);
+assert.ok(packet.queuedProductGaps.length >= 2);
 
 const sourceRefs = new Set(packet.findings.map((finding) => finding.sourceRef));
 [
@@ -59,6 +61,11 @@ const liveCards = new Set(packet.liveCards);
 assert.ok(liveCards.has('note-xss-delivery-trigger-context'));
 assert.ok(liveCards.has('note-xss-browser-execution-proof'));
 assert.ok(liveCards.has('note-xss-session-impact-boundary'));
+
+const queuedGapIds = new Set(packet.queuedProductGaps.map((gap) => gap.id));
+assert.ok(queuedGapIds.has('gap-xss-proof-mode-selector'));
+assert.ok(queuedGapIds.has('gap-xss-proof-mode-cleanup-reminder'));
+assert.ok(packet.queuedProductGaps.every((gap) => gap.track === 'ui-ux' && gap.status === 'queued'));
 
 const dimensions = new Map(packet.dimensionAudit.map((dimension) => [dimension.dimension, dimension.result]));
 assert.strictEqual(dimensions.get('path-bindings'), 'added');
@@ -118,6 +125,7 @@ global.OBOL_NOTE_INTEGRATION = Object.freeze({
   validate: () => [],
 });
 global.OBOL_PRODUCT_HARDENING = {
+  tracks: [{ id: 'ui-ux', total: 11, complete: 10 }],
   items: [{ id: 'notes-remine-xss-session', status: 'queued', detail: 'old detail' }],
 };
 global.OBOL_PRODUCT_HARDENING_NOTE_PROGRESS = Object.freeze({
@@ -138,8 +146,19 @@ assert.ok(notes.publicFieldNotes.find((note) => note.id === 'note-xss-delivery-t
 assert.ok(notes.publicFieldNotes.find((note) => note.id === 'note-xss-browser-execution-proof' && /Browser execution/.test(note.title)));
 assert.ok(notes.publicNotesForPath('path').some((note) => note.id === 'note-xss-session-impact-boundary'));
 assert.strictEqual(global.OBOL_PRODUCT_HARDENING.items[0].status, 'complete');
+const selectorGap = global.OBOL_PRODUCT_HARDENING.items.find((item) => item.id === 'gap-xss-proof-mode-selector');
+const cleanupGap = global.OBOL_PRODUCT_HARDENING.items.find((item) => item.id === 'gap-xss-proof-mode-cleanup-reminder');
+assert.ok(selectorGap, 'proof-mode selector gap must be an actual Product Build Next queue item');
+assert.ok(cleanupGap, 'proof-mode cleanup reminder gap must be an actual Product Build Next queue item');
+assert.strictEqual(selectorGap.status, 'queued');
+assert.strictEqual(cleanupGap.status, 'queued');
+assert.strictEqual(selectorGap.track, 'ui-ux');
+assert.strictEqual(cleanupGap.track, 'ui-ux');
+assert.strictEqual(global.OBOL_PRODUCT_HARDENING.tracks[0].total, 13);
 assert.strictEqual(global.OBOL_PRODUCT_HARDENING_NOTE_PROGRESS.remining.latestWave, 'v9.57-xss-session-remine');
 assert.ok(global.OBOL_PRODUCT_HARDENING_NOTE_PROGRESS.remining.auditRows.length >= 5);
+assert.ok(global.OBOL_PRODUCT_HARDENING_NOTE_PROGRESS.remining.queuedProductGaps.includes('gap-xss-proof-mode-selector'));
+assert.ok(global.OBOL_PRODUCT_HARDENING_NOTE_PROGRESS.remining.queuedProductGaps.includes('gap-xss-proof-mode-cleanup-reminder'));
 
 const manifest = require('../data/runtime-manifest.js');
 assert.ok(
