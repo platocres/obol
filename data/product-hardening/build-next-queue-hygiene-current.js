@@ -36,13 +36,21 @@ function noteState(){
 function isStandingGate(entry){return !!(entry&&entry.standingGate);}
 function concreteItems(){return q.items.slice().sort(queueSort).filter(entry=>entry&&entry.status==='queued'&&!isStandingGate(entry));}
 function standingGates(){return noteBurnDownGateIds.map(item).filter(entry=>entry&&isStandingGate(entry)).sort(queueSort);}
+function oldRubricBatchNumber(state){
+ const baseline=67;
+ const completed=Math.max(0,Math.floor((Math.max(0,Number(state.fullSpectrum)||0)-baseline)/20));
+ return completed+1;
+}
+function batchToken(value){return String(value).padStart(3,'0');}
 function nextNotesBatch(state){
  const sourceRoute='platocres/obol-source-notes@agent/review-packets:data/review-packets/manifest.json';
  if(state.oldRubricOnlyRemaining>0){
   const size=Math.min(20,state.oldRubricOnlyRemaining);
+  const batchNumber=oldRubricBatchNumber(state);
+  const token=batchToken(batchNumber);
   return Object.freeze({
-   id:'notes-batch-old-rubric-reviewed-remine-001',
-   label:'Old-rubric reviewed source re-mining batch 1',
+   id:'notes-batch-old-rubric-reviewed-remine-'+token,
+   label:'Old-rubric reviewed source re-mining batch '+batchNumber,
    gateId:'notes-mechanic-backfill',
    sourceRoute,
    sourceSelector:'Select the next '+size+' already-reviewed notes that lack full-spectrum audit rows, using manifest/source order and excluding themes already closed by released re-mining proof.',
@@ -149,5 +157,5 @@ q.validateQueueHygiene=function(){
  }
  return failures;
 };
-root.OBOL_PRODUCT_HARDENING_QUEUE_HYGIENE=Object.freeze({schemaVersion:'1.2.0',noteBurnDownGateIds,completedByReleasedProof,reminePackageIds,notesFirstGate:q.notesFirstGate,nextNotesBatch:q.nextNotesBatch,concreteBuildNext:q.concreteBuildNext,standingBuildGates:q.standingBuildGates,validate:q.validateQueueHygiene});
+root.OBOL_PRODUCT_HARDENING_QUEUE_HYGIENE=Object.freeze({schemaVersion:'1.3.0',noteBurnDownGateIds,completedByReleasedProof,reminePackageIds,notesFirstGate:q.notesFirstGate,nextNotesBatch:q.nextNotesBatch,concreteBuildNext:q.concreteBuildNext,standingBuildGates:q.standingBuildGates,validate:q.validateQueueHygiene});
 })(typeof window!=='undefined'?window:globalThis);
