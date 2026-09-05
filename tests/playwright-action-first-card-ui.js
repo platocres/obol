@@ -28,12 +28,14 @@ const demotedCards = {
 };
 fs.mkdirSync(outputDir, { recursive: true });
 
-function hasActionCommand(text) {
-  return /\b(curl|ffuf|gobuster|nxc|pypykatz|hashcat|impacket-psexec|impacket-wmiexec|evil-winrm|sqlmap|python3|powershell|Invoke-BloodHound|Find-DomainShare|Get-DomainUser|net user|net group|msfconsole|meterpreter|sessions -i)\b/i.test(text);
+function hasActionSpine(text) {
+  const terminal = /\b(curl|ffuf|gobuster|nxc|pypykatz|hashcat|impacket-psexec|impacket-wmiexec|evil-winrm|sqlmap|python3|powershell|Invoke-BloodHound|Find-DomainShare|Get-DomainUser|net user|net group|msfconsole|meterpreter|sessions -i)\b/i.test(text);
+  const gui = /\b(Burp|ZAP|Repeater|Intruder|Proxy history|HTTP history|BloodHound|CyberChef|DevTools|click|select|configure|inspect|export|send to|compare)\b/i.test(text) && /\b(request|response|evidence|export|copy|paste|baseline|result|graph|edge|status|header|cookie|body)\b/i.test(text);
+  return terminal || gui;
 }
 
 function hasEvidenceGuidance(text) {
-  return /\b(Evidence|Analyze pasted evidence|Paste command output|Paste back|Success looks like|response body|server response|manual replay|scoped auth|cleanup state|payload position|BloodHound|SharpHound|route table|session ID|object count|output zip)\b/i.test(text);
+  return /\b(Evidence|Analyze pasted evidence|Paste command output|Paste back|exported tool evidence|Success looks like|response body|server response|manual replay|scoped auth|cleanup state|payload position|BloodHound|SharpHound|route table|session ID|object count|output zip)\b/i.test(text);
 }
 
 function hasDecisionGuidance(text) {
@@ -74,7 +76,7 @@ function hasDecisionGuidance(text) {
     if (/v9\.67 action-first cleanup|Field notes below are supporting context|Why this now|methodology gap|\bUNKNOWN\b/i.test(state.text)) failures.push(`${id} leaks corrective, methodology, or UNKNOWN copy into the card UI`);
     if (['credential-dump-proof-chain','web-authz-boundaries','pass-the-hash-proof-chain','burp-intruder-fuzzing-workflow'].includes(id) && !state.kept.includes(id)) failures.push(`${id} is not recorded as a kept primary card by v9.68 disposition reconciliation`);
     if (['web-upload-inclusion-proof-chain','ad-enumeration-bloodhound-collection','metasploit-resource-pivot-workflow'].includes(id) && !(state.v971 && state.v971.cardsIntegrated)) failures.push(`${id} is not covered by v9.71 action-spine integration status`);
-    if (!hasActionCommand(state.text)) failures.push(`${id} does not show a concrete command in the normal card surface`);
+    if (!hasActionSpine(state.text)) failures.push(`${id} does not show a concrete command-line or GUI-tool action spine in the normal card surface`);
     if (!hasEvidenceGuidance(state.text)) failures.push(`${id} does not show useful paste-back/evidence guidance in the normal card surface`);
     if (!hasDecisionGuidance(state.text)) failures.push(`${id} does not show decision guidance for success, failure, triage, or next movement`);
   }
