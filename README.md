@@ -87,14 +87,14 @@ Runtime consolidation figures come from `data/runtime-consolidation-current.js`,
 **Package dependencies:** Notes Integration Foundation
 
 **Concrete live items in this package:**
-- **Re-mine all already-reviewed notes from original sources** — Concrete notes-first gate: 76 already-reviewed old-rubric-only notes still need full-spectrum source re-mining before offline/performance work can become next.
+- **Re-mine all already-reviewed notes from original sources** — Concrete notes-first gate: 72 already-reviewed old-rubric-only notes still need full-spectrum source re-mining before offline/performance work can become next.
 - **Burn down all 556 note dispositions** — Concrete notes-first gate: 421 private source notes still need disposition/mining before offline/performance work can become next.
 
 **Related items to consider, not automatically in scope:** Design contextual field-notes disclosure.
 
 
 **Highest-priority concrete live items:**
-1. **Re-mine all already-reviewed notes from original sources** — Concrete notes-first gate: 76 already-reviewed old-rubric-only notes still need full-spectrum source re-mining before offline/performance work can become next.
+1. **Re-mine all already-reviewed notes from original sources** — Concrete notes-first gate: 72 already-reviewed old-rubric-only notes still need full-spectrum source re-mining before offline/performance work can become next.
 2. **Burn down all 556 note dispositions** — Concrete notes-first gate: 421 private source notes still need disposition/mining before offline/performance work can become next.
 3. **Quiet service worker caching** — Improve repeat-load and offline behavior without prompting users to install anything.
 4. **IndexedDB workspace storage** — Support durable larger local workspaces, multiple engagements, and cached indexes while remaining browser-local.
