@@ -15,6 +15,8 @@ const primaryRoutes = [
   { id: 'web-upload-inclusion-proof-chain', marker: /Upload|Inclusion|Proof Chain/i },
   { id: 'ad-enumeration-bloodhound-collection', marker: /AD Enumeration Collection Spine|SharpHound|BloodHound/i },
   { id: 'metasploit-resource-pivot-workflow', marker: /Metasploit Resource Pivot Spine|msfconsole|Meterpreter/i },
+  { id: 'linux-service-footprint-secret-review', marker: /Linux Service Footprint Secret Review|process snapshot|tcpdump|user-trail/i },
+  { id: 'linux-privesc-boundary-sweep', marker: /Linux Privilege Boundary Sweep|sudo -l|SUID|capabilit|kernel/i },
 ];
 const demotedRoutes = [
   { id: 'web-client-session-proof-chain', canonical: 'web-authz-boundaries', marker: /Server Authorization|Authorization Boundary|Client Bypass|Authorization Boundary Replay/i },
@@ -69,6 +71,7 @@ async function openCard(context, route, failures, options = {}) {
     const text = view ? (view.innerText || '').trim() : '';
     const disposition = window.OBOL_NOTE_CARD_DISPOSITION_RECONCILIATION_V968 || null;
     const v971 = window.OBOL_AD_MSF_REMINING_V971 || null;
+    const v972 = window.OBOL_LINUX_FINAL_REMINING_V972 || null;
     const why = window.OBOL_DYNAMIC_WHY_NOW_LAST || null;
     return {
       text,
@@ -78,6 +81,7 @@ async function openCard(context, route, failures, options = {}) {
       dynamicWhyBody: why && why.body || '',
       demotedCardIds: disposition && disposition.demotedCardIds || [],
       v971,
+      v972,
     };
   });
 
@@ -87,6 +91,7 @@ async function openCard(context, route, failures, options = {}) {
   if (INTERNAL_CARD_SLOP.test(state.text)) routeFailures.push('route leaks internal filler or UNKNOWN implementation copy');
   if (state.whyNowCount !== 1 || !/Why this step now/i.test(state.text)) routeFailures.push('route does not render exactly one dynamic why-now section');
   if (!/current path|You have|This card is relevant|missing proof|paste the result back/i.test(state.dynamicWhyBody)) routeFailures.push('dynamic why-now body is not grounded in path/evidence language');
+  if (route.id.startsWith('linux-') && !(state.v972 && state.v972.cardsIntegrated)) routeFailures.push('v9.72 Linux final re-mining integration did not report cards integrated');
   if (options.demoted) {
     if (!state.hash.includes('/card/' + route.canonical)) routeFailures.push(`demoted route did not canonicalize to ${route.canonical}; hash=${state.hash}`);
     if (route.id === 'web-client-session-proof-chain' && !(state.v971 && state.v971.clientSessionDemoted)) routeFailures.push('v9.71 did not report client/session demotion');
