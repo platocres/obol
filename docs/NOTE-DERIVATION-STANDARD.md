@@ -72,6 +72,21 @@ When a re-mined note creates a new card-style proof chain, the same release must
 
 `tools/validate-product-hardening-card-routes.js` checks this in CI for current Product Hardening extensions so future agents cannot quietly add another `Unknown card` route.
 
+## Next Steps path-placement requirement
+
+A visible card is still not enough. If a note-derived card is meant to help the operator during a workflow, it must also be reachable from the real Next Steps path logic.
+
+That means the release should prove at least one of these is true:
+
+- the card has concrete `prereq`, `produces`, `expected`, and `lane` fields that the path engine can use;
+- an Evidence analyzer emits facts that satisfy the card's `prereq` conditions;
+- Evidence ingestion creates an activity for the card or for its parent proof-chain card;
+- the output is explicitly marked as report-only, cleanup-only, or documentation-only instead of pretending to be a path step.
+
+Do not ship a note-derived card that is merely clickable but disconnected from Evidence and Next Steps. A standalone card can exist only when the audit row clearly says why it is not intended to move the path.
+
+`tools/validate-note-card-path-placement.js` checks current note-derived cards for this path-placement contract. New re-mining releases that add card-style outputs must keep this validator green or update the card to prove the route, Evidence, and path linkage honestly.
+
 ## Private-only does not mean no value
 
 `private-only` means useful raw source material exists but cannot itself be public. It should be used only after the agent has checked whether the durable lesson can be safely rewritten.
@@ -120,6 +135,7 @@ Run these before claiming a notes clarification or re-mining packet is complete:
 node tools/validate-note-derivation-docs.js
 node tools/validate-note-remining-audits.js
 node tools/validate-product-hardening-card-routes.js
+node tools/validate-note-card-path-placement.js
 node tools/validate-notes-impact.js
 node tools/validate-note-integration.js
 ```
