@@ -67,6 +67,7 @@ const intake=globalThis.OBOL_INTAKE_V21.analyzeTerminal('ps auxww root sshpass p
 assert.ok(intake.activities.some(activity=>activity.analyzerId==='linux-footprint-evidence-analyzer'));
 assert.ok(intake.activities.some(activity=>activity.analyzerId==='linux-privesc-boundary-analyzer'));
 run(['tools/validate-linux-final-remine-v9.72.js']);
+run(['tools/validate-path-card-uniqueness-v9.72.js']);
 run(['tools/validate-card-action-spine-v9.71.js']);
 run(['tools/validate-release-pr.js','--repo-only']);
-console.log('v9.72 final Linux re-mining and folded-card queue handoff checks passed.');
+console.log('v9.72 final Linux re-mining, uniqueness, and folded-card queue handoff checks passed.');
