@@ -14,6 +14,8 @@ const primaryCards = [
   'web-upload-inclusion-proof-chain',
   'ad-enumeration-bloodhound-collection',
   'metasploit-resource-pivot-workflow',
+  'linux-service-footprint-secret-review',
+  'linux-privesc-boundary-sweep',
 ];
 const demotedCards = {
   'web-client-session-proof-chain': 'web-authz-boundaries',
@@ -30,17 +32,17 @@ const INTERNAL_CARD_SLOP = /v9\.67 action-first cleanup|Field notes below are su
 fs.mkdirSync(outputDir, { recursive: true });
 
 function hasActionSpine(text) {
-  const terminal = /\b(curl|ffuf|gobuster|nxc|pypykatz|hashcat|impacket-psexec|impacket-wmiexec|evil-winrm|sqlmap|python3|powershell|Invoke-BloodHound|Find-DomainShare|Get-DomainUser|net user|net group|msfconsole|meterpreter|sessions -i)\b/i.test(text);
+  const terminal = /\b(curl|ffuf|gobuster|nxc|pypykatz|hashcat|impacket-psexec|impacket-wmiexec|evil-winrm|sqlmap|python3|powershell|Invoke-BloodHound|Find-DomainShare|Get-DomainUser|net user|net group|msfconsole|meterpreter|sessions -i|ps aux|watch -n|tcpdump|sudo -l|getcap|uname -a|find \/|grep -R)\b/i.test(text);
   const gui = /\b(Burp|ZAP|Repeater|Intruder|Proxy history|HTTP history|BloodHound|CyberChef|DevTools|click|select|configure|inspect|export|send to|compare)\b/i.test(text) && /\b(request|response|evidence|export|copy|paste|baseline|result|graph|edge|status|header|cookie|body)\b/i.test(text);
   return terminal || gui;
 }
 
 function hasEvidenceGuidance(text) {
-  return /\b(Evidence|Analyze pasted evidence|Paste command output|Paste back|exported tool evidence|Success looks like|response body|server response|manual replay|scoped auth|cleanup state|payload position|BloodHound|SharpHound|route table|session ID|object count|output zip)\b/i.test(text);
+  return /\b(Evidence|Analyze pasted evidence|Paste command output|Paste back|exported tool evidence|Success looks like|response body|server response|manual replay|scoped auth|cleanup state|payload position|BloodHound|SharpHound|route table|session ID|object count|output zip|process owner|SUID|capability|sudo rule|kernel version|user-trail)\b/i.test(text);
 }
 
 function hasDecisionGuidance(text) {
-  return /\b(move forward|success|failure|fails?|blocked|triage|not impact|do not|replay|compare|compared|boundary|scope|auth|authorization|cleanup|server accepts|route|session|graph|lead|proof)\b/i.test(text);
+  return /\b(move forward|success|failure|fails?|blocked|triage|not impact|do not|replay|compare|compared|boundary|scope|auth|authorization|cleanup|server accepts|route|session|graph|lead|proof|validate|precondition|candidate)\b/i.test(text);
 }
 
 (async () => {
@@ -68,6 +70,7 @@ function hasDecisionGuidance(text) {
       const text = view && view.innerText ? view.innerText.trim() : '';
       const disposition = window.OBOL_NOTE_CARD_DISPOSITION_RECONCILIATION_V968 || null;
       const v971 = window.OBOL_AD_MSF_REMINING_V971 || null;
+      const v972 = window.OBOL_LINUX_FINAL_REMINING_V972 || null;
       const why = window.OBOL_DYNAMIC_WHY_NOW_LAST || null;
       return {
         text,
@@ -77,6 +80,7 @@ function hasDecisionGuidance(text) {
         dispositionStatus: disposition && disposition.status || '',
         kept: disposition && disposition.keepAsCards || [],
         v971,
+        v972,
       };
     });
     await page.screenshot({ path: path.join(outputDir, `action-integrated-${id}.png`), fullPage: true });
@@ -87,6 +91,7 @@ function hasDecisionGuidance(text) {
     if (!/current path|You have|This card is relevant|missing proof|paste the result back/i.test(state.dynamicWhyBody)) failures.push(`${id} dynamic why-now is not grounded in path/evidence/action language`);
     if (['credential-dump-proof-chain','web-authz-boundaries','pass-the-hash-proof-chain','burp-intruder-fuzzing-workflow'].includes(id) && !state.kept.includes(id)) failures.push(`${id} is not recorded as a kept primary card by v9.68 disposition reconciliation`);
     if (['web-upload-inclusion-proof-chain','ad-enumeration-bloodhound-collection','metasploit-resource-pivot-workflow'].includes(id) && !(state.v971 && state.v971.cardsIntegrated)) failures.push(`${id} is not covered by v9.71 action-spine integration status`);
+    if (['linux-service-footprint-secret-review','linux-privesc-boundary-sweep'].includes(id) && !(state.v972 && state.v972.cardsIntegrated)) failures.push(`${id} is not covered by v9.72 final Linux re-mining status`);
     if (!hasActionSpine(state.text)) failures.push(`${id} does not show a concrete command-line or GUI-tool action spine in the normal card surface`);
     if (!hasEvidenceGuidance(state.text)) failures.push(`${id} does not show useful paste-back/evidence guidance in the normal card surface`);
     if (!hasDecisionGuidance(state.text)) failures.push(`${id} does not show decision guidance for success, failure, triage, or next movement`);
