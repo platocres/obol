@@ -1,0 +1,233 @@
+'use strict';
+
+(function initVisibleRemineCardsV963(root) {
+  const WAVE = 'v9.63-visible-remine-cards';
+  const PROOF_FILE = 'data/product-hardening/visible-remine-cards-v9.63.js';
+  const CARD_IDS = Object.freeze([
+    'credential-dump-proof-chain',
+    'web-proxy-transform-proof-chain',
+    'web-client-controls',
+    'encoded-parameter-review',
+    'tool-generated-http-review',
+  ]);
+  const NOTE_IDS = Object.freeze([
+    'note-lsass-dump-artifact-proof-chain',
+    'note-offline-parser-output-needs-material-classification',
+    'note-hash-crack-does-not-prove-service-access',
+    'note-client-controls-are-request-shaping-clues',
+    'note-encoded-cookie-transform-order',
+    'note-capture-tool-http-before-debugging',
+  ]);
+
+  function freezeList(list) { return Object.freeze((list || []).slice()); }
+  function freezeObject(value) { return Object.freeze(value || {}); }
+
+  function noteById(id) {
+    const notes = root.OBOL_NOTE_INTEGRATION && Array.isArray(root.OBOL_NOTE_INTEGRATION.publicFieldNotes)
+      ? root.OBOL_NOTE_INTEGRATION.publicFieldNotes
+      : [];
+    return notes.find((note) => note && note.id === id) || null;
+  }
+
+  function noteText(ids, fallback) {
+    const chunks = ids.map(noteById).filter(Boolean).map((note) => {
+      const title = note.title ? note.title + ': ' : '';
+      return title + String(note.body || '').trim();
+    }).filter(Boolean);
+    return chunks.length ? chunks.join(' ') : fallback;
+  }
+
+  function ensureLane(id, title, phase) {
+    if (typeof root.laneById === 'function') return root.laneById(id, title, phase);
+    const lanes = Array.isArray(root.LANES) ? root.LANES : [];
+    let lane = lanes.find((entry) => entry && entry.lane === id);
+    if (!lane) {
+      lane = { lane: id, title: title || id, phase: phase || title || id, cards: [] };
+      lanes.push(lane);
+    }
+    if (!Array.isArray(lane.cards)) lane.cards = [];
+    root.LANES = lanes;
+    return lane;
+  }
+
+  function hasCard(id) {
+    if (root.CARDS && root.CARDS[id]) return true;
+    const lanes = Array.isArray(root.LANES) ? root.LANES : [];
+    return lanes.some((lane) => Array.isArray(lane.cards) && lane.cards.some((card) => card && card.id === id));
+  }
+
+  function publishCard(lane, afterId, card) {
+    if (!lane || !card || hasCard(card.id)) return false;
+    card.lane = card.lane || lane.lane;
+    if (typeof root.addCardAfter === 'function') return root.addCardAfter(lane, afterId, card);
+    if (!Array.isArray(lane.cards)) lane.cards = [];
+    const index = lane.cards.findIndex((entry) => entry && entry.id === afterId);
+    lane.cards.splice(index >= 0 ? index + 1 : lane.cards.length, 0, card);
+    if (root.CARDS && typeof root.CARDS === 'object') root.CARDS[card.id] = card;
+    return true;
+  }
+
+  function cardNotes(ids) {
+    return ids.map(noteById).filter(Boolean).map((note) => note.id);
+  }
+
+  function buildCards() {
+    return freezeList([
+      freezeObject({
+        id: 'credential-dump-proof-chain',
+        title: 'Credential Dump Proof Chain',
+        hypothesis: noteText([
+          'note-lsass-dump-artifact-proof-chain',
+          'note-offline-parser-output-needs-material-classification',
+          'note-hash-crack-does-not-prove-service-access',
+        ], 'Treat memory dumps, parser output, extracted material, cracking, and scoped authentication as separate Evidence states. A dump, hash, or cracked candidate is useful only after the exact material class and validation scope are proven.'),
+        prereq: { any: ['foothold.windows', 'credential.candidate', 'credential.lsass_dump_artifact_observed', 'credential.offline_dump_parser_output_observed'] },
+        produces: ['credential.candidate', 'credential.validation.required'],
+        commands: freezeList([]),
+        expected: freezeList(['dump artifact observed', 'material class identified', 'scoped validation captured']),
+        defender: 'Memory dumps and credential material are sensitive artifacts. Keep raw secrets out of notes and reports, and track cleanup separately.',
+        report: { finding: 'Credential Dump Evidence Review', severity: 'high' },
+        tools: freezeList(['pypykatz', 'mimikatz', 'hashcat']),
+        refs: freezeList([]),
+        sourceMined63: freezeObject({ proof: PROOF_FILE, notes: cardNotes(['note-lsass-dump-artifact-proof-chain', 'note-offline-parser-output-needs-material-classification', 'note-hash-crack-does-not-prove-service-access']) }),
+      }),
+      freezeObject({
+        id: 'web-proxy-transform-proof-chain',
+        title: 'Web Proxy Transform Proof Chain',
+        hypothesis: 'Use the proxy workflow to keep browser edits, decode and encode steps, payload-processing changes, response deltas, and replayed server behavior as separate proof stages. A clever request mutation is a lead; reviewed server-side behavior is the proof.',
+        prereq: { any: ['service.http', 'web.client_control_mutation_observed', 'web.reversible_transform_chain_observed', 'web.tool_generated_http_capture_observed'] },
+        produces: ['web.transform-chain.reviewed', 'web.scoped-server-behavior.required'],
+        commands: freezeList([]),
+        expected: freezeList(['original request captured', 'one transform changed at a time', 'server behavior reviewed']),
+        defender: 'Proxy replay and payload mutation can create noisy request patterns. Keep scope, rate, and response-body review explicit.',
+        report: { finding: 'Web Proxy Transform Chain Reviewed', severity: 'medium' },
+        tools: freezeList(['Burp Suite', 'OWASP ZAP', 'CyberChef']),
+        refs: freezeList([]),
+        sourceMined63: freezeObject({ proof: PROOF_FILE, notes: cardNotes(['note-client-controls-are-request-shaping-clues', 'note-encoded-cookie-transform-order', 'note-capture-tool-http-before-debugging']) }),
+      }),
+      freezeObject({
+        id: 'web-client-controls',
+        title: 'Review Client-Side Controls as Request-Shaping Clues',
+        hypothesis: noteText(['note-client-controls-are-request-shaping-clues'], 'Disabled controls, hidden fields, local validation, and browser-side markup changes show how a request can be shaped. They do not prove backend authorization failure until the server accepts a scoped action or returns protected content.'),
+        prereq: { any: ['service.http', 'web.client_control_mutation_observed'] },
+        produces: ['web.client-control.reviewed'],
+        commands: freezeList([]),
+        expected: freezeList(['original state recorded', 'mutated request captured', 'server response compared']),
+        defender: 'Client-side edits are usually low-noise, but repeated submissions can still create logs. Preserve original and modified requests for reporting.',
+        report: { finding: 'Client-Side Control Boundary Reviewed', severity: 'info' },
+        tools: freezeList(['browser-devtools', 'Burp Suite', 'OWASP ZAP']),
+        refs: freezeList([]),
+        sourceMined63: freezeObject({ proof: PROOF_FILE, notes: cardNotes(['note-client-controls-are-request-shaping-clues']) }),
+      }),
+      freezeObject({
+        id: 'encoded-parameter-review',
+        title: 'Review Encoded Parameters in Transform Order',
+        hypothesis: noteText(['note-encoded-cookie-transform-order'], 'When a cookie or parameter is transformed through multiple encodings, preserve the decode order, mutate only the intended inner value, then rebuild the outbound value in reverse order. The rebuilt request still needs response-body review before it becomes impact proof.'),
+        prereq: { any: ['service.http', 'web.reversible_transform_chain_observed', 'web.encoded_cookie_candidate_observed'] },
+        produces: ['web.encoded-parameter.reviewed'],
+        commands: freezeList([]),
+        expected: freezeList(['decode order recorded', 'inner value changed deliberately', 'outbound value rebuilt in reverse order']),
+        defender: 'Encoded parameter fuzzing can produce large request sets. Keep payload lists bounded and compare response bodies, not only sizes.',
+        report: { finding: 'Encoded Parameter Transform Chain Reviewed', severity: 'medium' },
+        tools: freezeList(['CyberChef', 'Burp Intruder', 'OWASP ZAP']),
+        refs: freezeList([]),
+        sourceMined63: freezeObject({ proof: PROOF_FILE, notes: cardNotes(['note-encoded-cookie-transform-order']) }),
+      }),
+      freezeObject({
+        id: 'tool-generated-http-review',
+        title: 'Capture Tool-Generated HTTP Before Debugging',
+        hypothesis: noteText(['note-capture-tool-http-before-debugging'], 'When a scanner or framework module behaves strangely, capture the exact HTTP it generates before changing assumptions. Compare the produced method, path, host, headers, body, proxy settings, and response class against the manual request you intended.'),
+        prereq: { any: ['service.http', 'web.tool_generated_http_capture_observed'] },
+        produces: ['web.tool-http.reviewed'],
+        commands: freezeList([]),
+        expected: freezeList(['generated request captured', 'manual replay compared', 'tool assumption isolated']),
+        defender: 'Framework modules can send recognizable traffic. Capturing the generated request first keeps troubleshooting bounded and reportable.',
+        report: { finding: 'Tool-Generated HTTP Reviewed', severity: 'info' },
+        tools: freezeList(['Metasploit', 'Burp Suite', 'OWASP ZAP']),
+        refs: freezeList([]),
+        sourceMined63: freezeObject({ proof: PROOF_FILE, notes: cardNotes(['note-capture-tool-http-before-debugging']) }),
+      }),
+    ]);
+  }
+
+  function installCards() {
+    const lanes = root.LANES;
+    const cards = root.CARDS;
+    if (!Array.isArray(lanes) || !cards || typeof cards !== 'object') return false;
+    const credentialLane = ensureLane('credential-attacks', 'Credential Attacks', 'Credential Attacks');
+    const webLane = ensureLane('web-proxy-transform', 'Web Proxy Transform Review', 'Initial Access & Web');
+    const cardRows = buildCards();
+    const before = cardRows.filter((card) => hasCard(card.id)).length;
+    publishCard(credentialLane, 'windows-local-password-attacks', cardRows[0]);
+    let after = '';
+    for (const card of cardRows.slice(1)) {
+      publishCard(webLane, after, card);
+      after = card.id;
+    }
+    const installed = cardRows.filter((card) => hasCard(card.id)).length;
+    root.OBOL_VISIBLE_REMINED_CARD_IDS_V963 = freezeList(CARD_IDS);
+    root.OBOL_VISIBLE_REMINED_CARDS_V963 = freezeObject({
+      wave: WAVE,
+      status: installed === CARD_IDS.length ? 'live-integrated' : 'partial',
+      cardIds: freezeList(CARD_IDS),
+      noteIds: freezeList(NOTE_IDS),
+      installedCount: installed,
+      alreadyPresentCount: before,
+      proofFile: PROOF_FILE,
+    });
+    return installed === CARD_IDS.length;
+  }
+
+  function patchUnknownCardView() {
+    if (typeof root.viewCard !== 'function' || root.viewCard.__visibleRemineCardsV963) return false;
+    const original = root.viewCard;
+    root.viewCard = function visibleRemineCardView(id) {
+      installCards();
+      return original.apply(this, arguments);
+    };
+    root.viewCard.__visibleRemineCardsV963 = true;
+    return true;
+  }
+
+  function validate() {
+    const failures = [];
+    for (const id of CARD_IDS) {
+      if (!hasCard(id)) failures.push('Missing live card route for ' + id);
+    }
+    return failures;
+  }
+
+  function integrate() {
+    const cardsInstalled = installCards();
+    const viewPatched = patchUnknownCardView();
+    return freezeObject({ wave: WAVE, cardsInstalled, viewPatched, failures: freezeList(validate()) });
+  }
+
+  const packet = freezeObject({
+    wave: WAVE,
+    status: 'live-integrated',
+    cardIds: freezeList(CARD_IDS),
+    noteIds: freezeList(NOTE_IDS),
+    proofFile: PROOF_FILE,
+    integrate,
+    validate,
+  });
+
+  root.OBOL_VISIBLE_REMINED_CARDS_PACKET_V963 = packet;
+  const result = integrate();
+  if (typeof window !== 'undefined') {
+    let tries = 0;
+    const schedule = typeof window.setTimeout === 'function' ? window.setTimeout.bind(window) : null;
+    const attempt = () => {
+      const retry = integrate();
+      tries += 1;
+      if (retry.failures.length && tries < 160 && schedule) schedule(attempt, 50);
+    };
+    if (result.failures.length && schedule) schedule(attempt, 0);
+    if (typeof window.addEventListener === 'function') {
+      window.addEventListener('hashchange', attempt);
+      window.addEventListener('focus', attempt);
+    }
+  }
+  if (typeof module !== 'undefined' && module.exports) module.exports = packet;
+})(typeof window !== 'undefined' ? window : globalThis);
