@@ -1,3 +1,18 @@
+## v9.70 — Continues the notes-first Product Build Next queue by completing the second full 20-note old-rubric reviewed source re-mining batch
+
+- Added `data/product-hardening/client-session-remine-batch-v9.70.js`.
+- Re-read the selected path-transport, XSS, browser-side, session, CSRF, and client-cleanup notes from the complete private review-packet route.
+- Published public-safe field notes for:
+  - browser/client findings as staged session-impact proof chains;
+  - reflected, stored, and DOM execution context boundaries;
+  - cookie, storage, CSRF, origin, and authenticated state-change boundaries;
+  - exact request transport and path-normalization proof;
+  - client-side cleanup and reporting boundaries.
+- Added the `web-client-session-proof-chain` card so the re-mined value appears as a normal operator-facing card rather than as loose note metadata or a corrective overlay.
+- Added the conservative `client-session-evidence-analyzer` for pasted Evidence that mentions browser execution signals, cookies, storage, CSRF/origin controls, server acceptance, browser blocking controls, or cleanup needs.
+- Advanced full-spectrum source re-mining from 87/135 to 107/135 reviewed notes, leaving 28 old-rubric-only reviewed notes before fresh pending-note disposition work can become next.
+- Updated the queue handoff so the next generated batch advances to `notes-batch-old-rubric-reviewed-remine-003`.
+
 ## v9.69 — Continues the notes-first Product Build Next queue by completing the first full 20-note old-rubric reviewed source re-mining batch
 
 - Added `data/product-hardening/web-upload-inclusion-remine-batch-v9.69.js`.
