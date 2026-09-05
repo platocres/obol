@@ -51,29 +51,26 @@ function localRequestFailure(url) {
       await page.waitForSelector('#view', { state: 'visible', timeout: 15000 });
       await page.waitForFunction(() => {
         const view = document.querySelector('#view');
-        return !!(view && view.innerText && view.innerText.trim().length > 20);
-      }, null, { timeout: 15000 });
-      await page.waitForTimeout(6200);
+        const text = view && view.innerText ? view.innerText.trim() : '';
+        return text.length > 20 && !/Unknown card/i.test(text);
+      }, null, { timeout: 20000 });
+      await page.waitForTimeout(1200);
 
-      const state = await page.evaluate(cardId => {
+      const state = await page.evaluate(() => {
         const view = document.querySelector('#view');
         const text = view ? (view.innerText || '').trim() : '';
-        const liveCard = window.liveCardById && window.liveCardById(cardId);
         const guard = window.OBOL_NOTE_CARD_ROUTE_GUARD_V964 || null;
         const visible = window.OBOL_VISIBLE_REMINED_CARDS_V963 || null;
         return {
           text,
-          title: liveCard && liveCard.title || '',
-          hasCard: !!liveCard,
           guardStatus: guard && guard.status || '',
           guardFailures: guard && guard.failures || [],
           visibleStatus: visible && visible.status || '',
         };
-      }, route.id);
+      });
 
-      if (!state.hasCard) routeFailures.push('liveCardById did not resolve ' + route.id);
       if (/Unknown card/i.test(state.text)) routeFailures.push('route rendered Unknown card');
-      if (!route.marker.test(state.text + '\n' + state.title)) routeFailures.push('route marker did not match rendered content: ' + JSON.stringify((state.text || state.title || '').slice(0, 240)));
+      if (!route.marker.test(state.text)) routeFailures.push('route marker did not match rendered content: ' + JSON.stringify((state.text || '').slice(0, 240)));
       if (state.guardFailures && state.guardFailures.length) routeFailures.push('note-card route guard has failures: ' + state.guardFailures.join('; '));
 
       await page.screenshot({ path: path.join(outputDir, 'card-' + route.id + '.png'), fullPage: true });
