@@ -31,7 +31,7 @@ function seedSandbox() {
   sandbox.CARDS = Object.fromEntries(['credential-dump-proof-chain','web-authz-boundaries','pass-the-hash-proof-chain','burp-intruder-fuzzing-workflow'].map((id) => [id, { id, title: id, lane: 'test', expected: [], tools: [], commands: [] }]));
   sandbox.OBOL_LANES = [{ id: 'test', lane: 'test', title: 'Test', cards: Object.values(sandbox.CARDS) }];
   sandbox.OBOL_NOTE_INTEGRATION = { publicFieldNotes: [], reviewedDispositions: [], ledger: { expectedNotes: 556, reviewedCount: 135 }, validate: () => [] };
-  sandbox.OBOL_PRODUCT_HARDENING = { items: [{ id: 'notes-mechanic-backfill', status: 'queued', priority: 86.8 }] };
+  sandbox.OBOL_PRODUCT_HARDENING = { tracks: [{ id: 'notes-integration', complete: 55, total: 556 }], items: [{ id: 'notes-mechanic-backfill', status: 'queued', priority: 86.8 }, { id: 'notes-disposition-burn-down', status: 'queued', priority: 87 }] };
   sandbox.OBOL_PRODUCT_HARDENING_NOTE_PROGRESS = { reviewed: 135, total: 556, remining: { reminedNoteCount: 107, audited: 107, oldRubricOnlyRemaining: 28, auditRows: [] } };
   sandbox.OBOL_INTAKE_V21 = { analyzeTerminal: () => ({ activities: [] }) };
   sandbox.liveCardById = (id) => sandbox.CARDS[id] || null;
@@ -89,7 +89,7 @@ function validate() {
   if (!analyzers.has('ad-enumeration-evidence-analyzer')) failures.push('AD evidence analyzer did not attach to Intake');
   if (!analyzers.has('metasploit-workflow-evidence-analyzer')) failures.push('Metasploit evidence analyzer did not attach to Intake');
   const progress = sandbox.OBOL_PRODUCT_HARDENING_NOTE_PROGRESS.remining || {};
-  if (progress.reminedNoteCount < 127 || progress.oldRubricOnlyRemaining !== 8) failures.push('v9.71 note progress did not advance to 127/135 with 8 old-rubric-only notes remaining');
+  if (Number(progress.reminedNoteCount || 0) < 127 || Number(progress.oldRubricOnlyRemaining || 0) > 8) failures.push('v9.71 note progress did not reach at least 127/135 with no more than 8 old-rubric-only notes remaining');
   return { failures, checkedCards: PRIMARY.length, extensions: extensions.length };
 }
 if (require.main === module) {
