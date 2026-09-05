@@ -8,6 +8,10 @@ A PR must not claim Product Build Next completion when the change exists only as
 
 The changed output must be visible or consumable on the live route, card, dashboard, tool, analyzer, report, or runtime surface that owns it.
 
+## Live cards / surfaces
+
+Every user-visible Product Build item must name the live cards, routes, dashboards, tools, analyzers, reports, or runtime surfaces a maintainer should inspect after deploy.
+
 ## Evidence ingestion for command and analyzer work
 
 A command, tool card, proof control, analyzer, or path item that expects pasted terminal output, browser-observation text, or proof notes is not live-integrated until Evidence ingestion knows what to do with that output.
