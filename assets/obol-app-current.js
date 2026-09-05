@@ -11,7 +11,7 @@
  * suppresses historical schedulers and commits current route owners last.
  *
  * Historical fragment order sha256: 40e3006d9423d669acf5869b577ecf56a6ca2ee1629c95fd0fcc5d242d2c5f27
- * Generated body sha256: 0aad991834872fca3b33fec505c38cc8d02b60efd7b1dc71e662f30b8ddc70e9
+ * Generated body sha256: c22401b76d24ca9674af2300fa0583b2128ccfe7b49b01529afa147c7b821232
  * First historical fragment: assets/report-v2.js
  * Last historical fragment:  assets/app-v8.8.js
  */
@@ -2017,7 +2017,8 @@ const release=Object.freeze({
   'data/product-hardening/actionable-card-contract-v9.66.js',
   'data/product-hardening/actionable-card-contract-dashboard-settle-v9.66.js',
   'data/product-hardening/actionable-card-contract-queue-note-v9.66.js',
-  'data/product-hardening/action-first-card-cleanup-v9.67.js'
+  'data/product-hardening/action-first-card-cleanup-v9.67.js',
+  'data/product-hardening/action-first-card-cleanup-stabilize-v9.67.js'
  ])
 });
 function stampState(target){
