@@ -44,7 +44,7 @@ jobs:
           for browser in /usr/bin/google-chrome-stable /usr/bin/google-chrome /usr/bin/chromium-browser /usr/bin/chromium; do
             if [[ -x "${browser}" ]]; then
               echo "OBOL_SMOKE_BROWSER_PATH=${browser}" >> "${GITHUB_ENV}"
-              echo "Using system browser for fast smoke: ${browser}"
+              echo "Using system browser for fast browser smoke: ${browser}"
               exit 0
             fi
           done
@@ -81,6 +81,13 @@ jobs:
           OBOL_SMOKE_BASE_URL: http://127.0.0.1:4173/index.html
           OBOL_SMOKE_OUTPUT: artifacts/playwright-smoke
         run: node tests/playwright-note-card-routes.js
+
+      - name: Run action-first card UI smoke
+        if: env.SHOULD_FULL_BROWSER == 'true'
+        env:
+          OBOL_SMOKE_BASE_URL: http://127.0.0.1:4173/index.html
+          OBOL_SMOKE_OUTPUT: artifacts/playwright-smoke
+        run: node tests/playwright-action-first-card-ui.js
 
       - name: Run full browser smoke
         if: env.SHOULD_FULL_BROWSER == 'true'

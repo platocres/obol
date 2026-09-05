@@ -1,3 +1,19 @@
+## v9.67 — Is a slop cleanup build for the recent note-derived cards
+
+- Added `data/product-hardening/action-first-card-cleanup-v9.67.js`.
+  - Audits the recent note-derived card set.
+  - Overlays each card with an action-first operator plan.
+  - Adds terminal commands or concrete GUI workflow steps.
+  - Adds paste-back evidence, decision guidance, and next-step movement.
+  - Marks field notes as supporting context instead of the primary action.
+- Added `tools/validate-action-first-card-cleanup.js`.
+  - Fails the cleanup if any recent note-derived card lacks an operator goal, commands or GUI steps, evidence to paste back, decision guidance, or next-step guidance.
+- Added `tests/playwright-action-first-card-ui.js`.
+  - Opens the same live-style card routes a user would open.
+  - Fails if the page lacks the v9.67 action-first panel.
+- Added `docs/NOTE-MINING-SLOP-CLEANUP.md`.
+  - Documents the rule that source notes should usually enrich existing Orange-map cards and should become new cards only when they add distinct operator actions.
+
 ## v9.66 — Is a product-correction build for recent note-derived cards
 
 - Added `data/product-hardening/actionable-card-contract-v9.66.js`.

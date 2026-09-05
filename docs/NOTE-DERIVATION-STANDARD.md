@@ -10,6 +10,23 @@ Private notes are source knowledge. Agents should use them aggressively to impro
 
 Public Obol must contain Obol-owned work: new wording, generalized models, synthetic examples, normalized command templates, and product behavior that stands on its own without the private note.
 
+## Actionability rule
+
+A source note does not automatically become a card.
+
+Before creating a new card, first try to improve an existing Orange-map card. Conceptual lessons, gotchas, interpretation notes, and report reminders should usually become field notes or supporting guidance attached to an existing workflow card.
+
+A new path-visible card is allowed only when the note adds a distinct operator action that is not already represented. A stuck operator opening the card must be able to answer:
+
+- what do I run or click;
+- which variables do I fill in;
+- what evidence do I paste back;
+- what does success mean;
+- what does failure mean;
+- where does the path go next.
+
+Route-valid and path-linked is not enough. The card must be action-first. See `docs/NOTE-MINING-SLOP-CLEANUP.md` and `docs/ACTIONABLE-CARD-CONTRACT.md` before continuing re-mining.
+
 ## What agents should look for
 
 When reviewing or re-mining a source note, look for durable value in all of these forms:
@@ -91,15 +108,7 @@ Do not ship a note-derived card that is merely clickable but disconnected from E
 
 `private-only` means useful raw source material exists but cannot itself be public. It should be used only after the agent has checked whether the durable lesson can be safely rewritten.
 
-Good `private-only` audit reasons explain the boundary without leaking the source, for example:
-
-```text
-private-only: raw note is dominated by target-specific walkthrough sequence and identifiers; durable upload proof-boundary lesson was extracted into owner note-web-upload-proof-boundary.
-```
-
-```text
-private-only: copied course prose and screenshot-heavy steps cannot be published; reusable troubleshooting model is already covered by owner path-file-inclusion-troubleshooting.
-```
+Good `private-only` audit reasons explain the boundary without leaking the source.
 
 Bad reasons are vague and fail the audit standard:
 
@@ -125,7 +134,7 @@ Live re-mining tracking belongs in:
 - Product Build Next, which exposes the current queue and recommended work package;
 - the Product Hardening Dashboard, which renders re-mining progress, outcome counts, and red flags.
 
-A note is not considered re-mined merely because a past changelog entry mentions its theme or packet. It is re-mined only when the live projection records the original-source reread and per-dimension outcomes required by [`NOTE-MINING-RUBRIC.md`](NOTE-MINING-RUBRIC.md).
+A note is not considered re-mined merely because a past changelog entry mentions its theme or packet. It is re-mined only when the live projection records the original-source reread and per-dimension outcomes required by `NOTE-MINING-RUBRIC.md`.
 
 ## Validation
 
@@ -133,11 +142,10 @@ Run these before claiming a notes clarification or re-mining packet is complete:
 
 ```bash
 node tools/validate-note-derivation-docs.js
-node tools/validate-note-remining-audits.js
 node tools/validate-product-hardening-card-routes.js
 node tools/validate-note-card-path-placement.js
+node tools/validate-actionable-next-step-cards.js
+node tools/validate-action-first-card-cleanup.js
 node tools/validate-notes-impact.js
 node tools/validate-note-integration.js
 ```
-
-The derivation docs validator protects this standard so future agents see the rule before CI surprises them.
