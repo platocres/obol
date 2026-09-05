@@ -89,7 +89,7 @@ function applyRemineDashboardSchemaCompletion() {
     remine.dimensionCounts && remine.outcomeCounts;
   if (!schemaReady) return;
   item.status = 'complete';
-  item.detail = 'Re-mining is tracked separately from first-pass review in the dashboard and generated README: old-rubric reviewed count, full-spectrum re-mined count, old-rubric-only remaining count, negative-proof outcomes, red flags, and extraction dimensions are visible at a glance with drill-down details.';
+  item.detail = 'Re-mining dashboard/schema projection is complete. The full metrics live in the Product Hardening Dashboard; README renders only the compact handoff.';
   const track = Array.isArray(q.tracks) ? q.tracks.find(entry => entry.id === 'notes-integration') : null;
   if (track && !track.__remineDashboardSchemaCounted) {
     track.complete = Number(track.complete || 0) + 1;
@@ -106,68 +106,43 @@ if (sourceReviewPackets && !sourceReviewPackets.isComplete) throw new Error('Pri
 const runtimeFailures = runtimeConsolidation.validate();
 if (runtimeFailures.length) throw new Error('Invalid runtime-consolidation projection:\n- ' + runtimeFailures.join('\n- '));
 
+function sourceLink(repo) {
+  const url = 'https://github.com/' + repo + '/tree/main/sources/raw';
+  return '[`' + url + '`](' + url + ')';
+}
+
 function packageLines() {
   const rec = workPackages.recommend(q);
   if (!rec || !rec.entryItem) return [];
-  const itemMap = new Map(q.items.map(item => [item.id, item]));
   const live = rec.liveItems || [];
   const tracked = rec.itemIds || [];
   const dependencies = (rec.dependencies || []).map(id => {
     const pkg = workPackages.packages.find(candidate => candidate.id === id);
     return pkg ? pkg.title : id;
   });
-  const related = (rec.relatedItems || []).map(id => itemMap.get(id)).filter(Boolean);
   return [
     '**Recommended work package:** **' + rec.title + '** — ' + live.length + ' concrete live item' + (live.length === 1 ? '' : 's') + ' / ' + tracked.length + ' tracked.',
     '**Next concrete entry:** **' + rec.entryItem.label + '**',
     '**Ownership area:** `' + rec.ownershipArea + '`',
-    '**Package guidance:** ' + rec.guidance,
-    dependencies.length ? '**Package dependencies:** ' + dependencies.join(', ') : '**Package dependencies:** none.',
-    '',
-    '**Concrete live items in this package:**',
-    ...(live.length ? live.map(item => '- **' + item.label + '** — ' + item.detail) : ['- No concrete queued items remain in this package.']),
-    ...(related.length ? ['', '**Related items to consider, not automatically in scope:** ' + related.map(item => item.label).join('; ') + '.'] : [])
+    dependencies.length ? '**Package dependencies:** ' + dependencies.join(', ') + '.' : '**Package dependencies:** none.',
+    '**Package detail:** Use the Product Hardening Dashboard for full track ledgers and `data/product-hardening/work-packages.js` for the long-form package guidance.'
   ];
 }
 
-function standingGateLines() {
-  const gates = typeof q.standingBuildGates === 'function' ? q.standingBuildGates() : [];
-  if (!gates.length) return [];
-  return [
-    '**Standing source re-mining gates:**',
-    ...gates.map(item => '- **' + item.label + '** — standing gate, not the next concrete batch. ' + item.detail)
-  ];
-}
-
-function noteImpactLines() {
-  if (!noteImpact) return [];
-  const r = noteImpact.review, o = noteImpact.outputCounts;
-  return [
-    '**Notes Integration:** ' + r.reviewed + '/' + r.total + ' reviewed — ' + r.modeled + ' modeled, ' + r.privateOnly + ' private-only, ' + r.pending + ' pending.',
-    '**Derived note guidance:** ' + o.fieldNotes + ' Field Notes · ' + o.toolContextBound + ' tool-bound · ' + o.pathGuidanceBound + ' Path-bound · ' + o.evidenceGuidance + ' Evidence · ' + o.reportGuidance + ' Report.',
-    '**Declared note-driven product mechanics:** ' + o.declaredProductChanges + ' total · ' + o.toolBuilderChanges + ' builder · ' + o.pathLogicChanges + ' Path logic · ' + o.evidenceParserChanges + ' Evidence parser · ' + o.reportGeneratorChanges + ' report generator · ' + o.workflowChanges + ' workflow.',
-    '**Latest mined themes:** ' + noteImpact.latestWave.themes.join(', ') + '.',
-    '**Notes impact contract:** `docs/NOTES-IMPACT.md`.'
-  ];
-}
-
-function noteReminingLines() {
+function notesStatusLines() {
+  const lines = [];
   const remine = noteProgress && noteProgress.remining;
-  if (!noteProgress || !remine) return [];
-  const reviewed = Number(noteProgress.reviewed || remine.sourceTotal || 0);
-  const audited = Number(remine.audited || remine.reminedNoteCount || 0);
-  const remaining = Math.max(0, reviewed - audited);
-  const oc = remine.outcomeCounts || {};
-  const redFlagTotal = (remine.redFlags || []).reduce((n, flag) => n + Number(flag.count || 0), 0);
-  const dimensionCount = Array.isArray(remine.dimensions) ? remine.dimensions.length : 0;
-  const dashboardItem = (q.items || []).find(item => item.id === 'notes-remine-dashboard-schema');
-  return [
-    '**Source re-mining:** old-rubric reviewed ' + reviewed + '/' + Number(noteProgress.total || 0) + ' · full-spectrum re-mined ' + audited + '/' + reviewed + ' · old-rubric-only remaining ' + remaining + '.',
-    '**Negative finding outcomes:** added ' + Number(oc.added || 0) + ' · covered ' + Number(oc.covered || 0) + ' · queued ' + Number(oc.queued || 0) + ' · private-only ' + Number(oc['private-only'] || 0) + ' · not-applicable ' + Number(oc['not-applicable'] || 0) + ' · blocked ' + Number(oc.blocked || 0) + '.',
-    '**Re-mining red flags:** ' + redFlagTotal + ' currently flagged across ' + ((remine.redFlags || []).length || 0) + ' invalid/missing-proof guardrails.',
-    '**Extraction dimensions:** ' + dimensionCount + ' tracked — Path bindings, tool cards, GUI controls, scripts/one-liners, command templates, terminal analyzers, Evidence expectations, path movement, lessons/examples, troubleshooting, cleanup, report guidance, product mechanics, product gaps, and additive Orange baseline.',
-    '**Re-mining dashboard/schema:** ' + (dashboardItem ? dashboardItem.status : 'unknown') + ' — overview-first dashboard with drill-down detail sections for the same generated state.'
-  ];
+  if (noteImpact) {
+    const r = noteImpact.review;
+    lines.push('**Notes review status:** ' + r.reviewed + '/' + r.total + ' reviewed; ' + r.pending + ' pending; ' + r.modeled + ' modeled; ' + r.privateOnly + ' private-only.');
+  }
+  if (noteProgress && remine) {
+    const reviewed = Number(noteProgress.reviewed || remine.sourceTotal || 0);
+    const audited = Number(remine.audited || remine.reminedNoteCount || 0);
+    const remaining = Math.max(0, reviewed - audited);
+    lines.push('**Source re-mining status:** ' + audited + '/' + reviewed + ' full-spectrum re-mined; ' + remaining + ' old-rubric-only notes remain.');
+  }
+  return lines;
 }
 
 function nextNotesBatchLines() {
@@ -175,68 +150,44 @@ function nextNotesBatchLines() {
   if (!batch) return [];
   return [
     '**Next notes batch:** **' + batch.label + '** (`' + batch.id + '`) — ' + batch.targetCount + ' notes from `' + batch.sourceRoute + '`.',
-    '**Next notes batch selector:** ' + batch.sourceSelector,
-    '**Next notes batch acceptance:** ' + batch.acceptance
+    '**Selector:** ' + batch.sourceSelector,
+    '**Acceptance:** ' + batch.acceptance
   ];
 }
 
 function sourceReviewPacketLines() {
   if (!sourceReviewPackets) return [];
   const p = sourceReviewPackets;
-  const htb = (p.sources || []).find(src => src.sourceId === 'htb-penetration-tester');
   return [
-    '**Private review packets:** `' + p.pointer + '` — ' + p.packetizedNotes + '/' + p.expectedNotes + ' notes in ' + p.packetCount + ' complete-text packets, ' + p.truncatedNotes + ' truncated, ' + Number(p.reviewTextChars).toLocaleString('en-US') + ' cleaned text chars.',
-    '**Raw source proof:** workflow run ' + p.proofRunId + ' verified ' + (htb ? 'HTB ENEX ' + Number(htb.bytes).toLocaleString('en-US') + ' bytes sha256 `' + htb.sha256.slice(0, 16) + '…`' : 'raw ENEX identity') + ' before packet generation.'
+    '**Private review packets:** `' + p.pointer + '` — ' + p.packetizedNotes + '/' + p.expectedNotes + ' notes, ' + p.packetCount + ' packets, ' + p.truncatedNotes + ' truncated.'
   ];
 }
 
-function runtimeConsolidationLines() {
-  const p = runtimeConsolidation.projection();
-  if (!p) return [];
+function nextItemLines(limit) {
+  const next = typeof q.concreteBuildNext === 'function' ? q.concreteBuildNext(limit) : q.buildNext(limit);
   return [
-    '**Runtime consolidation:** ' + p.startupRequests.after + ' operator startup requests, down from ' + p.startupRequests.before + ' (' + p.startupRequests.reductionPct + '% fewer).',
-    '**Current runtime ownership areas:** ' + p.areas.length + ' owners account for ' + p.consolidatedFragments + ' historical fragments — ' + p.flattenedHistoricalFragments + ' semantically flattened, ' + p.liveHistoricalFragments + ' still exact-owned; ' + p.retiredFragments + ' fragments stay retired in the frozen ledger.',
-    '**Runtime area owners:** ' + p.areas.map(area => area.label + ' (' + area.fragments + ', ' + area.strategy + ')').join(' · ') + '.',
-    '**Measured in Chromium (' + p.measured.release + '):** ' + p.measured.routes.map(route => route.label + ' ' + route.before + '→' + route.after).join(' · ') + ' JavaScript/CSS requests.',
-    '**Runtime compaction contract:** `docs/RUNTIME-COMPACTION.md`.'
+    '**Highest-priority concrete live items:**',
+    ...next.map((i, idx) => (idx + 1) + '. **' + i.label + '** — ' + i.detail)
   ];
-}
-
-function sourceLink(repo) {
-  const url = 'https://github.com/' + repo + '/tree/main/sources/raw';
-  return '[`' + url + '`](' + url + ')';
 }
 
 function block() {
   const totals = q.totals();
-  const tracks = q.trackSummary();
-  const next = typeof q.concreteBuildNext === 'function' ? q.concreteBuildNext(8) : q.buildNext(8);
   return [
     '<!-- OBOL-PRODUCT-BUILD-NEXT:START -->',
-    'This block is generated from `data/product-hardening/product-hardening-queue.js` plus `data/product-hardening/build-next-queue-hygiene-current.js`. Do not edit it manually.',
-    'Recommended work-package metadata comes from `data/product-hardening/work-packages.js`.',
-    'Runtime consolidation figures come from `data/runtime-consolidation-current.js`, the same projection the Product Hardening Dashboard renders.',
+    'Generated from the same queue sources as the Product Hardening Dashboard. Do not edit this block manually.',
     '',
     '**Current product-hardening queue:** ' + totals.complete + '/' + totals.total + ' complete (' + totals.pct + '%), ' + totals.queued + ' concrete queued, ' + totals.modeled + ' modeled/standing items.',
     '**Private notes source:** ' + sourceLink(q.notes.privateRepo) + ' — ' + totals.notes + ' notes and ' + totals.resources + ' embedded resources accounted.',
     ...sourceReviewPacketLines(),
-    ...noteImpactLines(),
-    ...noteReminingLines(),
+    ...notesStatusLines(),
     ...nextNotesBatchLines(),
-    ...runtimeConsolidationLines(),
     '',
     ...packageLines(),
     '',
-    ...standingGateLines(),
+    ...nextItemLines(5),
     '',
-    '**Highest-priority concrete live items:**',
-    ...next.map((i, idx) => (idx + 1) + '. **' + i.label + '** — ' + i.detail),
-    '',
-    '**Queue hygiene guardrail:** Completed packet work and standing umbrella gates must not appear as the next concrete build. `data/product-hardening/build-next-queue-hygiene-current.js` enforces this before README/dashboard rendering and CI validates it.',
-    '',
-    '**Track status:**',
-    ...tracks.map(t => '- **' + t.label + ':** ' + t.complete + '/' + t.total + ' complete (' + t.pct + '%), ' + t.modeled + ' modeled.'),
-    '',
+    '**Queue automation:** `data/product-hardening/product-hardening-queue.js`, `data/product-hardening/build-next-queue-hygiene-current.js`, `data/product-hardening/note-progress-current.js`, and `data/product-hardening/work-packages.js` are the queue owners. The dashboard and this README projection consume those same sources.',
     'Generated by `node tools/sync-product-build-next.js --write`. Verify with `node tools/sync-product-build-next.js --check`.',
     '<!-- OBOL-PRODUCT-BUILD-NEXT:END -->'
   ].join('\n');

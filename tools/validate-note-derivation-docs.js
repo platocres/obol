@@ -5,34 +5,39 @@ const path=require('path');
 
 const root=path.join(__dirname,'..');
 const failures=[];
+function exists(rel){return fs.existsSync(path.join(root,rel));}
 function read(rel){return fs.readFileSync(path.join(root,rel),'utf8');}
 function fail(message){failures.push(message);}
-function requireFile(rel){
- const file=path.join(root,rel);
- if(!fs.existsSync(file))fail(`Missing required derivation document: ${rel}`);
- return file;
-}
+function requireFile(rel){if(!exists(rel))fail(`Missing required derivation document: ${rel}`);}
 function requireText(rel,needle){
+ if(!exists(rel)){fail(`Missing required file for text check: ${rel}`);return;}
  const text=read(rel);
  if(!text.includes(needle))fail(`${rel} must include ${JSON.stringify(needle)}`);
 }
 function requireAnyText(rel,needles){
+ if(!exists(rel)){fail(`Missing required file for text check: ${rel}`);return;}
  const text=read(rel);
  if(!needles.some(needle=>text.includes(needle)))fail(`${rel} must include one of ${needles.map(JSON.stringify).join(', ')}`);
 }
 function forbidText(rel,needle){
+ if(!exists(rel))return;
  const text=read(rel);
  if(text.includes(needle))fail(`${rel} must not include stale text ${JSON.stringify(needle)}`);
 }
 
 for(const rel of [
+ 'README.md',
+ 'BUILDING.md',
+ 'docs/AGENT-WORKFLOW.md',
+ 'docs/PRODUCT-HARDENING.md',
+ 'docs/RAW-NOTES-LFS.md',
  'docs/NOTE-DERIVATION-STANDARD.md',
  'docs/NOTE-MINING-RUBRIC.md',
- 'docs/AGENT-WORKFLOW.md',
+ 'docs/NOTES-INTEGRATION.md',
  'docs/NOTES-IMPACT.md',
  'docs/CARD-UI-STANDARD.md',
  'docs/V9.55-CARD-EVIDENCE-OS-WINDOWS.md',
- 'README.md'
+ 'tools/sync-product-build-next.js'
 ])requireFile(rel);
 
 requireText('docs/NOTE-DERIVATION-STANDARD.md','Extract the value fully. Do not copy the expression.');
@@ -42,6 +47,11 @@ requireText('docs/NOTE-DERIVATION-STANDARD.md','Do not use `CHANGELOG.md` to dec
 requireText('docs/NOTE-DERIVATION-STANDARD.md','`data/product-hardening/note-progress-current.js`, especially `remining.auditRows`');
 requireText('docs/NOTE-DERIVATION-STANDARD.md','A note is not considered re-mined merely because a past changelog entry mentions its theme or packet.');
 
+requireText('docs/RAW-NOTES-LFS.md','The active raw note exports live in the private source repo');
+requireText('docs/RAW-NOTES-LFS.md','complete sequential packets');
+requireText('docs/RAW-NOTES-LFS.md','truncated_note_count=0');
+requireText('docs/RAW-NOTES-LFS.md','Without one of those, the PR may improve handoff documentation, but it must not mark raw-source re-mining complete.');
+
 requireText('docs/NOTE-MINING-RUBRIC.md','## Derivation standard');
 requireText('docs/NOTE-MINING-RUBRIC.md','Extract the value fully. Do not copy the expression.');
 requireText('docs/NOTE-MINING-RUBRIC.md','Light paraphrase is not enough.');
@@ -49,6 +59,8 @@ requireText('docs/NOTE-MINING-RUBRIC.md','`private-only` is a boundary for raw/p
 requireText('docs/NOTE-MINING-RUBRIC.md','What durable lesson can still be re-authored safely?');
 requireText('docs/NOTE-MINING-RUBRIC.md','confirmation that reusable educational value was extracted or cited as already covered before anything was marked private-only');
 
+requireText('docs/AGENT-WORKFLOW.md','This is the detailed, do-this-now workflow for an agent told to "read the README and keep developing."');
+requireText('docs/AGENT-WORKFLOW.md','The README keeps a short **Continue developing (start here)** summary; this document holds the full mechanics so the README can stay lean.');
 requireText('docs/AGENT-WORKFLOW.md','## 4. Mine, then use it in the same pass');
 requireText('docs/AGENT-WORKFLOW.md','public-safe useful finding');
 requireText('docs/AGENT-WORKFLOW.md','attach the finding to an existing Next Steps item');
@@ -73,6 +85,11 @@ requireAnyText('docs/AGENT-WORKFLOW.md',['## 4. Derive the value, do not copy th
 requireText('docs/AGENT-WORKFLOW.md','Use the private notes as source knowledge, not public text.');
 requireText('docs/AGENT-WORKFLOW.md','Mark an item `private-only` only for the raw/private substance that cannot be safely published, not for the durable lesson that can be rewritten.');
 requireText('docs/AGENT-WORKFLOW.md','`CHANGELOG.md` is release narrative only. Current re-mining status lives in `data/product-hardening/note-progress-current.js`');
+
+requireText('docs/NOTES-IMPACT.md','The derivation rule is: extract the educational value fully, then re-author the public output into Obol-owned form.');
+requireText('docs/NOTES-IMPACT.md','This does not excuse discarding reusable educational value that can be re-authored safely.');
+requireText('docs/NOTES-IMPACT.md','`data/product-hardening/note-progress-current.js` is the live source for re-mining status');
+requireText('docs/NOTES-IMPACT.md','`CHANGELOG.md` is release narrative only and must not be used to decide what remains to be re-mined.');
 
 requireText('docs/CARD-UI-STANDARD.md','Cards are for operators working a lab, not for agents explaining implementation decisions.');
 requireText('docs/CARD-UI-STANDARD.md','Every command shown on a card needs a useful explanation.');
@@ -101,17 +118,41 @@ requireText('docs/V9.55-CARD-EVIDENCE-OS-WINDOWS.md','window_marker_count`: `0`'
 requireText('docs/V9.55-CARD-EVIDENCE-OS-WINDOWS.md','windows-service-permission-review');
 requireText('docs/V9.55-CARD-EVIDENCE-OS-WINDOWS.md','windows-token-privilege-review');
 
-requireText('docs/NOTES-IMPACT.md','The derivation rule is: extract the educational value fully, then re-author the public output into Obol-owned form.');
-requireText('docs/NOTES-IMPACT.md','This does not excuse discarding reusable educational value that can be re-authored safely.');
-requireText('docs/NOTES-IMPACT.md','`data/product-hardening/note-progress-current.js` is the live source for re-mining status');
-requireText('docs/NOTES-IMPACT.md','`CHANGELOG.md` is release narrative only and must not be used to decide what remains to be re-mined.');
-
 requireText('README.md','## Continue developing (start here)');
-forbidText('README.md','## Future-agent quickstart');
 requireText('README.md','This is the single agent quickstart.');
 requireText('README.md','Extract the value, not the wording.');
 requireText('README.md','Do not use `CHANGELOG.md` to decide what remains to be re-mined.');
 requireText('README.md','[`docs/NOTE-DERIVATION-STANDARD.md`](docs/NOTE-DERIVATION-STANDARD.md)');
+requireText('README.md','**Next notes batch:**');
+requireText('README.md','**Queue automation:**');
+requireText('README.md','The dashboard and this README projection consume those same sources.');
+forbidText('README.md','## Future-agent quickstart');
+forbidText('README.md','## Current agent directive');
+forbidText('README.md','## Required context map');
+forbidText('README.md','**Negative finding outcomes:**');
+forbidText('README.md','**Runtime area owners:**');
+forbidText('README.md','**Track status:**');
+forbidText('README.md','docs/NEXT-NOTES-BATCH.md');
+
+if(exists('README.md')){
+ const readme=read('README.md');
+ const generated=readme.match(/<!-- OBOL-PRODUCT-BUILD-NEXT:START -->[\s\S]*?<!-- OBOL-PRODUCT-BUILD-NEXT:END -->/);
+ if(!generated)fail('README Product Build Next generated block is missing');
+ else{
+  const nonEmpty=generated[0].split('\n').filter(line=>line.trim()).length;
+  if(nonEmpty>45)fail(`README Product Build Next block is too noisy (${nonEmpty} non-empty lines; expected <=45). Keep detailed ledgers in the dashboard/docs.`);
+ }
+}
+
+const sync=exists('tools/sync-product-build-next.js')?read('tools/sync-product-build-next.js'):'';
+requireText('tools/sync-product-build-next.js','Generated from the same queue sources as the Product Hardening Dashboard. Do not edit this block manually.');
+requireText('tools/sync-product-build-next.js','function nextNotesBatchLines()');
+requireText('tools/sync-product-build-next.js','function notesStatusLines()');
+if(sync.includes('function runtimeConsolidationLines()'))fail('sync-product-build-next.js should not render runtime-consolidation ledgers into README');
+if(sync.includes('Negative finding outcomes'))fail('sync-product-build-next.js should keep negative finding outcome ledgers out of README');
+if(sync.includes('Track status'))fail('sync-product-build-next.js should keep full track ledgers out of README');
+
+if(exists('docs/NEXT-NOTES-BATCH.md'))fail('docs/NEXT-NOTES-BATCH.md duplicates the generated Next notes batch handoff; keep that handoff in Product Build Next and AGENT-WORKFLOW instead.');
 
 if(failures.length){
  console.error('Note derivation documentation validation failed:');
