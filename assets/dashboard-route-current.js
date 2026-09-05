@@ -115,33 +115,27 @@ function loadProductScripts(token){
     .then(()=>loaded)
     .finally(()=>restoreExtensionAutoLoad(previousDefer));
 }
+function unwrapDashboardDetails(aside){
+  const details=aside&&aside.querySelector&&aside.querySelector('#side-details');
+  if(!details)return;
+  for(const node of Array.from(details.childNodes)){
+    if(node.nodeType===1&&String(node.tagName||'').toLowerCase()==='summary')continue;
+    aside.insertBefore(node,details);
+  }
+  details.remove();
+}
 function enhanceSidebar(){
   if(!root.document)return;
-  root.document.body&&root.document.body.classList.add('obol-dashboard-active');
+  if(root.document.body)root.document.body.classList.add('obol-dashboard-active');
   const aside=root.document.querySelector('aside')||root.document.getElementById('sidebar');
   if(!aside)return;
-  let details=aside.querySelector('#side-details');
-  if(!details){
-    const nodes=Array.from(aside.childNodes);
-    details=root.document.createElement('details');
-    details.id='side-details';
-    details.dataset.obolDashboardSidebar='enhanced';
-    const summary=root.document.createElement('summary');
-    summary.textContent='Parameters / Facts';
-    details.appendChild(summary);
-    nodes.forEach(node=>details.appendChild(node));
-    aside.appendChild(details);
-  }
-  if(!details.dataset.userToggled)details.open=false;
-  if(!details.__obolToggleTracked){
-    details.__obolToggleTracked=true;
-    details.addEventListener('toggle',()=>{details.dataset.userToggled='true';});
-  }
+  unwrapDashboardDetails(aside);
+  aside.dataset.obolDashboardSidebar='panel-only';
 }
 function restoreSidebar(){
   if(root.document&&root.document.body)root.document.body.classList.remove('obol-dashboard-active');
-  const details=root.document&&root.document.querySelector('#side-details');
-  if(details)details.open=true;
+  const aside=root.document&&(root.document.querySelector('aside')||root.document.getElementById('sidebar'));
+  if(aside){unwrapDashboardDetails(aside);delete aside.dataset.obolDashboardSidebar;}
 }
 function refreshAssets(cycle){
   if(!instanceCurrent())return Promise.resolve(root.__OBOL_CURRENT_DASHBOARD_FRESHNESS__||null);
