@@ -11,7 +11,7 @@
  * suppresses historical schedulers and commits current route owners last.
  *
  * Historical fragment order sha256: 40e3006d9423d669acf5869b577ecf56a6ca2ee1629c95fd0fcc5d242d2c5f27
- * Generated body sha256: 9bc06066ba4459b5c5a955a4d3aeabf760954221e7acc05e96b46c8ca2f2e766
+ * Generated body sha256: 1d348882bd63640e5983b3f0175d0cc28289b766cc1bb60cc0292fa0cd0afe17
  * First historical fragment: assets/report-v2.js
  * Last historical fragment:  assets/app-v8.8.js
  */
@@ -1993,8 +1993,8 @@ if(__nativeMutationObserver)root.MutationObserver=__nativeMutationObserver;
 'use strict';
 (function(root){
 const release=Object.freeze({
- version:'9.60.0',
- label:'v9.60',
+ version:'9.61.0',
+ label:'v9.61',
  phase:'product-hardening',
  phaseLabel:'Product Hardening',
  orangeBaseline:'v8.8',
@@ -2004,7 +2004,8 @@ const release=Object.freeze({
   'data/product-hardening/proof-safety-evidence-ingestion-v9.58.js',
   'data/product-hardening/linux-privesc-remine-reconciliation-v9.59.js',
   'data/product-hardening/ui-quality-audit-rubric-v9.59.js',
-  'data/product-hardening/private-only-superseded-remining-v9.60.js'
+  'data/product-hardening/private-only-superseded-remining-v9.60.js',
+  'data/product-hardening/credential-dump-remining-v9.61.js'
  ])
 });
 function stampState(target){
