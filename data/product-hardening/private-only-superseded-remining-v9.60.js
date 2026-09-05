@@ -2,7 +2,7 @@
 
 (function initPrivateOnlySupersededReminingV960(root) {
   const WAVE = 'v9.60-private-only-superseded-remine';
-  const ITEM_ID = 'notes-remine-private-only-superseded';
+  const ITEM_ID = 'notes-remine-private-superseded';
   const THEME_ID = 'private-only-superseded';
   const PROOF_FILE = 'data/product-hardening/private-only-superseded-remining-v9.60.js';
 
@@ -234,7 +234,7 @@
     if (!q || !Array.isArray(q.items)) return false;
     let item = q.items.find((entry) => entry && entry.id === ITEM_ID);
     if (!item) {
-      item = { id: ITEM_ID, track: 'notes-integration', priority: 86.836, label: 'Re-mine private-only and superseded notes' };
+      item = { id: ITEM_ID, track: 'notes-integration', priority: 86.87, label: 'Re-mine private-only and superseded notes' };
       q.items.push(item);
     }
     Object.assign(item, {
