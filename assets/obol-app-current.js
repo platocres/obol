@@ -11,7 +11,7 @@
  * suppresses historical schedulers and commits current route owners last.
  *
  * Historical fragment order sha256: 40e3006d9423d669acf5869b577ecf56a6ca2ee1629c95fd0fcc5d242d2c5f27
- * Generated body sha256: 1f2aba2a91bc9c97342c741bb561f82c8f2d5735710e751fd708647c1691086f
+ * Generated body sha256: 9bc06066ba4459b5c5a955a4d3aeabf760954221e7acc05e96b46c8ca2f2e766
  * First historical fragment: assets/report-v2.js
  * Last historical fragment:  assets/app-v8.8.js
  */
@@ -2035,9 +2035,13 @@ function normalizeReportMarkdown(markdown){
 }
 function loadProductHardeningExtensions(){
  const sources=Array.from(release.productHardeningExtensions||[]);
+ if(root.__OBOL_DEFER_PRODUCT_HARDENING_EXTENSIONS__){
+  root.__OBOL_DEFERRED_PRODUCT_HARDENING_EXTENSIONS__=Object.freeze(sources.slice());
+  return;
+ }
  if(typeof document!=='undefined'){
   sources.forEach(src=>{
-   if(document.querySelector('script[data-obol-extension="'+src+'"]'))return;
+   if(document.querySelector('script[data-obol-extension="'+src+'"],script[data-obol-dashboard-src="'+src+'"]'))return;
    const script=document.createElement('script');
    script.src=src;
    script.async=false;
