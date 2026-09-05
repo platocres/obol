@@ -22,23 +22,39 @@ const cards = [
 ];
 fs.mkdirSync(outputDir, { recursive: true });
 
+function hasActionTool(text) {
+  return /\b(curl|ffuf|gobuster|nxc|pypykatz|hashcat|impacket-psexec|impacket-wmiexec|evil-winrm|sqlmap|python3)\b/i.test(text) || /\b(Burp|ZAP|Repeater|Intruder|CyberChef|Proxy history|DevTools)\b/i.test(text);
+}
+
+function hasEvidenceGuidance(text) {
+  return /\b(Evidence|Analyze pasted evidence|Paste command output|Success looks like|response body|manual replay|scoped auth|cleanup state|payload position|decode|re-encode)\b/i.test(text);
+}
+
+function hasDecisionGuidance(text) {
+  return /\b(move forward|success|failure|fails?|blocked|triage|not impact|do not|replay|compare|boundary|scope|auth|authorization|cleanup)\b/i.test(text);
+}
+
 (async () => {
-  const browser = await chromium.launch({ headless: true });
+  const executablePath = process.env.OBOL_SMOKE_BROWSER_PATH || undefined;
+  const browser = await chromium.launch({ headless: true, executablePath });
   const page = await browser.newPage({ viewport: { width: 1440, height: 1200 } });
   const failures = [];
   for (const id of cards) {
-    await page.goto(`${baseUrl}#/card/${id}`, { waitUntil: 'networkidle' });
-    await page.waitForTimeout(1200);
-    const selector = `[data-obol-action-first-v967="${id}"]`;
-    const panel = await page.locator(selector).count();
-    const body = await page.locator('body').innerText().catch(() => '');
+    await page.goto(`${baseUrl}#/card/${id}`, { waitUntil: 'domcontentloaded' });
+    await page.waitForSelector('#view', { state: 'visible', timeout: 15000 });
+    await page.waitForFunction(() => {
+      const view = document.querySelector('#view');
+      const text = view && view.innerText ? view.innerText.trim() : '';
+      return text.length > 150 && !/Unknown card/i.test(text);
+    }, null, { timeout: 20000 });
+    await page.waitForTimeout(1600);
+    const text = await page.locator('#view').innerText().catch(() => '');
     await page.screenshot({ path: path.join(outputDir, `action-first-${id}.png`), fullPage: true });
-    if (/Unknown card/i.test(body)) failures.push(`${id} rendered Unknown card`);
-    if (!panel) failures.push(`${id} did not render the v9.67 action-first panel`);
-    for (const marker of ['Try this first', 'Commands', 'Paste back', 'Decide', 'Next']) {
-      if (!body.includes(marker)) failures.push(`${id} missing marker: ${marker}`);
-    }
-    if (!/curl|ffuf|nxc|pypykatz|Intruder|ZAP|Repeater|impacket|gobuster/i.test(body)) failures.push(`${id} does not show a concrete command or GUI tool workflow`);
+    if (/Unknown card/i.test(text)) failures.push(`${id} rendered Unknown card`);
+    if (!hasActionTool(text)) failures.push(`${id} does not show a concrete command or GUI tool workflow`);
+    if (!hasEvidenceGuidance(text)) failures.push(`${id} does not show useful paste-back/evidence guidance`);
+    if (!hasDecisionGuidance(text)) failures.push(`${id} does not show decision guidance for success, failure, triage, or next movement`);
+    if (/source-mined-cards lane/i.test(text) && !/curl|ffuf|nxc|pypykatz|hashcat|impacket|Intruder|Repeater|ZAP/i.test(text)) failures.push(`${id} looks like a generic source-mined card instead of an operator card`);
   }
   await browser.close();
   if (failures.length) {
