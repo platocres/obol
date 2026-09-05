@@ -1,3 +1,11 @@
+## v9.63 — And v9.62 added useful source re-mining output, but the new card IDs used by those releases were not registered as normal live cards. Opening routes such as `#/card/web-proxy-transform-proof-chain` therefore produced `Unknown card`
+
+- `credential-dump-proof-chain`
+- `web-proxy-transform-proof-chain`
+- `web-client-controls`
+- `encoded-parameter-review`
+- `tool-generated-http-review`
+
 ## v9.62 — - Continued the generated `notes-batch-old-rubric-reviewed-remine-001` work with the next selected old-rubric reviewed source note after v9.61
 
 - Continued the generated `notes-batch-old-rubric-reviewed-remine-001` work with the next selected old-rubric reviewed source note after v9.61.
