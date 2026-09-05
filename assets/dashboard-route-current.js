@@ -51,12 +51,9 @@ function reviewSchemaAtLeast(major,minor){
 function unique(list){return Array.from(new Set((list||[]).filter(Boolean)));}
 function releaseProductHardeningExtensions(){
   const release=root.OBOL_CURRENT_RELEASE||{};
-  const manifest=root.OBOL_RUNTIME_MANIFEST||{};
+  const deferred=Array.isArray(root.__OBOL_DEFERRED_PRODUCT_HARDENING_EXTENSIONS__)?root.__OBOL_DEFERRED_PRODUCT_HARDENING_EXTENSIONS__:[];
   const fromRelease=Array.isArray(release.productHardeningExtensions)?release.productHardeningExtensions:[];
-  const fromManifest=manifest.lazy&&Array.isArray(manifest.lazy.productHardening)
-    ? manifest.lazy.productHardening.filter(src=>/^data\/product-hardening\/.*\.js$/.test(src))
-    : [];
-  return unique(fromRelease.concat(fromManifest));
+  return unique(fromRelease.concat(deferred));
 }
 const READY={
   'data/runtime-manifest.js':()=>!!root.OBOL_RUNTIME_MANIFEST,
@@ -104,12 +101,19 @@ function loadFreshScript(src,token,timeoutMs){
     (root.document.head||root.document.documentElement).appendChild(script);
   });
 }
+function restoreExtensionAutoLoad(previous){
+  if(previous===undefined)delete root.__OBOL_DEFER_PRODUCT_HARDENING_EXTENSIONS__;
+  else root.__OBOL_DEFER_PRODUCT_HARDENING_EXTENSIONS__=previous;
+}
 function loadProductScripts(token){
   const loaded=[];
+  const previousDefer=root.__OBOL_DEFER_PRODUCT_HARDENING_EXTENSIONS__;
+  root.__OBOL_DEFER_PRODUCT_HARDENING_EXTENSIONS__=true;
   return PRE_EXTENSION_SCRIPTS.reduce((chain,src)=>chain.then(()=>loadFreshScript(src,token).then(s=>{loaded.push(s);})),Promise.resolve())
     .then(()=>releaseProductHardeningExtensions().reduce((chain,src)=>chain.then(()=>loadFreshScript(src,token).then(s=>{loaded.push(s);})),Promise.resolve()))
     .then(()=>POST_EXTENSION_SCRIPTS.reduce((chain,src)=>chain.then(()=>loadFreshScript(src,token).then(s=>{loaded.push(s);})),Promise.resolve()))
-    .then(()=>loaded);
+    .then(()=>loaded)
+    .finally(()=>restoreExtensionAutoLoad(previousDefer));
 }
 function enhanceSidebar(){
   if(!root.document)return;
