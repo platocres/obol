@@ -17,6 +17,7 @@ function syntax(rel){
 }
 
 for(const rel of [
+  '.github/workflows/browser-smoke.yml',
   'data/current-release.js',
   'assets/dashboard-route-current.js',
   'assets/product-hardening-dashboard.js',
@@ -28,6 +29,12 @@ for(const rel of [
 syntax('data/current-release.js');
 syntax('assets/dashboard-route-current.js');
 syntax('assets/product-hardening-dashboard.js');
+
+requireText('.github/workflows/browser-smoke.yml','SHOULD_FULL_BROWSER');
+requireText('.github/workflows/browser-smoke.yml',"github.event_name == 'pull_request'");
+requireText('.github/workflows/browser-smoke.yml','SHOULD_DEEP_EQUIVALENCE');
+requireText('.github/workflows/browser-smoke.yml','Run full browser smoke');
+requireText('.github/workflows/browser-smoke.yml',"if: env.SHOULD_DEEP_EQUIVALENCE == 'true'");
 
 requireText('data/current-release.js','__OBOL_DEFER_PRODUCT_HARDENING_EXTENSIONS__');
 requireText('data/current-release.js','__OBOL_DEFERRED_PRODUCT_HARDENING_EXTENSIONS__');
