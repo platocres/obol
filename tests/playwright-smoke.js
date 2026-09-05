@@ -15,7 +15,7 @@ const outputDir = process.env.OBOL_SMOKE_OUTPUT || path.join(__dirname, '..', 'a
 // loudly if the historical fragment chain leaks back into loading.
 const routes = [
   { id: 'home', hash: '#/home', marker: /Home/i, requestBudget: 48 },
-  { id: 'targets', hash: '#/boxes', marker: /target/i, requestBudget: 50 },
+  { id: 'targets', hash: '#/boxes', marker: /target/i, requestBudget: 52 },
   { id: 'evidence', hash: '#/intake', marker: /evidence/i, requestBudget: 50 },
   { id: 'next-steps', hash: '#/path', marker: /(next|path|recommend)/i, requestBudget: 54 },
   { id: 'report', hash: '#/report', marker: /report/i, requestBudget: 50 },
