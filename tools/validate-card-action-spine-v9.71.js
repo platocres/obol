@@ -41,13 +41,26 @@ function seedSandbox() {
 function commandOk(command) {
   return !!(command && command.tool && command.run && (command.when || command.useWhen) && (command.evidence || command.expected));
 }
+function guiStepOk(step) {
+  if (!step) return false;
+  if (typeof step === 'string') return /\b(click|open|select|send|configure|set|inspect|export|copy|paste|compare|repeater|intruder|proxy|history|bloodhound|graph|cyberchef|devtools)\b/i.test(step);
+  const text = [step.tool, step.action, step.step, step.when, step.evidence, step.expected, step.selector, step.view].filter(Boolean).join(' ');
+  return !!(step.tool || step.view) && /\b(click|open|select|send|configure|set|inspect|export|copy|paste|compare|repeater|intruder|proxy|history|bloodhound|graph|cyberchef|devtools)\b/i.test(text) && /\b(evidence|request|response|output|export|copy|paste|compare|path|edge|body|status|header|cookie|graph)\b/i.test(text);
+}
+function hasActionSpine(card) {
+  const hasCommands = Array.isArray(card.commands) && card.commands.length > 0 && card.commands.every(commandOk);
+  const hasGui = Array.isArray(card.guiSteps) && card.guiSteps.length >= 3 && card.guiSteps.every(guiStepOk);
+  return { hasCommands, hasGui };
+}
 function badUiCopy(text) { return /Why this now|methodology gap|UNKNOWN|source-mining|source re-mining|release cleanup|patch panel|stabilizer/i.test(String(text || '')); }
 function validateCard(card, id, failures) {
   if (!card) { failures.push(id + ' is missing'); return; }
   const serialized = JSON.stringify(card);
   if (card.referenceOnly || card.hiddenFromNextSteps) failures.push(id + ' is hidden/referenceOnly but still primary');
-  if (!Array.isArray(card.commands) || !card.commands.length) failures.push(id + ' has no primary command spine');
-  else if (!card.commands.every(commandOk)) failures.push(id + ' has command entries without tool/run/when/evidence');
+  const spine = hasActionSpine(card);
+  if (!spine.hasCommands && !spine.hasGui) failures.push(id + ' has no concrete command-line or GUI-tool action spine');
+  if (Array.isArray(card.commands) && card.commands.length && !card.commands.every(commandOk)) failures.push(id + ' has command entries without tool/run/when/evidence');
+  if (Array.isArray(card.guiSteps) && card.guiSteps.length && !card.guiSteps.every(guiStepOk)) failures.push(id + ' has GUI steps without concrete tool/action/evidence guidance');
   if (!Array.isArray(card.expectedEvidence) || card.expectedEvidence.length < 3) failures.push(id + ' lacks expected evidence guidance');
   if (!Array.isArray(card.failureModes) || card.failureModes.length < 3) failures.push(id + ' lacks failure or inconclusive-output guidance');
   if (!Array.isArray(card.nextSteps) || card.nextSteps.length < 2) failures.push(id + ' lacks next-step movement guidance');
@@ -88,4 +101,4 @@ if (require.main === module) {
   }
   console.log(`v9.71 card action spine validation passed (${result.checkedCards} primary cards, ${result.extensions} extensions).`);
 }
-module.exports = { validate, PRIMARY, DEMOTED };
+module.exports = { validate, PRIMARY, DEMOTED, hasActionSpine };
