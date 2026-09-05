@@ -3,33 +3,37 @@
 (function initPassTheHashReminingV964(root) {
   const WAVE = 'v9.64-pass-the-hash-remine';
   const ITEM_ID = 'notes-mechanic-backfill';
-  const PROOF_FILE = 'data/product-hardening/pass-the-hash-remining-v9.64.js';
   const NOTE_ID = 'htb-penetration-tester-29b80edb4523461f';
+  const PROOF_FILE = 'data/product-hardening/pass-the-hash-remining-v9.64.js';
   const CARD_IDS = Object.freeze(['pass-the-hash-proof-chain', 'pth-remote-exec-artifacts', 'pth-token-filtering-check']);
-  const DIMENSIONS = Object.freeze(['path-bindings','tool-cards','gui-controls','scripts-one-liners','command-templates','terminal-analyzers','evidence-expectations','path-movement','lesson-boxes','examples','troubleshooting','cleanup','report-guidance','product-mechanics','product-gaps','orange-baseline']);
+  const DIMENSIONS = Object.freeze(['path-bindings', 'tool-cards', 'gui-controls', 'scripts-one-liners', 'command-templates', 'terminal-analyzers', 'evidence-expectations', 'path-movement', 'lesson-boxes', 'examples', 'troubleshooting', 'cleanup', 'report-guidance', 'product-mechanics', 'product-gaps', 'orange-baseline']);
+  const OUTCOMES = Object.freeze(['added', 'covered', 'queued', 'private-only', 'not-applicable', 'blocked']);
 
-  const freezeList = (list) => Object.freeze((list || []).slice());
-  const freezeObject = (value) => Object.freeze(value || {});
-  const unique = (list) => Array.from(new Set((list || []).filter(Boolean)));
-  const has = (text, pattern) => pattern.test(String(text || ''));
-  const hash = (value) => {
+  function freezeList(list) { return Object.freeze((list || []).slice()); }
+  function freezeObject(value) { return Object.freeze(value || {}); }
+  function unique(list) { return Array.from(new Set((list || []).filter(Boolean))); }
+  function has(text, pattern) { return pattern.test(String(text || '')); }
+  function hash(value) {
     const C = root.OBOL_CORE_V2;
     if (C && typeof C.simpleHash === 'function') return C.simpleHash(value);
-    let h = 0; const text = String(value || '');
+    let h = 0;
+    const text = String(value || '');
     for (let i = 0; i < text.length; i += 1) h = ((h << 5) - h + text.charCodeAt(i)) | 0;
     return String(Math.abs(h));
-  };
-  const redact = (value) => String(value || '')
-    .replace(/HTB\{[^}]+\}/gi, '[flag-redacted]')
-    .replace(/flag\{[^}]+\}/gi, '[flag-redacted]')
-    .replace(/\b\d{1,3}(?:\.\d{1,3}){3}:\d+\b/g, '[host:port]')
-    .replace(/\b\d{1,3}(?:\.\d{1,3}){3}\b/g, '[host]')
-    .replace(/\b[A-Fa-f0-9]{32}:\S+/g, '[ntlm-hash]:[redacted-secret]')
-    .replace(/\b[A-Fa-f0-9]{32,128}\b/g, '[hash-or-secret-material]')
-    .replace(/(-e\s+)[A-Za-z0-9+/=]{40,}/gi, '$1[base64-redacted]')
-    .replace(/(password|passwd|pwd|token|secret|api[_-]?key)\s*[:=]\s*([^\s;&|]+)/gi, '$1=[redacted]')
-    .replace(/(net\s+user\s+)([^\s]+)\s+([^\s]+)(\s+\/add)/gi, '$1[local-user] [redacted-password]$4')
-    .slice(0, 1100);
+  }
+  function redact(value) {
+    return String(value || '')
+      .replace(/HTB\{[^}]+\}/gi, '[flag-redacted]')
+      .replace(/flag\{[^}]+\}/gi, '[flag-redacted]')
+      .replace(/\b\d{1,3}(?:\.\d{1,3}){3}:\d+\b/g, '[host:port]')
+      .replace(/\b\d{1,3}(?:\.\d{1,3}){3}\b/g, '[host]')
+      .replace(/\b[A-Fa-f0-9]{32}:\S+/g, '[ntlm-hash]:[redacted-secret]')
+      .replace(/\b[A-Fa-f0-9]{32,128}\b/g, '[hash-or-secret-material]')
+      .replace(/(-e\s+)[A-Za-z0-9+/=]{40,}/gi, '$1[base64-redacted]')
+      .replace(/(password|passwd|pwd|token|secret|api[_-]?key)\s*[:=]\s*([^\s;&|]+)/gi, '$1=[redacted]')
+      .replace(/(net\s+user\s+)([^\s]+)\s+([^\s]+)(\s+\/add)/gi, '$1[local-user] [redacted-password]$4')
+      .slice(0, 1100);
+  }
 
   const SOURCE_CONFIDENCE = freezeObject({
     schemaVersion: 2,
@@ -55,7 +59,7 @@
 
   const PRODUCT_CHANGES = freezeList(['field-note:note-pth-is-protocol-scoped-auth-material', 'field-note:note-pth-success-is-host-and-privilege-scoped', 'field-note:note-pth-remote-exec-leaves-artifacts', 'field-note:note-pth-local-admin-token-filtering-check', 'evidence-parser-change:pass-the-hash-output-analyzer', 'path-guidance:pass-the-hash-proof-chain', 'live-card:pass-the-hash-proof-chain', 'live-card:pth-remote-exec-artifacts', 'live-card:pth-token-filtering-check']);
 
-  const decision = (outcome, fields) => freezeObject({ outcome, ...(fields || {}) });
+  function decision(outcome, fields) { return freezeObject({ outcome, ...(fields || {}) }); }
   const REMINE_AUDIT_ROWS = freezeList([freezeObject({
     noteId: NOTE_ID,
     title: 'Pass-the-Hash protocol and execution proof chain',
@@ -107,7 +111,15 @@
     if (outcomeFacts.includes('auth.failure_or_lockout_signal_observed')) warnings.push('Failure is scoped to the tested service, identity, and moment. Check policy, protocol, token filtering, and reachability before discarding the material.');
     if (outcomeFacts.includes('auth.token_filtering_or_restricted_admin_observed')) warnings.push('Remote UAC, token filtering, and restricted-admin settings can change PtH behavior, especially for local administrator accounts.');
     if (outcomeFacts.includes('auth.pass_the_hash_attempt_observed') && !outcomeFacts.includes('auth.remote_admin_indicator_observed') && !outcomeFacts.includes('auth.remote_execution_artifact_observed')) warnings.push('A PtH command or module invocation is only an attempt until an authentication or server-side behavior response is captured.');
-    const recommendedNextState = outcomeFacts.includes('auth.remote_execution_artifact_observed') ? 'record-scoped-remote-exec-and-cleanup' : outcomeFacts.includes('auth.remote_admin_indicator_observed') ? 'record-scoped-admin-proof-before-expanding' : outcomeFacts.includes('auth.failure_or_lockout_signal_observed') || outcomeFacts.includes('auth.token_filtering_or_restricted_admin_observed') ? 'troubleshoot-protocol-policy-or-token-filtering' : outcomeFacts.includes('auth.nt_hash_material_observed') || outcomeFacts.includes('auth.pass_the_hash_attempt_observed') ? 'validate-hash-against-one-scoped-service' : 'no-pass-the-hash-signal';
+    const recommendedNextState = outcomeFacts.includes('auth.remote_execution_artifact_observed')
+      ? 'record-scoped-remote-exec-and-cleanup'
+      : outcomeFacts.includes('auth.remote_admin_indicator_observed')
+        ? 'record-scoped-admin-proof-before-expanding'
+        : outcomeFacts.includes('auth.failure_or_lockout_signal_observed') || outcomeFacts.includes('auth.token_filtering_or_restricted_admin_observed')
+          ? 'troubleshoot-protocol-policy-or-token-filtering'
+          : outcomeFacts.includes('auth.nt_hash_material_observed') || outcomeFacts.includes('auth.pass_the_hash_attempt_observed')
+            ? 'validate-hash-against-one-scoped-service'
+            : 'no-pass-the-hash-signal';
     const redactedSnippet = redact(raw);
     return freezeObject({ analyzerId: 'pass-the-hash-output-analyzer', matchCount: matches.length, matches: freezeList(matches), outcomeFacts, warnings: freezeList(warnings), recommendedNextState, redactedSnippet, snippetHash: hash(redactedSnippet) });
   }
@@ -132,13 +144,12 @@
     if (!lane || !card || liveCard(card.id)) return false;
     const row = { ...card, lane: card.lane || lane.lane };
     if (typeof root.addCardAfter === 'function') return root.addCardAfter(lane, afterId, row);
-    if (!Array.isArray(lane.cards)) lane.cards = [];
     const index = lane.cards.findIndex((entry) => entry && entry.id === afterId);
     lane.cards.splice(index >= 0 ? index + 1 : lane.cards.length, 0, row);
     if (root.CARDS && typeof root.CARDS === 'object') root.CARDS[row.id] = row;
     return true;
   }
-  function cards() {
+  function buildCards() {
     return [
       { id: 'pass-the-hash-proof-chain', lane: 'credentials', title: 'Pass-the-Hash Proof Chain', hypothesis: 'Treat an NT hash as protocol-scoped authentication material. Preserve material class, identity, local or domain scope, protocol, target service, result, privilege level, and cleanup state as separate proof steps.', prereq: { any: ['credential.material', 'auth.nt_hash_material_observed', 'credential.candidate'] }, produces: ['credential.hash_validation_scoped', 'auth.pass_the_hash_attempt_observed'], commands: [
         { tool: 'nxc', run: 'nxc smb {{target}} -u {{user}} -H {{hash}} --local-auth', note: 'Validate one local-account NT hash against one SMB target. Remove --local-auth for a domain-scoped account only when the domain scope is proven.' },
@@ -150,18 +161,106 @@
       { id: 'pth-token-filtering-check', lane: 'credentials', title: 'Check PtH Token Filtering and Account Scope', hypothesis: 'When a hash works in one place but not another, keep local-account scope, domain scope, remote UAC behavior, restricted-admin settings, service reachability, and lockout policy separate before judging the material.', prereq: { any: ['auth.failure_or_lockout_signal_observed', 'auth.token_filtering_or_restricted_admin_observed', 'auth.local_account_scope_observed'] }, produces: ['auth.pth_scope_troubleshot'], commands: [], expected: ['account scope identified', 'protocol and service checked', 'token-filtering or restricted-admin state considered', 'failure not over-generalized'], defender: 'Troubleshooting should not become broad spraying. Keep the next test narrow and preserve the policy context.', report: { finding: 'PtH Scope and Token Filtering Review', severity: 'medium' }, tools: ['nxc', 'crackmapexec', 'evil-winrm', 'reg', 'powershell'], refs: [], sourceMined64: { proof: PROOF_FILE, notes: ['note-pth-local-admin-token-filtering-check'] } },
     ];
   }
-  function installCards() { const lane = ensureLane('credentials', 'Credential Attacks', 'Credential Attacks'); if (!lane) return false; let after = 'auth-material-scope-analyzer'; for (const card of cards()) { publishCard(lane, after, card); after = card.id; } return CARD_IDS.every((id) => liveCard(id)); }
-  function noteById(id) { const notes = root.OBOL_NOTE_INTEGRATION && Array.isArray(root.OBOL_NOTE_INTEGRATION.publicFieldNotes) ? root.OBOL_NOTE_INTEGRATION.publicFieldNotes : []; return notes.find((note) => note && note.id === id) || null; }
-  function upsertPublicNotes() { const prev = root.OBOL_NOTE_INTEGRATION || {}; const byId = new Map((Array.isArray(prev.publicFieldNotes) ? prev.publicFieldNotes : []).map((note) => [note && note.id, note]).filter((pair) => pair[0])); for (const note of PUBLIC_NOTES) byId.set(note.id, note); root.OBOL_NOTE_INTEGRATION = freezeObject({ ...prev, publicFieldNotes: freezeList(Array.from(byId.values())), __passTheHashReminingV964: true }); return true; }
-  function installEvidenceIngestion() { const T = root.OBOL_INTAKE_V21; if (!T || typeof T.analyzeTerminal !== 'function' || T.analyzeTerminal.__passTheHashReminingV964) return false; const original = T.analyzeTerminal; try { T.analyzeTerminal = function passTheHashAnalyzeTerminal(text) { const result = original.apply(this, arguments) || {}; const analysis = analyzePassTheHashOutput(text); if (analysis.matchCount) { const activities = Array.isArray(result.activities) ? result.activities.slice() : []; activities.push(freezeObject({ id: 'evidence-pass-the-hash-' + analysis.snippetHash, cardId: 'pass-the-hash-proof-chain', title: 'Pass-the-Hash evidence reviewed', result: analysis.outcomeFacts.includes('auth.remote_execution_artifact_observed') || analysis.outcomeFacts.includes('auth.remote_admin_indicator_observed') ? 'interesting' : 'triage', summary: analysis.warnings[0] || 'Hash-based authentication evidence needs scoped validation.', facts: analysis.outcomeFacts })); result.activities = activities; result.passTheHashEvidence64 = analysis; } return result; }; T.analyzeTerminal.__passTheHashReminingV964 = true; return true; } catch (_err) { return false; } }
-  function updateProgress() { const base = root.OBOL_PRODUCT_HARDENING_NOTE_PROGRESS || {}; const current = base.remining || {}; const key = (row) => String(row.reviewWave || '') + ':' + String(row.noteId || ''); const auditRows = freezeList(Array.from(current.auditRows || []).concat(Array.from(REMINE_AUDIT_ROWS)).filter((row, index, list) => list.findIndex((entry) => key(entry) === key(row)) === index)); root.OBOL_PRODUCT_HARDENING_NOTE_PROGRESS = freezeObject({ ...base, remining: freezeObject({ ...current, dimensions: freezeList(unique(Array.from(current.dimensions || []).concat(Array.from(DIMENSIONS)))), auditRows, remineAuditRows: auditRows, audited: Math.max(Number(current.audited || 0), 66), reminedNoteCount: Math.max(Number(current.reminedNoteCount || 0), 66), oldRubricOnlyRemaining: Math.min(Number(current.oldRubricOnlyRemaining == null ? 69 : current.oldRubricOnlyRemaining), 69), latestWave: WAVE, latestSelectorBatch: SOURCE_CONFIDENCE.selectorBatch, latestSelectorBatchProgress: freezeObject({ selected: 3, target: 20, remainingInBatch: 17 }), evidenceIngestionBuilt: freezeList(unique(Array.from(current.evidenceIngestionBuilt || []).concat(['pass-the-hash-proof-chain']))) }) }); return true; }
-  function updateQueue() { const q = root.OBOL_PRODUCT_HARDENING; if (!q || !Array.isArray(q.items)) return false; root.OBOL_PRODUCT_HARDENING = freezeObject({ ...q, items: freezeList(q.items.map((item) => item && item.id === ITEM_ID ? freezeObject({ ...item, status: 'queued', latestPartialRemineWave: WAVE, latestPartialRemineProof: PROOF_FILE, latestPartialRemineOutputIds: freezeList(PUBLIC_NOTES.map((note) => note.id)), detail: 'v9.64 re-mined the third selected old-rubric note into PtH protocol-scope, validation, remote-exec artifact, token-filtering, Evidence analyzer, and visible card-route logic. The full re-mining gate remains open.' }) : item)) }); return true; }
-  function validate() { const failures = []; for (const note of PUBLIC_NOTES) if (!noteById(note.id)) failures.push('Missing public field note ' + note.id); for (const id of CARD_IDS) if (!liveCard(id)) failures.push('Missing live card route ' + id); return freezeList(failures); }
-  function integrate() { upsertPublicNotes(); const cardsInstalled = installCards(); const evidenceInstalled = installEvidenceIngestion(); updateProgress(); updateQueue(); const failures = validate(); root.OBOL_PASS_THE_HASH_REMINING_V964 = freezeObject({ wave: WAVE, status: failures.length ? 'partial' : 'live-integrated', cardsInstalled, evidenceInstalled, failures, cardIds: freezeList(CARD_IDS), noteIds: freezeList(PUBLIC_NOTES.map((note) => note.id)) }); return root.OBOL_PASS_THE_HASH_REMINING_V964; }
+  function installCards() {
+    const lane = ensureLane('credentials', 'Credential Attacks', 'Credential Attacks');
+    if (!lane) return false;
+    let after = 'auth-material-scope-analyzer';
+    for (const card of buildCards()) { publishCard(lane, after, card); after = card.id; }
+    return CARD_IDS.every((id) => liveCard(id));
+  }
+  function noteById(id) {
+    const notes = root.OBOL_NOTE_INTEGRATION && Array.isArray(root.OBOL_NOTE_INTEGRATION.publicFieldNotes) ? root.OBOL_NOTE_INTEGRATION.publicFieldNotes : [];
+    return notes.find((note) => note && note.id === id) || null;
+  }
+  function upsertPublicNotes() {
+    const prev = root.OBOL_NOTE_INTEGRATION || {};
+    const byId = new Map((Array.isArray(prev.publicFieldNotes) ? prev.publicFieldNotes : []).map((note) => [note && note.id, note]).filter((pair) => pair[0]));
+    for (const note of PUBLIC_NOTES) byId.set(note.id, note);
+    root.OBOL_NOTE_INTEGRATION = freezeObject({ ...prev, publicFieldNotes: freezeList(Array.from(byId.values())), __passTheHashReminingV964: true });
+    return true;
+  }
+  function installEvidenceIngestion() {
+    const T = root.OBOL_INTAKE_V21;
+    if (!T || typeof T.analyzeTerminal !== 'function' || T.analyzeTerminal.__passTheHashReminingV964) return false;
+    const original = T.analyzeTerminal;
+    try {
+      T.analyzeTerminal = function passTheHashAnalyzeTerminal(text) {
+        const result = original.apply(this, arguments) || {};
+        const analysis = analyzePassTheHashOutput(text);
+        if (analysis.matchCount) {
+          const activities = Array.isArray(result.activities) ? result.activities.slice() : [];
+          activities.push(freezeObject({ id: 'evidence-pass-the-hash-' + analysis.snippetHash, cardId: 'pass-the-hash-proof-chain', title: 'Pass-the-Hash evidence reviewed', result: analysis.outcomeFacts.includes('auth.remote_execution_artifact_observed') || analysis.outcomeFacts.includes('auth.remote_admin_indicator_observed') ? 'interesting' : 'triage', summary: analysis.warnings[0] || 'Hash-based authentication evidence needs scoped validation.', facts: analysis.outcomeFacts }));
+          result.activities = activities;
+          result.passTheHashEvidence64 = analysis;
+        }
+        return result;
+      };
+      T.analyzeTerminal.__passTheHashReminingV964 = true;
+      return true;
+    } catch (_err) { return false; }
+  }
+  function updateProgress() {
+    const base = root.OBOL_PRODUCT_HARDENING_NOTE_PROGRESS || {};
+    const current = base.remining || {};
+    const key = (row) => String(row.reviewWave || '') + ':' + String(row.noteId || '');
+    const auditRows = freezeList(Array.from(current.auditRows || []).concat(Array.from(REMINE_AUDIT_ROWS)).filter((row, index, list) => list.findIndex((entry) => key(entry) === key(row)) === index));
+    root.OBOL_PRODUCT_HARDENING_NOTE_PROGRESS = freezeObject({
+      ...base,
+      remining: freezeObject({
+        ...current,
+        dimensions: freezeList(unique(Array.from(current.dimensions || []).concat(Array.from(DIMENSIONS)))),
+        allowedOutcomes: freezeList(unique(Array.from(current.allowedOutcomes || []).concat(Array.from(OUTCOMES)))),
+        auditRows,
+        remineAuditRows: auditRows,
+        audited: Math.max(Number(current.audited || 0), 66),
+        reminedNoteCount: Math.max(Number(current.reminedNoteCount || 0), 66),
+        oldRubricOnlyRemaining: Math.min(Number(current.oldRubricOnlyRemaining == null ? 69 : current.oldRubricOnlyRemaining), 69),
+        latestWave: WAVE,
+        latestSelectorBatch: SOURCE_CONFIDENCE.selectorBatch,
+        latestSelectorBatchProgress: freezeObject({ selected: 3, target: 20, remainingInBatch: 17 }),
+        evidenceIngestionBuilt: freezeList(unique(Array.from(current.evidenceIngestionBuilt || []).concat(['pass-the-hash-proof-chain']))),
+      }),
+    });
+    return true;
+  }
+  function updateQueue() {
+    const q = root.OBOL_PRODUCT_HARDENING;
+    if (!q || !Array.isArray(q.items)) return false;
+    const item = q.items.find((entry) => entry && entry.id === ITEM_ID);
+    if (!item) return false;
+    item.status = 'queued';
+    item.latestPartialRemineWave = WAVE;
+    item.latestPartialRemineProof = PROOF_FILE;
+    item.latestPartialRemineOutputIds = freezeList(PUBLIC_NOTES.map((note) => note.id));
+    item.latestPartialRemineDetail = 'v9.64 re-mined the third selected old-rubric note into PtH protocol-scope, validation, remote-exec artifact, token-filtering, Evidence analyzer, and visible card-route logic. The full re-mining gate remains open.';
+    return true;
+  }
+  function validate() {
+    const failures = [];
+    for (const note of PUBLIC_NOTES) if (!noteById(note.id)) failures.push('Missing public field note ' + note.id);
+    for (const id of CARD_IDS) if (!liveCard(id)) failures.push('Missing live card route ' + id);
+    return freezeList(failures);
+  }
+  function integrate() {
+    upsertPublicNotes();
+    const cardsInstalled = installCards();
+    const evidenceInstalled = installEvidenceIngestion();
+    updateProgress();
+    updateQueue();
+    const failures = validate();
+    root.OBOL_PASS_THE_HASH_REMINING_V964 = freezeObject({ wave: WAVE, status: failures.length ? 'partial' : 'live-integrated', cardsInstalled, evidenceInstalled, failures, cardIds: freezeList(CARD_IDS), noteIds: freezeList(PUBLIC_NOTES.map((note) => note.id)) });
+    return root.OBOL_PASS_THE_HASH_REMINING_V964;
+  }
 
   const packet = freezeObject({ wave: WAVE, status: 'live-integrated', queueItemId: ITEM_ID, sourceConfidence: SOURCE_CONFIDENCE, publicNotes: PUBLIC_NOTES, productChanges: PRODUCT_CHANGES, remineAuditRows: REMINE_AUDIT_ROWS, cardIds: freezeList(CARD_IDS), analyzePassTheHashOutput, integrate, validate });
   root.OBOL_PASS_THE_HASH_REMINING_PACKET_V964 = packet;
   integrate();
-  if (typeof window !== 'undefined') { let tries = 0; const schedule = typeof window.setTimeout === 'function' ? window.setTimeout.bind(window) : null; const attempt = () => { const result = integrate(); tries += 1; if (result.failures.length && tries < 160 && schedule) schedule(attempt, 50); }; if (schedule) schedule(attempt, 0); if (typeof window.addEventListener === 'function') { window.addEventListener('hashchange', attempt); window.addEventListener('focus', attempt); } }
+  if (typeof window !== 'undefined') {
+    let tries = 0;
+    const schedule = typeof window.setTimeout === 'function' ? window.setTimeout.bind(window) : null;
+    const attempt = () => { const result = integrate(); tries += 1; if (result.failures.length && tries < 160 && schedule) schedule(attempt, 50); };
+    if (schedule) schedule(attempt, 0);
+    if (typeof window.addEventListener === 'function') { window.addEventListener('hashchange', attempt); window.addEventListener('focus', attempt); }
+  }
   if (typeof module !== 'undefined' && module.exports) module.exports = packet;
 })(typeof window !== 'undefined' ? window : globalThis);
