@@ -37,6 +37,8 @@ const liveGateValidator = fs.readFileSync(path.join(__dirname, '..', 'tools', 'v
 const prTemplate = fs.readFileSync(path.join(__dirname, '..', '.github', 'pull_request_template.md'), 'utf8');
 assert(gapGuardDoc.includes('Same-surface gap parking is forbidden'), 'same-surface gap parking guard must exist');
 assert(gapGuardDoc.includes('Build it now'), 'same-surface gap parking guard must force buildable work into the current pass');
+assert(gapGuardDoc.includes('Evidence ingestion is part of the build'), 'same-surface guard must require Evidence ingestion for built command/control/analyzer work');
+assert(gapGuardDoc.includes('Static cards, command templates, GUI controls, or dashboard rows without Evidence ingestion are incomplete'), 'same-surface guard must reject static-card-only completion');
 assert(liveGateValidator.includes('SAME-SURFACE-GAP-PARKING-GUARD.md'), 'live integration validator must enforce the gap parking guard doc');
 assert(prTemplate.includes('No same-surface gap parking'), 'PR template must include the same-surface gap parking checkbox');
 
