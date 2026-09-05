@@ -20,6 +20,7 @@ const checks=[
  ['tests/run-v9.70-tests.js'],
  ['tests/run-v9.71-tests.js'],
  ['tests/run-v9.72-tests.js'],
+ ['tests/run-v9.73-tests.js'],
  ['tools/validate-card-action-spine-v9.71.js'],
  ['tools/validate-linux-final-remine-v9.72.js'],
  ['tools/validate-path-card-uniqueness-v9.72.js'],
