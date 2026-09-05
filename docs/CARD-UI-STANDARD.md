@@ -4,18 +4,28 @@ Cards are for operators working a lab, not for agents explaining implementation 
 
 ## User-facing rule
 
-A user-visible card should answer the operator's immediate questions:
+A user-visible primary card should answer the operator's immediate questions:
 
 - What situation does this help with?
 - What evidence makes the card relevant?
-- What commands or checks should I run?
+- What commands or terminal-driven tool checks should I run?
+- What variables do I fill in?
+- Why are we using this tool at this point in the lab?
 - What does each command prove or narrow down?
 - What does success look like?
 - What should I do when the command fails or the output is inconclusive?
 - What facts does this card produce for the next path step?
 - What detection, cleanup, or reporting caveat matters?
 
-Do not render implementation artifacts in card UI. Forbidden user-facing artifacts include owner names, runtime plumbing, route fallback explanations, startup index details, dashboard accounting notes, source-mining provenance, release bookkeeping, or copy explaining why a UI component exists.
+Do not render implementation artifacts in card UI. Forbidden user-facing artifacts include owner names, runtime plumbing, route fallback explanations, startup index details, dashboard accounting notes, source-mining provenance, release bookkeeping, methodology-gap labels, or copy explaining why a UI component exists.
+
+## Action spine rule
+
+A primary Next Steps card must have an action spine. The action spine is the concrete command or terminal-driven tool action that advances the lab. Lessons, note summaries, background, and field notes are encouraged, but they must explain the command spine rather than replace it.
+
+A card with no runnable command template is not a cleaner card after blank sections are hidden. It is not a primary card. Merge it into an existing card, demote it to field notes, attach it to an analyzer, or delete it.
+
+Blank implementation blocks, `UNKNOWN` tool labels, empty recommended/alternative tool rows, and release/provenance language are release-blocking UI defects.
 
 ## Command explanation rule
 
@@ -57,6 +67,6 @@ Do not hide useful command blocks behind awkward scaffolding. Labels such as `To
 
 Card pages must not be rewritten into a separate tool-stack layout after the shared card renderer runs. Route decorators may improve styling or add genuinely useful controls, but they must not move the card's primary commands into a collapsed legacy section, hide the only actionable checks, or replace per-command explanations with implementation scaffolding.
 
-A Direct card route is acceptable only when it renders the same shared card UI a user would expect from the normal path: title, hypothesis, gates, produced facts, commands with explanations, failure routing, defender/reporting context, queue controls, tried/succeeded controls, intake evidence, evidence textarea, execution context, and implementation selection.
+A Direct card route is acceptable only when it renders the same shared card UI a user would expect from the normal path: title, hypothesis, gates, produced facts, commands with explanations, failure routing, defender/reporting context, queue controls, tried/succeeded controls, intake evidence, evidence textarea, execution context, implementation selection, and educational field notes.
 
 Current-owner or dynamically inserted cards must register into the shared card index, or the card route must resolve them from the live lane model before rendering. A fake fallback that imitates a card but skips normal controls is not acceptable.
