@@ -5,7 +5,7 @@ const path = require('path');
 const vm = require('vm');
 
 const root = path.join(__dirname, '..');
-const ACTIONABLE_FILE = 'data/product-hardening/actionable-card-contract-v9.66.js';
+const ACTION_FIRST_FILE = 'data/product-hardening/action-first-card-cleanup-v9.67.js';
 const RECONCILIATION_FILE = 'data/product-hardening/note-card-disposition-reconciliation-v9.68.js';
 const REMOVED_PANEL_FILE = 'data/product-hardening/action-first-card-cleanup-stabilize-v9.67.js';
 const HISTORICAL_REQUIRED_IDS = [
@@ -49,56 +49,57 @@ function currentReleaseExtensions() {
   if (!release || !Array.isArray(release.productHardeningExtensions)) throw new Error('Missing current release Product Hardening extension list');
   return Array.from(release.productHardeningExtensions);
 }
-function extractOverlayChunk(source, id) {
-  const patterns = [`'${id}': overlay(`, `"${id}": overlay(`];
-  const start = patterns.map((needle) => source.indexOf(needle)).filter((pos) => pos >= 0).sort((a, b) => a - b)[0];
-  if (start === undefined) return '';
-  const nextSingle = source.indexOf("\n    '", start + 2);
-  const nextDouble = source.indexOf('\n    "', start + 2);
-  const end = [nextSingle, nextDouble].filter((pos) => pos > start).sort((a, b) => a - b)[0] || Math.min(source.length, start + 9000);
-  return source.slice(start, end);
+function scriptLoader() {
+  const sandbox = { console, window: undefined, globalThis: null, module: { exports: {} } };
+  sandbox.globalThis = sandbox;
+  sandbox.CARDS = Object.fromEntries(HISTORICAL_REQUIRED_IDS.map((id) => [id, { id, title: id, lane: 'test', expected: [], tools: [] }]));
+  sandbox.OBOL_LANES = [{ lane: 'test', title: 'Test', phase: 'Test', cards: Object.values(sandbox.CARDS) }];
+  sandbox.liveCardById = (id) => sandbox.CARDS[id] || null;
+  vm.createContext(sandbox);
+  return {
+    sandbox,
+    run(rel) { vm.runInContext(read(rel), sandbox, { filename: rel }); },
+  };
 }
-function listCount(chunk, needle) {
-  const start = chunk.indexOf(needle);
-  if (start < 0) return 0;
-  const section = chunk.slice(start, Math.min(chunk.length, start + 2200));
-  return (section.match(/'[^']{3,}'|"[^"]{3,}"/g) || []).length;
+function commandOk(command) {
+  return !!(command && command.tool && command.run && (command.useWhen || command.when) && (command.expected || command.evidence));
 }
-function commandQuality(chunk) {
-  const start = chunk.indexOf('[cmd(');
-  if (start < 0) return { count: 0, quality: false };
-  const section = chunk.slice(start, Math.min(chunk.length, start + 2400));
-  const count = (section.match(/cmd\(/g) || []).length;
-  return { count, quality: count > 0 && /useWhen|expected/.test(read(ACTIONABLE_FILE)) };
+function validateCard(card, id, failures) {
+  if (!card) { failures.push(`${id} is missing from the current primary card set`); return; }
+  if (card.referenceOnly === true || card.hiddenFromNextSteps === true) failures.push(`${id} is hidden/referenceOnly but still primary`);
+  if (!card.operatorGoal || card.operatorGoal.length < 40) failures.push(`${id} lacks a practical operator goal`);
+  const hasCommands = Array.isArray(card.commands) && card.commands.length > 0 && card.commands.every(commandOk);
+  const hasGui = Array.isArray(card.guiSteps) && card.guiSteps.length >= 4;
+  if (!hasCommands && !hasGui) failures.push(`${id} must have command templates or concrete GUI workflow steps`);
+  if (!Array.isArray(card.expectedEvidence) || card.expectedEvidence.length < 3) failures.push(`${id} needs expected evidence guidance`);
+  if (!Array.isArray(card.failureModes) || card.failureModes.length < 3) failures.push(`${id} needs failure/decision guidance`);
+  if (!Array.isArray(card.nextSteps) || card.nextSteps.length < 2) failures.push(`${id} needs next-step guidance`);
 }
-function validateDemotionMap(reconciliationSource, failures) {
+function validateDemotionRuntime(sandbox, failures) {
+  const status = sandbox.OBOL_NOTE_CARD_DISPOSITION_RECONCILIATION_V968;
+  if (!status) { failures.push('v9.68 reconciliation did not publish runtime status'); return; }
   for (const [id, parent] of Object.entries(DEMOTED)) {
-    if (!reconciliationSource.includes(`'${id}'`) && !reconciliationSource.includes(`"${id}"`)) failures.push(`${id} is not declared as demoted/merged in ${RECONCILIATION_FILE}`);
-    if (!reconciliationSource.includes(`into: '${parent}'`) && !reconciliationSource.includes(`into: "${parent}"`)) failures.push(`${id} does not merge into current primary card ${parent}`);
+    if (!Array.isArray(status.demotedCardIds) || !status.demotedCardIds.includes(id)) failures.push(`${id} is not listed as demoted by v9.68`);
+    if (sandbox.CARDS[id]) failures.push(`${id} still resolves as a primary card after reconciliation`);
+    const parentCard = sandbox.CARDS[parent];
+    if (!parentCard) failures.push(`${id} parent ${parent} is missing`);
+    else if (!Array.isArray(parentCard.mergedNoteCardIds) || !parentCard.mergedNoteCardIds.includes(id)) failures.push(`${id} was not merged into parent card ${parent}`);
   }
 }
 function validateActionableNextStepCards() {
   const failures = [];
-  const source = read(ACTIONABLE_FILE);
   const extensions = currentReleaseExtensions();
   const hasReconciliation = extensions.includes(RECONCILIATION_FILE);
   const required = hasReconciliation ? PRIMARY_REQUIRED_IDS : HISTORICAL_REQUIRED_IDS;
-  if (!extensions.includes(ACTIONABLE_FILE)) failures.push(`${ACTIONABLE_FILE} is not registered in current-release.js`);
+  if (!extensions.includes(ACTION_FIRST_FILE)) failures.push(`${ACTION_FIRST_FILE} is not registered in current-release.js`);
   if (extensions.includes(REMOVED_PANEL_FILE)) failures.push(`${REMOVED_PANEL_FILE} must not be loaded by the current release`);
-  if (hasReconciliation) validateDemotionMap(read(RECONCILIATION_FILE), failures);
-  for (const id of required) {
-    const chunk = extractOverlayChunk(source, id);
-    if (!chunk) { failures.push(`${id} is missing an actionability overlay`); continue; }
-    if (/referenceOnly\s*:\s*true/.test(chunk)) failures.push(`${id} is referenceOnly but path-visible`);
-    if (!/operatorGoal|overlay\(/.test(chunk)) failures.push(`${id} lacks operator goal`);
-    const commands = commandQuality(chunk);
-    const guiSteps = listCount(chunk, '], [');
-    if (!commands.count && guiSteps < 4) failures.push(`${id} must have command templates or concrete GUI workflow steps`);
-    if (commands.count && !commands.quality) failures.push(`${id} command templates must define tool/run/useWhen/expected`);
-    if (listCount(chunk, 'expected') < 3) failures.push(`${id} needs expected evidence guidance`);
-    if (listCount(chunk, 'failure') < 2) failures.push(`${id} needs failure mode guidance`);
-    if (listCount(chunk, 'move') + listCount(chunk, 'next') < 2) failures.push(`${id} needs next-step guidance`);
-  }
+  const loader = scriptLoader();
+  loader.run(ACTION_FIRST_FILE);
+  if (hasReconciliation) loader.run(RECONCILIATION_FILE);
+  const panelSource = read(ACTION_FIRST_FILE);
+  if (/insertBefore\s*\(|querySelectorAll\('body \*'\)|data-obol-action-first-v967/.test(panelSource)) failures.push(`${ACTION_FIRST_FILE} must not inject a visible corrective action panel`);
+  for (const id of required) validateCard(loader.sandbox.CARDS[id], id, failures);
+  if (hasReconciliation) validateDemotionRuntime(loader.sandbox, failures);
   return { failures, checkedCards: required.length, demotedCards: hasReconciliation ? Object.keys(DEMOTED).length : 0, extensionCount: extensions.length };
 }
 if (require.main === module) {
