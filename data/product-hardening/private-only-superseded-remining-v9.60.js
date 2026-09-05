@@ -115,8 +115,8 @@
 
   function classifyRow(row) {
     const text = lower((row && row.rationale) || '') + ' ' + lower((row && row.noteId) || '');
-    if (/marketplace|extension|tool|catalog|volatile/.test(text)) return 'volatile-tool-reference';
     if (/payload|bypass|cheat|recipe|obfuscation|command/.test(text)) return 'recipe-catalog';
+    if (/marketplace|extension|tool|volatile/.test(text)) return 'volatile-tool-reference';
     if (/assessment|lab-specific|outcome|walkthrough|flag|answer/.test(text)) return 'lab-outcome';
     if (/superseded|covered|represented|more precisely/.test(text)) return 'superseded-coverage';
     if (/navigation|introduction|index|topic/.test(text)) return 'navigation-index';
