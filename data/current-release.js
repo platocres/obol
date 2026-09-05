@@ -1,8 +1,8 @@
 'use strict';
 (function(root){
 const release=Object.freeze({
- version:'9.71.0',
- label:'v9.71',
+ version:'9.72.0',
+ label:'v9.72',
  phase:'product-hardening',
  phaseLabel:'Product Hardening',
  orangeBaseline:'v8.8',
@@ -31,7 +31,9 @@ const release=Object.freeze({
   'data/product-hardening/client-session-remine-batch-v9.70.js',
   'data/product-hardening/ad-metasploit-remine-batch-v9.71.js',
   'data/product-hardening/ad-metasploit-route-guard-v9.71.js',
-  'data/product-hardening/dynamic-why-now-v9.71.js'
+  'data/product-hardening/dynamic-why-now-v9.71.js',
+  'data/product-hardening/linux-final-remine-batch-v9.72.js',
+  'data/product-hardening/linux-final-route-guard-v9.72.js'
  ])
 });
 function stampState(target){

@@ -15,8 +15,10 @@ const primaryRoutes = [
   { id: 'web-upload-inclusion-proof-chain', marker: /Upload|Inclusion|Proof Chain/i },
   { id: 'ad-enumeration-bloodhound-collection', marker: /AD Enumeration Collection Spine|SharpHound|BloodHound/i },
   { id: 'metasploit-resource-pivot-workflow', marker: /Metasploit Resource Pivot Spine|msfconsole|Meterpreter/i },
+  { id: 'linux-privesc-boundary-sweep', marker: /Linux Privilege Boundary Sweep|sudo -l|SUID|capabilit|kernel|process snapshot|user-trail/i },
 ];
 const demotedRoutes = [
+  { id: 'linux-service-footprint-secret-review', canonical: 'linux-privesc-boundary-sweep', marker: /Linux Privilege Boundary Sweep|sudo -l|SUID|capabilit|kernel|process snapshot|user-trail/i, foldedByV972: true },
   { id: 'web-client-session-proof-chain', canonical: 'web-authz-boundaries', marker: /Server Authorization|Authorization Boundary|Client Bypass|Authorization Boundary Replay/i },
   { id: 'web-proxy-transform-proof-chain', canonical: 'web-authz-boundaries', marker: /Server Authorization|Authorization Boundary|Client Bypass|Authorization Boundary Replay/i },
   { id: 'web-client-controls', canonical: 'web-authz-boundaries', marker: /Server Authorization|Authorization Boundary|Client Bypass|Authorization Boundary Replay/i },
@@ -32,13 +34,7 @@ const INTERNAL_CARD_SLOP = /fills an unresolved methodology gap|methodology gap|
 fs.mkdirSync(outputDir, { recursive: true });
 
 function localRequestFailure(url) {
-  try {
-    const target = new URL(url);
-    const base = new URL(baseUrl);
-    return target.origin === base.origin;
-  } catch (_err) {
-    return false;
-  }
+  try { const target = new URL(url); const base = new URL(baseUrl); return target.origin === base.origin; } catch (_err) { return false; }
 }
 
 async function openCard(context, route, failures, options = {}) {
@@ -48,8 +44,7 @@ async function openCard(context, route, failures, options = {}) {
   page.on('pageerror', error => routeFailures.push('page error: ' + error.message));
   page.on('requestfailed', request => { if (localRequestFailure(request.url())) routeFailures.push('local request failed: ' + request.url()); });
 
-  const url = baseUrl + '#/card/' + encodeURIComponent(route.id);
-  const response = await page.goto(url, { waitUntil: 'domcontentloaded', timeout: 30000 });
+  const response = await page.goto(baseUrl + '#/card/' + encodeURIComponent(route.id), { waitUntil: 'domcontentloaded', timeout: 30000 });
   if (response && !response.ok()) routeFailures.push('navigation returned HTTP ' + response.status());
   await page.waitForSelector('#view', { state: 'visible', timeout: 15000 });
   await page.waitForFunction(() => {
@@ -69,6 +64,7 @@ async function openCard(context, route, failures, options = {}) {
     const text = view ? (view.innerText || '').trim() : '';
     const disposition = window.OBOL_NOTE_CARD_DISPOSITION_RECONCILIATION_V968 || null;
     const v971 = window.OBOL_AD_MSF_REMINING_V971 || null;
+    const v972 = window.OBOL_LINUX_FINAL_REMINING_V972 || null;
     const why = window.OBOL_DYNAMIC_WHY_NOW_LAST || null;
     return {
       text,
@@ -78,6 +74,7 @@ async function openCard(context, route, failures, options = {}) {
       dynamicWhyBody: why && why.body || '',
       demotedCardIds: disposition && disposition.demotedCardIds || [],
       v971,
+      v972,
     };
   });
 
@@ -87,10 +84,14 @@ async function openCard(context, route, failures, options = {}) {
   if (INTERNAL_CARD_SLOP.test(state.text)) routeFailures.push('route leaks internal filler or UNKNOWN implementation copy');
   if (state.whyNowCount !== 1 || !/Why this step now/i.test(state.text)) routeFailures.push('route does not render exactly one dynamic why-now section');
   if (!/current path|You have|This card is relevant|missing proof|paste the result back/i.test(state.dynamicWhyBody)) routeFailures.push('dynamic why-now body is not grounded in path/evidence language');
+  if (route.id.startsWith('linux-') && !(state.v972 && state.v972.cardsIntegrated)) routeFailures.push('v9.72 Linux final re-mining integration did not report folded card integration');
   if (options.demoted) {
     if (!state.hash.includes('/card/' + route.canonical)) routeFailures.push(`demoted route did not canonicalize to ${route.canonical}; hash=${state.hash}`);
-    if (route.id === 'web-client-session-proof-chain' && !(state.v971 && state.v971.clientSessionDemoted)) routeFailures.push('v9.71 did not report client/session demotion');
-    if (route.id !== 'web-client-session-proof-chain' && !state.demotedCardIds.includes(route.id)) routeFailures.push('runtime disposition did not record demoted card ' + route.id);
+    if (route.foldedByV972) {
+      if (!(state.v972 && Array.isArray(state.v972.foldedCardIds) && state.v972.foldedCardIds.includes(route.id))) routeFailures.push('v9.72 did not record folded Linux service-footprint alias');
+    } else if (route.id === 'web-client-session-proof-chain') {
+      if (!(state.v971 && state.v971.clientSessionDemoted)) routeFailures.push('v9.71 did not report client/session demotion');
+    } else if (!state.demotedCardIds.includes(route.id)) routeFailures.push('runtime disposition did not record demoted card ' + route.id);
   }
 
   await page.screenshot({ path: path.join(outputDir, 'card-' + route.id + '.png'), fullPage: true });
@@ -99,23 +100,17 @@ async function openCard(context, route, failures, options = {}) {
 }
 
 (async () => {
-  const executablePath = process.env.OBOL_SMOKE_BROWSER_PATH || undefined;
-  const browser = await chromium.launch({ headless: true, executablePath });
+  const browser = await chromium.launch({ headless: true, executablePath: process.env.OBOL_SMOKE_BROWSER_PATH || undefined });
   const context = await browser.newContext({ viewport: { width: 1440, height: 1000 } });
   const failures = [];
-
   try {
     for (const route of primaryRoutes) await openCard(context, route, failures);
     for (const route of demotedRoutes) await openCard(context, route, failures, { demoted: true });
-  } finally {
-    await browser.close();
-  }
-
+  } finally { await browser.close(); }
   if (failures.length) {
     console.error('Note-derived card browser route smoke failed:');
     for (const failure of failures) console.error('- ' + failure);
     process.exit(1);
   }
-
-  console.log('Note-derived card browser route smoke passed for ' + primaryRoutes.length + ' primary cards and ' + demotedRoutes.length + ' demoted route aliases with dynamic why-now guidance.');
+  console.log('Note-derived card browser route smoke passed for ' + primaryRoutes.length + ' primary cards and ' + demotedRoutes.length + ' demoted/folded route aliases with dynamic why-now guidance.');
 })();
