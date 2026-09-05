@@ -57,7 +57,7 @@ This block is generated from `data/product-hardening/product-hardening-queue.js`
 Recommended work-package metadata comes from `data/product-hardening/work-packages.js`.
 Runtime consolidation figures come from `data/runtime-consolidation-current.js`, the same projection the Product Hardening Dashboard renders.
 
-**Current product-hardening queue:** 226/657 complete (34%), 6 concrete queued, 11 modeled/standing items.
+**Current product-hardening queue:** 226/657 complete (34%), 5 concrete queued, 11 modeled/standing items.
 **Private notes source:** [`https://github.com/platocres/obol-source-notes/tree/main/sources/raw`](https://github.com/platocres/obol-source-notes/tree/main/sources/raw) — 556 notes and 1326 embedded resources accounted.
 **Private review packets:** `platocres/obol-source-notes@agent/review-packets:data/review-packets/manifest.json` — 556/556 notes in 29 complete-text packets, 0 truncated, 8,725,188 cleaned text chars.
 **Raw source proof:** workflow run 33877189291 verified HTB ENEX 194,191,214 bytes sha256 `ceeab3da0770ecd3…` before packet generation.
@@ -77,28 +77,31 @@ Runtime consolidation figures come from `data/runtime-consolidation-current.js`,
 **Measured in Chromium (v9.40):** Home 321→19 · Next Steps 329→27 · Evidence 365→21 · Report 335→20 JavaScript/CSS requests.
 **Runtime compaction contract:** `docs/RUNTIME-COMPACTION.md`.
 
-**Recommended work package:** **Notes Impact and Source Re-mining** — 1 concrete live item / 18 tracked.
-**Next concrete entry:** **Re-mine private-only and superseded notes**
-**Ownership area:** `notes/impact-packets`
-**Package guidance:** Treat the 556-note disposition item as the umbrella, but do not let the umbrella hide the immediate work: re-mine already-reviewed notes from their original private sources before fresh pending-note packets. The note-progress projection splits the source re-mining gate into dashboard/schema plus themed re-mining rows; those rows remain additive queue projections while this package stays compatible with base queue validation. Re-mining must check for tool cards, GUI switches, scripts, one-liners, terminal-output analyzers, actual Next Steps path placement, lesson boxes, examples, troubleshooting, cleanup, report guidance, code-level mechanics, and product gaps. Preserve the Orange-derived path as an additive baseline and do not use disposable wrapper layers.
-**Package dependencies:** Notes Integration Foundation
+**Recommended work package:** **Offline and Browser Performance Platform** — 5 concrete live items / 5 tracked.
+**Next concrete entry:** **Quiet service worker caching**
+**Ownership area:** `browser/offline-storage-workers`
+**Package guidance:** Add browser-native caching, storage, workers, update handling, and migration safety as coordinated implementation details while preserving the visit-and-use product contract.
+**Package dependencies:** Runtime Consolidation Foundation
 
 **Concrete live items in this package:**
-- **Re-mine private-only and superseded notes** — Return to original private notes previously marked private-reference-only, superseded, rejected, or reviewed-not-modeled. Keep raw recipes and private material private, but re-check whether public-safe tool ideas, command templates, analyzer rules, lesson boxes, troubleshooting, cleanup, report guidance, or additive Path improvements were missed.
+- **Quiet service worker caching** — Improve repeat-load and offline behavior without prompting users to install anything.
+- **IndexedDB workspace storage** — Support durable larger local workspaces, multiple engagements, and cached indexes while remaining browser-local.
+- **Web Workers for heavy tasks** — Move evidence parsing, search indexing, and report generation off the UI thread.
+- **Non-intrusive update notice** — When cached app updates are available, notify users without install nagging.
+- **Workspace storage migration safety** — Any storage refactor must preserve existing browser-local workspaces and sanitized exports.
 
-**Related items to consider, not automatically in scope:** Design contextual field-notes disclosure.
+**Related items to consider, not automatically in scope:** Bundle and request budget.
 
 **Standing source re-mining gates:**
 - **Re-mine all already-reviewed notes from original sources** — standing gate, not the next concrete batch. Return to the original private source note for every already-reviewed modeled, guidance-only, reviewed-not-modeled, private-only, superseded, or rejected row. Do not merely inspect the existing public Field Note or prior rationale. Re-mine from scratch for tool cards, GUI switches, scripts, one-liners, terminal-output analyzers, additive Path bindings, lesson boxes, examples, troubleshooting, cleanup, report guidance, product mechanics, and product gaps.
 - **Burn down all 556 note dispositions** — standing gate, not the next concrete batch. Umbrella disposition goal for all 556 notes. Fresh pending-note packets remain queued beneath the full-spectrum re-mining gate: agents must first re-mine already-reviewed notes from the original private sources, add missed product outputs, preserve the Orange-derived path additively, and prove every negative finding with an auditable per-dimension outcome.
 
 **Highest-priority concrete live items:**
-1. **Re-mine private-only and superseded notes** — Return to original private notes previously marked private-reference-only, superseded, rejected, or reviewed-not-modeled. Keep raw recipes and private material private, but re-check whether public-safe tool ideas, command templates, analyzer rules, lesson boxes, troubleshooting, cleanup, report guidance, or additive Path improvements were missed.
-2. **Quiet service worker caching** — Improve repeat-load and offline behavior without prompting users to install anything.
-3. **IndexedDB workspace storage** — Support durable larger local workspaces, multiple engagements, and cached indexes while remaining browser-local.
-4. **Web Workers for heavy tasks** — Move evidence parsing, search indexing, and report generation off the UI thread.
-5. **Non-intrusive update notice** — When cached app updates are available, notify users without install nagging.
-6. **Workspace storage migration safety** — Any storage refactor must preserve existing browser-local workspaces and sanitized exports.
+1. **Quiet service worker caching** — Improve repeat-load and offline behavior without prompting users to install anything.
+2. **IndexedDB workspace storage** — Support durable larger local workspaces, multiple engagements, and cached indexes while remaining browser-local.
+3. **Web Workers for heavy tasks** — Move evidence parsing, search indexing, and report generation off the UI thread.
+4. **Non-intrusive update notice** — When cached app updates are available, notify users without install nagging.
+5. **Workspace storage migration safety** — Any storage refactor must preserve existing browser-local workspaces and sanitized exports.
 
 **Queue hygiene guardrail:** Completed packet work and standing umbrella gates must not appear as the next concrete build. `data/product-hardening/build-next-queue-hygiene-current.js` enforces this before README/dashboard rendering and CI validates it.
 
