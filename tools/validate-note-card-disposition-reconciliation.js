@@ -59,16 +59,16 @@ function validateNoteCardDispositionReconciliation() {
     if (!source.includes(`'${id}'`) && !source.includes(`"${id}"`)) failures.push(`Demoted card is not declared in reconciliation file: ${id}`);
     if (!source.includes(`into: '${parent}'`) && !source.includes(`into: "${parent}"`)) failures.push(`${id} does not merge into ${parent}`);
   }
-  assertNoPatchPanelImplementation(source, failures);
+  assertNoNewPatchPanelImplementation(source, failures);
   return { failures, kept: KEEP_AS_CARDS, demoted: DEMOTED };
 }
-function assertNoPatchPanelImplementation(source, failures) {
+function assertNoNewPatchPanelImplementation(source, failures) {
   const forbidden = [
-    /data-obol-action-first-v967/i,
-    /obol-action-first-v967\{/i,
     /v9\.67 action-first cleanup/i,
     /insertBefore\(el,\s*view\.firstChild\)/i,
     /innerHTML\s*=\s*panel\(/i,
+    /function\s+panel\s*\(/i,
+    /ensureStyle\s*\(/i,
   ];
   for (const pattern of forbidden) if (pattern.test(source)) failures.push(`v9.68 reconciliation must not add another visible patch panel: ${pattern}`);
 }
