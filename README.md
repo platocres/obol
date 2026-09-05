@@ -4,7 +4,7 @@ Obol is a static, browser-local workspace for OSCP-style labs, Active Directory 
 
 Live site: `https://platocres.github.io/obol/`
 
-Current release: **v9.63**
+Current release: **v9.64**
 
 Open `#/dashboard` for the active Product Hardening Dashboard and Product Build Next queue.
 
@@ -43,7 +43,7 @@ Generated from the same queue sources as the Product Hardening Dashboard. Do not
 **Private notes source:** [`https://github.com/platocres/obol-source-notes/tree/main/sources/raw`](https://github.com/platocres/obol-source-notes/tree/main/sources/raw) — 556 notes and 1326 embedded resources accounted.
 **Private review packets:** `platocres/obol-source-notes@agent/review-packets:data/review-packets/manifest.json` — 556/556 notes, 29 packets, 0 truncated.
 **Notes review status:** 135/556 reviewed; 421 pending; 102 modeled; 28 private-only.
-**Source re-mining status:** 65/135 full-spectrum re-mined; 70 old-rubric-only notes remain.
+**Source re-mining status:** 66/135 full-spectrum re-mined; 69 old-rubric-only notes remain.
 **Next notes batch:** **Old-rubric reviewed source re-mining batch 1** (`notes-batch-old-rubric-reviewed-remine-001`) — 20 notes from `platocres/obol-source-notes@agent/review-packets:data/review-packets/manifest.json`.
 **Selector:** Select the next 20 already-reviewed notes that lack full-spectrum audit rows, using manifest/source order and excluding themes already closed by released re-mining proof.
 **Acceptance:** Every selected note receives a 16-dimension re-mining audit row plus public-safe product output, covered rationale, queued product gap, or private-boundary proof. Do not advance to offline/performance work after this batch unless both note gates are complete.
@@ -55,7 +55,7 @@ Generated from the same queue sources as the Product Hardening Dashboard. Do not
 **Package detail:** Use the Product Hardening Dashboard for full track ledgers and `data/product-hardening/work-packages.js` for the long-form package guidance.
 
 **Highest-priority concrete live items:**
-1. **Re-mine all already-reviewed notes from original sources** — Concrete notes-first gate: 70 already-reviewed old-rubric-only notes still need full-spectrum source re-mining before offline/performance work can become next.
+1. **Re-mine all already-reviewed notes from original sources** — Concrete notes-first gate: 69 already-reviewed old-rubric-only notes still need full-spectrum source re-mining before offline/performance work can become next.
 2. **Burn down all 556 note dispositions** — Concrete notes-first gate: 421 private source notes still need disposition/mining before offline/performance work can become next.
 3. **Quiet service worker caching** — Improve repeat-load and offline behavior without prompting users to install anything.
 4. **IndexedDB workspace storage** — Support durable larger local workspaces, multiple engagements, and cached indexes while remaining browser-local.

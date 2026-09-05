@@ -11,7 +11,7 @@
  * suppresses historical schedulers and commits current route owners last.
  *
  * Historical fragment order sha256: 40e3006d9423d669acf5869b577ecf56a6ca2ee1629c95fd0fcc5d242d2c5f27
- * Generated body sha256: ad780bfe3760ec412094516d096060b13f28daa82ec6ab71c09fba77fa920fd2
+ * Generated body sha256: 311d80744e37a7409a08acbf2572eacd5eb9f19f48139c70bc77dfe3a2f40ab7
  * First historical fragment: assets/report-v2.js
  * Last historical fragment:  assets/app-v8.8.js
  */
@@ -1993,8 +1993,8 @@ if(__nativeMutationObserver)root.MutationObserver=__nativeMutationObserver;
 'use strict';
 (function(root){
 const release=Object.freeze({
- version:'9.63.0',
- label:'v9.63',
+ version:'9.64.0',
+ label:'v9.64',
  phase:'product-hardening',
  phaseLabel:'Product Hardening',
  orangeBaseline:'v8.8',
@@ -2007,7 +2007,8 @@ const release=Object.freeze({
   'data/product-hardening/private-only-superseded-remining-v9.60.js',
   'data/product-hardening/credential-dump-remining-v9.61.js',
   'data/product-hardening/web-proxy-transform-remining-v9.62.js',
-  'data/product-hardening/visible-remine-cards-v9.63.js'
+  'data/product-hardening/visible-remine-cards-v9.63.js',
+  'data/product-hardening/pass-the-hash-remining-v9.64.js'
  ])
 });
 function stampState(target){
