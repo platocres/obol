@@ -89,7 +89,8 @@
 
   function integrateNotes() {
     const notes = root.OBOL_NOTE_INTEGRATION;
-    if (!notes || !notes.ledger || notes.__linuxPrivescRemineReconciliationV959) return false;
+    if (!notes || !notes.ledger) return false;
+    if (notes.__linuxPrivescRemineReconciliationV959) return true;
     const packetReviews = freezeObject({
       ...(notes.packetReviews || {}),
       'linux-privesc-remine-reconciliation': freezeObject({
