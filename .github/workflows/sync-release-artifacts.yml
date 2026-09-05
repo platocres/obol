@@ -9,11 +9,13 @@ on:
       - 'BUILDING.md'
       - 'data/current-release.js'
       - 'data/runtime-manifest.js'
+      - 'data/product-hardening/**'
       - 'docs/v*.md'
       - 'tools/sync-current-release.js'
       - 'tools/sync-current-changelog.js'
       - 'tools/sync-release-docs.js'
       - 'tools/sync-app-current.js'
+      - 'tools/sync-product-build-next.js'
       - 'assets/workflow-current.js'
       - 'assets/operator-route-current.js'
 
@@ -42,6 +44,7 @@ jobs:
           node tools/sync-app-current.js --write
           node tools/sync-current-changelog.js --write
           node tools/sync-release-docs.js --write
+          node tools/sync-product-build-next.js --write
 
       - name: Commit generated artifacts
         shell: bash
