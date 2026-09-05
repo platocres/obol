@@ -119,6 +119,19 @@ async function installDashboardPaintObserver(page) {
         if (!currentOwner) routeFailures.push('dashboard lost the current owner during the legacy timer window');
         const oldOwner = await page.locator('[data-product-dashboard-owner]:not([data-product-dashboard-owner="current"])').count();
         if (oldOwner) routeFailures.push('dashboard retained a non-current dashboard owner after render');
+        const sidebarState = await page.evaluate(() => {
+          const aside = document.querySelector('aside') || document.getElementById('sidebar');
+          return {
+            tagged: !!(aside && aside.dataset.obolDashboardSidebar === 'panel-only'),
+            routeDetails: document.querySelectorAll('#side-details').length,
+            routeDetailsSummaries: document.querySelectorAll('#side-details > summary').length,
+            duplicateRouteLabels: [...document.querySelectorAll('summary,button,[role="button"]')]
+              .filter(node => /parameters\s*\/\s*facts/i.test(node.textContent || '')).length
+          };
+        });
+        if (!sidebarState.tagged) routeFailures.push('dashboard sidebar was not tagged as a panel-only rail');
+        if (sidebarState.routeDetails || sidebarState.routeDetailsSummaries) routeFailures.push('dashboard route created a second sidebar collapse details wrapper');
+        if (sidebarState.duplicateRouteLabels) routeFailures.push('dashboard exposed a route-level Parameters/Facts collapse label instead of leaving one panel toggle');
 
         // The README block is validated against the same projection offline, so proving the
         // rendered dashboard matches it here is what keeps the two surfaces in sync. This
@@ -173,6 +186,7 @@ async function installDashboardPaintObserver(page) {
           const marker = document.querySelector('[data-product-dashboard-owner="current"]');
           const current = window.__OBOL_CURRENT_DASHBOARD_FRESHNESS__ || {};
           const impact = window.OBOL_PRODUCT_HARDENING_NOTES_IMPACT || {};
+          const aside = document.querySelector('aside') || document.getElementById('sidebar');
           return {
             activated,
             rendered,
@@ -180,7 +194,9 @@ async function installDashboardPaintObserver(page) {
             release: window.OBOL_CURRENT_RELEASE && window.OBOL_CURRENT_RELEASE.version,
             reviewed: impact.review && impact.review.reviewed,
             token: current.token || '',
-            routeError: window.__OBOL_CURRENT_DASHBOARD_ROUTE_ERROR__ || ''
+            routeError: window.__OBOL_CURRENT_DASHBOARD_ROUTE_ERROR__ || '',
+            sidebarTagged: !!(aside && aside.dataset.obolDashboardSidebar === 'panel-only'),
+            routeDetails: document.querySelectorAll('#side-details').length
           };
         }, first);
         if (!refreshed.activated) routeFailures.push('dashboard current owner did not accept explicit re-activation');
@@ -188,6 +204,7 @@ async function installDashboardPaintObserver(page) {
         if (refreshed.release !== first.release || refreshed.markerRelease !== first.release) routeFailures.push('dashboard re-activation did not restore authoritative current-release data');
         if (refreshed.reviewed !== first.reviewed) routeFailures.push('dashboard re-activation did not restore authoritative Notes Integration impact data');
         if (!refreshed.token || refreshed.token === first.token) routeFailures.push('dashboard re-activation did not publish a distinct freshness generation');
+        if (!refreshed.sidebarTagged || refreshed.routeDetails) routeFailures.push('dashboard re-activation restored the duplicate sidebar details wrapper');
 
         const resources = await page.evaluate(() => performance.getEntriesByType('resource').map(entry => entry.name));
         const dashboardFresh = resources.filter(name => /[?&]obol-dashboard=/.test(name));
@@ -242,5 +259,5 @@ async function installDashboardPaintObserver(page) {
     process.exit(1);
   }
 
-  console.log('Playwright browser smoke passed for Home, Targets, Evidence, Next Steps, Report, embedded Dashboard freshness recovery, and the standalone Dashboard current-owner path.');
+  console.log('Playwright browser smoke passed for Home, Targets, Evidence, Next Steps, Report, embedded Dashboard freshness recovery, sidebar single-collapse behavior, and the standalone Dashboard current-owner path.');
 })();
