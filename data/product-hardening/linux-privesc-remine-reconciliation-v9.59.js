@@ -43,13 +43,13 @@
         track: 'notes-integration',
         priority: 86.835,
         label: 'Re-mine reviewed Linux privesc notes',
-        detail: 'Reconciled in v9.59 because the Linux privilege-escalation source packet and public-safe guidance were already complete before this item appeared as the next concrete queue entry.',
       };
       q.items.push(item);
     }
     Object.assign(item, {
       status: 'complete',
       completedBy: WAVE,
+      detail: 'Reconciled in v9.59 because the Linux privilege-escalation source packet and public-safe guidance were already complete before this item appeared as the next concrete queue entry.',
       proofFile: 'data/product-hardening/linux-privesc-remine-reconciliation-v9.59.js',
       proofSurface: '#/dashboard',
       sourcePacket: SOURCE_BASIS.packetId,
