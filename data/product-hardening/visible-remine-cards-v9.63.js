@@ -23,6 +23,12 @@
   function freezeList(list) { return Object.freeze((list || []).slice()); }
   function freezeObject(value) { return Object.freeze(value || {}); }
 
+  function routeCardId() {
+    const hash = String(root.location && root.location.hash || '');
+    const match = hash.match(/^#\/?card\/([^/?#]+)/);
+    try { return match ? decodeURIComponent(match[1]) : ''; } catch (_err) { return match ? match[1] : ''; }
+  }
+
   function noteById(id) {
     const notes = root.OBOL_NOTE_INTEGRATION && Array.isArray(root.OBOL_NOTE_INTEGRATION.publicFieldNotes)
       ? root.OBOL_NOTE_INTEGRATION.publicFieldNotes
@@ -82,6 +88,7 @@
     return [
       {
         id: 'credential-dump-proof-chain',
+        lane: 'credential-attacks',
         title: 'Credential Dump Proof Chain',
         hypothesis: noteText([
           'note-lsass-dump-artifact-proof-chain',
@@ -100,6 +107,7 @@
       },
       {
         id: 'web-proxy-transform-proof-chain',
+        lane: 'web-proxy-transform',
         title: 'Web Proxy Transform Proof Chain',
         hypothesis: 'Use the proxy workflow to keep browser edits, decode and encode steps, payload-processing changes, response deltas, and replayed server behavior as separate proof stages. A clever request mutation is a lead; reviewed server-side behavior is the proof.',
         prereq: { any: ['service.http', 'web.client_control_mutation_observed', 'web.reversible_transform_chain_observed', 'web.tool_generated_http_capture_observed'] },
@@ -114,6 +122,7 @@
       },
       {
         id: 'web-client-controls',
+        lane: 'web-proxy-transform',
         title: 'Review Client-Side Controls as Request-Shaping Clues',
         hypothesis: noteText(['note-client-controls-are-request-shaping-clues'], 'Disabled controls, hidden fields, local validation, and browser-side markup changes show how a request can be shaped. They do not prove backend authorization failure until the server accepts a scoped action or returns protected content.'),
         prereq: { any: ['service.http', 'web.client_control_mutation_observed'] },
@@ -128,6 +137,7 @@
       },
       {
         id: 'web-authz-boundaries',
+        lane: 'web-proxy-transform',
         title: 'Separate Client Bypass from Server Authorization',
         hypothesis: 'Changing a disabled field, hidden value, or local browser check proves only that the client can be altered. Authorization impact requires a scoped server response: the action is accepted, protected content changes, or a permission boundary is crossed in a way the report can defend.',
         prereq: { any: ['service.http', 'web.client_control_mutation_observed', 'web.scoped_server_behavior_observed'] },
@@ -142,6 +152,7 @@
       },
       {
         id: 'encoded-parameter-review',
+        lane: 'web-proxy-transform',
         title: 'Review Encoded Parameters in Transform Order',
         hypothesis: noteText(['note-encoded-cookie-transform-order'], 'When a cookie or parameter is transformed through multiple encodings, preserve the decode order, mutate only the intended inner value, then rebuild the outbound value in reverse order. The rebuilt request still needs response-body review before it becomes impact proof.'),
         prereq: { any: ['service.http', 'web.reversible_transform_chain_observed', 'web.encoded_cookie_candidate_observed'] },
@@ -156,6 +167,7 @@
       },
       {
         id: 'tool-generated-http-review',
+        lane: 'web-proxy-transform',
         title: 'Capture Tool-Generated HTTP Before Debugging',
         hypothesis: noteText(['note-capture-tool-http-before-debugging'], 'When a scanner or framework module behaves strangely, capture the exact HTTP it generates before changing assumptions. Compare the produced method, path, host, headers, body, proxy settings, and response class against the manual request you intended.'),
         prereq: { any: ['service.http', 'web.tool_generated_http_capture_observed'] },
@@ -198,6 +210,28 @@
     return installed === CARD_IDS.length;
   }
 
+  function currentRouteNeedsRepair() {
+    const id = routeCardId();
+    if (!CARD_IDS.includes(id) || !liveCard(id)) return false;
+    const target = root.document && root.document.getElementById && root.document.getElementById('view');
+    const text = String(target && target.textContent || '');
+    return /Unknown card/i.test(text) || !text.trim();
+  }
+
+  function repaintCurrentCardRoute() {
+    if (!currentRouteNeedsRepair()) return false;
+    const key = routeCardId() + ':' + String(root.location && root.location.hash || '');
+    if (root.__OBOL_VISIBLE_REMINED_CARDS_LAST_REPAINT__ === key) return false;
+    root.__OBOL_VISIBLE_REMINED_CARDS_LAST_REPAINT__ = key;
+    if (typeof root.route === 'function') {
+      try { root.route(); return true; } catch (_err) {}
+    }
+    if (typeof root.viewCard === 'function') {
+      try { root.viewCard(routeCardId()); return true; } catch (_err) {}
+    }
+    return false;
+  }
+
   function patchUnknownCardView() {
     if (typeof root.viewCard !== 'function' || root.viewCard.__visibleRemineCardsV963) return false;
     const original = root.viewCard;
@@ -220,7 +254,8 @@
   function integrate() {
     const cardsInstalled = installCards();
     const viewPatched = patchUnknownCardView();
-    return freezeObject({ wave: WAVE, cardsInstalled, viewPatched, failures: freezeList(validate()) });
+    const repaired = repaintCurrentCardRoute();
+    return freezeObject({ wave: WAVE, cardsInstalled, viewPatched, repaired, failures: freezeList(validate()) });
   }
 
   const packet = freezeObject({
@@ -241,9 +276,9 @@
     const attempt = () => {
       const retry = integrate();
       tries += 1;
-      if (retry.failures.length && tries < 160 && schedule) schedule(attempt, 50);
+      if ((retry.failures.length || currentRouteNeedsRepair()) && tries < 180 && schedule) schedule(attempt, 50);
     };
-    if (result.failures.length && schedule) schedule(attempt, 0);
+    if ((result.failures.length || currentRouteNeedsRepair()) && schedule) schedule(attempt, 0);
     if (typeof window.addEventListener === 'function') {
       window.addEventListener('hashchange', attempt);
       window.addEventListener('focus', attempt);
