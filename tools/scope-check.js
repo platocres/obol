@@ -10,6 +10,8 @@ const checks=[
  ['tests/run-notes-batch-selector-tests.js'],
  ['tests/run-v9.61-tests.js'],
  ['tests/run-v9.62-tests.js'],
+ ['tests/run-v9.63-tests.js'],
+ ['tools/validate-product-hardening-card-routes.js'],
  ['tools/validate-product-hardening-queue.js'],
  ['tools/sync-current-styles.js','--check'],
  ['tools/validate-style-current-equivalence.js'],
