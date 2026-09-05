@@ -1,3 +1,27 @@
+## v9.68 — Is a corrective card-disposition release for the recent note-derived card work
+
+- Added `data/product-hardening/note-card-disposition-reconciliation-v9.68.js`.
+  - Keeps only distinct operator actions as primary cards.
+  - Demotes supporting proof-chain fragments into their proper parent cards.
+  - Removes the visible v9.67 action-first patch panel from the current release path.
+  - Rebinds supporting field notes to the retained parent cards where runtime data is available.
+  - Canonicalizes old direct card routes to the retained parent cards instead of showing duplicate conceptual cards.
+- Removed `data/product-hardening/action-first-card-cleanup-stabilize-v9.67.js` from the current-release extension list.
+  - The historical file remains in the repository as release history.
+  - The current product no longer loads the panel injector.
+- Added `tools/validate-note-card-disposition-reconciliation.js`.
+  - Fails if the current release re-loads the visible v9.67 patch-panel stabilizer.
+  - Requires kept-vs-demoted card disposition to be explicit.
+  - Requires every demoted card to merge into a retained primary card.
+- Updated current validators and browser smoke.
+  - Primary path-visible note-derived cards are validated as normal Obol cards.
+  - Demoted card URLs are treated as aliases to their retained parent cards.
+  - Browser smoke fails if the old action-first patch panel appears again.
+- Updated docs so future notes work follows this order:
+  - enrich an existing Orange-map card first;
+  - create a new card only for a distinct operator action;
+  - never ship a visible corrective overlay as the final UI.
+
 ## v9.67 — Is a slop cleanup build for the recent note-derived cards
 
 - Added `data/product-hardening/action-first-card-cleanup-v9.67.js`.
