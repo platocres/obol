@@ -64,6 +64,7 @@ runReleaseProductHardeningExtensions();
 if (fs.existsSync(queueHygieneFile)) runFile(queueHygieneFile);
 if (fs.existsSync(noteImpactFile)) runFile(noteImpactFile);
 if (fs.existsSync(sourceReviewPacketsFile)) runFile(sourceReviewPacketsFile);
+if (fs.existsSync(queueHygieneFile)) runFile(queueHygieneFile);
 runFile(runtimeConsolidationFile);
 
 const q = sandbox.window.OBOL_PRODUCT_HARDENING;
@@ -169,6 +170,16 @@ function noteReminingLines() {
   ];
 }
 
+function nextNotesBatchLines() {
+  const batch = q.nextNotesBatch || (queueHygiene && queueHygiene.nextNotesBatch);
+  if (!batch) return [];
+  return [
+    '**Next notes batch:** **' + batch.label + '** (`' + batch.id + '`) — ' + batch.targetCount + ' notes from `' + batch.sourceRoute + '`.',
+    '**Next notes batch selector:** ' + batch.sourceSelector,
+    '**Next notes batch acceptance:** ' + batch.acceptance
+  ];
+}
+
 function sourceReviewPacketLines() {
   if (!sourceReviewPackets) return [];
   const p = sourceReviewPackets;
@@ -211,6 +222,7 @@ function block() {
     ...sourceReviewPacketLines(),
     ...noteImpactLines(),
     ...noteReminingLines(),
+    ...nextNotesBatchLines(),
     ...runtimeConsolidationLines(),
     '',
     ...packageLines(),

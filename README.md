@@ -4,7 +4,7 @@ Obol is a static, browser-local workspace for OSCP-style labs, Active Directory 
 
 Live site: `https://platocres.github.io/obol/`
 
-Current release: **v9.59**
+Current release: **v9.60**
 
 Open `#/dashboard` for the active Product Hardening Dashboard and Product Build Next queue.
 
@@ -57,48 +57,50 @@ This block is generated from `data/product-hardening/product-hardening-queue.js`
 Recommended work-package metadata comes from `data/product-hardening/work-packages.js`.
 Runtime consolidation figures come from `data/runtime-consolidation-current.js`, the same projection the Product Hardening Dashboard renders.
 
-**Current product-hardening queue:** 224/657 complete (34%), 6 concrete queued, 11 modeled/standing items.
+**Current product-hardening queue:** 226/657 complete (34%), 7 concrete queued, 9 modeled/standing items.
 **Private notes source:** [`https://github.com/platocres/obol-source-notes/tree/main/sources/raw`](https://github.com/platocres/obol-source-notes/tree/main/sources/raw) — 556 notes and 1326 embedded resources accounted.
 **Private review packets:** `platocres/obol-source-notes@agent/review-packets:data/review-packets/manifest.json` — 556/556 notes in 29 complete-text packets, 0 truncated, 8,725,188 cleaned text chars.
 **Raw source proof:** workflow run 33877189291 verified HTB ENEX 194,191,214 bytes sha256 `ceeab3da0770ecd3…` before packet generation.
 **Notes Integration:** 135/556 reviewed — 102 modeled, 28 private-only, 421 pending.
-**Derived note guidance:** 65 Field Notes · 60 tool-bound · 62 Path-bound · 20 Evidence · 5 Report.
+**Derived note guidance:** 69 Field Notes · 62 tool-bound · 66 Path-bound · 21 Evidence · 5 Report.
 **Declared note-driven product mechanics:** 11 total · 1 builder · 0 Path logic · 0 Evidence parser · 0 report generator · 0 workflow.
 **Latest mined themes:** Linux local privilege escalation, Credentials / auth material, Object authorization / IDOR, Windows local privilege escalation.
 **Notes impact contract:** `docs/NOTES-IMPACT.md`.
-**Source re-mining:** old-rubric reviewed 135/556 · full-spectrum re-mined 30/135 · old-rubric-only remaining 105.
-**Negative finding outcomes:** added 68 · covered 205 · queued 60 · private-only 51 · not-applicable 96 · blocked 0.
+**Source re-mining:** old-rubric reviewed 135/556 · full-spectrum re-mined 63/135 · old-rubric-only remaining 72.
+**Negative finding outcomes:** added 134 · covered 577 · queued 60 · private-only 84 · not-applicable 153 · blocked 0.
 **Re-mining red flags:** 0 currently flagged across 11 invalid/missing-proof guardrails.
 **Extraction dimensions:** 16 tracked — Path bindings, tool cards, GUI controls, scripts/one-liners, command templates, terminal analyzers, Evidence expectations, path movement, lessons/examples, troubleshooting, cleanup, report guidance, product mechanics, product gaps, and additive Orange baseline.
 **Re-mining dashboard/schema:** complete — overview-first dashboard with drill-down detail sections for the same generated state.
+**Next notes batch:** **Old-rubric reviewed source re-mining batch 1** (`notes-batch-old-rubric-reviewed-remine-001`) — 20 notes from `platocres/obol-source-notes@agent/review-packets:data/review-packets/manifest.json`.
+**Next notes batch selector:** Select the next 20 already-reviewed notes that lack full-spectrum audit rows, using manifest/source order and excluding themes already closed by released re-mining proof.
+**Next notes batch acceptance:** Every selected note receives a 16-dimension re-mining audit row plus public-safe product output, covered rationale, queued product gap, or private-boundary proof. Do not advance to offline/performance work after this batch unless both note gates are complete.
 **Runtime consolidation:** 5 operator startup requests, down from 286 (98% fewer).
 **Current runtime ownership areas:** 7 owners account for 272 historical fragments — 215 semantically flattened, 57 still exact-owned; 55 fragments stay retired in the frozen ledger.
 **Runtime area owners:** Domain data (103, semantic-snapshot) · Core state and derivation (69, semantic-delta-replay) · Report base and application UI (43, semantic-delta-replay) · Evidence parsing (37, ordered-fragment-concatenation) · Nmap builders (3, ordered-fragment-concatenation) · Report overlays (14, ordered-fragment-concatenation) · Tool reference data (3, ordered-fragment-concatenation).
 **Measured in Chromium (v9.40):** Home 321→19 · Next Steps 329→27 · Evidence 365→21 · Report 335→20 JavaScript/CSS requests.
 **Runtime compaction contract:** `docs/RUNTIME-COMPACTION.md`.
 
-**Recommended work package:** **Notes Impact and Source Re-mining** — 1 concrete live item / 18 tracked.
-**Next concrete entry:** **Re-mine private-only and superseded notes**
+**Recommended work package:** **Notes Impact and Source Re-mining** — 2 concrete live items / 18 tracked.
+**Next concrete entry:** **Re-mine all already-reviewed notes from original sources**
 **Ownership area:** `notes/impact-packets`
 **Package guidance:** Treat the 556-note disposition item as the umbrella, but do not let the umbrella hide the immediate work: re-mine already-reviewed notes from their original private sources before fresh pending-note packets. The note-progress projection splits the source re-mining gate into dashboard/schema plus themed re-mining rows; those rows remain additive queue projections while this package stays compatible with base queue validation. Re-mining must check for tool cards, GUI switches, scripts, one-liners, terminal-output analyzers, actual Next Steps path placement, lesson boxes, examples, troubleshooting, cleanup, report guidance, code-level mechanics, and product gaps. Preserve the Orange-derived path as an additive baseline and do not use disposable wrapper layers.
 **Package dependencies:** Notes Integration Foundation
 
 **Concrete live items in this package:**
-- **Re-mine private-only and superseded notes** — Return to original private notes previously marked private-reference-only, superseded, rejected, or reviewed-not-modeled. Keep raw recipes and private material private, but re-check whether public-safe tool ideas, command templates, analyzer rules, lesson boxes, troubleshooting, cleanup, report guidance, or additive Path improvements were missed.
+- **Re-mine all already-reviewed notes from original sources** — Concrete notes-first gate: 72 already-reviewed old-rubric-only notes still need full-spectrum source re-mining before offline/performance work can become next.
+- **Burn down all 556 note dispositions** — Concrete notes-first gate: 421 private source notes still need disposition/mining before offline/performance work can become next.
 
 **Related items to consider, not automatically in scope:** Design contextual field-notes disclosure.
 
-**Standing source re-mining gates:**
-- **Re-mine all already-reviewed notes from original sources** — standing gate, not the next concrete batch. Return to the original private source note for every already-reviewed modeled, guidance-only, reviewed-not-modeled, private-only, superseded, or rejected row. Do not merely inspect the existing public Field Note or prior rationale. Re-mine from scratch for tool cards, GUI switches, scripts, one-liners, terminal-output analyzers, additive Path bindings, lesson boxes, examples, troubleshooting, cleanup, report guidance, product mechanics, and product gaps.
-- **Burn down all 556 note dispositions** — standing gate, not the next concrete batch. Umbrella disposition goal for all 556 notes. Fresh pending-note packets remain queued beneath the full-spectrum re-mining gate: agents must first re-mine already-reviewed notes from the original private sources, add missed product outputs, preserve the Orange-derived path additively, and prove every negative finding with an auditable per-dimension outcome.
 
 **Highest-priority concrete live items:**
-1. **Re-mine private-only and superseded notes** — Return to original private notes previously marked private-reference-only, superseded, rejected, or reviewed-not-modeled. Keep raw recipes and private material private, but re-check whether public-safe tool ideas, command templates, analyzer rules, lesson boxes, troubleshooting, cleanup, report guidance, or additive Path improvements were missed.
-2. **Quiet service worker caching** — Improve repeat-load and offline behavior without prompting users to install anything.
-3. **IndexedDB workspace storage** — Support durable larger local workspaces, multiple engagements, and cached indexes while remaining browser-local.
-4. **Web Workers for heavy tasks** — Move evidence parsing, search indexing, and report generation off the UI thread.
-5. **Non-intrusive update notice** — When cached app updates are available, notify users without install nagging.
-6. **Workspace storage migration safety** — Any storage refactor must preserve existing browser-local workspaces and sanitized exports.
+1. **Re-mine all already-reviewed notes from original sources** — Concrete notes-first gate: 72 already-reviewed old-rubric-only notes still need full-spectrum source re-mining before offline/performance work can become next.
+2. **Burn down all 556 note dispositions** — Concrete notes-first gate: 421 private source notes still need disposition/mining before offline/performance work can become next.
+3. **Quiet service worker caching** — Improve repeat-load and offline behavior without prompting users to install anything.
+4. **IndexedDB workspace storage** — Support durable larger local workspaces, multiple engagements, and cached indexes while remaining browser-local.
+5. **Web Workers for heavy tasks** — Move evidence parsing, search indexing, and report generation off the UI thread.
+6. **Non-intrusive update notice** — When cached app updates are available, notify users without install nagging.
+7. **Workspace storage migration safety** — Any storage refactor must preserve existing browser-local workspaces and sanitized exports.
 
 **Queue hygiene guardrail:** Completed packet work and standing umbrella gates must not appear as the next concrete build. `data/product-hardening/build-next-queue-hygiene-current.js` enforces this before README/dashboard rendering and CI validates it.
 
@@ -109,9 +111,9 @@ Runtime consolidation figures come from `data/runtime-consolidation-current.js`,
 - **Tool GUI builders:** 19/19 complete (100%), 0 modeled.
 - **Credential modes:** 14/14 complete (100%), 0 modeled.
 - **Manual outcomes:** 8/8 complete (100%), 0 modeled.
-- **Notes integration:** 136/556 complete (24%), 4 modeled.
+- **Notes integration:** 137/556 complete (25%), 2 modeled.
 - **Offline / performance:** 1/6 complete (17%), 0 modeled.
-- **Testing / visual QA:** 9/13 complete (69%), 3 modeled.
+- **Testing / visual QA:** 10/13 complete (77%), 3 modeled.
 
 Generated by `node tools/sync-product-build-next.js --write`. Verify with `node tools/sync-product-build-next.js --check`.
 <!-- OBOL-PRODUCT-BUILD-NEXT:END -->

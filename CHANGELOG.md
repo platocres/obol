@@ -1,3 +1,11 @@
+## v9.60 — - Completed the next Product Build Next item after v9.59: `notes-remine-private-only-superseded`
+
+- Completed the next Product Build Next item after v9.59: `notes-remine-private-only-superseded`.
+- Re-mined old `private-reference-only` and `superseded` note dispositions as a source-boundary class instead of leaving them as discarded private references.
+- Added `data/product-hardening/private-only-superseded-remining-v9.60.js` to publish public-safe extraction mechanics without copying raw private note bodies, flags, exact targets, payload catalogs, screenshots, or walkthrough chains.
+- Added four public-safe field-note mechanics for private-source redaction, recipe-catalog conversion, lab-outcome proof templates, and volatile tool-reference criteria.
+- Marked `notes-remine-private-only-superseded` complete only through live queue/progress integration with a `private-only-superseded-remine` packet review marker.
+
 ## v9.58 — - Re-mined the reviewed credentials/auth source lane into public-safe live guidance cards for provenance, protocol scope, challenge-response proof boundaries, validation safety, and protected-secret lineage
 
 - Re-mined the reviewed credentials/auth source lane into public-safe live guidance cards for provenance, protocol scope, challenge-response proof boundaries, validation safety, and protected-secret lineage.

@@ -1,8 +1,8 @@
 'use strict';
 (function(root){
 const release=Object.freeze({
- version:'9.59.0',
- label:'v9.59',
+ version:'9.60.0',
+ label:'v9.60',
  phase:'product-hardening',
  phaseLabel:'Product Hardening',
  orangeBaseline:'v8.8',
@@ -11,7 +11,8 @@ const release=Object.freeze({
   'data/product-hardening/proof-safety-controls-v9.58.js',
   'data/product-hardening/proof-safety-evidence-ingestion-v9.58.js',
   'data/product-hardening/linux-privesc-remine-reconciliation-v9.59.js',
-  'data/product-hardening/ui-quality-audit-rubric-v9.59.js'
+  'data/product-hardening/ui-quality-audit-rubric-v9.59.js',
+  'data/product-hardening/private-only-superseded-remining-v9.60.js'
  ])
 });
 function stampState(target){
