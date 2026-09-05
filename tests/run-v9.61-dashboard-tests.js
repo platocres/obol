@@ -47,12 +47,16 @@ requireText('assets/dashboard-route-current.js','productHardeningExtensions');
 requireText('assets/dashboard-route-current.js','function restoreExtensionAutoLoad(previous)');
 requireText('assets/dashboard-route-current.js','__OBOL_DEFER_PRODUCT_HARDENING_EXTENSIONS__=true');
 requireText('assets/dashboard-route-current.js','function enhanceSidebar()');
+requireText('assets/dashboard-route-current.js','function unwrapDashboardDetails(aside)');
 requireText('assets/dashboard-route-current.js','obol-dashboard-active');
-requireText('assets/dashboard-route-current.js','side-details');
+requireText('assets/dashboard-route-current.js','panel-only');
 forbidText('assets/dashboard-route-current.js','fromManifest');
+forbidText('assets/dashboard-route-current.js',"details.id='side-details'");
+forbidText('assets/dashboard-route-current.js',"summary.textContent='Parameters / Facts'");
+forbidText('assets/dashboard-route-current.js',"root.document.createElement('details')");
 
 const route=read('assets/dashboard-route-current.js');
-const loader=route.slice(route.indexOf('function loadProductScripts'),route.indexOf('function enhanceSidebar'));
+const loader=route.slice(route.indexOf('function loadProductScripts'),route.indexOf('function unwrapDashboardDetails'));
 if(!loader.includes('PRE_EXTENSION_SCRIPTS.reduce'))fail('dashboard route must load base scripts before current-release extensions');
 if(!loader.includes('releaseProductHardeningExtensions().reduce'))fail('dashboard route must load current-release Product Hardening extensions dynamically');
 if(!loader.includes('POST_EXTENSION_SCRIPTS.reduce'))fail('dashboard route must load post-extension projections and renderer after extensions');
@@ -78,10 +82,11 @@ forbidText('assets/product-hardening-dashboard.js',"metric('Negative proof',remi
 
 requireText('assets/product-hardening-dashboard.css','.ph-dashboard-main');
 requireText('assets/product-hardening-dashboard.css','body.obol-dashboard-active main');
-requireText('assets/product-hardening-dashboard.css','#side-details:not([open])');
+requireText('assets/product-hardening-dashboard.css','aside[data-obol-dashboard-sidebar="panel-only"]');
 requireText('assets/product-hardening-dashboard.css','@media(max-width:1200px)');
 requireText('assets/product-hardening-dashboard.css','@media(max-width:760px)');
 requireText('assets/product-hardening-dashboard.css','max-width:none');
+forbidText('assets/product-hardening-dashboard.css','#side-details');
 
 requireText('tools/release-smoke.js','tests/run-v9.61-dashboard-tests.js');
 
