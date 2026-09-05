@@ -37,27 +37,33 @@
     return chunks.length ? chunks.join(' ') : fallback;
   }
 
+  function liveCard(id) {
+    if (!id) return null;
+    if (typeof root.liveCardById === 'function') {
+      try { return root.liveCardById(id); } catch (_err) { return null; }
+    }
+    if (root.CARDS && root.CARDS[id]) return root.CARDS[id];
+    const lanes = Array.isArray(root.OBOL_LANES) ? root.OBOL_LANES : Array.isArray(root.LANES) ? root.LANES : [];
+    for (const lane of lanes) for (const card of lane.cards || []) if (card && card.id === id) return card;
+    return null;
+  }
+
   function ensureLane(id, title, phase) {
     if (typeof root.laneById === 'function') return root.laneById(id, title, phase);
-    const lanes = Array.isArray(root.LANES) ? root.LANES : [];
+    const lanes = Array.isArray(root.OBOL_LANES) ? root.OBOL_LANES : Array.isArray(root.LANES) ? root.LANES : [];
     let lane = lanes.find((entry) => entry && entry.lane === id);
     if (!lane) {
       lane = { lane: id, title: title || id, phase: phase || title || id, cards: [] };
       lanes.push(lane);
     }
     if (!Array.isArray(lane.cards)) lane.cards = [];
-    root.LANES = lanes;
+    if (Array.isArray(root.OBOL_LANES)) root.OBOL_LANES = lanes;
+    else root.LANES = lanes;
     return lane;
   }
 
-  function hasCard(id) {
-    if (root.CARDS && root.CARDS[id]) return true;
-    const lanes = Array.isArray(root.LANES) ? root.LANES : [];
-    return lanes.some((lane) => Array.isArray(lane.cards) && lane.cards.some((card) => card && card.id === id));
-  }
-
   function publishCard(lane, afterId, card) {
-    if (!lane || !card || hasCard(card.id)) return false;
+    if (!lane || !card || liveCard(card.id)) return false;
     card.lane = card.lane || lane.lane;
     if (typeof root.addCardAfter === 'function') return root.addCardAfter(lane, afterId, card);
     if (!Array.isArray(lane.cards)) lane.cards = [];
@@ -72,8 +78,8 @@
   }
 
   function buildCards() {
-    return freezeList([
-      freezeObject({
+    return [
+      {
         id: 'credential-dump-proof-chain',
         title: 'Credential Dump Proof Chain',
         hypothesis: noteText([
@@ -90,8 +96,8 @@
         tools: freezeList(['pypykatz', 'mimikatz', 'hashcat']),
         refs: freezeList([]),
         sourceMined63: freezeObject({ proof: PROOF_FILE, notes: cardNotes(['note-lsass-dump-artifact-proof-chain', 'note-offline-parser-output-needs-material-classification', 'note-hash-crack-does-not-prove-service-access']) }),
-      }),
-      freezeObject({
+      },
+      {
         id: 'web-proxy-transform-proof-chain',
         title: 'Web Proxy Transform Proof Chain',
         hypothesis: 'Use the proxy workflow to keep browser edits, decode and encode steps, payload-processing changes, response deltas, and replayed server behavior as separate proof stages. A clever request mutation is a lead; reviewed server-side behavior is the proof.',
@@ -104,8 +110,8 @@
         tools: freezeList(['Burp Suite', 'OWASP ZAP', 'CyberChef']),
         refs: freezeList([]),
         sourceMined63: freezeObject({ proof: PROOF_FILE, notes: cardNotes(['note-client-controls-are-request-shaping-clues', 'note-encoded-cookie-transform-order', 'note-capture-tool-http-before-debugging']) }),
-      }),
-      freezeObject({
+      },
+      {
         id: 'web-client-controls',
         title: 'Review Client-Side Controls as Request-Shaping Clues',
         hypothesis: noteText(['note-client-controls-are-request-shaping-clues'], 'Disabled controls, hidden fields, local validation, and browser-side markup changes show how a request can be shaped. They do not prove backend authorization failure until the server accepts a scoped action or returns protected content.'),
@@ -118,8 +124,8 @@
         tools: freezeList(['browser-devtools', 'Burp Suite', 'OWASP ZAP']),
         refs: freezeList([]),
         sourceMined63: freezeObject({ proof: PROOF_FILE, notes: cardNotes(['note-client-controls-are-request-shaping-clues']) }),
-      }),
-      freezeObject({
+      },
+      {
         id: 'encoded-parameter-review',
         title: 'Review Encoded Parameters in Transform Order',
         hypothesis: noteText(['note-encoded-cookie-transform-order'], 'When a cookie or parameter is transformed through multiple encodings, preserve the decode order, mutate only the intended inner value, then rebuild the outbound value in reverse order. The rebuilt request still needs response-body review before it becomes impact proof.'),
@@ -132,8 +138,8 @@
         tools: freezeList(['CyberChef', 'Burp Intruder', 'OWASP ZAP']),
         refs: freezeList([]),
         sourceMined63: freezeObject({ proof: PROOF_FILE, notes: cardNotes(['note-encoded-cookie-transform-order']) }),
-      }),
-      freezeObject({
+      },
+      {
         id: 'tool-generated-http-review',
         title: 'Capture Tool-Generated HTTP Before Debugging',
         hypothesis: noteText(['note-capture-tool-http-before-debugging'], 'When a scanner or framework module behaves strangely, capture the exact HTTP it generates before changing assumptions. Compare the produced method, path, host, headers, body, proxy settings, and response class against the manual request you intended.'),
@@ -146,25 +152,24 @@
         tools: freezeList(['Metasploit', 'Burp Suite', 'OWASP ZAP']),
         refs: freezeList([]),
         sourceMined63: freezeObject({ proof: PROOF_FILE, notes: cardNotes(['note-capture-tool-http-before-debugging']) }),
-      }),
-    ]);
+      },
+    ];
   }
 
   function installCards() {
-    const lanes = root.LANES;
-    const cards = root.CARDS;
-    if (!Array.isArray(lanes) || !cards || typeof cards !== 'object') return false;
+    if (typeof root.laneById !== 'function' && !Array.isArray(root.OBOL_LANES) && !Array.isArray(root.LANES)) return false;
+    if (typeof root.addCardAfter !== 'function' && !root.CARDS) return false;
     const credentialLane = ensureLane('credential-attacks', 'Credential Attacks', 'Credential Attacks');
     const webLane = ensureLane('web-proxy-transform', 'Web Proxy Transform Review', 'Initial Access & Web');
     const cardRows = buildCards();
-    const before = cardRows.filter((card) => hasCard(card.id)).length;
+    const before = cardRows.filter((card) => liveCard(card.id)).length;
     publishCard(credentialLane, 'windows-local-password-attacks', cardRows[0]);
     let after = '';
     for (const card of cardRows.slice(1)) {
       publishCard(webLane, after, card);
       after = card.id;
     }
-    const installed = cardRows.filter((card) => hasCard(card.id)).length;
+    const installed = cardRows.filter((card) => liveCard(card.id)).length;
     root.OBOL_VISIBLE_REMINED_CARD_IDS_V963 = freezeList(CARD_IDS);
     root.OBOL_VISIBLE_REMINED_CARDS_V963 = freezeObject({
       wave: WAVE,
@@ -192,7 +197,7 @@
   function validate() {
     const failures = [];
     for (const id of CARD_IDS) {
-      if (!hasCard(id)) failures.push('Missing live card route for ' + id);
+      if (!liveCard(id)) failures.push('Missing live card route for ' + id);
     }
     return failures;
   }
