@@ -11,7 +11,7 @@
  * suppresses historical schedulers and commits current route owners last.
  *
  * Historical fragment order sha256: 40e3006d9423d669acf5869b577ecf56a6ca2ee1629c95fd0fcc5d242d2c5f27
- * Generated body sha256: e312dd87f94da280ef4f74eefff0c7cd140ea802dc3d2655402f1382ee1e6ec2
+ * Generated body sha256: 87a6fc40c8783b731cc7a9d0bff8d5fdac1b48801f757470d17bf009e8a540c0
  * First historical fragment: assets/report-v2.js
  * Last historical fragment:  assets/app-v8.8.js
  */
@@ -2000,7 +2000,8 @@ const release=Object.freeze({
  orangeBaseline:'v8.8',
  productHardeningExtensions:Object.freeze([
   'data/product-hardening/credentials-auth-remining-v9.58.js',
-  'data/product-hardening/proof-safety-controls-v9.58.js'
+  'data/product-hardening/proof-safety-controls-v9.58.js',
+  'data/product-hardening/proof-safety-evidence-ingestion-v9.58.js'
  ])
 });
 function stampState(target){
