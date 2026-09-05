@@ -13,3 +13,9 @@ Current v9.60 handoff:
 After a batch closes, regenerate Product Build Next and follow the next generated `Next notes batch` until both notes-first gates are complete.
 
 Do not advance to `perf-service-worker` or any offline/performance item while this generated next notes batch or either notes-first gate remains active.
+
+Proof surfaces:
+
+- `data/product-hardening/build-next-queue-hygiene-current.js` publishes `nextNotesBatch` and validates the active notes-first handoff.
+- `tools/sync-product-build-next.js` renders the `Next notes batch` lines into README Product Build Next.
+- `tests/run-v9.60-tests.js` asserts the batch ID, source route, selector, acceptance rule, notes-first ordering, and offline/performance block.
