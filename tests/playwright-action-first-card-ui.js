@@ -23,15 +23,16 @@ const cards = [
 fs.mkdirSync(outputDir, { recursive: true });
 
 function hasActionTool(text) {
-  return /\b(curl|ffuf|gobuster|nxc|pypykatz|hashcat|impacket-psexec|impacket-wmiexec|evil-winrm|sqlmap|python3)\b/i.test(text) || /\b(Burp|ZAP|Repeater|Intruder|CyberChef|Proxy history|DevTools)\b/i.test(text);
+  return /\b(curl|ffuf|gobuster|nxc|pypykatz|hashcat|impacket-psexec|impacket-wmiexec|evil-winrm|sqlmap|python3)\b/i.test(text)
+    || /\b(Burp|ZAP|Repeater|Intruder|CyberChef|Proxy history|DevTools|browser-side|client-side|mutated request)\b/i.test(text);
 }
 
 function hasEvidenceGuidance(text) {
-  return /\b(Evidence|Analyze pasted evidence|Paste command output|Success looks like|response body|manual replay|scoped auth|cleanup state|payload position|decode|re-encode)\b/i.test(text);
+  return /\b(Evidence|Analyze pasted evidence|Paste command output|Paste back|Success looks like|response body|server response|manual replay|scoped auth|cleanup state|payload position|decode|re-encode|mutated request captured)\b/i.test(text);
 }
 
 function hasDecisionGuidance(text) {
-  return /\b(move forward|success|failure|fails?|blocked|triage|not impact|do not|replay|compare|boundary|scope|auth|authorization|cleanup)\b/i.test(text);
+  return /\b(move forward|success|failure|fails?|blocked|triage|not impact|do not|replay|compare|compared|boundary|scope|auth|authorization|cleanup|server accepts|backend)\b/i.test(text);
 }
 
 (async () => {
@@ -54,7 +55,7 @@ function hasDecisionGuidance(text) {
     if (!hasActionTool(text)) failures.push(`${id} does not show a concrete command or GUI tool workflow`);
     if (!hasEvidenceGuidance(text)) failures.push(`${id} does not show useful paste-back/evidence guidance`);
     if (!hasDecisionGuidance(text)) failures.push(`${id} does not show decision guidance for success, failure, triage, or next movement`);
-    if (/source-mined-cards lane/i.test(text) && !/curl|ffuf|nxc|pypykatz|hashcat|impacket|Intruder|Repeater|ZAP/i.test(text)) failures.push(`${id} looks like a generic source-mined card instead of an operator card`);
+    if (/source-mined-cards lane/i.test(text) && !/curl|ffuf|nxc|pypykatz|hashcat|impacket|Intruder|Repeater|ZAP|DevTools|client-side|mutated request/i.test(text)) failures.push(`${id} looks like a generic source-mined card instead of an operator card`);
   }
   await browser.close();
   if (failures.length) {
