@@ -17,6 +17,10 @@
     return Object.freeze(value || {});
   }
 
+  function unique(list) {
+    return Array.from(new Set((list || []).filter(Boolean)));
+  }
+
   const SOURCE_CONFIDENCE = Object.freeze({
     schemaVersion: 2,
     reviewTextPolicy: 'complete_cleaned_text',
@@ -122,31 +126,11 @@
   ]);
 
   const DIMENSION_AUDIT = Object.freeze([
-    Object.freeze({
-      dimension: 'path-bindings',
-      result: 'added',
-      note: 'Binds stored-XSS persistence and session-impact boundaries to existing XSS Next Step owners.',
-    }),
-    Object.freeze({
-      dimension: 'gui-controls',
-      result: 'queued',
-      note: 'Proof-mode selector is useful, but needs copy and clutter testing before surfacing.',
-    }),
-    Object.freeze({
-      dimension: 'terminal-analyzers',
-      result: 'covered',
-      note: 'Analyzer boundary remains discovery/reflection/browser-proof movement, not automatic exploit escalation.',
-    }),
-    Object.freeze({
-      dimension: 'lesson-boxes',
-      result: 'added',
-      note: 'Adds operator-facing lesson material about browser context, origin, persistence, and session boundaries.',
-    }),
-    Object.freeze({
-      dimension: 'cleanup',
-      result: 'queued',
-      note: 'Callback-style proof mode needs a cleanup reminder before it becomes a generated control.',
-    }),
+    Object.freeze({ dimension: 'path-bindings', result: 'added', note: 'Binds stored-XSS persistence and session-impact boundaries to existing XSS Next Step owners.' }),
+    Object.freeze({ dimension: 'gui-controls', result: 'queued', note: 'Proof-mode selector is useful, but needs copy and clutter testing before surfacing.' }),
+    Object.freeze({ dimension: 'terminal-analyzers', result: 'covered', note: 'Analyzer boundary remains discovery/reflection/browser-proof movement, not automatic exploit escalation.' }),
+    Object.freeze({ dimension: 'lesson-boxes', result: 'added', note: 'Adds operator-facing lesson material about browser context, origin, persistence, and session boundaries.' }),
+    Object.freeze({ dimension: 'cleanup', result: 'queued', note: 'Callback-style proof mode needs a cleanup reminder before it becomes a generated control.' }),
   ]);
 
   const PUBLIC_SAFE_CHANGES = Object.freeze([
@@ -193,6 +177,25 @@
       tags: freezeList(['xss', 'session', 'cookie-flags', 'web-auth', 'proof-boundary']),
       sourceRefs: freezeList(['htb-penetration-tester-2715d3efea49bdce']),
       reviewWave: WAVE,
+    }),
+  ]);
+
+  const QUEUED_PRODUCT_GAPS = freezeList([
+    freezeObject({
+      id: 'gap-xss-proof-mode-selector',
+      track: 'ui-ux',
+      status: 'queued',
+      priority: 86.831,
+      label: 'Design XSS proof-mode selector',
+      detail: 'Turn the re-mined XSS proof-mode lesson into an uncluttered builder/UI control that lets operators choose benign proof styles such as dialog, DOM marker, console marker, or harmless callback while preserving public-safe boundaries and avoiding raw payload recipes.',
+    }),
+    freezeObject({
+      id: 'gap-xss-proof-mode-cleanup-reminder',
+      track: 'ui-ux',
+      status: 'queued',
+      priority: 86.832,
+      label: 'Add XSS proof cleanup reminder',
+      detail: 'Pair any callback-style or state-changing XSS proof mode with explicit cleanup and removal guidance so the builder reminds operators to remove temporary test artifacts and avoid treating proof plumbing as persistent access.',
     }),
   ]);
 
@@ -280,11 +283,11 @@
       'product-mechanics': decision('added', {
         proofRefs: [ownerId],
         changedOwners: ['data/product-hardening/xss-session-remining-v9.57.js', 'data/runtime-manifest.js'],
-        note: 'The re-mining artifact now mutates live note integration and progress surfaces when the Product Hardening bundle loads.',
+        note: 'The re-mining artifact now mutates live note integration, progress, and Product Build Next surfaces when the Product Hardening bundle loads.',
       }),
       'product-gaps': decision('queued', {
         gapIds: ['gap-xss-proof-mode-selector', 'gap-xss-proof-mode-cleanup-reminder'],
-        note: 'The remaining work is an uncluttered proof-mode control and cleanup prompt, not raw payload exposure.',
+        note: 'The remaining work is queued as concrete UI/UX Product Build Next items.',
       }),
       'orange-baseline': decision('covered', {
         ownerIds: ['path'],
@@ -305,10 +308,6 @@
       decisions: commonXssDecisions(finding.productOwner),
     })
   ));
-
-  function unique(list) {
-    return Array.from(new Set((list || []).filter(Boolean)));
-  }
 
   function recomputeRemineProgress(baseProgress) {
     const current = baseProgress && baseProgress.remining ? baseProgress.remining : {};
@@ -370,6 +369,7 @@
       blockedFreshPacketsUntilComplete: true,
       latestWave: WAVE,
       latestOutputs: freezeList(FIELD_NOTES.map((note) => note.id)),
+      queuedProductGaps: freezeList(QUEUED_PRODUCT_GAPS.map((item) => item.id)),
       redFlags: freezeList(current.redFlags || []),
     });
   }
@@ -392,7 +392,7 @@
         priorTerminalCount: FINDINGS.length,
         newlyTerminalCount: FINDINGS.length,
         deferredRefs: freezeList([]),
-        openProductGaps: freezeList(['gap-xss-proof-mode-selector', 'gap-xss-proof-mode-cleanup-reminder']),
+        openProductGaps: freezeList(QUEUED_PRODUCT_GAPS.map((item) => item.id)),
         closedProductChanges: freezeList(FIELD_NOTES.map((note) => note.id)),
         deferredTo: freezeObject({
           'gap-xss-proof-mode-selector': 'Future uncluttered GUI proof-mode control',
@@ -432,13 +432,34 @@
     });
   }
 
+  function upsertQueueItem(q, item) {
+    if (!q || !Array.isArray(q.items)) return;
+    const existing = q.items.find((entry) => entry && entry.id === item.id);
+    if (existing) Object.assign(existing, item);
+    else q.items.push({ ...item });
+  }
+
+  function countGapItemsOnTrack(q) {
+    if (!q || !Array.isArray(q.items)) return 0;
+    return QUEUED_PRODUCT_GAPS.filter((item) => q.items.some((entry) => entry && entry.id === item.id && entry.track === item.track)).length;
+  }
+
   function integrateHardeningQueue() {
     const q = root.OBOL_PRODUCT_HARDENING;
     if (!q || !Array.isArray(q.items)) return;
     const item = q.items.find((entry) => entry && entry.id === 'notes-remine-xss-session');
     if (item) {
       item.status = 'complete';
-      item.detail = 'Reviewed XSS/session source notes were re-mined into live path-bound field notes for delivery/trigger context, browser execution proof, and session-impact boundaries. Proof-mode GUI controls and cleanup prompts remain queued as explicit product gaps.';
+      item.detail = 'Reviewed XSS/session source notes were re-mined into live path-bound field notes for delivery/trigger context, browser execution proof, and session-impact boundaries. Proof-mode GUI controls and cleanup prompts are now queued as explicit Product Build Next UI/UX items.';
+    }
+    const beforeUiGapCount = countGapItemsOnTrack(q);
+    QUEUED_PRODUCT_GAPS.forEach((gap) => upsertQueueItem(q, gap));
+    const afterUiGapCount = countGapItemsOnTrack(q);
+    const addedUiGapCount = Math.max(0, afterUiGapCount - beforeUiGapCount);
+    const uiTrack = Array.isArray(q.tracks) ? q.tracks.find((entry) => entry && entry.id === 'ui-ux') : null;
+    if (uiTrack && addedUiGapCount && !uiTrack.__xssProofModeGapsCounted) {
+      uiTrack.total = Number(uiTrack.total || 0) + addedUiGapCount;
+      uiTrack.__xssProofModeGapsCounted = true;
     }
   }
 
@@ -462,6 +483,7 @@
     publicSafeChanges: PUBLIC_SAFE_CHANGES,
     fieldNotes: FIELD_NOTES,
     remineAuditRows: REMINE_AUDIT_ROWS,
+    queuedProductGaps: QUEUED_PRODUCT_GAPS,
     liveCards: freezeList(FIELD_NOTES.map((note) => note.id)),
     liveRoutes: freezeList(['#/path', '#/dashboard']),
     status: 'live-integrated',
