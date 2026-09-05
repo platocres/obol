@@ -68,7 +68,15 @@ It must also define expected evidence to paste back, failure modes, next-step gu
 
 ## Why-now rule
 
-Every primary card should eventually receive a `why now` pass. The goal is not provenance. The goal is to explain why this command or GUI workflow appears at this exact point in the lab.
+Every primary card should receive why-now guidance. The goal is not provenance. The goal is to explain why this command or GUI workflow appears at this exact point in the lab.
+
+Why-now copy should be dynamic whenever possible. Static card prose can define the general lesson, but the rendered `Why this step now` box should use the current target, available facts, missing produced facts, recent outcomes, and path state to explain why this card is useful now.
+
+Good dynamic why-now guidance follows this shape:
+
+```text
+current evidence/path state -> missing proof boundary -> command or GUI action -> produced fact or next path decision
+```
 
 Good why-now guidance is concrete and path-aware:
 
@@ -130,4 +138,4 @@ A direct card route is not enough. The card must either be a retained primary ac
 
 ## CI gate
 
-`tools/validate-actionable-next-step-cards.js` enforces this for current note-derived cards. `tools/validate-card-action-spine-v9.71.js` blocks primary note-derived cards without a concrete command-line or GUI-tool action spine and prevents lesson-only cards, `UNKNOWN` tool rows, and methodology-gap UI copy from returning. `tools/validate-note-card-disposition-reconciliation.js` protects the kept/merged/demoted distinction and prevents the visible v9.67 patch-panel pattern from returning. The route gate and path-placement gate still matter, but neither one proves usefulness by itself.
+`tools/validate-actionable-next-step-cards.js` enforces this for current note-derived cards. `tools/validate-card-action-spine-v9.71.js` blocks primary note-derived cards without a concrete command-line or GUI-tool action spine and prevents lesson-only cards, `UNKNOWN` tool rows, and methodology-gap UI copy from returning. Browser card-route smoke must also prove that retained primary cards render dynamic `Why this step now` guidance. `tools/validate-note-card-disposition-reconciliation.js` protects the kept/merged/demoted distinction and prevents the visible v9.67 patch-panel pattern from returning. The route gate and path-placement gate still matter, but neither one proves usefulness by itself.
