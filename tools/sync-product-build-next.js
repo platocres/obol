@@ -19,7 +19,7 @@ const sourceReviewPacketsFile = path.join(root, 'data', 'product-hardening', 'so
 const runtimeManifestFile = path.join(root, 'data', 'runtime-manifest.js');
 const runtimeConsolidationFile = path.join(root, 'data', 'runtime-consolidation-current.js');
 const readmeFile = path.join(root, 'README.md');
-const sandbox = { window: {}, globalThis: null };
+const sandbox = { window: { setTimeout() {} }, globalThis: null };
 sandbox.globalThis = sandbox.window;
 vm.createContext(sandbox);
 
