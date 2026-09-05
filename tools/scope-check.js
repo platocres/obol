@@ -11,6 +11,7 @@ const checks=[
  ['tests/run-v9.61-tests.js'],
  ['tests/run-v9.62-tests.js'],
  ['tests/run-v9.63-tests.js'],
+ ['tests/run-v9.64-tests.js'],
  ['tools/validate-product-hardening-card-routes.js'],
  ['tools/validate-product-hardening-queue.js'],
  ['tools/sync-current-styles.js','--check'],
