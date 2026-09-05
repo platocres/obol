@@ -18,7 +18,8 @@ const release=Object.freeze({
   'data/product-hardening/visible-remine-cards-v9.63.js',
   'data/product-hardening/pass-the-hash-remining-v9.64.js',
   'data/product-hardening/pass-the-hash-dashboard-settle-v9.64.js',
-  'data/product-hardening/note-card-route-guard-v9.64.js'
+  'data/product-hardening/note-card-route-guard-v9.64.js',
+  'data/product-hardening/pass-the-hash-queue-settle-v9.64.js'
  ])
 });
 function stampState(target){
