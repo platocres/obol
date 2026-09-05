@@ -18,6 +18,16 @@ Required for any user-visible product change. Link the exact surface a maintaine
 - Status change(s):
 - Acceptance criteria satisfied:
 
+## Evidence ingestion / Next Steps movement
+
+Required for any command, tool card, proof control, analyzer, or path item that expects pasted terminal output, browser-observation text, or proof notes.
+
+- Pasted Evidence source(s):
+- Activity card ID(s) emitted:
+- Outcome fact(s) emitted:
+- Next Steps movement expected:
+- Redaction / conservative-proof boundary:
+
 ## Live Integration Done Gate
 
 Product Build Next work is not complete while its output is only a disconnected artifact, fixture, data file, hidden registry, loose doc, or proof file.
@@ -27,8 +37,10 @@ Product Build Next work is not complete while its output is only a disconnected 
 - [ ] Runtime or lazy-bundle load order is updated when the new output must execute before another projection.
 - [ ] Queue/progress status was changed only after live visibility wiring existed.
 - [ ] Tests assert both the data artifact and the live integration path that consumes it.
+- [ ] No same-surface gap parking: buildable follow-up work in the same ownership area and live surface was built now, not added as a vague future Product Build item.
+- [ ] Evidence ingestion is covered when the item expects pasted terminal output, browser-observation text, or proof notes.
+- [ ] Any deferred useful finding has a named blocker, blast-radius reason, missing-source proof, private-only reason, or product-gap ID that explains why it could not be built in this PR.
 - [ ] The PR does not claim completion while also saying the same item has `remaining integration`, needs a `later pass`, is `not visible yet`, or is an `additive proof artifact only`.
-- [ ] Deferred useful findings have named blockers, blast-radius reasons, missing-source proof, private-only reasons, or product-gap IDs.
 
 For re-mining artifacts, run:
 

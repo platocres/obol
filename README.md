@@ -4,7 +4,7 @@ Obol is a static, browser-local workspace for OSCP-style labs, Active Directory 
 
 Live site: `https://platocres.github.io/obol/`
 
-Current release: **v9.57**
+Current release: **v9.58**
 
 Open `#/dashboard` for the active Product Hardening Dashboard and Product Build Next queue.
 
@@ -57,17 +57,17 @@ This block is generated from `data/product-hardening/product-hardening-queue.js`
 Recommended work-package metadata comes from `data/product-hardening/work-packages.js`.
 Runtime consolidation figures come from `data/runtime-consolidation-current.js`, the same projection the Product Hardening Dashboard renders.
 
-**Current product-hardening queue:** 220/653 complete (34%), 9 concrete queued, 11 modeled/standing items.
+**Current product-hardening queue:** 224/657 complete (34%), 8 concrete queued, 11 modeled/standing items.
 **Private notes source:** [`https://github.com/platocres/obol-source-notes/tree/main/sources/raw`](https://github.com/platocres/obol-source-notes/tree/main/sources/raw) — 556 notes and 1326 embedded resources accounted.
 **Private review packets:** `platocres/obol-source-notes@agent/review-packets:data/review-packets/manifest.json` — 556/556 notes in 29 complete-text packets, 0 truncated, 8,725,188 cleaned text chars.
 **Raw source proof:** workflow run 33877189291 verified HTB ENEX 194,191,214 bytes sha256 `ceeab3da0770ecd3…` before packet generation.
 **Notes Integration:** 135/556 reviewed — 102 modeled, 28 private-only, 421 pending.
-**Derived note guidance:** 56 Field Notes · 51 tool-bound · 53 Path-bound · 17 Evidence · 5 Report.
+**Derived note guidance:** 65 Field Notes · 60 tool-bound · 62 Path-bound · 20 Evidence · 5 Report.
 **Declared note-driven product mechanics:** 11 total · 1 builder · 0 Path logic · 0 Evidence parser · 0 report generator · 0 workflow.
 **Latest mined themes:** Linux local privilege escalation, Credentials / auth material, Object authorization / IDOR, Windows local privilege escalation.
 **Notes impact contract:** `docs/NOTES-IMPACT.md`.
-**Source re-mining:** old-rubric reviewed 135/556 · full-spectrum re-mined 19/135 · old-rubric-only remaining 116.
-**Negative finding outcomes:** added 7 · covered 150 · queued 27 · private-only 24 · not-applicable 96 · blocked 0.
+**Source re-mining:** old-rubric reviewed 135/556 · full-spectrum re-mined 30/135 · old-rubric-only remaining 105.
+**Negative finding outcomes:** added 68 · covered 205 · queued 60 · private-only 51 · not-applicable 96 · blocked 0.
 **Re-mining red flags:** 0 currently flagged across 11 invalid/missing-proof guardrails.
 **Extraction dimensions:** 16 tracked — Path bindings, tool cards, GUI controls, scripts/one-liners, command templates, terminal analyzers, Evidence expectations, path movement, lessons/examples, troubleshooting, cleanup, report guidance, product mechanics, product gaps, and additive Orange baseline.
 **Re-mining dashboard/schema:** complete — overview-first dashboard with drill-down detail sections for the same generated state.
@@ -77,19 +77,15 @@ Runtime consolidation figures come from `data/runtime-consolidation-current.js`,
 **Measured in Chromium (v9.40):** Home 321→19 · Next Steps 329→27 · Evidence 365→21 · Report 335→20 JavaScript/CSS requests.
 **Runtime compaction contract:** `docs/RUNTIME-COMPACTION.md`.
 
-**Recommended work package:** **Notes Impact and Source Re-mining** — 6 concrete live items / 18 tracked.
-**Next concrete entry:** **Re-mine reviewed XSS and session notes**
+**Recommended work package:** **Notes Impact and Source Re-mining** — 2 concrete live items / 18 tracked.
+**Next concrete entry:** **Re-mine reviewed Linux privesc notes**
 **Ownership area:** `notes/impact-packets`
 **Package guidance:** Treat the 556-note disposition item as the umbrella, but do not let the umbrella hide the immediate work: re-mine already-reviewed notes from their original private sources before fresh pending-note packets. The note-progress projection splits the source re-mining gate into dashboard/schema plus themed re-mining rows; those rows remain additive queue projections while this package stays compatible with base queue validation. Re-mining must check for tool cards, GUI switches, scripts, one-liners, terminal-output analyzers, actual Next Steps path placement, lesson boxes, examples, troubleshooting, cleanup, report guidance, code-level mechanics, and product gaps. Preserve the Orange-derived path as an additive baseline and do not use disposable wrapper layers.
 **Package dependencies:** Notes Integration Foundation
 
 **Concrete live items in this package:**
-- **Re-mine reviewed XSS and session notes** — Return to the original private XSS, browser impact, cookie, CSP, request-context, and session notes already reviewed. Mine again for useful tool cards, switches, scripts, one-liners, analyzers, Path attachments, lessons, examples, troubleshooting, cleanup, report guidance, and product gaps.
-- **Re-mine reviewed credentials and auth notes** — Return to the original private credential, hash, ticket, certificate, key, cookie, token, validation-boundary, and auth-failure notes already reviewed. Add missed builder modes, GUI switches, command templates, analyzers, credential routing, Path handoffs, lessons, troubleshooting, cleanup, report guidance, and product gaps.
 - **Re-mine reviewed Linux privesc notes** — Return to the original private Linux privilege-escalation notes already reviewed. Mine again for missed tool cards, shell one-liners, scripts, GUI controls, analyzer expectations, additive Path branches, proof boundaries, lesson boxes, examples, troubleshooting, cleanup, report guidance, and product gaps without deleting Orange baseline path items.
 - **Re-mine private-only and superseded notes** — Return to original private notes previously marked private-reference-only, superseded, rejected, or reviewed-not-modeled. Keep raw recipes and private material private, but re-check whether public-safe tool ideas, command templates, analyzer rules, lesson boxes, troubleshooting, cleanup, report guidance, or additive Path improvements were missed.
-- **Notes packet: XSS and session impact** — Mine XSS, browser/session impact, cookie/CSP controls, request context, proof boundaries, remediation, and missing product branches.
-- **Notes packet: credentials and authentication** — Mine credentials, hashes, tickets, certificates, validation boundaries, auth failure modes, tool options, and cross-tool/path handoffs.
 
 **Related items to consider, not automatically in scope:** Design contextual field-notes disclosure.
 
@@ -98,27 +94,27 @@ Runtime consolidation figures come from `data/runtime-consolidation-current.js`,
 - **Burn down all 556 note dispositions** — standing gate, not the next concrete batch. Umbrella disposition goal for all 556 notes. Fresh pending-note packets remain queued beneath the full-spectrum re-mining gate: agents must first re-mine already-reviewed notes from the original private sources, add missed product outputs, preserve the Orange-derived path additively, and prove every negative finding with an auditable per-dimension outcome.
 
 **Highest-priority concrete live items:**
-1. **Re-mine reviewed XSS and session notes** — Return to the original private XSS, browser impact, cookie, CSP, request-context, and session notes already reviewed. Mine again for useful tool cards, switches, scripts, one-liners, analyzers, Path attachments, lessons, examples, troubleshooting, cleanup, report guidance, and product gaps.
-2. **Re-mine reviewed credentials and auth notes** — Return to the original private credential, hash, ticket, certificate, key, cookie, token, validation-boundary, and auth-failure notes already reviewed. Add missed builder modes, GUI switches, command templates, analyzers, credential routing, Path handoffs, lessons, troubleshooting, cleanup, report guidance, and product gaps.
-3. **Re-mine reviewed Linux privesc notes** — Return to the original private Linux privilege-escalation notes already reviewed. Mine again for missed tool cards, shell one-liners, scripts, GUI controls, analyzer expectations, additive Path branches, proof boundaries, lesson boxes, examples, troubleshooting, cleanup, report guidance, and product gaps without deleting Orange baseline path items.
-4. **Re-mine private-only and superseded notes** — Return to original private notes previously marked private-reference-only, superseded, rejected, or reviewed-not-modeled. Keep raw recipes and private material private, but re-check whether public-safe tool ideas, command templates, analyzer rules, lesson boxes, troubleshooting, cleanup, report guidance, or additive Path improvements were missed.
-5. **Notes packet: XSS and session impact** — Mine XSS, browser/session impact, cookie/CSP controls, request context, proof boundaries, remediation, and missing product branches.
-6. **Notes packet: credentials and authentication** — Mine credentials, hashes, tickets, certificates, validation boundaries, auth failure modes, tool options, and cross-tool/path handoffs.
-7. **UI quality audit rubric** — Add a fixed per-screen audit checklist under docs/visual-qa/ (hierarchy, density, consistency, affordance, state feedback, accessibility). Run once per primary screen and file each finding as its own queue item instead of ad-hoc fixes.
-8. **Quiet service worker caching** — Improve repeat-load and offline behavior without prompting users to install anything.
+1. **Re-mine reviewed Linux privesc notes** — Return to the original private Linux privilege-escalation notes already reviewed. Mine again for missed tool cards, shell one-liners, scripts, GUI controls, analyzer expectations, additive Path branches, proof boundaries, lesson boxes, examples, troubleshooting, cleanup, report guidance, and product gaps without deleting Orange baseline path items.
+2. **Re-mine private-only and superseded notes** — Return to original private notes previously marked private-reference-only, superseded, rejected, or reviewed-not-modeled. Keep raw recipes and private material private, but re-check whether public-safe tool ideas, command templates, analyzer rules, lesson boxes, troubleshooting, cleanup, report guidance, or additive Path improvements were missed.
+3. **UI quality audit rubric** — Add a fixed per-screen audit checklist under docs/visual-qa/ (hierarchy, density, consistency, affordance, state feedback, accessibility). Run once per primary screen and file each finding as its own queue item instead of ad-hoc fixes.
+4. **Quiet service worker caching** — Improve repeat-load and offline behavior without prompting users to install anything.
+5. **IndexedDB workspace storage** — Support durable larger local workspaces, multiple engagements, and cached indexes while remaining browser-local.
+6. **Web Workers for heavy tasks** — Move evidence parsing, search indexing, and report generation off the UI thread.
+7. **Non-intrusive update notice** — When cached app updates are available, notify users without install nagging.
+8. **Workspace storage migration safety** — Any storage refactor must preserve existing browser-local workspaces and sanitized exports.
 
 **Queue hygiene guardrail:** Completed packet work and standing umbrella gates must not appear as the next concrete build. `data/product-hardening/build-next-queue-hygiene-current.js` enforces this before README/dashboard rendering and CI validates it.
 
 **Track status:**
 - **Critical correctness:** 5/5 complete (100%), 0 modeled.
 - **Architecture / runtime:** 19/22 complete (86%), 3 modeled.
-- **UI / UX repair:** 10/11 complete (91%), 1 modeled.
+- **UI / UX repair:** 13/14 complete (93%), 1 modeled.
 - **Tool GUI builders:** 19/19 complete (100%), 0 modeled.
 - **Credential modes:** 14/14 complete (100%), 0 modeled.
 - **Manual outcomes:** 8/8 complete (100%), 0 modeled.
 - **Notes integration:** 136/556 complete (24%), 4 modeled.
 - **Offline / performance:** 1/6 complete (17%), 0 modeled.
-- **Testing / visual QA:** 8/12 complete (67%), 3 modeled.
+- **Testing / visual QA:** 9/13 complete (69%), 3 modeled.
 
 Generated by `node tools/sync-product-build-next.js --write`. Verify with `node tools/sync-product-build-next.js --check`.
 <!-- OBOL-PRODUCT-BUILD-NEXT:END -->

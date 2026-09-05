@@ -19,22 +19,52 @@ const sourceReviewPacketsFile = path.join(root, 'data', 'product-hardening', 'so
 const runtimeManifestFile = path.join(root, 'data', 'runtime-manifest.js');
 const runtimeConsolidationFile = path.join(root, 'data', 'runtime-consolidation-current.js');
 const readmeFile = path.join(root, 'README.md');
-const sandbox = { window: {}, globalThis: null };
+const sandbox = { window: { setTimeout() {} }, globalThis: null };
 sandbox.globalThis = sandbox.window;
 vm.createContext(sandbox);
-vm.runInContext(fs.readFileSync(releaseFile, 'utf8'), sandbox, { filename: releaseFile });
-vm.runInContext(fs.readFileSync(queueFile, 'utf8'), sandbox, { filename: queueFile });
-vm.runInContext(fs.readFileSync(workPackagesFile, 'utf8'), sandbox, { filename: workPackagesFile });
-vm.runInContext(fs.readFileSync(noteIntegrationFile, 'utf8'), sandbox, { filename: noteIntegrationFile });
-if (fs.existsSync(noteReviewsFile)) vm.runInContext(fs.readFileSync(noteReviewsFile, 'utf8'), sandbox, { filename: noteReviewsFile });
-if (fs.existsSync(notePacketsFile)) vm.runInContext(fs.readFileSync(notePacketsFile, 'utf8'), sandbox, { filename: notePacketsFile });
-if (fs.existsSync(noteBackfillFile)) vm.runInContext(fs.readFileSync(noteBackfillFile, 'utf8'), sandbox, { filename: noteBackfillFile });
-if (fs.existsSync(noteProgressFile)) vm.runInContext(fs.readFileSync(noteProgressFile, 'utf8'), sandbox, { filename: noteProgressFile });
-if (fs.existsSync(queueHygieneFile)) vm.runInContext(fs.readFileSync(queueHygieneFile, 'utf8'), sandbox, { filename: queueHygieneFile });
-if (fs.existsSync(noteImpactFile)) vm.runInContext(fs.readFileSync(noteImpactFile, 'utf8'), sandbox, { filename: noteImpactFile });
-if (fs.existsSync(sourceReviewPacketsFile)) vm.runInContext(fs.readFileSync(sourceReviewPacketsFile, 'utf8'), sandbox, { filename: sourceReviewPacketsFile });
-vm.runInContext(fs.readFileSync(runtimeManifestFile, 'utf8'), sandbox, { filename: runtimeManifestFile });
-vm.runInContext(fs.readFileSync(runtimeConsolidationFile, 'utf8'), sandbox, { filename: runtimeConsolidationFile });
+
+function runFile(file) {
+  vm.runInContext(fs.readFileSync(file, 'utf8'), sandbox, { filename: file });
+}
+
+function unique(list) {
+  return Array.from(new Set((list || []).filter(Boolean)));
+}
+
+function releaseProductHardeningExtensions() {
+  const release = sandbox.window.OBOL_CURRENT_RELEASE || {};
+  const manifest = sandbox.window.OBOL_RUNTIME_MANIFEST || {};
+  const manifestProductHardening = manifest.lazy && Array.isArray(manifest.lazy.productHardening)
+    ? manifest.lazy.productHardening.filter((src) => /^data\/product-hardening\/.*remining.*\.js$/.test(src))
+    : [];
+  const releaseExtensions = Array.isArray(release.productHardeningExtensions)
+    ? Array.from(release.productHardeningExtensions)
+    : [];
+  return unique(manifestProductHardening.concat(releaseExtensions));
+}
+
+function runReleaseProductHardeningExtensions() {
+  for (const src of releaseProductHardeningExtensions()) {
+    const file = path.join(root, src);
+    if (!fs.existsSync(file)) throw new Error('Missing Product Hardening extension declared for queue sync: ' + src);
+    runFile(file);
+  }
+}
+
+runFile(releaseFile);
+runFile(queueFile);
+runFile(workPackagesFile);
+runFile(noteIntegrationFile);
+if (fs.existsSync(noteReviewsFile)) runFile(noteReviewsFile);
+if (fs.existsSync(notePacketsFile)) runFile(notePacketsFile);
+if (fs.existsSync(noteBackfillFile)) runFile(noteBackfillFile);
+if (fs.existsSync(noteProgressFile)) runFile(noteProgressFile);
+runFile(runtimeManifestFile);
+runReleaseProductHardeningExtensions();
+if (fs.existsSync(queueHygieneFile)) runFile(queueHygieneFile);
+if (fs.existsSync(noteImpactFile)) runFile(noteImpactFile);
+if (fs.existsSync(sourceReviewPacketsFile)) runFile(sourceReviewPacketsFile);
+runFile(runtimeConsolidationFile);
 
 const q = sandbox.window.OBOL_PRODUCT_HARDENING;
 const workPackages = sandbox.window.OBOL_PRODUCT_HARDENING_WORK_PACKAGES;

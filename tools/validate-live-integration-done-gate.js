@@ -19,6 +19,7 @@ function includesAny(text, needles) {
 
 function validateDocs(failures) {
   const doneGate = read('docs/LIVE-INTEGRATION-DONE-GATE.md');
+  const gapParkingGuard = read('docs/SAME-SURFACE-GAP-PARKING-GUARD.md');
   const agentWorkflow = read('docs/AGENT-WORKFLOW.md');
   const readme = read('README.md');
   const productHardening = read('docs/PRODUCT-HARDENING.md');
@@ -34,9 +35,25 @@ function validateDocs(failures) {
   });
 
   [
+    'Same-surface gap parking is forbidden',
+    'Build it now',
+    'A queue item is not a parking lot',
+    'leaves buildable same-surface work behind as a new queued item',
+    'Evidence ingestion is part of the build',
+    'Static cards, command templates, GUI controls, or dashboard rows without Evidence ingestion are incomplete',
+  ].forEach((needle) => {
+    if (!gapParkingGuard.includes(needle)) failures.push(`same-surface gap parking guard missing required phrase: ${needle}`);
+  });
+
+  [
     'Live cards / surfaces',
+    'Evidence ingestion / Next Steps movement',
+    'Activity card ID(s) emitted',
+    'Outcome fact(s) emitted',
     'Live Integration Done Gate',
     'Tests assert both the data artifact and the live integration path that consumes it',
+    'No same-surface gap parking',
+    'Evidence ingestion is covered when the item expects pasted terminal output, browser-observation text, or proof notes',
     'node tools/validate-live-integration-done-gate.js data/product-hardening/<artifact>.js',
   ].forEach((needle) => {
     if (!prTemplate.includes(needle)) failures.push(`PR template missing completion gate phrase: ${needle}`);
@@ -82,6 +99,13 @@ function validateArtifact(rel, failures) {
 
   const text = read(rel);
   const isProductHardeningRemine = /^data\/product-hardening\/.*remining.*\.js$/.test(rel);
+  const isProductHardeningEvidenceIngestion = /^data\/product-hardening\/.*evidence-ingestion.*\.js$/.test(rel);
+
+  if (isProductHardeningEvidenceIngestion) {
+    if (!includesAny(text, ['analyzeEvidenceText', 'analyzeTerminal', 'outcomeFacts', 'advancedCards'])) {
+      failures.push(`${rel} does not prove pasted Evidence output can emit activities and outcome facts`);
+    }
+  }
 
   if (!isProductHardeningRemine) return;
 
@@ -90,7 +114,8 @@ function validateArtifact(rel, failures) {
   }
 
   const manifest = read('data/runtime-manifest.js');
-  const artifactIsLazyLoaded = manifest.includes(rel);
+  const currentRelease = exists('data/current-release.js') ? read('data/current-release.js') : '';
+  const artifactIsLazyLoaded = manifest.includes(rel) || currentRelease.includes(rel);
   const selfIntegrates = includesAny(text, [
     'status: \'live-integrated\'',
     'status:"live-integrated"',
@@ -118,6 +143,8 @@ function validateArtifact(rel, failures) {
     'publicNotesForPath',
     '#/card/',
     'OBOL_PRODUCT_HARDENING_NOTE_PROGRESS',
+    'analyzeTerminal',
+    'outcomeFacts',
   ]))) {
     failures.push(`${rel} release test only appears to check metadata, not live integration`);
   }
@@ -127,6 +154,7 @@ function validate(pathsToCheck) {
   const failures = [];
   validateDocs(failures);
   validateNoForbiddenCompletionLanguage('docs/v9.57.md', failures);
+  validateNoForbiddenCompletionLanguage('docs/v9.58.md', failures);
   pathsToCheck.forEach((rel) => validateArtifact(rel.replace(/^[./]+/, ''), failures));
   return failures;
 }

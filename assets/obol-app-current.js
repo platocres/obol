@@ -11,7 +11,7 @@
  * suppresses historical schedulers and commits current route owners last.
  *
  * Historical fragment order sha256: 40e3006d9423d669acf5869b577ecf56a6ca2ee1629c95fd0fcc5d242d2c5f27
- * Generated body sha256: ecee3709ff36ce7ca8e1f57d06b7c91b40fae25005c910d9a0874cefc83e4011
+ * Generated body sha256: 87a6fc40c8783b731cc7a9d0bff8d5fdac1b48801f757470d17bf009e8a540c0
  * First historical fragment: assets/report-v2.js
  * Last historical fragment:  assets/app-v8.8.js
  */
@@ -1993,11 +1993,16 @@ if(__nativeMutationObserver)root.MutationObserver=__nativeMutationObserver;
 'use strict';
 (function(root){
 const release=Object.freeze({
- version:'9.57.0',
- label:'v9.57',
+ version:'9.58.0',
+ label:'v9.58',
  phase:'product-hardening',
  phaseLabel:'Product Hardening',
- orangeBaseline:'v8.8'
+ orangeBaseline:'v8.8',
+ productHardeningExtensions:Object.freeze([
+  'data/product-hardening/credentials-auth-remining-v9.58.js',
+  'data/product-hardening/proof-safety-controls-v9.58.js',
+  'data/product-hardening/proof-safety-evidence-ingestion-v9.58.js'
+ ])
 });
 function stampState(target){
  if(!target||typeof target!=='object')return target;
@@ -2025,9 +2030,28 @@ function normalizeReportMarkdown(markdown){
  }
  return lines.join('\n');
 }
-const identity=Object.freeze({release,stampState,normalizeReportMarkdown});
+function loadProductHardeningExtensions(){
+ const sources=Array.from(release.productHardeningExtensions||[]);
+ if(typeof document!=='undefined'){
+  sources.forEach(src=>{
+   if(document.querySelector('script[data-obol-extension="'+src+'"]'))return;
+   const script=document.createElement('script');
+   script.src=src;
+   script.async=false;
+   script.dataset.obolExtension=src;
+   document.head.appendChild(script);
+  });
+ }
+ if(typeof module!=='undefined'&&module.exports&&typeof require==='function'){
+  sources.forEach(src=>{
+   try{require('./'+src.replace(/^data\//,''));}catch(_err){}
+  });
+ }
+}
+const identity=Object.freeze({release,stampState,normalizeReportMarkdown,loadProductHardeningExtensions});
 root.OBOL_CURRENT_RELEASE=release;
 root.OBOL_RELEASE_IDENTITY=identity;
+loadProductHardeningExtensions();
 })(typeof window!=='undefined'?window:globalThis);
 ;
 /* obol-current-module: assets/workflow-current.js */

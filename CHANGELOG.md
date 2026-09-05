@@ -1,3 +1,11 @@
+## v9.58 — - Re-mined the reviewed credentials/auth source lane into public-safe live guidance cards for provenance, protocol scope, challenge-response proof boundaries, validation safety, and protected-secret lineage
+
+- Re-mined the reviewed credentials/auth source lane into public-safe live guidance cards for provenance, protocol scope, challenge-response proof boundaries, validation safety, and protected-secret lineage.
+- Added `data/product-hardening/credentials-auth-remining-v9.58.js` with per-source findings, 16-dimension re-mining audit rows, field-note outputs, queued product gaps, and live integration hooks.
+- Updated the current release identity to `v9.58` and advertised the credentials/auth Product Hardening extension so the release can load the new integration without creating another historical runtime layer.
+- Added `tests/run-v9.58-tests.js` to prove the release identity, extension loader, source metadata, live card IDs, per-dimension audit coverage, queue mutation, note helper behavior, progress update, and obvious unsafe-public-material guardrails.
+- Queued follow-up UI/analyzer work for credential validation safety and authentication-material scope recognition rather than burying those findings as loose PR-body gap text.
+
 ## v9.57 — Completes the `notes-remine-xss-session` lane from the README build queue with a public-safe, live-integrated XSS/session re-mining artifact. The work re-mines XSS and session-impact notes from the private source-review packet route without copying raw course text, payload strings, target values, flags, credentials, cookies, listener recipes, or reusable exploit mechanics into the public repository
 
 - Re-mined the reviewed XSS/session source lane into three public-safe, live-integrated path/card notes for delivery context, browser execution proof, and session-impact boundaries.
