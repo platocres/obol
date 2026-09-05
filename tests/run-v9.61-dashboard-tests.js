@@ -36,12 +36,16 @@ requireText('assets/dashboard-route-current.js','obol-dashboard-active');
 requireText('assets/dashboard-route-current.js','side-details');
 
 const route=read('assets/dashboard-route-current.js');
-const noteProgressIndex=route.indexOf("'data/product-hardening/note-progress-current.js'");
-const extensionsIndex=route.indexOf('releaseProductHardeningExtensions().reduce');
-const hygieneIndex=route.indexOf("'data/product-hardening/build-next-queue-hygiene-current.js'");
-const rendererIndex=route.indexOf("'assets/product-hardening-dashboard.js'");
-if(!(noteProgressIndex>0&&extensionsIndex>noteProgressIndex))fail('dashboard route must load current-release Product Hardening extensions after note-progress exists');
-if(!(hygieneIndex>extensionsIndex&&rendererIndex>hygieneIndex))fail('dashboard route must load queue hygiene after extensions and renderer after hygiene');
+const loader=route.slice(route.indexOf('function loadProductScripts'),route.indexOf('function enhanceSidebar'));
+if(!loader.includes('PRE_EXTENSION_SCRIPTS.reduce'))fail('dashboard route must load base scripts before current-release extensions');
+if(!loader.includes('releaseProductHardeningExtensions().reduce'))fail('dashboard route must load current-release Product Hardening extensions dynamically');
+if(!loader.includes('POST_EXTENSION_SCRIPTS.reduce'))fail('dashboard route must load post-extension projections and renderer after extensions');
+const preIndex=loader.indexOf('PRE_EXTENSION_SCRIPTS.reduce');
+const extensionsIndex=loader.indexOf('releaseProductHardeningExtensions().reduce');
+const postIndex=loader.indexOf('POST_EXTENSION_SCRIPTS.reduce');
+if(!(preIndex>=0&&extensionsIndex>preIndex&&postIndex>extensionsIndex))fail('dashboard route loader must execute pre scripts, extensions, then post scripts in order');
+if(!/PRE_EXTENSION_SCRIPTS=\[[\s\S]*'data\/product-hardening\/note-progress-current\.js'[\s\S]*\]/.test(route))fail('note-progress-current.js must be loaded before dynamic release extensions');
+if(!/POST_EXTENSION_SCRIPTS=\[[\s\S]*'data\/product-hardening\/build-next-queue-hygiene-current\.js'[\s\S]*'assets\/product-hardening-dashboard\.js'[\s\S]*\]/.test(route))fail('queue hygiene must be in the post-extension script set before the renderer');
 
 requireText('assets/product-hardening-dashboard.js','ph-dashboard-v961');
 requireText('assets/product-hardening-dashboard.js','dashboard66 ph-dashboard-v961');
