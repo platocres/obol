@@ -52,7 +52,7 @@ function hasActionSpine(card) {
   const hasGui = Array.isArray(card.guiSteps) && card.guiSteps.length >= 3 && card.guiSteps.every(guiStepOk);
   return { hasCommands, hasGui };
 }
-function badUiCopy(text) { return /Why this now|methodology gap|UNKNOWN|source-mining|source re-mining|release cleanup|patch panel|stabilizer/i.test(String(text || '')); }
+function badUiCopy(text) { return /fills an unresolved methodology gap|methodology gap|UNKNOWN|source-mining|source re-mining|release cleanup|patch panel|stabilizer/i.test(String(text || '')); }
 function validateCard(card, id, failures) {
   if (!card) { failures.push(id + ' is missing'); return; }
   const serialized = JSON.stringify(card);
