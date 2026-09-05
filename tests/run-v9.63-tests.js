@@ -64,6 +64,7 @@ const expectedCards = [
   'credential-dump-proof-chain',
   'web-proxy-transform-proof-chain',
   'web-client-controls',
+  'web-authz-boundaries',
   'encoded-parameter-review',
   'tool-generated-http-review',
 ];
@@ -78,7 +79,7 @@ for (const id of expectedCards) {
   assert.notStrictEqual(global.viewCard(id), 'Unknown card', 'viewCard should resolve ' + id);
 }
 
-assert(global.__testLanes.some((lane) => lane.lane === 'web-proxy-transform' && lane.cards.length >= 4), 'web proxy cards should be grouped in a visible lane');
+assert(global.__testLanes.some((lane) => lane.lane === 'web-proxy-transform' && lane.cards.length >= 5), 'web proxy cards should be grouped in a visible lane');
 assert(global.__testLanes.some((lane) => lane.lane === 'credential-attacks' && lane.cards.some((card) => card.id === 'credential-dump-proof-chain')), 'credential card should be grouped in credential lane');
 
 const serialized = JSON.stringify({ packet, lanes: global.__testLanes, cards: global.__testCards });
