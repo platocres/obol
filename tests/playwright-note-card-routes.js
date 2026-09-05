@@ -12,6 +12,7 @@ const primaryRoutes = [
   { id: 'web-authz-boundaries', marker: /Server Authorization|Authorization Boundary|Client Bypass|Authorization Boundary Replay/i },
   { id: 'pass-the-hash-proof-chain', marker: /Pass-the-Hash Proof Chain|Scoped Authentication/i },
   { id: 'burp-intruder-fuzzing-workflow', marker: /Burp Intruder Fuzzing Workflow|Web Fuzzer Candidate Triage|Burp Intruder \/ Web Fuzzer Workflow/i },
+  { id: 'web-client-session-proof-chain', marker: /Web Client Session Proof Chain|Client-side findings need a session-impact proof chain|browser behavior, session scope/i },
 ];
 const demotedRoutes = [
   { id: 'web-proxy-transform-proof-chain', canonical: 'web-authz-boundaries', marker: /Server Authorization|Authorization Boundary|Client Bypass|Authorization Boundary Replay/i },
@@ -60,6 +61,7 @@ async function openCard(context, route, failures, options = {}) {
     const guard = window.OBOL_NOTE_CARD_ROUTE_GUARD_V964 || null;
     const visible = window.OBOL_VISIBLE_REMINED_CARDS_V963 || null;
     const disposition = window.OBOL_NOTE_CARD_DISPOSITION_RECONCILIATION_V968 || null;
+    const clientSession = window.OBOL_CLIENT_SESSION_REMINING_V970 || null;
     return {
       text,
       hash: window.location.hash,
@@ -69,6 +71,7 @@ async function openCard(context, route, failures, options = {}) {
       visibleStatus: visible && visible.status || '',
       dispositionStatus: disposition && disposition.status || '',
       demotedCardIds: disposition && disposition.demotedCardIds || [],
+      clientSessionCardIntegrated: clientSession && clientSession.cardIntegrated || false,
     };
   });
 
@@ -76,6 +79,7 @@ async function openCard(context, route, failures, options = {}) {
   if (!route.marker.test(state.text)) routeFailures.push('route marker did not match rendered content: ' + JSON.stringify((state.text || '').slice(0, 240)));
   if (state.patchPanelCount) routeFailures.push('route rendered a v9.67 action-first patch panel');
   if (state.guardFailures && state.guardFailures.length) routeFailures.push('note-card route guard has failures: ' + state.guardFailures.join('; '));
+  if (route.id === 'web-client-session-proof-chain' && !state.clientSessionCardIntegrated) routeFailures.push('v9.70 client/session card integration did not report success');
   if (options.demoted) {
     if (!state.hash.includes('/card/' + route.canonical)) routeFailures.push(`demoted route did not canonicalize to ${route.canonical}; hash=${state.hash}`);
     if (!state.demotedCardIds.includes(route.id)) routeFailures.push('runtime disposition did not record demoted card ' + route.id);
