@@ -1,3 +1,12 @@
+## v9.61 — - Began the generated `notes-batch-old-rubric-reviewed-remine-001` work with the first selected old-rubric reviewed source note
+
+- Began the generated `notes-batch-old-rubric-reviewed-remine-001` work with the first selected old-rubric reviewed source note.
+- Re-mined the LSASS/offline credential-extraction source from the complete private review-packet route instead of the old public summary.
+- Added `data/product-hardening/credential-dump-remining-v9.61.js` as a live Product Hardening extension.
+- Added three public-safe field notes for credential-dump artifact lineage, offline parser output classification, and hash-crack validation boundaries.
+- Added a conservative pasted-output analyzer for LSASS dump, offline parser, NT material, hash-crack, and scoped-authentication signals.
+- Updated progress without closing `notes-mechanic-backfill`; this is one selected note of the generated 20-note batch, not completion of the full gate.
+
 ## v9.60 — - Completed the next Product Build Next item after v9.59: `notes-remine-private-only-superseded`
 
 - Completed the next Product Build Next item after v9.59: `notes-remine-private-only-superseded`.

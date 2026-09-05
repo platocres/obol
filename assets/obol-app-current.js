@@ -11,7 +11,7 @@
  * suppresses historical schedulers and commits current route owners last.
  *
  * Historical fragment order sha256: 40e3006d9423d669acf5869b577ecf56a6ca2ee1629c95fd0fcc5d242d2c5f27
- * Generated body sha256: 1f2aba2a91bc9c97342c741bb561f82c8f2d5735710e751fd708647c1691086f
+ * Generated body sha256: 1d348882bd63640e5983b3f0175d0cc28289b766cc1bb60cc0292fa0cd0afe17
  * First historical fragment: assets/report-v2.js
  * Last historical fragment:  assets/app-v8.8.js
  */
@@ -1993,8 +1993,8 @@ if(__nativeMutationObserver)root.MutationObserver=__nativeMutationObserver;
 'use strict';
 (function(root){
 const release=Object.freeze({
- version:'9.60.0',
- label:'v9.60',
+ version:'9.61.0',
+ label:'v9.61',
  phase:'product-hardening',
  phaseLabel:'Product Hardening',
  orangeBaseline:'v8.8',
@@ -2004,7 +2004,8 @@ const release=Object.freeze({
   'data/product-hardening/proof-safety-evidence-ingestion-v9.58.js',
   'data/product-hardening/linux-privesc-remine-reconciliation-v9.59.js',
   'data/product-hardening/ui-quality-audit-rubric-v9.59.js',
-  'data/product-hardening/private-only-superseded-remining-v9.60.js'
+  'data/product-hardening/private-only-superseded-remining-v9.60.js',
+  'data/product-hardening/credential-dump-remining-v9.61.js'
  ])
 });
 function stampState(target){
@@ -2035,9 +2036,13 @@ function normalizeReportMarkdown(markdown){
 }
 function loadProductHardeningExtensions(){
  const sources=Array.from(release.productHardeningExtensions||[]);
+ if(root.__OBOL_DEFER_PRODUCT_HARDENING_EXTENSIONS__){
+  root.__OBOL_DEFERRED_PRODUCT_HARDENING_EXTENSIONS__=Object.freeze(sources.slice());
+  return;
+ }
  if(typeof document!=='undefined'){
   sources.forEach(src=>{
-   if(document.querySelector('script[data-obol-extension="'+src+'"]'))return;
+   if(document.querySelector('script[data-obol-extension="'+src+'"],script[data-obol-dashboard-src="'+src+'"]'))return;
    const script=document.createElement('script');
    script.src=src;
    script.async=false;
