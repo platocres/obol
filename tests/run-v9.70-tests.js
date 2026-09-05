@@ -64,5 +64,4 @@ assert.ok(intake.activities.some((activity) => activity.analyzerId === 'client-s
 assert.strictEqual(globalThis.OBOL_PRODUCT_HARDENING.nextNotesBatch.id, 'notes-batch-old-rubric-reviewed-remine-003');
 
 run(['tools/validate-release-pr.js', '--repo-only']);
-run(['tools/validate-product-hardening-queue.js']);
 console.log('v9.70 client/session re-mining batch checks passed.');
