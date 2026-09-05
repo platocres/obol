@@ -1,8 +1,8 @@
 'use strict';
 (function(root){
 const release=Object.freeze({
- version:'9.70.0',
- label:'v9.70',
+ version:'9.71.0',
+ label:'v9.71',
  phase:'product-hardening',
  phaseLabel:'Product Hardening',
  orangeBaseline:'v8.8',
@@ -29,7 +29,9 @@ const release=Object.freeze({
   'data/product-hardening/note-card-disposition-reconciliation-v9.68.js',
   'data/product-hardening/web-upload-inclusion-remine-batch-v9.69.js',
   'data/product-hardening/client-session-remine-batch-v9.70.js',
-  'data/product-hardening/client-session-route-guard-v9.70.js'
+  'data/product-hardening/ad-metasploit-remine-batch-v9.71.js',
+  'data/product-hardening/ad-metasploit-route-guard-v9.71.js',
+  'data/product-hardening/dynamic-why-now-v9.71.js'
  ])
 });
 function stampState(target){
