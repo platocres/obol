@@ -37,30 +37,36 @@ const linux=require(path.join(root,'data/product-hardening/linux-final-remine-ba
 assert.deepStrictEqual(linux.validate(),[]);
 assert.strictEqual(linux.remineAuditRows.length,8,'v9.72 should close the final old-rubric re-mining batch');
 assert.strictEqual(linux.publicNotes.length,5,'v9.72 should publish five public-safe notes');
+assert.strictEqual(linux.FOLDED_CARD,'linux-service-footprint-secret-review');
+assert.ok(!globalThis.CARDS['linux-service-footprint-secret-review'],'service-footprint material must not land as a standalone primary card');
 for(const row of linux.remineAuditRows){
  assert.strictEqual(row.originalSourceReread,true);
  assert.strictEqual(row.selectorBatch,'notes-batch-old-rubric-reviewed-remine-004');
  assert.ok(row.productChanges.includes('queue-gate:old-rubric-remining-complete'));
+ assert.ok(row.productChanges.includes('folded-card:linux-service-footprint-secret-review'));
 }
-for(const id of ['linux-service-footprint-secret-review','linux-privesc-boundary-sweep']){
- const card=globalThis.CARDS[id];
- assert.ok(card,id+' should exist');
- assert.ok(Array.isArray(card.commands)&&card.commands.length>0,id+' needs a command spine');
- assert.ok(card.commands.every(command=>command.tool&&command.run&&command.when&&command.evidence),id+' command schema should be tool/run/when/evidence');
- const why=whyNow.compute(card,{factBag:{set:new Set(['linux.shell_observed','linux.local_user_context','linux.privesc_needed','credential.hunting_needed']),text:'linux.shell_observed linux.local_user_context linux.privesc_needed credential.hunting_needed target linux'}});
- assert.strictEqual(why.title,'Why this step now');
- assert.ok(/You have|This card is relevant/i.test(why.body),id+' should explain why the card is relevant now');
- assert.ok(/paste the result back|paste/i.test(why.body),id+' should connect why-now guidance to evidence paste-back');
- assert.ok(!/methodology gap|source-mining|UNKNOWN/i.test(why.body),id+' why-now guidance must not leak internal filler');
-}
+for(const note of linux.publicNotes) assert.ok((note.cardIds||[]).includes('linux-privesc-boundary-sweep') && !(note.cardIds||[]).includes('linux-service-footprint-secret-review'));
+const card=globalThis.CARDS['linux-privesc-boundary-sweep'];
+assert.ok(card,'linux-privesc-boundary-sweep should exist');
+assert.ok(Array.isArray(card.foldedFrom)&&card.foldedFrom.includes('linux-service-footprint-secret-review'));
+assert.ok(Array.isArray(card.commands)&&card.commands.length>=9,'merged card needs service-footprint plus boundary command spine');
+assert.ok(card.commands.every(command=>command.tool&&command.run&&command.when&&command.evidence),'command schema should be tool/run/when/evidence');
+assert.ok(card.commands.some(command=>/ps auxww/i.test(command.run)),'merged card should include service-process review');
+assert.ok(card.commands.some(command=>/tcpdump/i.test(command.run)),'merged card should include bounded tcpdump review');
+assert.ok(card.commands.some(command=>/sudo -l/i.test(command.run)),'merged card should include sudo boundary review');
+const why=whyNow.compute(card,{factBag:{set:new Set(['linux.shell_observed','linux.local_user_context','linux.privesc_needed','credential.hunting_needed']),text:'linux.shell_observed linux.local_user_context linux.privesc_needed credential.hunting_needed target linux'}});
+assert.strictEqual(why.title,'Why this step now');
+assert.ok(/You have|This card is relevant/i.test(why.body),'Linux card should explain why it is relevant now');
+assert.ok(/paste the result back|paste/i.test(why.body),'Linux why-now guidance should connect to evidence paste-back');
+assert.ok(!/methodology gap|source-mining|UNKNOWN/i.test(why.body),'why-now guidance must not leak internal filler');
 assert.strictEqual(globalThis.OBOL_PRODUCT_HARDENING_NOTE_PROGRESS.remining.reminedNoteCount,135);
 assert.strictEqual(globalThis.OBOL_PRODUCT_HARDENING_NOTE_PROGRESS.remining.oldRubricOnlyRemaining,0);
 assert.strictEqual(globalThis.OBOL_PRODUCT_HARDENING.nextNotesBatch.id,'notes-disposition-pending-review-001');
 assert.strictEqual(globalThis.OBOL_PRODUCT_HARDENING.items.find(i=>i.id==='notes-mechanic-backfill').status,'complete');
-const intake=globalThis.OBOL_INTAKE_V21.analyzeTerminal('ps auxww root sshpass password env SCRIPT_CREDENTIALS sudo -l NOPASSWD find / -perm -4000 getcap cap_setuid+ep cron ExecStart uname -a PRETTY_NAME');
+const intake=globalThis.OBOL_INTAKE_V21.analyzeTerminal('ps auxww root sshpass password env SCRIPT_CREDENTIALS sudo -l NOPASSWD find / -perm -4000 getcap cap_setuid+ep cron ExecStart uname -a PRETTY_NAME tcpdump packet');
 assert.ok(intake.activities.some(activity=>activity.analyzerId==='linux-footprint-evidence-analyzer'));
 assert.ok(intake.activities.some(activity=>activity.analyzerId==='linux-privesc-boundary-analyzer'));
 run(['tools/validate-linux-final-remine-v9.72.js']);
 run(['tools/validate-card-action-spine-v9.71.js']);
 run(['tools/validate-release-pr.js','--repo-only']);
-console.log('v9.72 final Linux re-mining and queue handoff checks passed.');
+console.log('v9.72 final Linux re-mining and folded-card queue handoff checks passed.');
