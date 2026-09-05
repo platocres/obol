@@ -45,6 +45,10 @@ Acceptable proof includes one or more of:
 
 A test that only imports the artifact and checks its metadata is not enough.
 
+## Generated artifact sync
+
+After generated release artifacts are synchronized, keep the PR head on a human-authored commit when branch rules require regression or browser checks to run against the latest head SHA. A generated sync commit without attached check-runs can still block merge even when the generated files are correct.
+
 ## PR body requirement
 
 When a PR claims a user-visible product change, the PR body must include a `Live cards / surfaces` section or equivalent wording that tells the maintainer where to look after deploy. For card work, include direct `#/card/<card-id>` routes.
