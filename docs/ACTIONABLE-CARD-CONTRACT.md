@@ -4,8 +4,8 @@ Obol cards that appear in the Next Steps path are lab actions with educational c
 
 A note-derived card is useful only when the operator can answer these questions from the card itself:
 
-- What command or terminal-driven tool action do I run next?
-- What variables do I fill in?
+- What do I run, click, configure, or inspect next?
+- What variables, target values, files, or tool settings do I fill in?
 - Why am I using this tool at this point in the lab?
 - What evidence do I paste back into Obol?
 - What does success look like?
@@ -26,7 +26,7 @@ Before a note-derived contribution reaches the user-visible path, classify it ex
 
 ```text
 KEEP AS CARD
-The note adds a distinct operator action with concrete terminal command templates and supporting lesson context.
+The note adds a distinct operator action with a concrete command-line spine, GUI-tool spine, or both, plus supporting lesson context.
 
 MERGE INTO EXISTING CARD
 The note improves a pre-existing Orange-map or retained note-derived card.
@@ -46,10 +46,10 @@ Every note-derived card that can appear in Next Steps must have a real action sp
 
 ```text
 Situation / trigger
-Concrete command or terminal-driven tool command
-Variable placeholders
-Why this command is being run
-What output proves or narrows
+Concrete command-line action, GUI-tool workflow, or both
+Variable placeholders and tool settings
+Why this action is being taken
+What output or UI state proves or narrows
 What to paste back
 Success meaning
 Failure meaning
@@ -58,17 +58,19 @@ Lesson / field-note context
 Cleanup or reporting caveat when relevant
 ```
 
-Primary cards must include at least one concrete runnable command template. GUI workflows for tools such as Burp Suite, ZAP, BloodHound, CyberChef, browser DevTools, or Metasploit may support a card, but they do not replace the command requirement for a primary Next Steps card.
+Primary cards should prefer terminal commands when the action can be expressed safely and clearly from the terminal. They must also support GUI-first tools when the GUI is the best, clearest, or only realistic tool for the job.
 
-If no real command can be generated, the output must be merged into an existing command-bearing card, published as field notes, attached to an analyzer, used as report/cleanup guidance, or deleted.
+Burp Suite, OWASP ZAP, BloodHound, CyberChef, browser DevTools, Metasploit consoles, and similar GUI or interactive tools may absolutely be first-class card actions. When a card is GUI-first, it must provide a concrete click/configure/inspect/export workflow, the exact settings or fields the operator must touch, and the evidence the user should paste back into Obol. A vague GUI reminder is not enough.
+
+If no real command-line or GUI-tool action can be generated, the output must be merged into an existing action-bearing card, published as field notes, attached to an analyzer, used as report/cleanup guidance, or deleted.
 
 It must also define expected evidence to paste back, failure modes, next-step guidance, path state it produces, and evidence/analyzer facts that make it relevant.
 
 ## Educational context rule
 
-Cards should teach. A good card explains why the tool matters, what the command is trying to accomplish, what the output means, and how the note-derived lesson applies at this point in the lab.
+Cards should teach. A good card explains why the tool matters, what the command or GUI workflow is trying to accomplish, what the output means, and how the note-derived lesson applies at this point in the lab.
 
-That lesson is supporting context, not the card's reason to exist. A lesson-only, checklist-only, proof-boundary-only, or methodology-only contribution belongs in field notes or analyzer guidance unless it is attached to a command-bearing card.
+That lesson is supporting context, not the card's reason to exist. A lesson-only, checklist-only, proof-boundary-only, or methodology-only contribution belongs in field notes or analyzer guidance unless it is attached to an action-bearing card.
 
 ## Reference-only material
 
@@ -88,10 +90,11 @@ This is useful:
 
 ```text
 Start Burp or ZAP.
-Configure the tool proxy.
-Run one narrow request through a copyable command or explicit tool command.
-Inspect method, path, Host header, cookies, body, TLS, and redirects.
-Replay the captured request manually.
+Configure the browser/tool proxy.
+Capture one narrow request.
+Mark the payload position or replay the request in the proper tool view.
+Inspect method, path, Host header, cookies, body, TLS, redirects, and response behavior.
+Replay or export the evidence.
 Paste the captured HTTP and replay result into Evidence.
 Use the lesson box to understand why emitted HTTP matters more than tool assumptions.
 ```
@@ -106,4 +109,4 @@ A direct card route is not enough. The card must either be a retained primary ac
 
 ## CI gate
 
-`tools/validate-actionable-next-step-cards.js` enforces this for current note-derived cards. `tools/validate-card-action-spine-v9.71.js` blocks primary note-derived cards without command spines and prevents lesson-only cards, `UNKNOWN` tool rows, and methodology-gap UI copy from returning. `tools/validate-note-card-disposition-reconciliation.js` protects the kept/merged/demoted distinction and prevents the visible v9.67 patch-panel pattern from returning. The route gate and path-placement gate still matter, but neither one proves usefulness by itself.
+`tools/validate-actionable-next-step-cards.js` enforces this for current note-derived cards. `tools/validate-card-action-spine-v9.71.js` blocks primary note-derived cards without a concrete command-line or GUI-tool action spine and prevents lesson-only cards, `UNKNOWN` tool rows, and methodology-gap UI copy from returning. `tools/validate-note-card-disposition-reconciliation.js` protects the kept/merged/demoted distinction and prevents the visible v9.67 patch-panel pattern from returning. The route gate and path-placement gate still matter, but neither one proves usefulness by itself.
