@@ -38,6 +38,28 @@ function hasActionSpine(text) {
 }
 function hasEvidenceGuidance(text) { return /\b(Evidence|Analyze pasted evidence|Paste command output|Paste back|exported tool evidence|Success looks like|response body|server response|manual replay|scoped auth|cleanup state|payload position|BloodHound|SharpHound|route table|session ID|object count|output zip|process owner|SUID|capability|sudo rule|kernel version|user-trail)\b/i.test(text); }
 function hasDecisionGuidance(text) { return /\b(move forward|success|failure|fails?|blocked|triage|not impact|do not|replay|compare|compared|boundary|scope|auth|authorization|cleanup|server accepts|route|session|graph|lead|proof|validate|precondition|candidate)\b/i.test(text); }
+async function waitForViewReady(page) {
+  await page.waitForFunction(() => {
+    const view = document.querySelector('#view');
+    if (!view) return false;
+    const rect = view.getBoundingClientRect();
+    return rect.width > 0 && rect.height > 0;
+  }, null, { timeout: 20000 });
+}
+async function waitForCardText(page) {
+  await page.waitForFunction(() => {
+    const view = document.querySelector('#view');
+    const text = view && view.innerText ? view.innerText.trim() : '';
+    return text.length > 150 && !/Unknown card/i.test(text);
+  }, null, { timeout: 20000 });
+}
+async function waitForWhyNow(page) {
+  await page.waitForFunction(() => {
+    const view = document.querySelector('#view');
+    const text = view && view.innerText ? view.innerText : '';
+    return /Why this step now/i.test(text) && document.querySelectorAll('[data-obol-dynamic-why-now]').length === 1;
+  }, null, { timeout: 20000 });
+}
 
 (async () => {
   const browser = await chromium.launch({ headless: true, executablePath: process.env.OBOL_SMOKE_BROWSER_PATH || undefined });
@@ -46,17 +68,9 @@ function hasDecisionGuidance(text) { return /\b(move forward|success|failure|fai
 
   for (const id of primaryCards) {
     await page.goto(`${baseUrl}#/card/${id}`, { waitUntil: 'domcontentloaded' });
-    await page.waitForSelector('#view', { state: 'visible', timeout: 15000 });
-    await page.waitForFunction(() => {
-      const view = document.querySelector('#view');
-      const text = view && view.innerText ? view.innerText.trim() : '';
-      return text.length > 150 && !/Unknown card/i.test(text);
-    }, null, { timeout: 20000 });
-    await page.waitForFunction(() => {
-      const view = document.querySelector('#view');
-      const text = view && view.innerText ? view.innerText : '';
-      return /Why this step now/i.test(text) && document.querySelectorAll('[data-obol-dynamic-why-now]').length === 1;
-    }, null, { timeout: 20000 });
+    await waitForViewReady(page);
+    await waitForCardText(page);
+    await waitForWhyNow(page);
     await page.waitForTimeout(600);
     const state = await page.evaluate(() => {
       const view = document.querySelector('#view');
@@ -91,12 +105,8 @@ function hasDecisionGuidance(text) { return /\b(move forward|success|failure|fai
 
   for (const [id, canonical] of Object.entries(demotedCards)) {
     await page.goto(`${baseUrl}#/card/${id}`, { waitUntil: 'domcontentloaded' });
-    await page.waitForSelector('#view', { state: 'visible', timeout: 15000 });
-    await page.waitForFunction(() => {
-      const view = document.querySelector('#view');
-      const text = view && view.innerText ? view.innerText : '';
-      return /Why this step now/i.test(text) && document.querySelectorAll('[data-obol-dynamic-why-now]').length === 1;
-    }, null, { timeout: 20000 });
+    await waitForViewReady(page);
+    await waitForWhyNow(page);
     await page.waitForTimeout(600);
     const state = await page.evaluate(() => {
       const view = document.querySelector('#view');
