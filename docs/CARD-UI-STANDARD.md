@@ -33,7 +33,9 @@ Blank implementation blocks, `UNKNOWN` tool labels, empty recommended/alternativ
 
 ## Why-now UI rule
 
-Every primary card should be able to explain why it is showing now. This should be concise, operator-facing, and grounded in path state.
+Every primary card should render `Why this step now` guidance. The preferred implementation is dynamic: use the current target, Evidence-derived facts, card prerequisites, produced facts, recent tried/failed/blocked outcomes, and path state to explain why this card appears now.
+
+Static why-now prose is acceptable only as a fallback when the workspace has little state. The renderer should still be able to generate a useful explanation from card metadata.
 
 Good why-now copy names one or more of these:
 
@@ -108,6 +110,6 @@ Do not hide useful command blocks behind awkward scaffolding. Do not hide useful
 
 Card pages must not be rewritten into a separate tool-stack layout after the shared card renderer runs. Route decorators may improve styling or add genuinely useful controls, but they must not move the card's primary commands into a collapsed legacy section, hide GUI steps that are the primary action spine, hide the only actionable checks, or replace per-action explanations with implementation scaffolding.
 
-A Direct card route is acceptable only when it renders the same shared card UI a user would expect from the normal path: title, hypothesis, gates, produced facts, why-now guidance, commands or GUI workflow with explanations, failure routing, defender/reporting context, queue controls, tried/succeeded controls, intake evidence, evidence textarea, execution context, implementation selection, and educational field notes.
+A Direct card route is acceptable only when it renders the same shared card UI a user would expect from the normal path: title, hypothesis, gates, produced facts, dynamic why-now guidance, commands or GUI workflow with explanations, failure routing, defender/reporting context, queue controls, tried/succeeded controls, intake evidence, evidence textarea, execution context, implementation selection, and educational field notes.
 
 Current-owner or dynamically inserted cards must register into the shared card index, or the card route must resolve them from the live lane model before rendering. A fake fallback that imitates a card but skips normal controls is not acceptable.
