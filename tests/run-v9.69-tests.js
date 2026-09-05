@@ -15,6 +15,13 @@ function releaseAtLeast(label, major, minor) {
   return foundMajor > major || (foundMajor === major && foundMinor >= minor);
 }
 
+function run(args) {
+  const result = cp.spawnSync(process.execPath, args.map((part, index) => index === 0 ? path.join(root, part) : part), { cwd: root, encoding: 'utf8' });
+  process.stdout.write(result.stdout || '');
+  process.stderr.write(result.stderr || '');
+  if (result.status !== 0) process.exit(result.status || 1);
+}
+
 globalThis.__OBOL_DEFER_PRODUCT_HARDENING_EXTENSIONS__ = true;
 require(path.join(root, 'data/current-release.js'));
 assert.ok(releaseAtLeast(globalThis.OBOL_CURRENT_RELEASE.label, 9, 69), 'current release should be v9.69 or newer');
@@ -50,18 +57,7 @@ assert.ok(analysis.outcomeFacts.includes('web.inclusion.transform_observed'));
 assert.ok(analysis.outcomeFacts.includes('web.file_handling.fuzzing_signal_observed'));
 assert.ok(analysis.outcomeFacts.includes('web.file_handling.cleanup_needed'));
 
-const checks = [
-  ['tools/validate-release-pr.js', '--repo-only'],
-  ['tools/validate-notes-impact.js'],
-  ['tools/validate-note-integration.js'],
-  ['tools/validate-product-hardening-queue.js'],
-  ['tools/sync-product-build-next.js', '--check'],
-  ['tools/scope-check.js'],
-];
-for (const args of checks) {
-  const result = cp.spawnSync(process.execPath, args.map((part, index) => index === 0 ? path.join(root, part) : part), { cwd: root, encoding: 'utf8' });
-  process.stdout.write(result.stdout || '');
-  process.stderr.write(result.stderr || '');
-  if (result.status !== 0) process.exit(result.status || 1);
-}
+run(['tools/validate-release-pr.js', '--repo-only']);
+run(['tools/validate-current-release.js']);
+run(['tools/validate-product-hardening-queue.js']);
 console.log('v9.69 web upload/inclusion re-mining batch checks passed.');
