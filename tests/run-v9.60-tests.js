@@ -4,6 +4,8 @@ const assert = require('assert');
 const fs = require('fs');
 const path = require('path');
 
+const QUEUE_ITEM_ID = 'notes-remine-private-superseded';
+
 const sourceRows = Object.freeze([
   Object.freeze({
     noteId: 'htb-penetration-tester-f279cdee9c5e3574',
@@ -57,7 +59,7 @@ global.OBOL_PRODUCT_HARDENING = {
     { id: 'offline-performance', complete: 1, total: 6 },
   ],
   items: [
-    { id: 'notes-remine-private-only-superseded', track: 'notes-integration', status: 'queued', label: 'Re-mine private-only and superseded notes', priority: 86.836 },
+    { id: QUEUE_ITEM_ID, track: 'notes-integration', status: 'queued', label: 'Re-mine private-only and superseded notes', priority: 86.87 },
     { id: 'perf-service-worker', track: 'offline-performance', status: 'queued', label: 'Quiet service worker caching', priority: 90 },
   ],
 };
@@ -85,7 +87,7 @@ assert.strictEqual(global.OBOL_CURRENT_RELEASE.label, 'v9.60');
 assert.strictEqual(global.OBOL_CURRENT_RELEASE.version, '9.60.0');
 assert(global.OBOL_CURRENT_RELEASE.productHardeningExtensions.includes('data/product-hardening/private-only-superseded-remining-v9.60.js'), 'current release must load the v9.60 private-only/superseded re-mining extension');
 assert.strictEqual(packet.status, 'live-integrated');
-assert.strictEqual(packet.queueItemId, 'notes-remine-private-only-superseded');
+assert.strictEqual(packet.queueItemId, QUEUE_ITEM_ID);
 assert.strictEqual(packet.sourceConfidence.reviewTextPolicy, 'complete_cleaned_text');
 assert.strictEqual(packet.sourceConfidence.truncationPolicy, 'none');
 assert.strictEqual(packet.sourceConfidence.expectedNoteCount, 556);
@@ -126,7 +128,7 @@ assert(global.OBOL_NOTE_INTEGRATION.packetReviews['private-only-superseded-remin
 assert.strictEqual(global.OBOL_NOTE_INTEGRATION.packetReviews['private-only-superseded-remine'].candidateCount, sourceRows.length);
 assert.strictEqual(global.OBOL_NOTE_INTEGRATION.packetReviews['private-only-superseded-remine'].openProductGaps.length, 0, 'same-surface gaps must not be parked');
 
-const completedItem = global.OBOL_PRODUCT_HARDENING.items.find((item) => item.id === 'notes-remine-private-only-superseded');
+const completedItem = global.OBOL_PRODUCT_HARDENING.items.find((item) => item.id === QUEUE_ITEM_ID);
 assert(completedItem, 'queue item should exist');
 assert.strictEqual(completedItem.status, 'complete');
 assert.strictEqual(completedItem.completedBy, 'v9.60-private-only-superseded-remine');
@@ -142,7 +144,7 @@ assert.strictEqual(progress.privateOnlySupersededReminedCount, sourceRows.length
 assert(progress.remineAuditRows.length >= sourceRows.length, 'progress should include v9.60 audit rows');
 
 const doc = fs.readFileSync(path.join(__dirname, '..', 'docs', 'v9.60.md'), 'utf8');
-assert(doc.includes('notes-remine-private-only-superseded'), 'release doc must name the queue item');
+assert(doc.includes(QUEUE_ITEM_ID), 'release doc must name the actual queue item id');
 assert(doc.includes('recipe catalogs become builder/control axes'), 'release doc must describe the safe product mechanic');
 assert(doc.includes('no new Evidence ingestion parser is required'), 'release doc must explain the Evidence boundary');
 assert(doc.includes('perf-service-worker'), 'release doc must identify the expected next concrete item');
