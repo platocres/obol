@@ -23,7 +23,8 @@ jobs:
     runs-on: ubuntu-latest
     timeout-minutes: 15
     env:
-      SHOULD_DEEP_BROWSER: ${{ github.event_name == 'pull_request' || github.ref == 'refs/heads/main' || github.event_name == 'workflow_dispatch' || github.event_name == 'schedule' || (github.event_name == 'push' && startsWith(github.ref, 'refs/heads/release/') && contains(github.event.head_commit.message, '[full-regression]')) }}
+      SHOULD_FULL_BROWSER: ${{ github.event_name == 'pull_request' || github.ref == 'refs/heads/main' || github.event_name == 'workflow_dispatch' || github.event_name == 'schedule' || (github.event_name == 'push' && startsWith(github.ref, 'refs/heads/release/') && contains(github.event.head_commit.message, '[full-regression]')) }}
+      SHOULD_DEEP_EQUIVALENCE: ${{ github.ref == 'refs/heads/main' || github.event_name == 'workflow_dispatch' || github.event_name == 'schedule' || (github.event_name == 'push' && startsWith(github.ref, 'refs/heads/release/') && contains(github.event.head_commit.message, '[full-regression]')) }}
     steps:
       - name: Checkout
         uses: actions/checkout@v4
@@ -37,7 +38,7 @@ jobs:
         run: npm install --no-save --no-package-lock playwright@1.62.1
 
       - name: Resolve system browser for fast smoke
-        if: env.SHOULD_DEEP_BROWSER != 'true'
+        if: env.SHOULD_FULL_BROWSER != 'true'
         run: |
           set -euo pipefail
           for browser in /usr/bin/google-chrome-stable /usr/bin/google-chrome /usr/bin/chromium-browser /usr/bin/chromium; do
@@ -50,8 +51,8 @@ jobs:
           echo "No system Chrome or Chromium binary found for fast browser smoke." >&2
           exit 1
 
-      - name: Install Playwright Chromium for deep browser proof
-        if: env.SHOULD_DEEP_BROWSER == 'true'
+      - name: Install Playwright Chromium for full browser proof
+        if: env.SHOULD_FULL_BROWSER == 'true'
         run: npx playwright install --with-deps chromium
 
       - name: Serve Obol
@@ -68,45 +69,45 @@ jobs:
           exit 1
 
       - name: Run fast browser route smoke
-        if: env.SHOULD_DEEP_BROWSER != 'true'
+        if: env.SHOULD_FULL_BROWSER != 'true'
         env:
           OBOL_SMOKE_BASE_URL: http://127.0.0.1:4173/index.html
           OBOL_SMOKE_OUTPUT: artifacts/playwright-smoke
         run: node tests/playwright-route-smoke.js
 
       - name: Run full browser smoke
-        if: env.SHOULD_DEEP_BROWSER == 'true'
+        if: env.SHOULD_FULL_BROWSER == 'true'
         env:
           OBOL_SMOKE_BASE_URL: http://127.0.0.1:4173/index.html
           OBOL_SMOKE_OUTPUT: artifacts/playwright-smoke
         run: node tests/playwright-smoke.js
 
       - name: Prove the v9.43 application retirement in a browser
-        if: env.SHOULD_DEEP_BROWSER == 'true'
+        if: env.SHOULD_DEEP_EQUIVALENCE == 'true'
         env:
           OBOL_SMOKE_BASE_URL: http://127.0.0.1:4173/index.html
         run: node tools/validate-app-dom-equivalence.js
 
       - name: Prove the v9.45 semantic stylesheet in a browser
-        if: env.SHOULD_DEEP_BROWSER == 'true'
+        if: env.SHOULD_DEEP_EQUIVALENCE == 'true'
         env:
           OBOL_SMOKE_BASE_URL: http://127.0.0.1:4173/index.html
         run: node tools/validate-style-visual-equivalence.js
 
       - name: Prove the v9.46 single-paint current boot in a browser
-        if: env.SHOULD_DEEP_BROWSER == 'true'
+        if: env.SHOULD_DEEP_EQUIVALENCE == 'true'
         env:
           OBOL_SMOKE_BASE_URL: http://127.0.0.1:4173/index.html
         run: node tools/validate-single-paint-boot-browser.js
 
       - name: Prove v9.47 semantic application ownership across the historical timer horizon
-        if: env.SHOULD_DEEP_BROWSER == 'true'
+        if: env.SHOULD_DEEP_EQUIVALENCE == 'true'
         env:
           OBOL_SMOKE_BASE_URL: http://127.0.0.1:4173/index.html
         run: node tools/validate-app-semantic-boot-browser.js
 
       - name: Upload browser screenshots
-        if: failure() || env.SHOULD_DEEP_BROWSER == 'true'
+        if: failure() || env.SHOULD_FULL_BROWSER == 'true'
         uses: actions/upload-artifact@v4
         with:
           name: obol-browser-smoke-${{ github.run_id }}
