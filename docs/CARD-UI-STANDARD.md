@@ -31,7 +31,7 @@ Blank implementation blocks, `UNKNOWN` tool labels, empty recommended/alternativ
 
 ## Command and GUI explanation rule
 
-Every command or GUI step shown on a card needs a useful explanation. The explanation should describe what the action is for and how to interpret the output or UI state. Boilerplate warnings are not enough.
+Every command shown on a card needs a useful explanation. Every GUI or interactive tool step shown on a card also needs a useful explanation. The explanation should describe what the action is for and how to interpret the output or UI state. Boilerplate warnings are not enough.
 
 Good command explanations sound like this:
 
@@ -57,7 +57,7 @@ Authorization, scope, and candidate-material warnings still matter, but they bel
 
 Every real card needs an obvious evidence path. A card that asks the user to run a command or perform a GUI/tool workflow must let the user paste output on the card and send that output to Intake with the originating card ID preserved.
 
-The required flow is card → paste command output or exported tool evidence → `Analyze pasted evidence` → Intake shows the source card → reviewed evidence applies as `card:<card-id>:intake:<mode>` → Path recalculates from that card-scoped evidence.
+The command-based required flow is card → paste command output → `Analyze pasted evidence` → Intake shows the source card → reviewed evidence applies as `card:<card-id>:intake:<mode>` → Path recalculates from that card-scoped evidence. GUI-first cards follow the same proof shape with exported tool evidence, copied request/response text, screenshots converted to text where appropriate, or manual notes that name the exact tool view and result.
 
 Generic `intake:<mode>` is acceptable only when the user opens Intake directly. Evidence launched from a card must not lose the card source. Tests should fail if a source-mined or current-owner card has an action spine but no evidence textarea, no analyze action, no tried/succeeded controls, or no card-scoped Intake source.
 
@@ -71,9 +71,9 @@ Cross-platform credential cards can remain service/evidence gated, but local pri
 
 ## Layout rule
 
-Do not hide useful command or GUI action blocks behind awkward scaffolding. Labels such as `Tool action stack`, `Raw legacy commands`, `Current builders stay up front`, and similar implementation-shaped copy should not appear in operator card UI. Use plain labels such as `Commands`, `Commands and checks`, `Guided builder`, or `Tool workflow`.
+Do not hide useful command blocks behind awkward scaffolding. Do not hide useful GUI workflow blocks behind awkward scaffolding either. Labels such as `Tool action stack`, `Raw legacy commands`, `Current builders stay up front`, and similar implementation-shaped copy should not appear in operator card UI. Use plain labels such as `Commands`, `Commands and checks`, `Guided builder`, or `Tool workflow`.
 
-Card pages must not be rewritten into a separate tool-stack layout after the shared card renderer runs. Route decorators may improve styling or add genuinely useful controls, but they must not move the card's primary actions into a collapsed legacy section, hide the only actionable checks, or replace per-action explanations with implementation scaffolding.
+Card pages must not be rewritten into a separate tool-stack layout after the shared card renderer runs. Route decorators may improve styling or add genuinely useful controls, but they must not move the card's primary commands into a collapsed legacy section, hide GUI steps that are the primary action spine, hide the only actionable checks, or replace per-action explanations with implementation scaffolding.
 
 A Direct card route is acceptable only when it renders the same shared card UI a user would expect from the normal path: title, hypothesis, gates, produced facts, commands or GUI workflow with explanations, failure routing, defender/reporting context, queue controls, tried/succeeded controls, intake evidence, evidence textarea, execution context, implementation selection, and educational field notes.
 
