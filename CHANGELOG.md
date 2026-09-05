@@ -1,3 +1,18 @@
+## v9.65 — Continues the notes-first Product Build Next queue after the v9.64 card-route repair. This build re-mines the next selected old-rubric note into public-safe web-fuzzer workflow behavior without copying private lab hosts, ports, discovered paths, answer strings, screenshots, or exact solution chains
+
+- Added `data/product-hardening/burp-intruder-remining-v9.65.js`.
+  - Adds public-safe Field Notes for payload positions, payload processing, response-delta triage, and proxy-integrated fuzzer scope/rate tradeoffs.
+  - Adds the conservative `web-fuzzer-output-analyzer` for pasted Evidence.
+  - Adds real live cards with path-engine shape:
+    - `#/card/burp-intruder-fuzzing-workflow`
+    - `#/card/fuzzer-payload-position-review`
+    - `#/card/fuzzer-result-delta-review`
+- Added `data/product-hardening/burp-intruder-route-guard-v9.65.js` so direct card routes recover from load-order races instead of showing `Unknown card`.
+- Added `tests/run-v9.65-tests.js`.
+  - Validates source confidence, 16-dimension audit coverage, public notes, live card shape, analyzer behavior, redaction, Evidence activity, queue/progress updates, and private-boundary safety.
+- Extended `tests/playwright-note-card-routes.js` to open the v9.65 card routes in a browser.
+- Extended route and path-placement validators so the v9.65 cards are required to be both clickable and reachable through Evidence/Next Steps logic.
+
 ## v9.64 — The next selected note in `notes-batch-old-rubric-reviewed-remine-001` is the Pass-the-Hash note from the first HTB review packet
 
 - `note-pth-is-protocol-scoped-auth-material`
