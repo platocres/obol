@@ -27,49 +27,13 @@ body.obol-dashboard-active #view{
   min-width:0;
   padding:0;
 }
-body.obol-dashboard-active aside{
+body.obol-dashboard-active aside[data-obol-dashboard-sidebar="panel-only"]{
   transition:width .18s ease,flex-basis .18s ease,max-width .18s ease,padding .18s ease;
 }
-#side-details{
-  width:100%;
+body.obol-dashboard-active aside[data-obol-dashboard-sidebar="panel-only"] details,
+body.obol-dashboard-active aside[data-obol-dashboard-sidebar="panel-only"] section,
+body.obol-dashboard-active aside[data-obol-dashboard-sidebar="panel-only"] form{
   max-width:100%;
-}
-#side-details>summary{
-  cursor:pointer;
-  list-style:none;
-  display:flex;
-  align-items:center;
-  gap:8px;
-  min-height:36px;
-  padding:8px 10px;
-  border:1px solid rgba(142,203,255,.25);
-  border-radius:10px;
-  color:var(--obol-link);
-  background:rgba(13,27,42,.78);
-  font-weight:800;
-  text-transform:uppercase;
-  letter-spacing:.06em;
-  font-size:.75rem;
-}
-#side-details>summary::-webkit-details-marker{display:none;}
-#side-details>summary::before{content:'▸';color:var(--obol-warn);}
-#side-details[open]>summary::before{content:'▾';}
-#side-details:not([open])>*:not(summary){display:none!important;}
-body.obol-dashboard-active aside:has(#side-details:not([open])){
-  width:64px!important;
-  flex-basis:64px!important;
-  max-width:64px!important;
-  min-width:64px!important;
-  padding:10px 8px!important;
-  overflow:hidden;
-}
-body.obol-dashboard-active aside:has(#side-details:not([open])) #side-details>summary{
-  writing-mode:vertical-rl;
-  transform:rotate(180deg);
-  justify-content:center;
-  min-height:150px;
-  width:46px;
-  padding:10px 6px;
 }
 a{color:var(--obol-link);}a:hover{color:var(--obol-link-hover);}
 .ph-shell{
@@ -323,18 +287,6 @@ a{color:var(--obol-link);}a:hover{color:var(--obol-link-hover);}
   .ph-shell{padding:18px;}
 }
 @media(max-width:760px){
-  body.obol-dashboard-active aside:has(#side-details:not([open])){
-    width:100%!important;
-    max-width:none!important;
-    min-width:0!important;
-    flex-basis:auto!important;
-  }
-  body.obol-dashboard-active aside:has(#side-details:not([open])) #side-details>summary{
-    writing-mode:horizontal-tb;
-    transform:none;
-    width:100%;
-    min-height:36px;
-  }
   .ph-top{display:grid;}
   .ph-link{justify-self:start;}
   .ph-metric-grid,.ph-remine-grid{grid-template-columns:1fr;}

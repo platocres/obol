@@ -51,12 +51,9 @@ function reviewSchemaAtLeast(major,minor){
 function unique(list){return Array.from(new Set((list||[]).filter(Boolean)));}
 function releaseProductHardeningExtensions(){
   const release=root.OBOL_CURRENT_RELEASE||{};
-  const manifest=root.OBOL_RUNTIME_MANIFEST||{};
+  const deferred=Array.isArray(root.__OBOL_DEFERRED_PRODUCT_HARDENING_EXTENSIONS__)?root.__OBOL_DEFERRED_PRODUCT_HARDENING_EXTENSIONS__:[];
   const fromRelease=Array.isArray(release.productHardeningExtensions)?release.productHardeningExtensions:[];
-  const fromManifest=manifest.lazy&&Array.isArray(manifest.lazy.productHardening)
-    ? manifest.lazy.productHardening.filter(src=>/^data\/product-hardening\/.*\.js$/.test(src))
-    : [];
-  return unique(fromRelease.concat(fromManifest));
+  return unique(fromRelease.concat(deferred));
 }
 const READY={
   'data/runtime-manifest.js':()=>!!root.OBOL_RUNTIME_MANIFEST,
@@ -104,40 +101,41 @@ function loadFreshScript(src,token,timeoutMs){
     (root.document.head||root.document.documentElement).appendChild(script);
   });
 }
+function restoreExtensionAutoLoad(previous){
+  if(previous===undefined)delete root.__OBOL_DEFER_PRODUCT_HARDENING_EXTENSIONS__;
+  else root.__OBOL_DEFER_PRODUCT_HARDENING_EXTENSIONS__=previous;
+}
 function loadProductScripts(token){
   const loaded=[];
+  const previousDefer=root.__OBOL_DEFER_PRODUCT_HARDENING_EXTENSIONS__;
+  root.__OBOL_DEFER_PRODUCT_HARDENING_EXTENSIONS__=true;
   return PRE_EXTENSION_SCRIPTS.reduce((chain,src)=>chain.then(()=>loadFreshScript(src,token).then(s=>{loaded.push(s);})),Promise.resolve())
     .then(()=>releaseProductHardeningExtensions().reduce((chain,src)=>chain.then(()=>loadFreshScript(src,token).then(s=>{loaded.push(s);})),Promise.resolve()))
     .then(()=>POST_EXTENSION_SCRIPTS.reduce((chain,src)=>chain.then(()=>loadFreshScript(src,token).then(s=>{loaded.push(s);})),Promise.resolve()))
-    .then(()=>loaded);
+    .then(()=>loaded)
+    .finally(()=>restoreExtensionAutoLoad(previousDefer));
+}
+function unwrapDashboardDetails(aside){
+  const details=aside&&aside.querySelector&&aside.querySelector('#side-details');
+  if(!details)return;
+  for(const node of Array.from(details.childNodes)){
+    if(node.nodeType===1&&String(node.tagName||'').toLowerCase()==='summary')continue;
+    aside.insertBefore(node,details);
+  }
+  details.remove();
 }
 function enhanceSidebar(){
   if(!root.document)return;
-  root.document.body&&root.document.body.classList.add('obol-dashboard-active');
+  if(root.document.body)root.document.body.classList.add('obol-dashboard-active');
   const aside=root.document.querySelector('aside')||root.document.getElementById('sidebar');
   if(!aside)return;
-  let details=aside.querySelector('#side-details');
-  if(!details){
-    const nodes=Array.from(aside.childNodes);
-    details=root.document.createElement('details');
-    details.id='side-details';
-    details.dataset.obolDashboardSidebar='enhanced';
-    const summary=root.document.createElement('summary');
-    summary.textContent='Parameters / Facts';
-    details.appendChild(summary);
-    nodes.forEach(node=>details.appendChild(node));
-    aside.appendChild(details);
-  }
-  if(!details.dataset.userToggled)details.open=false;
-  if(!details.__obolToggleTracked){
-    details.__obolToggleTracked=true;
-    details.addEventListener('toggle',()=>{details.dataset.userToggled='true';});
-  }
+  unwrapDashboardDetails(aside);
+  aside.dataset.obolDashboardSidebar='panel-only';
 }
 function restoreSidebar(){
   if(root.document&&root.document.body)root.document.body.classList.remove('obol-dashboard-active');
-  const details=root.document&&root.document.querySelector('#side-details');
-  if(details)details.open=true;
+  const aside=root.document&&(root.document.querySelector('aside')||root.document.getElementById('sidebar'));
+  if(aside){unwrapDashboardDetails(aside);delete aside.dataset.obolDashboardSidebar;}
 }
 function refreshAssets(cycle){
   if(!instanceCurrent())return Promise.resolve(root.__OBOL_CURRENT_DASHBOARD_FRESHNESS__||null);

@@ -43,9 +43,13 @@ function normalizeReportMarkdown(markdown){
 }
 function loadProductHardeningExtensions(){
  const sources=Array.from(release.productHardeningExtensions||[]);
+ if(root.__OBOL_DEFER_PRODUCT_HARDENING_EXTENSIONS__){
+  root.__OBOL_DEFERRED_PRODUCT_HARDENING_EXTENSIONS__=Object.freeze(sources.slice());
+  return;
+ }
  if(typeof document!=='undefined'){
   sources.forEach(src=>{
-   if(document.querySelector('script[data-obol-extension="'+src+'"]'))return;
+   if(document.querySelector('script[data-obol-extension="'+src+'"],script[data-obol-dashboard-src="'+src+'"]'))return;
    const script=document.createElement('script');
    script.src=src;
    script.async=false;

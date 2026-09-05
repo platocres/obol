@@ -17,6 +17,8 @@ function syntax(rel){
 }
 
 for(const rel of [
+  '.github/workflows/browser-smoke.yml',
+  'data/current-release.js',
   'assets/dashboard-route-current.js',
   'assets/product-hardening-dashboard.js',
   'assets/product-hardening-dashboard.css',
@@ -24,26 +26,48 @@ for(const rel of [
 ]){
   if(!fs.existsSync(path.join(root,rel)))fail('missing '+rel);
 }
+syntax('data/current-release.js');
 syntax('assets/dashboard-route-current.js');
 syntax('assets/product-hardening-dashboard.js');
+
+requireText('.github/workflows/browser-smoke.yml','SHOULD_FULL_BROWSER');
+requireText('.github/workflows/browser-smoke.yml',"github.event_name == 'pull_request'");
+requireText('.github/workflows/browser-smoke.yml','SHOULD_DEEP_EQUIVALENCE');
+requireText('.github/workflows/browser-smoke.yml','Run full browser smoke');
+requireText('.github/workflows/browser-smoke.yml',"if: env.SHOULD_DEEP_EQUIVALENCE == 'true'");
+
+requireText('data/current-release.js','__OBOL_DEFER_PRODUCT_HARDENING_EXTENSIONS__');
+requireText('data/current-release.js','__OBOL_DEFERRED_PRODUCT_HARDENING_EXTENSIONS__');
+requireText('data/current-release.js','script[data-obol-dashboard-src=');
 
 requireText('assets/dashboard-route-current.js','const PRE_EXTENSION_SCRIPTS');
 requireText('assets/dashboard-route-current.js','const POST_EXTENSION_SCRIPTS');
 requireText('assets/dashboard-route-current.js','function releaseProductHardeningExtensions()');
 requireText('assets/dashboard-route-current.js','productHardeningExtensions');
+requireText('assets/dashboard-route-current.js','function restoreExtensionAutoLoad(previous)');
+requireText('assets/dashboard-route-current.js','__OBOL_DEFER_PRODUCT_HARDENING_EXTENSIONS__=true');
 requireText('assets/dashboard-route-current.js','function enhanceSidebar()');
+requireText('assets/dashboard-route-current.js','function unwrapDashboardDetails(aside)');
 requireText('assets/dashboard-route-current.js','obol-dashboard-active');
-requireText('assets/dashboard-route-current.js','side-details');
+requireText('assets/dashboard-route-current.js','panel-only');
+forbidText('assets/dashboard-route-current.js','fromManifest');
+forbidText('assets/dashboard-route-current.js',"details.id='side-details'");
+forbidText('assets/dashboard-route-current.js',"summary.textContent='Parameters / Facts'");
+forbidText('assets/dashboard-route-current.js',"root.document.createElement('details')");
 
 const route=read('assets/dashboard-route-current.js');
-const loader=route.slice(route.indexOf('function loadProductScripts'),route.indexOf('function enhanceSidebar'));
+const loader=route.slice(route.indexOf('function loadProductScripts'),route.indexOf('function unwrapDashboardDetails'));
 if(!loader.includes('PRE_EXTENSION_SCRIPTS.reduce'))fail('dashboard route must load base scripts before current-release extensions');
 if(!loader.includes('releaseProductHardeningExtensions().reduce'))fail('dashboard route must load current-release Product Hardening extensions dynamically');
 if(!loader.includes('POST_EXTENSION_SCRIPTS.reduce'))fail('dashboard route must load post-extension projections and renderer after extensions');
 const preIndex=loader.indexOf('PRE_EXTENSION_SCRIPTS.reduce');
+const deferIndex=loader.indexOf('__OBOL_DEFER_PRODUCT_HARDENING_EXTENSIONS__=true');
 const extensionsIndex=loader.indexOf('releaseProductHardeningExtensions().reduce');
 const postIndex=loader.indexOf('POST_EXTENSION_SCRIPTS.reduce');
+const restoreIndex=loader.indexOf('restoreExtensionAutoLoad');
+if(!(deferIndex>=0&&deferIndex<preIndex))fail('dashboard route must defer current-release extension auto-load before current-release.js executes');
 if(!(preIndex>=0&&extensionsIndex>preIndex&&postIndex>extensionsIndex))fail('dashboard route loader must execute pre scripts, extensions, then post scripts in order');
+if(!(restoreIndex>postIndex))fail('dashboard route must restore current-release auto-load only after post-extension scripts load');
 if(!/PRE_EXTENSION_SCRIPTS=\[[\s\S]*'data\/product-hardening\/note-progress-current\.js'[\s\S]*\]/.test(route))fail('note-progress-current.js must be loaded before dynamic release extensions');
 if(!/POST_EXTENSION_SCRIPTS=\[[\s\S]*'data\/product-hardening\/build-next-queue-hygiene-current\.js'[\s\S]*'assets\/product-hardening-dashboard\.js'[\s\S]*\]/.test(route))fail('queue hygiene must be in the post-extension script set before the renderer');
 
@@ -58,10 +82,11 @@ forbidText('assets/product-hardening-dashboard.js',"metric('Negative proof',remi
 
 requireText('assets/product-hardening-dashboard.css','.ph-dashboard-main');
 requireText('assets/product-hardening-dashboard.css','body.obol-dashboard-active main');
-requireText('assets/product-hardening-dashboard.css','#side-details:not([open])');
+requireText('assets/product-hardening-dashboard.css','aside[data-obol-dashboard-sidebar="panel-only"]');
 requireText('assets/product-hardening-dashboard.css','@media(max-width:1200px)');
 requireText('assets/product-hardening-dashboard.css','@media(max-width:760px)');
 requireText('assets/product-hardening-dashboard.css','max-width:none');
+forbidText('assets/product-hardening-dashboard.css','#side-details');
 
 requireText('tools/release-smoke.js','tests/run-v9.61-dashboard-tests.js');
 
