@@ -51,6 +51,7 @@ assert.ok(analysis.outcomeFacts.includes('web.file_handling.fuzzing_signal_obser
 assert.ok(analysis.outcomeFacts.includes('web.file_handling.cleanup_needed'));
 
 const checks = [
+  ['tools/validate-release-pr.js', '--repo-only'],
   ['tools/validate-note-remining-audits.js'],
   ['tools/validate-notes-impact.js'],
   ['tools/validate-note-integration.js'],
