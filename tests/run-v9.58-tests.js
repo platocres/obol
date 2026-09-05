@@ -1,6 +1,8 @@
 'use strict';
 
 const assert = require('assert');
+const fs = require('fs');
+const path = require('path');
 
 require('../data/current-release.js');
 const packet = require('../data/product-hardening/credentials-auth-remining-v9.58.js');
@@ -14,6 +16,12 @@ assert(
   'current release should advertise the credentials/auth product-hardening extension'
 );
 assert(global.OBOL_RELEASE_IDENTITY && typeof global.OBOL_RELEASE_IDENTITY.loadProductHardeningExtensions === 'function', 'release identity should expose the extension loader');
+
+const syncScript = fs.readFileSync(path.join(__dirname, '..', 'tools', 'sync-product-build-next.js'), 'utf8');
+assert(syncScript.includes('releaseProductHardeningExtensions'), 'Product Build Next sync must discover release Product Hardening extensions');
+assert(syncScript.includes('runReleaseProductHardeningExtensions'), 'Product Build Next sync must execute Product Hardening extensions before rendering the queue');
+assert(syncScript.includes('productHardeningExtensions'), 'Product Build Next sync must honor current-release extension declarations');
+assert(syncScript.includes('remining'), 'Product Build Next sync must include runtime-discovered re-mining extensions such as the merged XSS pass');
 
 assert.strictEqual(packet.status, 'live-integrated');
 assert.strictEqual(packet.wave, 'v9.58-credentials-auth-remine');
