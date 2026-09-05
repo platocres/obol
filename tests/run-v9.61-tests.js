@@ -2,6 +2,7 @@
 
 const assert = require('assert');
 
+// Keep this release test isolated from older Product Hardening extension side effects.
 function freezeObject(value) { return Object.freeze(value || {}); }
 function freezeList(list) { return Object.freeze((list || []).slice()); }
 
