@@ -4,7 +4,7 @@ Obol is a static, browser-local workspace for OSCP-style labs, Active Directory 
 
 Live site: `https://platocres.github.io/obol/`
 
-Current release: **v9.71**
+Current release: **v9.72**
 
 Open `#/dashboard` for the active Product Hardening Dashboard and Product Build Next queue.
 
@@ -40,27 +40,27 @@ Obol remains a website the user can visit and use: no backend, account system, t
 <!-- OBOL-PRODUCT-BUILD-NEXT:START -->
 Generated from the same queue sources as the Product Hardening Dashboard. Do not edit this block manually.
 
-**Current product-hardening queue:** 226/657 complete (34%), 7 concrete queued, 9 modeled/standing items.
+**Current product-hardening queue:** 227/657 complete (35%), 6 concrete queued, 9 modeled/standing items.
 **Private notes source:** [`https://github.com/platocres/obol-source-notes/tree/main/sources/raw`](https://github.com/platocres/obol-source-notes/tree/main/sources/raw) — 556 notes and 1326 embedded resources accounted.
 **Private review packets:** `platocres/obol-source-notes@agent/review-packets:data/review-packets/manifest.json` — 556/556 notes, 29 packets, 0 truncated.
 **Notes review status:** 135/556 reviewed; 421 pending; 102 modeled; 28 private-only.
-**Source re-mining status:** 127/135 full-spectrum re-mined; 8 old-rubric-only notes remain.
-**Next notes batch:** **Old-rubric reviewed source re-mining batch 4** (`notes-batch-old-rubric-reviewed-remine-004`) — 8 notes from `platocres/obol-source-notes@agent/review-packets:data/review-packets/manifest.json`.
-**Selector:** Select the final 8 already-reviewed notes that lack full-spectrum audit rows, using manifest/source order and excluding themes already closed by released re-mining proof.
-**Acceptance:** Every selected note receives a 16-dimension re-mining audit row plus public-safe product output, covered rationale, queued product gap, or private-boundary proof. Do not advance to offline/performance work after this batch unless both note gates are complete.
+**Source re-mining status:** 135/135 full-spectrum re-mined; 0 old-rubric-only notes remain.
+**Next notes batch:** **Pending source note disposition batch 1** (`notes-disposition-pending-review-001`) — 20 notes from `platocres/obol-source-notes@agent/review-packets:data/review-packets/manifest.json`.
+**Selector:** Select the next 20 unreviewed private source notes in manifest/source order, re-mine from original text, and publish only generalized product mechanics.
+**Acceptance:** Every selected note receives a terminal disposition plus public-safe product output, a covered rationale, a queued product gap, or private-boundary proof. Keep the full-spectrum 16-dimension rubric for any note that produces a card, analyzer, tool-builder change, path branch, or report mechanic. Do not advance to offline/performance work until the pending-note disposition gate is complete.
 
-**Recommended work package:** **Notes Impact and Source Re-mining** — 2 concrete live items / 18 tracked.
-**Next concrete entry:** **Re-mine all already-reviewed notes from original sources**
+**Recommended work package:** **Notes Impact and Source Re-mining** — 1 concrete live item / 18 tracked.
+**Next concrete entry:** **Burn down all 556 note dispositions**
 **Ownership area:** `notes/impact-packets`
 **Package dependencies:** Notes Integration Foundation.
 **Package detail:** Use the Product Hardening Dashboard for full track ledgers and `data/product-hardening/work-packages.js` for the long-form package guidance.
 
 **Highest-priority concrete live items:**
-1. **Re-mine all already-reviewed notes from original sources** — Concrete notes-first gate: 8 already-reviewed old-rubric-only notes still need full-spectrum source re-mining before offline/performance work can become next.
-2. **Burn down all 556 note dispositions** — Concrete notes-first gate: 421 private source notes still need disposition/mining before offline/performance work can become next.
-3. **Quiet service worker caching** — Improve repeat-load and offline behavior without prompting users to install anything.
-4. **IndexedDB workspace storage** — Support durable larger local workspaces, multiple engagements, and cached indexes while remaining browser-local.
-5. **Web Workers for heavy tasks** — Move evidence parsing, search indexing, and report generation off the UI thread.
+1. **Burn down all 556 note dispositions** — Concrete notes-first gate: 421 private source notes still need disposition/mining before offline/performance work can become next.
+2. **Quiet service worker caching** — Improve repeat-load and offline behavior without prompting users to install anything.
+3. **IndexedDB workspace storage** — Support durable larger local workspaces, multiple engagements, and cached indexes while remaining browser-local.
+4. **Web Workers for heavy tasks** — Move evidence parsing, search indexing, and report generation off the UI thread.
+5. **Non-intrusive update notice** — Notify users when cached app updates are available without install nagging.
 
 **Queue automation:** `data/product-hardening/product-hardening-queue.js`, `data/product-hardening/build-next-queue-hygiene-current.js`, `data/product-hardening/note-progress-current.js`, and `data/product-hardening/work-packages.js` are the queue owners. The dashboard and this README projection consume those same sources.
 Generated by `node tools/sync-product-build-next.js --write`. Verify with `node tools/sync-product-build-next.js --check`.
