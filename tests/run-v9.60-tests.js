@@ -85,6 +85,7 @@ global.OBOL_PRODUCT_HARDENING_NOTE_PROGRESS = Object.freeze({
 
 require('../data/current-release.js');
 const packet = require('../data/product-hardening/private-only-superseded-remining-v9.60.js');
+require('../data/product-hardening/build-next-queue-hygiene-current.js');
 
 assert(global.OBOL_CURRENT_RELEASE, 'current release should be published');
 assert.strictEqual(global.OBOL_CURRENT_RELEASE.label, 'v9.60');
