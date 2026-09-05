@@ -36,7 +36,7 @@ function hasActionSpine(text) {
   const gui = /\b(Burp|ZAP|Repeater|Intruder|Proxy history|HTTP history|BloodHound|CyberChef|DevTools|click|select|configure|inspect|export|send to|compare)\b/i.test(text) && /\b(request|response|evidence|export|copy|paste|baseline|result|graph|edge|status|header|cookie|body)\b/i.test(text);
   return terminal || gui;
 }
-function hasEvidenceGuidance(text) { return /\b(Evidence|Analyze pasted evidence|Paste command output|Paste back|exported tool evidence|Success looks like|response body|server response|manual replay|scoped auth|cleanup state|payload position|BloodHound|SharpHound|route table|session ID|object count|output zip|process owner|SUID|capability|sudo rule|kernel version|user-trail)\b/i.test(text); }
+function hasEvidenceGuidance(text) { return /\b(Evidence|Analyze pasted evidence|Paste command output|Paste back|paste the output|paste the result|exported tool evidence|Success looks like|response body|server response|manual replay|scoped auth|cleanup state|payload position|BloodHound|SharpHound|route table|session ID|object count|output zip|process owner|SUID|capability|sudo rule|kernel version|user-trail)\b/i.test(text); }
 function hasDecisionGuidance(text) { return /\b(move forward|success|failure|fails?|blocked|triage|not impact|do not|replay|compare|compared|boundary|scope|auth|authorization|cleanup|server accepts|route|session|graph|lead|proof|validate|precondition|candidate)\b/i.test(text); }
 async function waitForViewReady(page) {
   await page.waitForFunction(() => {
