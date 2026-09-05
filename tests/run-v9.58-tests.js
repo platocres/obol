@@ -40,7 +40,12 @@ assert(gapGuardDoc.includes('Build it now'), 'same-surface gap parking guard mus
 assert(gapGuardDoc.includes('Evidence ingestion is part of the build'), 'same-surface guard must require Evidence ingestion for built command/control/analyzer work');
 assert(gapGuardDoc.includes('Static cards, command templates, GUI controls, or dashboard rows without Evidence ingestion are incomplete'), 'same-surface guard must reject static-card-only completion');
 assert(liveGateValidator.includes('SAME-SURFACE-GAP-PARKING-GUARD.md'), 'live integration validator must enforce the gap parking guard doc');
+assert(liveGateValidator.includes('Evidence ingestion / Next Steps movement'), 'live integration validator must require the PR-template Evidence section');
+assert(liveGateValidator.includes('outcomeFacts'), 'live integration validator must understand Evidence outcome-fact proof');
+assert(liveGateValidator.includes('evidence-ingestion'), 'live integration validator must recognize Evidence-ingestion artifacts');
 assert(prTemplate.includes('No same-surface gap parking'), 'PR template must include the same-surface gap parking checkbox');
+assert(prTemplate.includes('Evidence ingestion / Next Steps movement'), 'PR template must include an Evidence ingestion section');
+assert(prTemplate.includes('Outcome fact(s) emitted'), 'PR template must require emitted outcome facts');
 
 assert.strictEqual(packet.status, 'live-integrated');
 assert.strictEqual(packet.wave, 'v9.58-credentials-auth-remine');
