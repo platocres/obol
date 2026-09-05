@@ -11,8 +11,12 @@ const primaryCards = [
   'web-authz-boundaries',
   'pass-the-hash-proof-chain',
   'burp-intruder-fuzzing-workflow',
+  'web-upload-inclusion-proof-chain',
+  'ad-enumeration-bloodhound-collection',
+  'metasploit-resource-pivot-workflow',
 ];
 const demotedCards = {
+  'web-client-session-proof-chain': 'web-authz-boundaries',
   'web-proxy-transform-proof-chain': 'web-authz-boundaries',
   'web-client-controls': 'web-authz-boundaries',
   'encoded-parameter-review': 'web-authz-boundaries',
@@ -24,17 +28,16 @@ const demotedCards = {
 };
 fs.mkdirSync(outputDir, { recursive: true });
 
-function hasActionTool(text) {
-  return /\b(curl|ffuf|gobuster|nxc|pypykatz|hashcat|impacket-psexec|impacket-wmiexec|evil-winrm|sqlmap|python3)\b/i.test(text)
-    || /\b(Burp|ZAP|Repeater|Intruder|CyberChef|Proxy history|DevTools|browser-side|client-side|mutated request)\b/i.test(text);
+function hasActionCommand(text) {
+  return /\b(curl|ffuf|gobuster|nxc|pypykatz|hashcat|impacket-psexec|impacket-wmiexec|evil-winrm|sqlmap|python3|powershell|Invoke-BloodHound|Find-DomainShare|Get-DomainUser|net user|net group|msfconsole|meterpreter|sessions -i)\b/i.test(text);
 }
 
 function hasEvidenceGuidance(text) {
-  return /\b(Evidence|Analyze pasted evidence|Paste command output|Paste back|Success looks like|response body|server response|manual replay|scoped auth|cleanup state|payload position|decode|re-encode|mutated request captured)\b/i.test(text);
+  return /\b(Evidence|Analyze pasted evidence|Paste command output|Paste back|Success looks like|response body|server response|manual replay|scoped auth|cleanup state|payload position|BloodHound|SharpHound|route table|session ID|object count|output zip)\b/i.test(text);
 }
 
 function hasDecisionGuidance(text) {
-  return /\b(move forward|success|failure|fails?|blocked|triage|not impact|do not|replay|compare|compared|boundary|scope|auth|authorization|cleanup|server accepts|backend)\b/i.test(text);
+  return /\b(move forward|success|failure|fails?|blocked|triage|not impact|do not|replay|compare|compared|boundary|scope|auth|authorization|cleanup|server accepts|route|session|graph|lead|proof)\b/i.test(text);
 }
 
 (async () => {
@@ -51,24 +54,27 @@ function hasDecisionGuidance(text) {
       const text = view && view.innerText ? view.innerText.trim() : '';
       return text.length > 150 && !/Unknown card/i.test(text);
     }, null, { timeout: 20000 });
-    await page.waitForTimeout(1600);
+    await page.waitForTimeout(1800);
     const state = await page.evaluate(() => {
       const view = document.querySelector('#view');
       const text = view && view.innerText ? view.innerText.trim() : '';
       const disposition = window.OBOL_NOTE_CARD_DISPOSITION_RECONCILIATION_V968 || null;
+      const v971 = window.OBOL_AD_MSF_REMINING_V971 || null;
       return {
         text,
         patchPanelCount: document.querySelectorAll('.obol-action-first-v967,[data-obol-action-first-v967]').length,
         dispositionStatus: disposition && disposition.status || '',
         kept: disposition && disposition.keepAsCards || [],
+        v971,
       };
     });
     await page.screenshot({ path: path.join(outputDir, `action-integrated-${id}.png`), fullPage: true });
     if (/Unknown card/i.test(state.text)) failures.push(`${id} rendered Unknown card`);
     if (state.patchPanelCount) failures.push(`${id} still renders the v9.67 action-first patch panel`);
-    if (/v9\.67 action-first cleanup|Field notes below are supporting context/i.test(state.text)) failures.push(`${id} leaks corrective implementation copy into the card UI`);
-    if (!state.kept.includes(id)) failures.push(`${id} is not recorded as a kept primary card by v9.68 disposition reconciliation`);
-    if (!hasActionTool(state.text)) failures.push(`${id} does not show a concrete command or GUI tool workflow in the normal card surface`);
+    if (/v9\.67 action-first cleanup|Field notes below are supporting context|Why this now|methodology gap|\bUNKNOWN\b/i.test(state.text)) failures.push(`${id} leaks corrective, methodology, or UNKNOWN copy into the card UI`);
+    if (['credential-dump-proof-chain','web-authz-boundaries','pass-the-hash-proof-chain','burp-intruder-fuzzing-workflow'].includes(id) && !state.kept.includes(id)) failures.push(`${id} is not recorded as a kept primary card by v9.68 disposition reconciliation`);
+    if (['web-upload-inclusion-proof-chain','ad-enumeration-bloodhound-collection','metasploit-resource-pivot-workflow'].includes(id) && !(state.v971 && state.v971.cardsIntegrated)) failures.push(`${id} is not covered by v9.71 action-spine integration status`);
+    if (!hasActionCommand(state.text)) failures.push(`${id} does not show a concrete command in the normal card surface`);
     if (!hasEvidenceGuidance(state.text)) failures.push(`${id} does not show useful paste-back/evidence guidance in the normal card surface`);
     if (!hasDecisionGuidance(state.text)) failures.push(`${id} does not show decision guidance for success, failure, triage, or next movement`);
   }
@@ -81,18 +87,22 @@ function hasDecisionGuidance(text) {
       const view = document.querySelector('#view');
       const text = view && view.innerText ? view.innerText.trim() : '';
       const disposition = window.OBOL_NOTE_CARD_DISPOSITION_RECONCILIATION_V968 || null;
+      const v971 = window.OBOL_AD_MSF_REMINING_V971 || null;
       return {
         text,
         hash: window.location.hash,
         patchPanelCount: document.querySelectorAll('.obol-action-first-v967,[data-obol-action-first-v967]').length,
         demoted: disposition && disposition.demotedCardIds || [],
+        v971,
       };
     });
     await page.screenshot({ path: path.join(outputDir, `action-demoted-${id}.png`), fullPage: true });
     if (!state.hash.includes('/card/' + canonical)) failures.push(`${id} should redirect/resolve to ${canonical}, got ${state.hash}`);
     if (state.patchPanelCount) failures.push(`${id} still renders a v9.67 patch panel after demotion`);
-    if (/v9\.67 action-first cleanup|Field notes below are supporting context/i.test(state.text)) failures.push(`${id} leaks corrective implementation copy after demotion`);
-    if (!state.demoted.includes(id)) failures.push(`${id} is not recorded as demoted by v9.68 disposition reconciliation`);
+    if (/v9\.67 action-first cleanup|Field notes below are supporting context|Why this now|methodology gap|\bUNKNOWN\b/i.test(state.text)) failures.push(`${id} leaks corrective, methodology, or UNKNOWN copy after demotion`);
+    if (id === 'web-client-session-proof-chain') {
+      if (!(state.v971 && state.v971.clientSessionDemoted)) failures.push(`${id} is not recorded as demoted by v9.71`);
+    } else if (!state.demoted.includes(id)) failures.push(`${id} is not recorded as demoted by v9.68 disposition reconciliation`);
   }
 
   await browser.close();
