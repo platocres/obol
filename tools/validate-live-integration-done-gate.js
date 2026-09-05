@@ -19,6 +19,7 @@ function includesAny(text, needles) {
 
 function validateDocs(failures) {
   const doneGate = read('docs/LIVE-INTEGRATION-DONE-GATE.md');
+  const gapParkingGuard = read('docs/SAME-SURFACE-GAP-PARKING-GUARD.md');
   const agentWorkflow = read('docs/AGENT-WORKFLOW.md');
   const readme = read('README.md');
   const productHardening = read('docs/PRODUCT-HARDENING.md');
@@ -34,9 +35,19 @@ function validateDocs(failures) {
   });
 
   [
+    'Same-surface gap parking is forbidden',
+    'Build it now',
+    'A queue item is not a parking lot',
+    'leaves buildable same-surface work behind as a new queued item',
+  ].forEach((needle) => {
+    if (!gapParkingGuard.includes(needle)) failures.push(`same-surface gap parking guard missing required phrase: ${needle}`);
+  });
+
+  [
     'Live cards / surfaces',
     'Live Integration Done Gate',
     'Tests assert both the data artifact and the live integration path that consumes it',
+    'No same-surface gap parking',
     'node tools/validate-live-integration-done-gate.js data/product-hardening/<artifact>.js',
   ].forEach((needle) => {
     if (!prTemplate.includes(needle)) failures.push(`PR template missing completion gate phrase: ${needle}`);
@@ -127,6 +138,7 @@ function validate(pathsToCheck) {
   const failures = [];
   validateDocs(failures);
   validateNoForbiddenCompletionLanguage('docs/v9.57.md', failures);
+  validateNoForbiddenCompletionLanguage('docs/v9.58.md', failures);
   pathsToCheck.forEach((rel) => validateArtifact(rel.replace(/^[./]+/, ''), failures));
   return failures;
 }
