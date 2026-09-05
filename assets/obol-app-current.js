@@ -11,7 +11,7 @@
  * suppresses historical schedulers and commits current route owners last.
  *
  * Historical fragment order sha256: 40e3006d9423d669acf5869b577ecf56a6ca2ee1629c95fd0fcc5d242d2c5f27
- * Generated body sha256: 311d80744e37a7409a08acbf2572eacd5eb9f19f48139c70bc77dfe3a2f40ab7
+ * Generated body sha256: 246ce5643761d244bce52f55f79538b3ce30185fe27663d3b6195866455ba34f
  * First historical fragment: assets/report-v2.js
  * Last historical fragment:  assets/app-v8.8.js
  */
@@ -2008,7 +2008,8 @@ const release=Object.freeze({
   'data/product-hardening/credential-dump-remining-v9.61.js',
   'data/product-hardening/web-proxy-transform-remining-v9.62.js',
   'data/product-hardening/visible-remine-cards-v9.63.js',
-  'data/product-hardening/pass-the-hash-remining-v9.64.js'
+  'data/product-hardening/pass-the-hash-remining-v9.64.js',
+  'data/product-hardening/pass-the-hash-dashboard-settle-v9.64.js'
  ])
 });
 function stampState(target){
