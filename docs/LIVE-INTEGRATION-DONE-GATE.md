@@ -1,16 +1,22 @@
 # Live Integration Done Gate
 
-No orphan artifacts. This is the hard stop that prevents orphan artifacts from being counted as completed Product Hardening work.
+Product Build Next work is not done until the product change is live-integrated into the consuming surface.
 
-## Rule
+## No orphan artifacts
 
-Product Build Next work is not done until the product change is live-integrated into the surface that consumes it.
+A PR must not claim Product Build Next completion when the change exists only as a disconnected data file, fixture, doc, hidden registry, loose proof artifact, or PR-body promise.
 
-A PR may not claim completion for a card, path note, tool, analyzer, dashboard metric, note-mining output, queue item, or generated product surface when the changed output only exists as a disconnected artifact, document, fixture, hidden registry, loose data file, or future-facing proof file.
+The changed output must be visible or consumable on the live route, card, dashboard, tool, analyzer, report, or runtime surface that owns it.
+
+## Evidence ingestion for command and analyzer work
+
+A command, tool card, proof control, analyzer, or path item that expects pasted terminal output, browser-observation text, or proof notes is not live-integrated until Evidence ingestion knows what to do with that output.
+
+Evidence ingestion must emit conservative activities and outcome facts for the relevant card. It must not promote raw output into unsupported access, impact, session-compromise, or report-ready proof.
 
 ## Forbidden completion language
 
-Do not present a PR as complete for an item if the PR body, release note, or final response still says any of the following about that same item:
+A PR that closes a Product Build Next item must not also say the same item has:
 
 - `remaining integration`
 - `later pass should wire`
@@ -19,46 +25,31 @@ Do not present a PR as complete for an item if the PR body, release note, or fin
 - `needs to be wired into live surfaces`
 - `dashboard/runtime integration remains`
 
-Those phrases are allowed only when they refer to a deliberately queued follow-up item with a named blocker or product-gap ID. They are not allowed for the queue item being marked complete.
+Those phrases are allowed only when the work is deliberately left queued with a named blocker and a separate Product Build Next item ID.
 
 ## Completion checklist
 
-Before moving any Product Build Next item out of `queued`, prove all applicable items below:
+Before a Product Build Next item leaves `queued` status, the PR must prove:
 
-- The changed output is visible on the intended live route.
-- Direct card, tool, path, dashboard, or report links are listed in the PR body when a user-visible surface is affected.
-- Runtime or lazy-bundle load order is updated when the new output needs to execute before another projection.
-- Queue and progress status are updated only after live visibility wiring exists.
-- Tests assert both the data artifact and the live integration path that consumes it.
-- The PR body does not describe required follow-up work for the item being claimed complete.
-- Any deferred useful finding has a named blocker, blast-radius reason, missing-source proof, private-only reason, or product-gap ID.
+- the changed output is visible or consumable on the intended live surface;
+- direct links to affected live routes/cards are in the PR body;
+- runtime or lazy-bundle load order is updated when needed;
+- queue/progress status changed only after live wiring exists;
+- tests assert both the data artifact and the live integration path that consumes it;
+- Evidence ingestion is tested for any command, tool-card, proof-control, analyzer, or path item that expects pasted output;
+- the PR body does not describe required follow-up integration for a claimed-complete item;
+- deferred useful findings include a blocker reason, owning surface, and Product Build Next gap ID.
 
-## Source re-mining specific rule
+## Source re-mining rule
 
-Source re-mining is product development, not artifact staging. If a PR adds a file matching `data/product-hardening/*remining*.js`, the release test must also prove at least one live integration route for that artifact.
-
-Acceptable proof includes one or more of:
-
-- `data/runtime-manifest.js` loads the artifact before the route, dashboard, notes-impact, or progress projection that consumes it.
-- The artifact self-integrates into `OBOL_NOTE_INTEGRATION`, `OBOL_PRODUCT_HARDENING_NOTE_PROGRESS`, a current Tool Builder owner, a current Evidence analyzer, a report owner, or an operator route owner.
-- A route/card test proves `#/card/<card-id>`, `#/path`, `#/dashboard`, a Tool Builder card, or another user-visible route can reach the new output.
+If a PR adds `data/product-hardening/*remining*.js`, the matching release test must prove that the artifact is loaded by a live route or current-release extension, updates public field notes/path bindings/progress, and changes the generated Product Build Next state when relevant.
 
 A test that only imports the artifact and checks its metadata is not enough.
 
+## Same-surface work rule
+
+Buildable same-surface work must be built in the current pass or explicitly blocked. `docs/SAME-SURFACE-GAP-PARKING-GUARD.md` owns the rule.
+
 ## Generated artifact sync
 
-After generated release artifacts are synchronized, keep the PR head on a human-authored commit when branch rules require regression or browser checks to run against the latest head SHA. A generated sync commit without attached check-runs can still block merge even when the generated files are correct.
-
-## PR body requirement
-
-When a PR claims a user-visible product change, the PR body must include a `Live cards / surfaces` section or equivalent wording that tells the maintainer where to look after deploy. For card work, include direct `#/card/<card-id>` routes.
-
-## Validator
-
-Run the done-gate validator in any release that adds note re-mining, cards, path notes, tools, analyzers, dashboard metrics, or generated product outputs:
-
-```bash
-node tools/validate-live-integration-done-gate.js data/product-hardening/<artifact>.js
-```
-
-The validator is intentionally conservative. It does not prove browser rendering by itself. It catches the exact failure mode where an artifact is created, tested in isolation, and described as done without being wired into the live product.
+When generated release artifacts are part of the PR, keep the head on a human-authored commit after bot sync if the branch rules require regression and browser checks against the latest SHA. A bot-generated artifact-sync head can otherwise leave required checks unattached to the mergeable head even when the generated files are correct.
