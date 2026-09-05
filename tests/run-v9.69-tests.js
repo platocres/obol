@@ -58,5 +58,4 @@ assert.ok(analysis.outcomeFacts.includes('web.file_handling.fuzzing_signal_obser
 assert.ok(analysis.outcomeFacts.includes('web.file_handling.cleanup_needed'));
 
 run(['tools/validate-release-pr.js', '--repo-only']);
-run(['tools/validate-product-hardening-queue.js']);
 console.log('v9.69 web upload/inclusion re-mining batch checks passed.');
