@@ -32,9 +32,12 @@ assert(releaseSyncWorkflow.includes('data/product-hardening/**'), 'release sync 
 assert(releaseSyncWorkflow.includes('tools/sync-product-build-next.js'), 'release sync workflow must run when Product Build Next generator changes');
 assert(releaseSyncWorkflow.includes('node tools/sync-product-build-next.js --write'), 'release sync workflow must regenerate Product Build Next during release sync');
 
+const doneGateDoc = fs.readFileSync(path.join(__dirname, '..', 'docs', 'LIVE-INTEGRATION-DONE-GATE.md'), 'utf8');
 const gapGuardDoc = fs.readFileSync(path.join(__dirname, '..', 'docs', 'SAME-SURFACE-GAP-PARKING-GUARD.md'), 'utf8');
 const liveGateValidator = fs.readFileSync(path.join(__dirname, '..', 'tools', 'validate-live-integration-done-gate.js'), 'utf8');
 const prTemplate = fs.readFileSync(path.join(__dirname, '..', '.github', 'pull_request_template.md'), 'utf8');
+assert(doneGateDoc.includes('Evidence ingestion for command and analyzer work'), 'live done gate must include Evidence ingestion completion marker');
+assert(doneGateDoc.includes('Evidence ingestion is tested for any command, tool-card, proof-control, analyzer, or path item that expects pasted output'), 'live done gate must require pasted-output Evidence tests');
 assert(gapGuardDoc.includes('Same-surface gap parking is forbidden'), 'same-surface gap parking guard must exist');
 assert(gapGuardDoc.includes('Build it now'), 'same-surface gap parking guard must force buildable work into the current pass');
 assert(gapGuardDoc.includes('Evidence ingestion is part of the build'), 'same-surface guard must require Evidence ingestion for built command/control/analyzer work');
