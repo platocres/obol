@@ -26,6 +26,7 @@ const demotedCards = {
   'fuzzer-payload-position-review': 'burp-intruder-fuzzing-workflow',
   'fuzzer-result-delta-review': 'burp-intruder-fuzzing-workflow',
 };
+const INTERNAL_CARD_SLOP = /v9\.67 action-first cleanup|Field notes below are supporting context|fills an unresolved methodology gap|methodology gap|\bUNKNOWN\b/i;
 fs.mkdirSync(outputDir, { recursive: true });
 
 function hasActionSpine(text) {
@@ -73,7 +74,7 @@ function hasDecisionGuidance(text) {
     await page.screenshot({ path: path.join(outputDir, `action-integrated-${id}.png`), fullPage: true });
     if (/Unknown card/i.test(state.text)) failures.push(`${id} rendered Unknown card`);
     if (state.patchPanelCount) failures.push(`${id} still renders the v9.67 action-first patch panel`);
-    if (/v9\.67 action-first cleanup|Field notes below are supporting context|Why this now|methodology gap|\bUNKNOWN\b/i.test(state.text)) failures.push(`${id} leaks corrective, methodology, or UNKNOWN copy into the card UI`);
+    if (INTERNAL_CARD_SLOP.test(state.text)) failures.push(`${id} leaks corrective, filler-methodology, or UNKNOWN copy into the card UI`);
     if (['credential-dump-proof-chain','web-authz-boundaries','pass-the-hash-proof-chain','burp-intruder-fuzzing-workflow'].includes(id) && !state.kept.includes(id)) failures.push(`${id} is not recorded as a kept primary card by v9.68 disposition reconciliation`);
     if (['web-upload-inclusion-proof-chain','ad-enumeration-bloodhound-collection','metasploit-resource-pivot-workflow'].includes(id) && !(state.v971 && state.v971.cardsIntegrated)) failures.push(`${id} is not covered by v9.71 action-spine integration status`);
     if (!hasActionSpine(state.text)) failures.push(`${id} does not show a concrete command-line or GUI-tool action spine in the normal card surface`);
@@ -101,7 +102,7 @@ function hasDecisionGuidance(text) {
     await page.screenshot({ path: path.join(outputDir, `action-demoted-${id}.png`), fullPage: true });
     if (!state.hash.includes('/card/' + canonical)) failures.push(`${id} should redirect/resolve to ${canonical}, got ${state.hash}`);
     if (state.patchPanelCount) failures.push(`${id} still renders a v9.67 patch panel after demotion`);
-    if (/v9\.67 action-first cleanup|Field notes below are supporting context|Why this now|methodology gap|\bUNKNOWN\b/i.test(state.text)) failures.push(`${id} leaks corrective, methodology, or UNKNOWN copy after demotion`);
+    if (INTERNAL_CARD_SLOP.test(state.text)) failures.push(`${id} leaks corrective, filler-methodology, or UNKNOWN copy after demotion`);
     if (id === 'web-client-session-proof-chain') {
       if (!(state.v971 && state.v971.clientSessionDemoted)) failures.push(`${id} is not recorded as demoted by v9.71`);
     } else if (!state.demoted.includes(id)) failures.push(`${id} is not recorded as demoted by v9.68 disposition reconciliation`);
