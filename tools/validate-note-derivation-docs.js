@@ -5,13 +5,25 @@ const path=require('path');
 
 const root=path.join(__dirname,'..');
 const failures=[];
-function read(rel){return fs.readFileSync(path.join(root,rel),'utf8');}
 function exists(rel){return fs.existsSync(path.join(root,rel));}
+function read(rel){return fs.readFileSync(path.join(root,rel),'utf8');}
 function fail(message){failures.push(message);}
 function requireFile(rel){if(!exists(rel))fail(`Missing required derivation document: ${rel}`);}
-function requireText(rel,needle){const text=read(rel);if(!text.includes(needle))fail(`${rel} must include ${JSON.stringify(needle)}`);}
-function requireAnyText(rel,needles){const text=read(rel);if(!needles.some(needle=>text.includes(needle)))fail(`${rel} must include one of ${needles.map(JSON.stringify).join(', ')}`);}
-function forbidText(rel,needle){const text=read(rel);if(text.includes(needle))fail(`${rel} must not include stale text ${JSON.stringify(needle)}`);}
+function requireText(rel,needle){
+ if(!exists(rel)){fail(`Missing required file for text check: ${rel}`);return;}
+ const text=read(rel);
+ if(!text.includes(needle))fail(`${rel} must include ${JSON.stringify(needle)}`);
+}
+function requireAnyText(rel,needles){
+ if(!exists(rel)){fail(`Missing required file for text check: ${rel}`);return;}
+ const text=read(rel);
+ if(!needles.some(needle=>text.includes(needle)))fail(`${rel} must include one of ${needles.map(JSON.stringify).join(', ')}`);
+}
+function forbidText(rel,needle){
+ if(!exists(rel))return;
+ const text=read(rel);
+ if(text.includes(needle))fail(`${rel} must not include stale text ${JSON.stringify(needle)}`);
+}
 
 for(const rel of [
  'README.md',
@@ -42,6 +54,7 @@ requireText('docs/RAW-NOTES-LFS.md','Without one of those, the PR may improve ha
 
 requireText('docs/NOTE-MINING-RUBRIC.md','## Derivation standard');
 requireText('docs/NOTE-MINING-RUBRIC.md','Extract the value fully. Do not copy the expression.');
+requireText('docs/NOTE-MINING-RUBRIC.md','Light paraphrase is not enough.');
 requireText('docs/NOTE-MINING-RUBRIC.md','`private-only` is a boundary for raw/private source substance, not a discard bucket for reusable lessons.');
 requireText('docs/NOTE-MINING-RUBRIC.md','What durable lesson can still be re-authored safely?');
 requireText('docs/NOTE-MINING-RUBRIC.md','confirmation that reusable educational value was extracted or cited as already covered before anything was marked private-only');
@@ -52,9 +65,20 @@ requireText('docs/AGENT-WORKFLOW.md','## 4. Mine, then use it in the same pass')
 requireText('docs/AGENT-WORKFLOW.md','public-safe useful finding');
 requireText('docs/AGENT-WORKFLOW.md','attach the finding to an existing Next Steps item');
 requireText('docs/AGENT-WORKFLOW.md','create a new gated Next Steps item');
+requireText('docs/AGENT-WORKFLOW.md','only after analyzing where it belongs in the lab path');
 requireText('docs/AGENT-WORKFLOW.md','Do not merely append a card to a broad lane');
+requireText('docs/AGENT-WORKFLOW.md','which existing cards should precede it');
+requireText('docs/AGENT-WORKFLOW.md','which neighboring cards it should sit beside');
+requireText('docs/AGENT-WORKFLOW.md','which later cards it should unlock or inform');
 requireText('docs/AGENT-WORKFLOW.md','A new mined card is not complete until the PR proves where it appears in the path');
+requireText('docs/AGENT-WORKFLOW.md','A dynamically inserted or current-owner card must also be inspectable from its direct route');
+requireText('docs/AGENT-WORKFLOW.md','the user-visible card route still renders `Unknown card`');
 requireText('docs/AGENT-WORKFLOW.md','User-visible cards must stay operator-facing');
+requireText('docs/AGENT-WORKFLOW.md','Do not render implementation artifacts');
+requireText('docs/AGENT-WORKFLOW.md','owner names, runtime plumbing, route fallback explanations, startup index details, dashboard accounting notes, source-mining provenance');
+requireText('docs/AGENT-WORKFLOW.md','when to use this, what evidence gates it, what commands/checks to run, what success looks like, how failure routes, what it produces, and what detection/reporting caveats matter');
+requireText('docs/AGENT-WORKFLOW.md','A generic panel on `#/path` is not enough');
+requireText('docs/AGENT-WORKFLOW.md','broad-lane append cards');
 requireText('docs/AGENT-WORKFLOW.md','Queued is not a successful resting state');
 requireText('docs/AGENT-WORKFLOW.md','we mine, then we take what we mined and use it');
 requireAnyText('docs/AGENT-WORKFLOW.md',['## 4. Derive the value, do not copy the expression','## 5. Derive the value, do not copy the expression']);
@@ -69,14 +93,30 @@ requireText('docs/NOTES-IMPACT.md','`CHANGELOG.md` is release narrative only and
 
 requireText('docs/CARD-UI-STANDARD.md','Cards are for operators working a lab, not for agents explaining implementation decisions.');
 requireText('docs/CARD-UI-STANDARD.md','Every command shown on a card needs a useful explanation.');
+requireText('docs/CARD-UI-STANDARD.md','Boilerplate warnings are not enough.');
+requireText('docs/CARD-UI-STANDARD.md','Do not hide useful command blocks behind awkward scaffolding.');
 requireText('docs/CARD-UI-STANDARD.md','Evidence flow rule');
+requireText('docs/CARD-UI-STANDARD.md','card → paste command output → `Analyze pasted evidence`');
+requireText('docs/CARD-UI-STANDARD.md','card:<card-id>:intake:<mode>');
+requireText('docs/CARD-UI-STANDARD.md','OS routing rule');
+requireText('docs/CARD-UI-STANDARD.md','Linux-only and Windows-only local privilege cards must be gated by the target operating system.');
+requireText('docs/CARD-UI-STANDARD.md','must not appear merely because a generic `privesc.leads` fact exists on the wrong operating system');
+requireText('docs/CARD-UI-STANDARD.md','Tool action stack');
+requireText('docs/CARD-UI-STANDARD.md','Raw legacy commands');
 requireText('docs/CARD-UI-STANDARD.md','Direct card route');
+requireText('docs/CARD-UI-STANDARD.md','Card pages must not be rewritten into a separate tool-stack layout after the shared card renderer runs.');
+requireText('docs/CARD-UI-STANDARD.md',"must not move the card's primary commands into a collapsed legacy section");
 
 requireText('docs/V9.55-CARD-EVIDENCE-OS-WINDOWS.md','Card-scoped evidence flow');
 requireText('docs/V9.55-CARD-EVIDENCE-OS-WINDOWS.md','Linux vs Windows path routing');
 requireText('docs/V9.55-CARD-EVIDENCE-OS-WINDOWS.md','Windows privilege-escalation source-mining pass');
+requireText('docs/V9.55-CARD-EVIDENCE-OS-WINDOWS.md','OffSec PEN-200 packet completeness check');
 requireText('docs/V9.55-CARD-EVIDENCE-OS-WINDOWS.md','review_text_policy`: `complete_cleaned_text`');
 requireText('docs/V9.55-CARD-EVIDENCE-OS-WINDOWS.md','truncation_policy`: `none`');
+requireText('docs/V9.55-CARD-EVIDENCE-OS-WINDOWS.md','truncated_note_count`: `0`');
+requireText('docs/V9.55-CARD-EVIDENCE-OS-WINDOWS.md','window_marker_count`: `0`');
+requireText('docs/V9.55-CARD-EVIDENCE-OS-WINDOWS.md','windows-service-permission-review');
+requireText('docs/V9.55-CARD-EVIDENCE-OS-WINDOWS.md','windows-token-privilege-review');
 
 requireText('README.md','## Continue developing (start here)');
 requireText('README.md','This is the single agent quickstart.');
@@ -92,16 +132,19 @@ forbidText('README.md','## Required context map');
 forbidText('README.md','**Negative finding outcomes:**');
 forbidText('README.md','**Runtime area owners:**');
 forbidText('README.md','**Track status:**');
+forbidText('README.md','docs/NEXT-NOTES-BATCH.md');
 
-const readme=read('README.md');
-const generated=readme.match(/<!-- OBOL-PRODUCT-BUILD-NEXT:START -->[\s\S]*?<!-- OBOL-PRODUCT-BUILD-NEXT:END -->/);
-if(!generated)fail('README Product Build Next generated block is missing');
-else{
- const nonEmpty=generated[0].split('\n').filter(line=>line.trim()).length;
- if(nonEmpty>45)fail(`README Product Build Next block is too noisy (${nonEmpty} non-empty lines; expected <=45). Keep detailed ledgers in the dashboard/docs.`);
+if(exists('README.md')){
+ const readme=read('README.md');
+ const generated=readme.match(/<!-- OBOL-PRODUCT-BUILD-NEXT:START -->[\s\S]*?<!-- OBOL-PRODUCT-BUILD-NEXT:END -->/);
+ if(!generated)fail('README Product Build Next generated block is missing');
+ else{
+  const nonEmpty=generated[0].split('\n').filter(line=>line.trim()).length;
+  if(nonEmpty>45)fail(`README Product Build Next block is too noisy (${nonEmpty} non-empty lines; expected <=45). Keep detailed ledgers in the dashboard/docs.`);
+ }
 }
 
-const sync=read('tools/sync-product-build-next.js');
+const sync=exists('tools/sync-product-build-next.js')?read('tools/sync-product-build-next.js'):'';
 requireText('tools/sync-product-build-next.js','Generated from the same queue sources as the Product Hardening Dashboard. Do not edit this block manually.');
 requireText('tools/sync-product-build-next.js','function nextNotesBatchLines()');
 requireText('tools/sync-product-build-next.js','function notesStatusLines()');
