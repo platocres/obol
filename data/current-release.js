@@ -1,8 +1,8 @@
 'use strict';
 (function(root){
 const release=Object.freeze({
- version:'9.64.0',
- label:'v9.64',
+ version:'9.65.0',
+ label:'v9.65',
  phase:'product-hardening',
  phaseLabel:'Product Hardening',
  orangeBaseline:'v8.8',
@@ -19,7 +19,8 @@ const release=Object.freeze({
   'data/product-hardening/pass-the-hash-remining-v9.64.js',
   'data/product-hardening/pass-the-hash-dashboard-settle-v9.64.js',
   'data/product-hardening/note-card-route-guard-v9.64.js',
-  'data/product-hardening/pass-the-hash-queue-settle-v9.64.js'
+  'data/product-hardening/pass-the-hash-queue-settle-v9.64.js',
+  'data/product-hardening/burp-intruder-remining-v9.65.js'
  ])
 });
 function stampState(target){
