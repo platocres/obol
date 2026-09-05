@@ -1,3 +1,24 @@
+## v9.57 — Completes the `notes-remine-xss-session` lane from the README build queue with a public-safe, live-integrated XSS/session re-mining artifact. The work re-mines XSS and session-impact notes from the private source-review packet route without copying raw course text, payload strings, target values, flags, credentials, cookies, listener recipes, or reusable exploit mechanics into the public repository
+
+- Re-mined the reviewed XSS/session source lane into three public-safe, live-integrated path/card notes for delivery context, browser execution proof, and session-impact boundaries.
+- Wired the v9.57 artifact into the Product Hardening runtime before notes-impact/dashboard projection so the new cards update live note surfaces and progress data.
+- Marked `notes-remine-xss-session` complete only after live integration existed and recorded the source-confidence metadata from the private review-packet route.
+- Added the proof-mode selector and cleanup-reminder follow-ups as queued Product Build Next `ui-ux` items instead of leaving them as loose audit gap IDs.
+- Added the Live Integration Done Gate, PR template requirements, and validator coverage to stop future Product Build Next work from shipping as orphaned artifacts.
+- `platocres/obol-source-notes@agent/review-packets`
+- `data/review-packets/manifest.json`
+- `data/review-packets/htb-penetration-tester-03.json`
+- `data/review-packets/htb-penetration-tester-04.json`
+- `schemaVersion: 2`
+- `reviewTextPolicy: complete_cleaned_text`
+- `noteCount: 556`
+- `uniqueNoteCount: 556`
+- `packetCount: 29`
+- `truncatedNoteCount: 0`
+- `windowMarkerCount: 0`
+- `reviewTextChars: 8725188`
+- `resourceCount: 1326`
+
 ## v9.56 — Product-hardening release for note re-mining dashboard schema tracking and dashboard readability
 
 - old-rubric reviewed count;
