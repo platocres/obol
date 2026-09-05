@@ -5,6 +5,8 @@ const fs = require('fs');
 const path = require('path');
 
 const QUEUE_ITEM_ID = 'notes-remine-private-superseded';
+const NEXT_BATCH_ID = 'notes-batch-old-rubric-reviewed-remine-001';
+const SOURCE_ROUTE = 'platocres/obol-source-notes@agent/review-packets:data/review-packets/manifest.json';
 
 const sourceRows = Object.freeze([
   Object.freeze({
@@ -59,9 +61,9 @@ global.OBOL_PRODUCT_HARDENING = {
     { id: 'offline-performance', complete: 1, total: 6 },
   ],
   items: [
-    { id: 'notes-mechanic-backfill', track: 'notes-integration', status: 'modeled', label: 'Re-mine all already-reviewed notes from original sources', priority: 86.8 },
     { id: QUEUE_ITEM_ID, track: 'notes-integration', status: 'queued', label: 'Re-mine private-only and superseded notes', priority: 86.87 },
-    { id: 'notes-disposition-burn-down', track: 'notes-integration', status: 'modeled', label: 'Burn down all 556 note dispositions', priority: 87.9 },
+    { id: 'notes-mechanic-backfill', track: 'notes-integration', status: 'modeled', label: 'Re-mine all already-reviewed notes from original sources', priority: 86.8, standingGate: true },
+    { id: 'notes-disposition-burn-down', track: 'notes-integration', status: 'modeled', label: 'Burn down all 556 note dispositions', priority: 87.9, standingGate: true },
     { id: 'perf-service-worker', track: 'offline-performance', status: 'queued', label: 'Quiet service worker caching', priority: 90 },
   ],
 };
@@ -83,7 +85,6 @@ global.OBOL_PRODUCT_HARDENING_NOTE_PROGRESS = Object.freeze({
 
 require('../data/current-release.js');
 const packet = require('../data/product-hardening/private-only-superseded-remining-v9.60.js');
-require('../data/product-hardening/build-next-queue-hygiene-current.js');
 
 assert(global.OBOL_CURRENT_RELEASE, 'current release should be published');
 assert.strictEqual(global.OBOL_CURRENT_RELEASE.label, 'v9.60');
@@ -145,6 +146,17 @@ assert(mechanicGate && mechanicGate.status === 'queued', 'already-reviewed note 
 assert(dispositionGate && dispositionGate.status === 'queued', 'all-note disposition burn-down must remain concrete while pending notes remain');
 assert(nextItem && nextItem.status === 'queued', 'quiet service worker caching should remain queued behind notes-first gates');
 assert(global.OBOL_PRODUCT_HARDENING.notesFirstGate.active, 'notes-first gate should be active while notes are incomplete');
+const nextBatch = global.OBOL_PRODUCT_HARDENING.nextNotesBatch;
+assert(nextBatch, 'active notes-first gate must publish the next notes batch handoff');
+assert.strictEqual(nextBatch.id, NEXT_BATCH_ID, 'next notes batch should have a stable machine-readable id');
+assert.strictEqual(nextBatch.label, 'Old-rubric reviewed source re-mining batch 1');
+assert.strictEqual(nextBatch.gateId, 'notes-mechanic-backfill');
+assert.strictEqual(nextBatch.sourceRoute, SOURCE_ROUTE);
+assert.strictEqual(nextBatch.targetCount, 20);
+assert(/already-reviewed notes/.test(nextBatch.sourceSelector), 'next notes batch selector should name the candidate set');
+assert(/manifest\/source order/.test(nextBatch.sourceSelector), 'next notes batch selector should define ordering');
+assert(Array.isArray(nextBatch.requiredDimensions) && nextBatch.requiredDimensions.length >= 16, 'next notes batch should name the full-spectrum dimensions');
+assert(/Every selected note/.test(nextBatch.acceptance), 'next notes batch acceptance should prevent vague handoff');
 const buildNext = global.OBOL_PRODUCT_HARDENING.buildNext(5).map((item) => item.id);
 assert.strictEqual(buildNext[0], 'notes-mechanic-backfill', 'old-rubric note re-mining should be the next concrete item before offline work');
 assert(buildNext.indexOf('notes-disposition-burn-down') !== -1, 'all-note disposition burn-down should stay visible in concrete Build Next');
@@ -162,6 +174,7 @@ assert(doc.includes(QUEUE_ITEM_ID), 'release doc must name the actual queue item
 assert(doc.includes('recipe catalogs become builder/control axes'), 'release doc must describe the safe product mechanic');
 assert(doc.includes('no new Evidence ingestion parser is required'), 'release doc must explain the Evidence boundary');
 assert(doc.includes('note burn-down remains the concrete next phase'), 'release doc must record the notes-first queue policy');
+assert(doc.includes(NEXT_BATCH_ID), 'release doc must record the next notes batch id');
 assert(doc.includes('perf-service-worker'), 'release doc must identify the offline/performance item blocked behind notes');
 
 const serialized = JSON.stringify({ rows, publicNotes: packet.publicNotes, sourceConfidence: packet.sourceConfidence });
