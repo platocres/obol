@@ -19,12 +19,13 @@
   ]);
   function freezeList(list) { return Object.freeze((list || []).slice()); }
   function freezeObject(value) { return Object.freeze(value || {}); }
+  function laneList() { return Array.isArray(root.OBOL_LANES) ? root.OBOL_LANES : Array.isArray(root.LANES) ? root.LANES : []; }
   function liveCard(id) {
     if (!id) return null;
-    if (typeof root.liveCardById === 'function') { try { const found = root.liveCardById(id); if (found) return found; } catch (_err) {} }
     if (root.CARDS && root.CARDS[id]) return root.CARDS[id];
-    const lanes = Array.isArray(root.OBOL_LANES) ? root.OBOL_LANES : Array.isArray(root.LANES) ? root.LANES : [];
+    const lanes = laneList();
     for (const lane of lanes) for (const card of lane.cards || []) if (card && card.id === id) return card;
+    if (typeof root.liveCardById === 'function') { try { const found = root.liveCardById(id); if (found) return found; } catch (_err) {} }
     return null;
   }
   function uniq(list) { return Array.from(new Set((list || []).filter(Boolean))); }
@@ -54,19 +55,40 @@
     'fuzzer-payload-position-review': overlay('gui-workflow', 'Make sure the fuzzer mutates the intended request part and nothing else.', [cmd('ffuf', 'ffuf -u {{url_with_FUZZ}} -w {{wordlist}} -mc all', 'Translate one payload position into repeatable CLI form.', 'Generated requests mutate exactly the FUZZ location.')], ['clear all markers', 'select one insertion point', 'name the tested hypothesis', 'choose matching attack type', 'preview a generated request', 'save original and generated example'], ['original request', 'marked position', 'attack type', 'generated example', 'payload source'], ['default markers left behind', 'wrong attack type', 'payload in wrong request part'], ['fix position before interpreting deltas', 'proceed to fuzzing after generated request looks right']),
     'fuzzer-result-delta-review': overlay('terminal-and-gui', 'Turn status/length/word-count outliers into manually reviewed candidates or discard them as noise.', [cmd('curl', 'curl -i -s -k {{candidate_url}}', 'Replay a candidate outside the fuzzer.', 'Response body proves content, redirect, boundary, or noise.'), cmd('ffuf', 'ffuf -u {{url}}/FUZZ -w {{wordlist}} -mc all -fw {{baseline_words}}', 'Filter a repeated sweep after baseline word-count noise is known.', 'Smaller candidate set requiring manual replay.')], ['sort by status and length/words', 'pick smallest interesting candidate set', 'send outliers to Repeater', 'compare against baseline templates', 'open only safe candidates', 'record keep/discard rationale'], ['baseline response class', 'candidate status/length/words', 'manual replay body', 'kept/discarded rationale'], ['length treated as impact', 'wildcard route false positives', 'login redirect counted as discovery'], ['move found paths to enumeration after body review', 'tune filters when templates dominate']),
   });
+  function replaceCard(original, updated) {
+    if (!original || !updated) return updated || original;
+    let replaced = false;
+    const lanes = laneList();
+    for (const lane of lanes) {
+      if (!Array.isArray(lane.cards)) continue;
+      const index = lane.cards.findIndex((entry) => entry === original || entry && entry.id === original.id);
+      if (index >= 0) { try { lane.cards[index] = updated; replaced = true; } catch (_err) {} }
+    }
+    if (root.CARDS && original.id) { try { root.CARDS[original.id] = updated; replaced = true; } catch (_err) {} }
+    return replaced ? updated : original;
+  }
+  function mutableCard(card) {
+    if (!card) return card;
+    try { if (Object.isExtensible(card)) return card; } catch (_err) { return card; }
+    return replaceCard(card, Object.assign({}, card));
+  }
+  function safeAssign(card, key, value) { try { card[key] = value; return true; } catch (_err) { return false; } }
   function apply(card, data) {
     if (!card || !data) return false;
-    card.actionType = data.actionType;
-    card.operatorGoal = data.operatorGoal;
-    card.commands = data.commands;
-    card.guiSteps = data.guiSteps;
-    card.expectedEvidence = data.expectedEvidence;
-    card.failureModes = data.failureModes;
-    card.nextSteps = data.nextSteps;
-    card.referenceOnly = false;
-    card.actionabilityV966 = freezeObject({ wave: WAVE, proof: PROOF_FILE, status: 'actionable-next-step' });
-    card.expected = freezeList(uniq(Array.isArray(card.expected) ? card.expected.concat(data.expectedEvidence) : data.expectedEvidence));
-    card.tools = freezeList(uniq((Array.isArray(card.tools) ? card.tools : []).concat(data.commands.map((entry) => entry.tool))));
+    const target = mutableCard(card);
+    const expected = freezeList(uniq(Array.isArray(target.expected) ? target.expected.concat(data.expectedEvidence) : data.expectedEvidence));
+    const tools = freezeList(uniq((Array.isArray(target.tools) ? target.tools : []).concat((data.commands || []).map((entry) => entry.tool))));
+    safeAssign(target, 'actionType', data.actionType);
+    safeAssign(target, 'operatorGoal', data.operatorGoal);
+    safeAssign(target, 'commands', data.commands);
+    safeAssign(target, 'guiSteps', data.guiSteps);
+    safeAssign(target, 'expectedEvidence', data.expectedEvidence);
+    safeAssign(target, 'failureModes', data.failureModes);
+    safeAssign(target, 'nextSteps', data.nextSteps);
+    safeAssign(target, 'referenceOnly', false);
+    safeAssign(target, 'actionabilityV966', freezeObject({ wave: WAVE, proof: PROOF_FILE, status: 'actionable-next-step' }));
+    safeAssign(target, 'expected', expected);
+    safeAssign(target, 'tools', tools);
     return true;
   }
   function validate() {
