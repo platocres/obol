@@ -8,7 +8,7 @@ const root = path.join(__dirname, '..');
 
 const REQUIRED_PATH_PLACEMENTS = Object.freeze({
   'credential-dump-proof-chain': Object.freeze({
-    owner: 'data/product-hardening/credential-dump-remining-v9.61.js',
+    owner: 'data/product-hardening/visible-remine-cards-v9.63.js',
     facts: ['credential.lsass_dump_artifact_observed', 'credential.offline_dump_parser_output_observed'],
     evidenceCards: ['credential-dump-proof-chain'],
   }),
@@ -94,6 +94,10 @@ function validatesCardShape(chunk, id, failures) {
   if (!/\blane\s*:/.test(chunk)) failures.push(`${id} has no lane, so path placement can float unpredictably`);
 }
 
+function escapeRegExp(value) {
+  return String(value).replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
+}
+
 function validateNoteCardPathPlacement() {
   const extensions = currentReleaseExtensions();
   const sources = new Map();
@@ -115,7 +119,7 @@ function validateNoteCardPathPlacement() {
     for (const fact of rule.facts) {
       if (!hasLiteral(allSource, fact)) failures.push(`${id} requires Evidence fact ${fact}, but no current extension emits or records it`);
     }
-    const evidenceCards = rule.evidenceCards.filter((cardId) => new RegExp(`cardId\\s*:\\s*['\"]${cardId.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')}['\"]`).test(allSource));
+    const evidenceCards = rule.evidenceCards.filter((cardId) => new RegExp(`cardId\\s*:\\s*['\"]${escapeRegExp(cardId)}['\"]`).test(allSource));
     if (!evidenceCards.length) failures.push(`${id} has no Evidence-ingestion activity that can put a related card into the actual path flow`);
   }
 
