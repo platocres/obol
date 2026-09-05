@@ -1,3 +1,10 @@
+## v9.64 — The next selected note in `notes-batch-old-rubric-reviewed-remine-001` is the Pass-the-Hash note from the first HTB review packet
+
+- `note-pth-is-protocol-scoped-auth-material`
+- `note-pth-success-is-host-and-privilege-scoped`
+- `note-pth-remote-exec-leaves-artifacts`
+- `note-pth-local-admin-token-filtering-check`
+
 ## v9.63 — And v9.62 added useful source re-mining output, but the new card IDs used by those releases were not registered as normal live cards. Opening routes such as `#/card/web-proxy-transform-proof-chain` therefore produced `Unknown card`
 
 - `credential-dump-proof-chain`

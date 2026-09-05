@@ -75,6 +75,13 @@ jobs:
           OBOL_SMOKE_OUTPUT: artifacts/playwright-smoke
         run: node tests/playwright-route-smoke.js
 
+      - name: Run note-derived card route smoke
+        if: env.SHOULD_FULL_BROWSER == 'true'
+        env:
+          OBOL_SMOKE_BASE_URL: http://127.0.0.1:4173/index.html
+          OBOL_SMOKE_OUTPUT: artifacts/playwright-smoke
+        run: node tests/playwright-note-card-routes.js
+
       - name: Run full browser smoke
         if: env.SHOULD_FULL_BROWSER == 'true'
         env:
