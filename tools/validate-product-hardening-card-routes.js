@@ -8,7 +8,8 @@ const root = path.join(__dirname, '..');
 const LEGACY_TOPIC_ALIASES = new Set([
   // Pre-v9.63 public notes sometimes used cardIds as loose taxonomy labels.
   // Do not add new IDs here casually. New note-derived cardIds should either
-  // resolve as a live #/card route or move to tags/pathIds instead.
+  // resolve as a live #/card route, merge into a current primary card, or move
+  // to tags/pathIds instead.
   'credentials',
   'authentication',
   'web-auth',
@@ -19,9 +20,17 @@ const LEGACY_TOPIC_ALIASES = new Set([
   'ssh',
   'xss',
   'web-client-side',
+  'xss-proof-mode-selector',
+  'windows-local-password-attacks',
 ]);
 
-const REQUIRED_VISIBLE_ROUTES = [
+const CURRENT_PRIMARY_ROUTES = [
+  'credential-dump-proof-chain',
+  'web-authz-boundaries',
+  'pass-the-hash-proof-chain',
+  'burp-intruder-fuzzing-workflow',
+];
+const HISTORICAL_VISIBLE_ROUTES = [
   'credential-dump-proof-chain',
   'web-proxy-transform-proof-chain',
   'web-client-controls',
@@ -35,6 +44,18 @@ const REQUIRED_VISIBLE_ROUTES = [
   'fuzzer-payload-position-review',
   'fuzzer-result-delta-review',
 ];
+const RECONCILIATION_FILE = 'data/product-hardening/note-card-disposition-reconciliation-v9.68.js';
+const DEMOTED_ROUTE_TARGETS = {
+  'web-proxy-transform-proof-chain': 'web-authz-boundaries',
+  'web-client-controls': 'web-authz-boundaries',
+  'encoded-parameter-review': 'web-authz-boundaries',
+  'tool-generated-http-review': 'burp-intruder-fuzzing-workflow',
+  'pth-remote-exec-artifacts': 'pass-the-hash-proof-chain',
+  'pth-token-filtering-check': 'pass-the-hash-proof-chain',
+  'fuzzer-payload-position-review': 'burp-intruder-fuzzing-workflow',
+  'fuzzer-result-delta-review': 'burp-intruder-fuzzing-workflow',
+};
+const REQUIRED_VISIBLE_ROUTES = CURRENT_PRIMARY_ROUTES;
 
 function read(rel) {
   return fs.readFileSync(path.join(root, rel), 'utf8');
@@ -111,26 +132,38 @@ function collectLiveCardIds() {
 function validateProductHardeningCardRoutes() {
   const live = collectLiveCardIds();
   const refs = [];
-  for (const source of currentReleaseExtensions()) {
+  const extensions = currentReleaseExtensions();
+  const hasReconciliation = extensions.includes(RECONCILIATION_FILE);
+  for (const source of extensions) {
     if (!fs.existsSync(path.join(root, source))) throw new Error('Missing Product Hardening extension: ' + source);
     refs.push(...collectReferencesFromSource(read(source), source));
   }
 
   const failures = [];
   for (const route of REQUIRED_VISIBLE_ROUTES) {
-    if (!live.has(route)) failures.push(`Required note-derived card route is not registered: ${route}`);
+    if (!live.has(route)) failures.push(`Required note-derived primary card route is not registered: ${route}`);
+  }
+  if (hasReconciliation) {
+    const source = read(RECONCILIATION_FILE);
+    for (const [id, parent] of Object.entries(DEMOTED_ROUTE_TARGETS)) {
+      if (!source.includes(`'${id}'`) && !source.includes(`"${id}"`)) failures.push(`Demoted card route is not declared in v9.68 reconciliation: ${id}`);
+      if (!source.includes(`into: '${parent}'`) && !source.includes(`into: "${parent}"`)) failures.push(`Demoted card route ${id} does not canonicalize to ${parent}`);
+    }
+  } else {
+    for (const route of HISTORICAL_VISIBLE_ROUTES) if (!live.has(route)) failures.push(`Required historical note-derived card route is not registered: ${route}`);
   }
 
   const grouped = new Map();
   for (const ref of refs) {
     if (live.has(ref.id) || LEGACY_TOPIC_ALIASES.has(ref.id)) continue;
+    if (hasReconciliation && Object.prototype.hasOwnProperty.call(DEMOTED_ROUTE_TARGETS, ref.id)) continue;
     const key = `${ref.id} (${ref.prop})`;
     if (!grouped.has(key)) grouped.set(key, new Set());
     grouped.get(key).add(ref.filename);
   }
   for (const [key, files] of grouped.entries()) failures.push(`Unresolved Product Hardening card reference: ${key} in ${Array.from(files).join(', ')}`);
 
-  return { failures, liveCardCount: live.size, referenceCount: refs.length, legacyTopicAliases: Array.from(LEGACY_TOPIC_ALIASES).sort() };
+  return { failures, liveCardCount: live.size, referenceCount: refs.length, legacyTopicAliases: Array.from(LEGACY_TOPIC_ALIASES).sort(), primaryRoutes: CURRENT_PRIMARY_ROUTES, demotedRoutes: DEMOTED_ROUTE_TARGETS };
 }
 
 if (require.main === module) {
@@ -141,7 +174,7 @@ if (require.main === module) {
     console.error('Legacy topic aliases allowed only for pre-v9.63 taxonomy: ' + result.legacyTopicAliases.join(', '));
     process.exit(1);
   }
-  console.log(`Product Hardening card-route validation passed (${result.referenceCount} refs, ${result.liveCardCount} live card IDs).`);
+  console.log(`Product Hardening card-route validation passed (${result.referenceCount} refs, ${result.liveCardCount} live card IDs, ${result.primaryRoutes.length} primary note-derived routes).`);
 }
 
-module.exports = { validateProductHardeningCardRoutes, REQUIRED_VISIBLE_ROUTES, LEGACY_TOPIC_ALIASES };
+module.exports = { validateProductHardeningCardRoutes, REQUIRED_VISIBLE_ROUTES, CURRENT_PRIMARY_ROUTES, DEMOTED_ROUTE_TARGETS, LEGACY_TOPIC_ALIASES };

@@ -1,8 +1,8 @@
 'use strict';
 (function(root){
 const release=Object.freeze({
- version:'9.67.0',
- label:'v9.67',
+ version:'9.68.0',
+ label:'v9.68',
  phase:'product-hardening',
  phaseLabel:'Product Hardening',
  orangeBaseline:'v8.8',
@@ -26,7 +26,7 @@ const release=Object.freeze({
   'data/product-hardening/actionable-card-contract-dashboard-settle-v9.66.js',
   'data/product-hardening/actionable-card-contract-queue-note-v9.66.js',
   'data/product-hardening/action-first-card-cleanup-v9.67.js',
-  'data/product-hardening/action-first-card-cleanup-stabilize-v9.67.js'
+  'data/product-hardening/note-card-disposition-reconciliation-v9.68.js'
  ])
 });
 function stampState(target){

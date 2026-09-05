@@ -5,8 +5,9 @@ const path = require('path');
 const vm = require('vm');
 
 const root = path.join(__dirname, '..');
+const RECONCILIATION_FILE = 'data/product-hardening/note-card-disposition-reconciliation-v9.68.js';
 
-const REQUIRED_PATH_PLACEMENTS = Object.freeze({
+const ALL_PATH_PLACEMENTS = Object.freeze({
   'credential-dump-proof-chain': Object.freeze({ owner: 'data/product-hardening/visible-remine-cards-v9.63.js', facts: ['credential.lsass_dump_artifact_observed', 'credential.offline_dump_parser_output_observed'], evidenceCards: ['credential-dump-proof-chain'] }),
   'web-proxy-transform-proof-chain': Object.freeze({ owner: 'data/product-hardening/visible-remine-cards-v9.63.js', facts: ['web.client_control_mutation_observed', 'web.reversible_transform_chain_observed', 'web.tool_generated_http_capture_observed'], evidenceCards: ['web-proxy-transform-proof-chain'] }),
   'web-client-controls': Object.freeze({ owner: 'data/product-hardening/visible-remine-cards-v9.63.js', facts: ['web.client_control_mutation_observed'], evidenceCards: ['web-proxy-transform-proof-chain'] }),
@@ -19,6 +20,22 @@ const REQUIRED_PATH_PLACEMENTS = Object.freeze({
   'burp-intruder-fuzzing-workflow': Object.freeze({ owner: 'data/product-hardening/burp-intruder-remining-v9.65.js', facts: ['web.fuzzer_workflow_observed', 'web.fuzzer_payload_position_observed'], evidenceCards: ['burp-intruder-fuzzing-workflow'] }),
   'fuzzer-payload-position-review': Object.freeze({ owner: 'data/product-hardening/burp-intruder-remining-v9.65.js', facts: ['web.fuzzer_payload_position_observed', 'web.fuzzer_payload_transform_observed'], evidenceCards: ['burp-intruder-fuzzing-workflow'] }),
   'fuzzer-result-delta-review': Object.freeze({ owner: 'data/product-hardening/burp-intruder-remining-v9.65.js', facts: ['web.fuzzer_response_delta_observed', 'web.fuzzer_hit_candidate_observed'], evidenceCards: ['burp-intruder-fuzzing-workflow'] }),
+});
+const PRIMARY_PATH_PLACEMENTS = Object.freeze({
+  'credential-dump-proof-chain': ALL_PATH_PLACEMENTS['credential-dump-proof-chain'],
+  'web-authz-boundaries': ALL_PATH_PLACEMENTS['web-authz-boundaries'],
+  'pass-the-hash-proof-chain': ALL_PATH_PLACEMENTS['pass-the-hash-proof-chain'],
+  'burp-intruder-fuzzing-workflow': ALL_PATH_PLACEMENTS['burp-intruder-fuzzing-workflow'],
+});
+const DEMOTED = Object.freeze({
+  'web-proxy-transform-proof-chain': 'web-authz-boundaries',
+  'web-client-controls': 'web-authz-boundaries',
+  'encoded-parameter-review': 'web-authz-boundaries',
+  'tool-generated-http-review': 'burp-intruder-fuzzing-workflow',
+  'pth-remote-exec-artifacts': 'pass-the-hash-proof-chain',
+  'pth-token-filtering-check': 'pass-the-hash-proof-chain',
+  'fuzzer-payload-position-review': 'burp-intruder-fuzzing-workflow',
+  'fuzzer-result-delta-review': 'burp-intruder-fuzzing-workflow',
 });
 
 function read(rel) { return fs.readFileSync(path.join(root, rel), 'utf8'); }
@@ -53,8 +70,17 @@ function validatesCardShape(chunk, id, failures) {
 
 function escapeRegExp(value) { return String(value).replace(/[.*+?^${}()|[\]\\]/g, '\\$&'); }
 
+function validateDemotions(reconciliationSource, failures) {
+  for (const [id, parent] of Object.entries(DEMOTED)) {
+    if (!reconciliationSource.includes(`'${id}'`) && !reconciliationSource.includes(`"${id}"`)) failures.push(`${id} is not explicitly demoted in ${RECONCILIATION_FILE}`);
+    if (!reconciliationSource.includes(`into: '${parent}'`) && !reconciliationSource.includes(`into: "${parent}"`)) failures.push(`${id} does not merge into primary path card ${parent}`);
+  }
+}
+
 function validateNoteCardPathPlacement() {
   const extensions = currentReleaseExtensions();
+  const hasReconciliation = extensions.includes(RECONCILIATION_FILE);
+  const requiredPlacements = hasReconciliation ? PRIMARY_PATH_PLACEMENTS : ALL_PATH_PLACEMENTS;
   const sources = new Map();
   for (const rel of extensions) {
     const full = path.join(root, rel);
@@ -64,7 +90,9 @@ function validateNoteCardPathPlacement() {
   const allSource = Array.from(sources.values()).join('\n');
   const failures = [];
 
-  for (const [id, rule] of Object.entries(REQUIRED_PATH_PLACEMENTS)) {
+  if (hasReconciliation) validateDemotions(sources.get(RECONCILIATION_FILE) || '', failures);
+
+  for (const [id, rule] of Object.entries(requiredPlacements)) {
     if (!extensions.includes(rule.owner)) failures.push(`${id} owner ${rule.owner} is not registered in current-release.js`);
     const ownerSource = sources.get(rule.owner) || '';
     const chunk = cardWindow(ownerSource, id) || cardWindow(allSource, id);
@@ -76,7 +104,7 @@ function validateNoteCardPathPlacement() {
     if (!evidenceCards.length) failures.push(`${id} has no Evidence-ingestion activity that can put a related card into the actual path flow`);
   }
 
-  return { failures, checkedCards: Object.keys(REQUIRED_PATH_PLACEMENTS), extensionCount: extensions.length };
+  return { failures, checkedCards: Object.keys(requiredPlacements), demotedCards: hasReconciliation ? Object.keys(DEMOTED) : [], extensionCount: extensions.length };
 }
 
 if (require.main === module) {
@@ -86,7 +114,7 @@ if (require.main === module) {
     for (const failure of result.failures) console.error('- ' + failure);
     process.exit(1);
   }
-  console.log(`Note-derived card path-placement validation passed (${result.checkedCards.length} cards across ${result.extensionCount} current extensions).`);
+  console.log(`Note-derived card path-placement validation passed (${result.checkedCards.length} primary cards, ${result.demotedCards.length} demoted cards, ${result.extensionCount} current extensions).`);
 }
 
-module.exports = { validateNoteCardPathPlacement, REQUIRED_PATH_PLACEMENTS };
+module.exports = { validateNoteCardPathPlacement, REQUIRED_PATH_PLACEMENTS: PRIMARY_PATH_PLACEMENTS, ALL_PATH_PLACEMENTS, DEMOTED };

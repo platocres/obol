@@ -19,6 +19,26 @@ Most note-mined material should enrich an existing Orange-map card as collapsibl
 
 Create a new Next Steps card only when the note contains a distinct operator action that is not already represented by an existing card.
 
+## Required disposition before publishing
+
+Before a note-derived contribution reaches the user-visible path, classify it explicitly:
+
+```text
+KEEP AS CARD
+The note adds a distinct operator action with commands or concrete GUI workflow.
+
+MERGE INTO EXISTING CARD
+The note improves a pre-existing Orange-map or retained note-derived card.
+
+DEMOTE TO FIELD NOTE
+The note is useful context, proof nuance, troubleshooting, cleanup, or report guidance but not a standalone action.
+
+DELETE OR REPLACE
+The note-derived output is generic, redundant, misleading, or only exists because a previous release made a weak card.
+```
+
+Do not fix a weak card by adding a second visible corrective panel above it. The fix must be integrated into the normal shared card structure or the card must be merged/demoted.
+
 ## Required shape for path-visible cards
 
 Every note-derived card that can appear in Next Steps must have at least one of these:
@@ -53,6 +73,14 @@ Replay the captured request manually.
 Paste the captured HTTP and replay result into Evidence.
 ```
 
+That useful action should still live in the most appropriate card. If the durable lesson is only a sub-step of another workflow, merge it into that workflow instead of creating a duplicate path stop.
+
+## UI regression rule
+
+Current card UI must look like normal Obol card UI. Do not show implementation labels such as release cleanup banners, patch panels, stabilizer messages, source-mining provenance, route-repair copy, or dashboard accounting notes in the operator card body.
+
+A direct card route is not enough. The card must either be a retained primary action card or resolve into the retained parent card where its content now belongs.
+
 ## CI gate
 
-`tools/validate-actionable-next-step-cards.js` enforces this for current note-derived cards. The older route and path-placement validators still matter, but they are not sufficient by themselves.
+`tools/validate-actionable-next-step-cards.js` enforces this for current note-derived cards. `tools/validate-note-card-disposition-reconciliation.js` protects the kept/merged/demoted distinction and prevents the visible v9.67 patch-panel pattern from returning. The route gate and path-placement gate still matter, but neither one proves usefulness by itself.
