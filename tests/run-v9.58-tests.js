@@ -6,6 +6,7 @@ const path = require('path');
 
 require('../data/current-release.js');
 const packet = require('../data/product-hardening/credentials-auth-remining-v9.58.js');
+const controls = require('../data/product-hardening/proof-safety-controls-v9.58.js');
 
 assert(global.OBOL_CURRENT_RELEASE, 'current release should be published');
 assert.strictEqual(global.OBOL_CURRENT_RELEASE.label, 'v9.58');
@@ -14,6 +15,10 @@ assert(
   Array.isArray(global.OBOL_CURRENT_RELEASE.productHardeningExtensions) &&
     global.OBOL_CURRENT_RELEASE.productHardeningExtensions.includes('data/product-hardening/credentials-auth-remining-v9.58.js'),
   'current release should advertise the credentials/auth product-hardening extension'
+);
+assert(
+  global.OBOL_CURRENT_RELEASE.productHardeningExtensions.includes('data/product-hardening/proof-safety-controls-v9.58.js'),
+  'current release should advertise the built proof/auth safety controls extension'
 );
 assert(global.OBOL_RELEASE_IDENTITY && typeof global.OBOL_RELEASE_IDENTITY.loadProductHardeningExtensions === 'function', 'release identity should expose the extension loader');
 
@@ -26,6 +31,14 @@ const releaseSyncWorkflow = fs.readFileSync(path.join(__dirname, '..', '.github'
 assert(releaseSyncWorkflow.includes('data/product-hardening/**'), 'release sync workflow must run when product-hardening queue/runtime data changes');
 assert(releaseSyncWorkflow.includes('tools/sync-product-build-next.js'), 'release sync workflow must run when Product Build Next generator changes');
 assert(releaseSyncWorkflow.includes('node tools/sync-product-build-next.js --write'), 'release sync workflow must regenerate Product Build Next during release sync');
+
+const gapGuardDoc = fs.readFileSync(path.join(__dirname, '..', 'docs', 'SAME-SURFACE-GAP-PARKING-GUARD.md'), 'utf8');
+const liveGateValidator = fs.readFileSync(path.join(__dirname, '..', 'tools', 'validate-live-integration-done-gate.js'), 'utf8');
+const prTemplate = fs.readFileSync(path.join(__dirname, '..', '.github', 'pull_request_template.md'), 'utf8');
+assert(gapGuardDoc.includes('Same-surface gap parking is forbidden'), 'same-surface gap parking guard must exist');
+assert(gapGuardDoc.includes('Build it now'), 'same-surface gap parking guard must force buildable work into the current pass');
+assert(liveGateValidator.includes('SAME-SURFACE-GAP-PARKING-GUARD.md'), 'live integration validator must enforce the gap parking guard doc');
+assert(prTemplate.includes('No same-surface gap parking'), 'PR template must include the same-surface gap parking checkbox');
 
 assert.strictEqual(packet.status, 'live-integrated');
 assert.strictEqual(packet.wave, 'v9.58-credentials-auth-remine');
@@ -87,7 +100,28 @@ for (const row of packet.remineAuditRows) {
   for (const dim of requiredDimensions) assert(row.decisions[dim] && row.decisions[dim].outcome, 'audit row missing dimension ' + dim);
 }
 
-const serialized = JSON.stringify(packet);
+assert.strictEqual(controls.status, 'live-integrated');
+assert.strictEqual(controls.wave, 'v9.58-proof-safety-controls');
+assert(controls.controlIds.includes('gap-xss-proof-mode-selector'));
+assert(controls.controlIds.includes('gap-xss-proof-mode-cleanup-reminder'));
+assert(controls.controlIds.includes('gap-auth-validation-safety-slot'));
+assert(controls.controlIds.includes('gap-auth-material-scope-analyzer'));
+assert.deepStrictEqual(controls.xssProofModeSelector.modes.map((mode) => mode.id), ['dialog', 'dom-marker', 'console-marker', 'harmless-callback']);
+assert.strictEqual(controls.xssProofModeSelector.defaultMode, 'dom-marker');
+assert(controls.xssCleanupReminder.appliesToModes.includes('harmless-callback'), 'callback proof mode must carry cleanup reminder');
+for (const field of ['materialClass', 'protocolScope', 'lockoutPolicy', 'attemptCadence', 'failureScope', 'successScope']) {
+  assert(controls.credentialValidationSafetySlot.requiredFields.includes(field), 'credential validation slot missing required field ' + field);
+}
+const analyzed = controls.analyzeAuthMaterialOutput('Responder capture produced NetNTLMv2 challenge-response material. Later review recovered plaintext. SMB authentication succeeded.');
+assert(analyzed.matches.some((match) => match.id === 'challenge-response-capture'), 'analyzer must classify challenge-response captures separately');
+assert(analyzed.matches.some((match) => match.id === 'password-like-plaintext'), 'analyzer must classify recovered plaintext separately');
+assert(analyzed.matches.some((match) => match.id === 'service-auth-success'), 'analyzer must classify scoped auth success separately');
+assert(analyzed.warnings.some((warning) => /must not be promoted to pass-the-hash/i.test(warning)), 'analyzer must warn against challenge-response overpromotion');
+assert(controls.liveRoutes.includes('#/card/xss-proof-mode-selector'));
+assert(controls.liveRoutes.includes('#/card/credential-validation-safety-slot'));
+assert(controls.liveRoutes.includes('#/card/auth-material-scope-analyzer'));
+
+const serialized = JSON.stringify({ packet, controls: { fieldNotes: controls.fieldNotes, pathCards: controls.pathCards, completedProductItems: controls.completedProductItems } });
 const forbidden = [
   /<script/i,
   /document\.cookie/i,
@@ -97,8 +131,12 @@ const forbidden = [
   /flag\{[^}]+\}/i,
   /BEGIN OPENSSH PRIVATE KEY/i,
 ];
-for (const pattern of forbidden) assert(!pattern.test(serialized), 'packet leaked forbidden public material matching ' + pattern);
+for (const pattern of forbidden) assert(!pattern.test(serialized), 'public v9.58 data leaked forbidden material matching ' + pattern);
 
+global.OBOL_LANES = [
+  { lane: 'web', title: 'Web', cards: [{ id: 'xss', title: 'XSS' }] },
+  { lane: 'credentials', title: 'Credentials', cards: [{ id: 'credentials', title: 'Credentials' }] },
+];
 global.OBOL_NOTE_INTEGRATION = Object.freeze({
   schemaVersion: '1.10.0',
   ledger: Object.freeze({ expectedNotes: 556, reviewedCount: 136, dispositionCounts: Object.freeze({ modeled: 102 }) }),
@@ -109,10 +147,18 @@ global.OBOL_NOTE_INTEGRATION = Object.freeze({
   validate: () => [],
 });
 global.OBOL_PRODUCT_HARDENING = {
-  tracks: [{ id: 'notes-integration', complete: 55, total: 556 }],
+  tracks: [
+    { id: 'notes-integration', complete: 55, total: 556 },
+    { id: 'ui-ux', complete: 10, total: 13 },
+    { id: 'testing-qa', complete: 8, total: 12 },
+  ],
   items: [
     { id: 'notes-remine-xss-session', track: 'notes-integration', status: 'queued' },
     { id: 'notes-remine-credentials-auth', track: 'notes-integration', status: 'queued' },
+    { id: 'gap-xss-proof-mode-selector', track: 'ui-ux', status: 'queued', label: 'Design XSS proof-mode selector', priority: 86.831 },
+    { id: 'gap-xss-proof-mode-cleanup-reminder', track: 'ui-ux', status: 'queued', label: 'Add XSS proof cleanup reminder', priority: 86.832 },
+    { id: 'gap-auth-validation-safety-slot', track: 'ui-ux', status: 'queued', label: 'Design credential validation safety slot', priority: 86.833 },
+    { id: 'gap-auth-material-scope-analyzer', track: 'testing-qa', status: 'queued', label: 'Add auth material scope analyzer', priority: 86.834 },
   ],
 };
 global.OBOL_PRODUCT_HARDENING_NOTE_PROGRESS = Object.freeze({
@@ -123,7 +169,12 @@ global.OBOL_PRODUCT_HARDENING_NOTE_PROGRESS = Object.freeze({
     allowedOutcomes: Object.freeze([]),
     reminedThemes: Object.freeze([]),
     completedReminedThemes: Object.freeze(['xss-session']),
-    queuedProductGaps: Object.freeze([]),
+    queuedProductGaps: Object.freeze([
+      'gap-xss-proof-mode-selector',
+      'gap-xss-proof-mode-cleanup-reminder',
+      'gap-auth-validation-safety-slot',
+      'gap-auth-material-scope-analyzer',
+    ]),
     redFlags: Object.freeze([]),
   }),
 });
@@ -132,19 +183,40 @@ const result = packet.integrate();
 assert.strictEqual(result.notesIntegrated, true);
 assert.strictEqual(result.queueIntegrated, true);
 assert.strictEqual(result.progressIntegrated, true);
+const controlResult = controls.integrate();
+assert.strictEqual(controlResult.globalsIntegrated, true);
+assert.strictEqual(controlResult.pathCardsIntegrated, true);
+assert.strictEqual(controlResult.notesIntegrated, true);
+assert.strictEqual(controlResult.queueIntegrated, true);
+assert.strictEqual(controlResult.progressIntegrated, true);
 assert(global.OBOL_NOTE_INTEGRATION.__credentialsAuthReminingV958, 'note integration should be marked with v9.58 credentials/auth remine');
+assert(global.OBOL_NOTE_INTEGRATION.__proofSafetyControlsV958, 'note integration should be marked with v9.58 proof/auth controls');
 assert(global.OBOL_NOTE_INTEGRATION.packetReviews['credentials-auth-remine'], 'credentials/auth remine packet review missing');
 assert.strictEqual(global.OBOL_NOTE_INTEGRATION.packetReviews['credentials-auth-remine'].status, 'complete');
+assert(global.OBOL_NOTE_INTEGRATION.packetReviews['proof-safety-controls'], 'proof-safety control packet review missing');
+assert.strictEqual(global.OBOL_NOTE_INTEGRATION.packetReviews['proof-safety-controls'].openProductGaps.length, 0, 'built controls must not remain open product gaps');
 assert(global.OBOL_NOTE_INTEGRATION.publicFieldNotes.find((note) => note.id === 'note-auth-material-routing-proof'), 'routing proof note missing');
 assert(global.OBOL_NOTE_INTEGRATION.publicNotesForTool('hashcat').some((note) => note.id === 'note-challenge-response-proof-boundary'), 'hashcat notes should include challenge-response proof boundary');
+assert(global.OBOL_NOTE_INTEGRATION.publicNotesForTool('nxc').some((note) => note.id === 'note-auth-material-scope-analyzer-control'), 'nxc notes should include auth analyzer control guidance');
 assert(global.OBOL_NOTE_INTEGRATION.publicNotesForPath('path').some((note) => note.id === 'note-protected-secret-lineage-boundary'), 'path notes should include protected-secret lineage');
+assert(global.OBOL_NOTE_INTEGRATION.publicNotesForPath('path').some((note) => note.id === 'note-xss-proof-mode-selector-control'), 'path notes should include XSS proof-mode selector control');
 assert.strictEqual(global.OBOL_PRODUCT_HARDENING.items.find((item) => item.id === 'notes-remine-xss-session').status, 'complete');
 assert.strictEqual(global.OBOL_PRODUCT_HARDENING.items.find((item) => item.id === 'notes-remine-credentials-auth').status, 'complete');
-assert(global.OBOL_PRODUCT_HARDENING.items.find((item) => item.id === 'gap-auth-validation-safety-slot'), 'validation safety gap should be queued');
-assert(global.OBOL_PRODUCT_HARDENING.items.find((item) => item.id === 'gap-auth-material-scope-analyzer'), 'auth material analyzer gap should be queued');
-assert.strictEqual(global.OBOL_PRODUCT_HARDENING_NOTE_PROGRESS.remining.latestWave, 'v9.58-credentials-auth-remine');
-assert(global.OBOL_PRODUCT_HARDENING_NOTE_PROGRESS.remining.completedReminedThemes.includes('credentials-auth'));
-assert(global.OBOL_PRODUCT_HARDENING_NOTE_PROGRESS.remining.latestOutputs.includes('note-auth-material-routing-proof'));
-assert(global.OBOL_PRODUCT_HARDENING_NOTE_PROGRESS.remining.queuedProductGaps.includes('gap-auth-material-scope-analyzer'));
+for (const id of controls.controlIds) {
+  const item = global.OBOL_PRODUCT_HARDENING.items.find((entry) => entry.id === id);
+  assert(item, id + ' should exist in Product Build Next');
+  assert.strictEqual(item.status, 'complete', id + ' should be built in this PR, not parked as queued follow-up');
+  assert.strictEqual(item.completedBy, 'v9.58-proof-safety-controls');
+}
+assert(!global.OBOL_PRODUCT_HARDENING_NOTE_PROGRESS.remining.queuedProductGaps.includes('gap-auth-material-scope-analyzer'));
+assert(global.OBOL_PRODUCT_HARDENING_NOTE_PROGRESS.remining.builtProductControls.includes('gap-xss-proof-mode-selector'));
+assert(global.OBOL_PRODUCT_HARDENING_NOTE_PROGRESS.remining.builtProductControls.includes('gap-auth-material-scope-analyzer'));
+assert.strictEqual(global.OBOL_PRODUCT_HARDENING_NOTE_PROGRESS.remining.noSameSurfaceGapParking, true);
+assert(global.OBOL_LANES.some((lane) => lane.cards.some((card) => card.id === 'xss-proof-mode-selector')), 'XSS proof-mode selector card should be installed in live lanes');
+assert(global.OBOL_LANES.some((lane) => lane.cards.some((card) => card.id === 'xss-proof-cleanup-reminder')), 'XSS cleanup reminder card should be installed in live lanes');
+assert(global.OBOL_LANES.some((lane) => lane.cards.some((card) => card.id === 'credential-validation-safety-slot')), 'credential validation safety slot card should be installed in live lanes');
+assert(global.OBOL_LANES.some((lane) => lane.cards.some((card) => card.id === 'auth-material-scope-analyzer')), 'auth material scope analyzer card should be installed in live lanes');
+assert.strictEqual(global.OBOL_XSS_PROOF_MODE_SELECTOR.defaultMode, 'dom-marker');
+assert.strictEqual(typeof global.OBOL_AUTH_MATERIAL_SCOPE_ANALYZER.analyze, 'function');
 
-console.log('v9.58 credentials/auth re-mining live integration checks passed');
+console.log('v9.58 credentials/auth re-mining and proof/auth safety controls checks passed');
