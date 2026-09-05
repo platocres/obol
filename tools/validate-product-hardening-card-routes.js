@@ -31,6 +31,9 @@ const REQUIRED_VISIBLE_ROUTES = [
   'pass-the-hash-proof-chain',
   'pth-remote-exec-artifacts',
   'pth-token-filtering-check',
+  'burp-intruder-fuzzing-workflow',
+  'fuzzer-payload-position-review',
+  'fuzzer-result-delta-review',
 ];
 
 function read(rel) {

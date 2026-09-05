@@ -11,7 +11,7 @@
  * suppresses historical schedulers and commits current route owners last.
  *
  * Historical fragment order sha256: 40e3006d9423d669acf5869b577ecf56a6ca2ee1629c95fd0fcc5d242d2c5f27
- * Generated body sha256: 05b5ef43a6f49585758427049bbd5a6fd587c97ede3723ff6935e8b47e7521db
+ * Generated body sha256: d3f535a1d14933c8b311b8232a060af10a01fcb528cd8a964abb6dfea5ceda8c
  * First historical fragment: assets/report-v2.js
  * Last historical fragment:  assets/app-v8.8.js
  */
@@ -1993,8 +1993,8 @@ if(__nativeMutationObserver)root.MutationObserver=__nativeMutationObserver;
 'use strict';
 (function(root){
 const release=Object.freeze({
- version:'9.64.0',
- label:'v9.64',
+ version:'9.65.0',
+ label:'v9.65',
  phase:'product-hardening',
  phaseLabel:'Product Hardening',
  orangeBaseline:'v8.8',
@@ -2011,7 +2011,9 @@ const release=Object.freeze({
   'data/product-hardening/pass-the-hash-remining-v9.64.js',
   'data/product-hardening/pass-the-hash-dashboard-settle-v9.64.js',
   'data/product-hardening/note-card-route-guard-v9.64.js',
-  'data/product-hardening/pass-the-hash-queue-settle-v9.64.js'
+  'data/product-hardening/pass-the-hash-queue-settle-v9.64.js',
+  'data/product-hardening/burp-intruder-remining-v9.65.js',
+  'data/product-hardening/burp-intruder-route-guard-v9.65.js'
  ])
 });
 function stampState(target){

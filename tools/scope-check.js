@@ -12,6 +12,7 @@ const checks=[
  ['tests/run-v9.62-tests.js'],
  ['tests/run-v9.63-tests.js'],
  ['tests/run-v9.64-tests.js'],
+ ['tests/run-v9.65-tests.js'],
  ['tools/validate-product-hardening-card-routes.js'],
  ['tools/validate-note-card-path-placement.js'],
  ['tools/validate-product-hardening-queue.js'],
