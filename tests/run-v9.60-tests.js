@@ -1,0 +1,163 @@
+'use strict';
+
+const assert = require('assert');
+const fs = require('fs');
+const path = require('path');
+
+const sourceRows = Object.freeze([
+  Object.freeze({
+    noteId: 'htb-penetration-tester-f279cdee9c5e3574',
+    disposition: 'private-reference-only',
+    rationale: 'The reviewed material is mainly a volatile proxy-extension marketplace catalog. Keep it private for reference rather than freezing changing extension recommendations into the product.',
+    outputIds: Object.freeze([]),
+  }),
+  Object.freeze({
+    noteId: 'htb-penetration-tester-526b318523ab2df4',
+    disposition: 'private-reference-only',
+    rationale: 'This record is primarily a payload and bypass cheat sheet. Keep it as private reference because public Obol should expose reviewable reasoning and proof boundaries rather than a copied recipe catalog.',
+    outputIds: Object.freeze([]),
+  }),
+  Object.freeze({
+    noteId: 'htb-penetration-tester-009ff7c58b458f28',
+    disposition: 'private-reference-only',
+    rationale: 'The file-upload assessment is mainly lab-specific outcome and walkthrough material; its general lessons are represented by reviewed upload-validation, downstream-consumer, execution-proof, and remediation notes.',
+    outputIds: Object.freeze([]),
+  }),
+  Object.freeze({
+    noteId: 'htb-penetration-tester-6614dce51cf838bf',
+    disposition: 'superseded',
+    rationale: 'This source is a broad module introduction whose useful concepts are covered more precisely by reviewed verb-tampering, object-authorization, and XML-specific source notes.',
+    outputIds: Object.freeze([]),
+  }),
+]);
+
+function basePublicNotesForPath(pathId) {
+  const id = String(pathId || '').toLowerCase();
+  return Array.from(this.publicFieldNotes || []).filter((note) => Array.from(note.pathIds || []).some((pathRef) => String(pathRef).toLowerCase() === id));
+}
+function basePublicNotesForTool(toolId) {
+  const id = String(toolId || '').toLowerCase();
+  return Array.from(this.publicFieldNotes || []).filter((note) => Array.from(note.toolIds || []).some((toolRef) => String(toolRef).toLowerCase() === id));
+}
+
+global.OBOL_NOTE_INTEGRATION = Object.freeze({
+  schemaVersion: '1.13.0',
+  ledger: Object.freeze({ expectedNotes: 556, reviewedCount: 136, dispositionCounts: Object.freeze({ modeled: 103, 'private-reference-only': 28, superseded: 5 }) }),
+  reviewedDispositions: sourceRows,
+  publicFieldNotes: Object.freeze([]),
+  packetReviews: Object.freeze({}),
+  publicNotesForPath: basePublicNotesForPath,
+  publicNotesForTool: basePublicNotesForTool,
+  validate: () => [],
+});
+
+global.OBOL_PRODUCT_HARDENING = {
+  tracks: [
+    { id: 'notes-integration', complete: 136, total: 556 },
+    { id: 'offline-performance', complete: 1, total: 6 },
+  ],
+  items: [
+    { id: 'notes-remine-private-only-superseded', track: 'notes-integration', status: 'queued', label: 'Re-mine private-only and superseded notes', priority: 86.836 },
+    { id: 'perf-service-worker', track: 'offline-performance', status: 'queued', label: 'Quiet service worker caching', priority: 90 },
+  ],
+};
+
+global.OBOL_PRODUCT_HARDENING_NOTE_PROGRESS = Object.freeze({
+  schemaVersion: '1.12.0',
+  total: 556,
+  reviewed: 136,
+  remining: Object.freeze({
+    auditRows: Object.freeze([]),
+    remineAuditRows: Object.freeze([]),
+    audited: 30,
+    reminedNoteCount: 30,
+    completedReminedThemes: Object.freeze(['xss-session', 'credentials-auth', 'linux-privesc']),
+    latestThemes: Object.freeze(['Linux local privilege escalation', 'Credentials / auth material']),
+    staleQueueCorrections: Object.freeze(['notes-remine-linux-privesc']),
+  }),
+});
+
+require('../data/current-release.js');
+const packet = require('../data/product-hardening/private-only-superseded-remining-v9.60.js');
+
+assert(global.OBOL_CURRENT_RELEASE, 'current release should be published');
+assert.strictEqual(global.OBOL_CURRENT_RELEASE.label, 'v9.60');
+assert.strictEqual(global.OBOL_CURRENT_RELEASE.version, '9.60.0');
+assert(global.OBOL_CURRENT_RELEASE.productHardeningExtensions.includes('data/product-hardening/private-only-superseded-remining-v9.60.js'), 'current release must load the v9.60 private-only/superseded re-mining extension');
+assert.strictEqual(packet.status, 'live-integrated');
+assert.strictEqual(packet.queueItemId, 'notes-remine-private-only-superseded');
+assert.strictEqual(packet.sourceConfidence.reviewTextPolicy, 'complete_cleaned_text');
+assert.strictEqual(packet.sourceConfidence.truncationPolicy, 'none');
+assert.strictEqual(packet.sourceConfidence.expectedNoteCount, 556);
+assert.strictEqual(packet.sourceConfidence.packetCount, 29);
+
+const rows = packet.auditRows();
+assert.strictEqual(rows.length, sourceRows.length, 'test fixture should produce one audit row per private/superseded source row');
+for (const row of rows) {
+  assert.strictEqual(row.originalSourceReread, true, 'audit row must record source re-read');
+  assert.strictEqual(row.remineDisposition, 'source-boundary-modeled');
+  for (const dim of packet.dimensions) {
+    assert(row.decisions[dim], 'audit row missing dimension ' + dim);
+    assert(row.decisions[dim].outcome, 'audit dimension missing outcome ' + dim);
+    assert(row.decisions[dim].proof && row.decisions[dim].proof.length > 20, 'audit dimension missing proof ' + dim);
+  }
+  assert(row.outputIds.length >= 1, 'each private/superseded row should map to at least one safe public output');
+}
+assert(rows.some((row) => row.sourceClass === 'volatile-tool-reference'), 'volatile tool references should be classified');
+assert(rows.some((row) => row.sourceClass === 'recipe-catalog'), 'recipe/catalog sources should be classified');
+assert(rows.some((row) => row.sourceClass === 'lab-outcome'), 'lab outcome sources should be classified');
+assert(rows.some((row) => row.sourceClass === 'superseded-coverage'), 'superseded coverage sources should be classified');
+
+const result = packet.integrate();
+assert.strictEqual(result.notesIntegrated, true);
+assert.strictEqual(result.queueIntegrated, true);
+assert.strictEqual(result.progressIntegrated, true);
+for (const id of [
+  'note-private-source-redaction-boundary',
+  'note-recipe-catalog-to-control-axes',
+  'note-lab-outcome-to-proof-template',
+  'note-volatile-tool-reference-boundary',
+]) {
+  assert(result.outputIds.includes(id), 'integration result should expose output ' + id);
+  assert(global.OBOL_NOTE_INTEGRATION.publicFieldNotes.some((note) => note.id === id), 'public field note missing ' + id);
+}
+assert(global.OBOL_NOTE_INTEGRATION.__privateOnlySupersededReminingV960, 'note integration should carry v9.60 marker');
+assert(global.OBOL_NOTE_INTEGRATION.packetReviews['private-only-superseded-remine'], 'packet review marker should exist');
+assert.strictEqual(global.OBOL_NOTE_INTEGRATION.packetReviews['private-only-superseded-remine'].candidateCount, sourceRows.length);
+assert.strictEqual(global.OBOL_NOTE_INTEGRATION.packetReviews['private-only-superseded-remine'].openProductGaps.length, 0, 'same-surface gaps must not be parked');
+
+const completedItem = global.OBOL_PRODUCT_HARDENING.items.find((item) => item.id === 'notes-remine-private-only-superseded');
+assert(completedItem, 'queue item should exist');
+assert.strictEqual(completedItem.status, 'complete');
+assert.strictEqual(completedItem.completedBy, 'v9.60-private-only-superseded-remine');
+assert.strictEqual(completedItem.proofFile, 'data/product-hardening/private-only-superseded-remining-v9.60.js');
+assert(/Complete in v9\.60/i.test(completedItem.detail), 'completed queue item should explain the v9.60 closeout');
+const nextItem = global.OBOL_PRODUCT_HARDENING.items.find((item) => item.id === 'perf-service-worker');
+assert(nextItem && nextItem.status === 'queued', 'quiet service worker caching should remain the next non-notes concrete item');
+
+const progress = global.OBOL_PRODUCT_HARDENING_NOTE_PROGRESS.remining;
+assert(progress.completedReminedThemes.includes('private-only-superseded'), 'progress should record completed private-only/superseded theme');
+assert.strictEqual(progress.privateOnlySupersededRemined, true);
+assert.strictEqual(progress.privateOnlySupersededReminedCount, sourceRows.length);
+assert(progress.remineAuditRows.length >= sourceRows.length, 'progress should include v9.60 audit rows');
+
+const doc = fs.readFileSync(path.join(__dirname, '..', 'docs', 'v9.60.md'), 'utf8');
+assert(doc.includes('notes-remine-private-only-superseded'), 'release doc must name the queue item');
+assert(doc.includes('recipe catalogs become builder/control axes'), 'release doc must describe the safe product mechanic');
+assert(doc.includes('no new Evidence ingestion parser is required'), 'release doc must explain the Evidence boundary');
+assert(doc.includes('perf-service-worker'), 'release doc must identify the expected next concrete item');
+
+const serialized = JSON.stringify({ rows, publicNotes: packet.publicNotes, sourceConfidence: packet.sourceConfidence });
+const forbidden = [
+  /HTB\{[^}]+\}/i,
+  /flag\{[^}]+\}/i,
+  /document\.cookie/i,
+  /nc\s+-l/i,
+  /python3?\s+-m\s+http\.server/i,
+  /BEGIN OPENSSH PRIVATE KEY/i,
+  /password\s*=/i,
+  /TARGET_PATH/i,
+];
+for (const pattern of forbidden) assert(!pattern.test(serialized), 'v9.60 public data leaked forbidden material matching ' + pattern);
+
+console.log('v9.60 private-only and superseded re-mining checks passed');
