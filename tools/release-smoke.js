@@ -55,6 +55,7 @@ if(exists('index.html')){
 }
 
 if(exists('tools/validate-note-derivation-docs.js'))runCheck(['tools/validate-note-derivation-docs.js'],'Note derivation documentation validation');
+if(exists('tests/run-v9.61-dashboard-tests.js'))runCheck(['tests/run-v9.61-dashboard-tests.js'],'Dashboard layout and negative-proof validation');
 
 if(failures.length){
   console.error('Release smoke validation failed:');
