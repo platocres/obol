@@ -14,10 +14,10 @@ const primaryCards = [
   'web-upload-inclusion-proof-chain',
   'ad-enumeration-bloodhound-collection',
   'metasploit-resource-pivot-workflow',
-  'linux-service-footprint-secret-review',
   'linux-privesc-boundary-sweep',
 ];
 const demotedCards = {
+  'linux-service-footprint-secret-review': 'linux-privesc-boundary-sweep',
   'web-client-session-proof-chain': 'web-authz-boundaries',
   'web-proxy-transform-proof-chain': 'web-authz-boundaries',
   'web-client-controls': 'web-authz-boundaries',
@@ -36,18 +36,11 @@ function hasActionSpine(text) {
   const gui = /\b(Burp|ZAP|Repeater|Intruder|Proxy history|HTTP history|BloodHound|CyberChef|DevTools|click|select|configure|inspect|export|send to|compare)\b/i.test(text) && /\b(request|response|evidence|export|copy|paste|baseline|result|graph|edge|status|header|cookie|body)\b/i.test(text);
   return terminal || gui;
 }
-
-function hasEvidenceGuidance(text) {
-  return /\b(Evidence|Analyze pasted evidence|Paste command output|Paste back|exported tool evidence|Success looks like|response body|server response|manual replay|scoped auth|cleanup state|payload position|BloodHound|SharpHound|route table|session ID|object count|output zip|process owner|SUID|capability|sudo rule|kernel version|user-trail)\b/i.test(text);
-}
-
-function hasDecisionGuidance(text) {
-  return /\b(move forward|success|failure|fails?|blocked|triage|not impact|do not|replay|compare|compared|boundary|scope|auth|authorization|cleanup|server accepts|route|session|graph|lead|proof|validate|precondition|candidate)\b/i.test(text);
-}
+function hasEvidenceGuidance(text) { return /\b(Evidence|Analyze pasted evidence|Paste command output|Paste back|exported tool evidence|Success looks like|response body|server response|manual replay|scoped auth|cleanup state|payload position|BloodHound|SharpHound|route table|session ID|object count|output zip|process owner|SUID|capability|sudo rule|kernel version|user-trail)\b/i.test(text); }
+function hasDecisionGuidance(text) { return /\b(move forward|success|failure|fails?|blocked|triage|not impact|do not|replay|compare|compared|boundary|scope|auth|authorization|cleanup|server accepts|route|session|graph|lead|proof|validate|precondition|candidate)\b/i.test(text); }
 
 (async () => {
-  const executablePath = process.env.OBOL_SMOKE_BROWSER_PATH || undefined;
-  const browser = await chromium.launch({ headless: true, executablePath });
+  const browser = await chromium.launch({ headless: true, executablePath: process.env.OBOL_SMOKE_BROWSER_PATH || undefined });
   const page = await browser.newPage({ viewport: { width: 1440, height: 1200 } });
   const failures = [];
 
@@ -77,7 +70,6 @@ function hasDecisionGuidance(text) {
         patchPanelCount: document.querySelectorAll('.obol-action-first-v967,[data-obol-action-first-v967]').length,
         whyNowCount: document.querySelectorAll('[data-obol-dynamic-why-now]').length,
         dynamicWhyBody: why && why.body || '',
-        dispositionStatus: disposition && disposition.status || '',
         kept: disposition && disposition.keepAsCards || [],
         v971,
         v972,
@@ -91,7 +83,7 @@ function hasDecisionGuidance(text) {
     if (!/current path|You have|This card is relevant|missing proof|paste the result back/i.test(state.dynamicWhyBody)) failures.push(`${id} dynamic why-now is not grounded in path/evidence/action language`);
     if (['credential-dump-proof-chain','web-authz-boundaries','pass-the-hash-proof-chain','burp-intruder-fuzzing-workflow'].includes(id) && !state.kept.includes(id)) failures.push(`${id} is not recorded as a kept primary card by v9.68 disposition reconciliation`);
     if (['web-upload-inclusion-proof-chain','ad-enumeration-bloodhound-collection','metasploit-resource-pivot-workflow'].includes(id) && !(state.v971 && state.v971.cardsIntegrated)) failures.push(`${id} is not covered by v9.71 action-spine integration status`);
-    if (['linux-service-footprint-secret-review','linux-privesc-boundary-sweep'].includes(id) && !(state.v972 && state.v972.cardsIntegrated)) failures.push(`${id} is not covered by v9.72 final Linux re-mining status`);
+    if (id === 'linux-privesc-boundary-sweep' && !(state.v972 && state.v972.cardsIntegrated && Array.isArray(state.v972.foldedCardIds) && state.v972.foldedCardIds.includes('linux-service-footprint-secret-review'))) failures.push(`${id} is not covered by v9.72 folded Linux re-mining status`);
     if (!hasActionSpine(state.text)) failures.push(`${id} does not show a concrete command-line or GUI-tool action spine in the normal card surface`);
     if (!hasEvidenceGuidance(state.text)) failures.push(`${id} does not show useful paste-back/evidence guidance in the normal card surface`);
     if (!hasDecisionGuidance(state.text)) failures.push(`${id} does not show decision guidance for success, failure, triage, or next movement`);
@@ -111,21 +103,17 @@ function hasDecisionGuidance(text) {
       const text = view && view.innerText ? view.innerText.trim() : '';
       const disposition = window.OBOL_NOTE_CARD_DISPOSITION_RECONCILIATION_V968 || null;
       const v971 = window.OBOL_AD_MSF_REMINING_V971 || null;
-      return {
-        text,
-        hash: window.location.hash,
-        patchPanelCount: document.querySelectorAll('.obol-action-first-v967,[data-obol-action-first-v967]').length,
-        whyNowCount: document.querySelectorAll('[data-obol-dynamic-why-now]').length,
-        demoted: disposition && disposition.demotedCardIds || [],
-        v971,
-      };
+      const v972 = window.OBOL_LINUX_FINAL_REMINING_V972 || null;
+      return { text, hash: window.location.hash, patchPanelCount: document.querySelectorAll('.obol-action-first-v967,[data-obol-action-first-v967]').length, whyNowCount: document.querySelectorAll('[data-obol-dynamic-why-now]').length, demoted: disposition && disposition.demotedCardIds || [], v971, v972 };
     });
     await page.screenshot({ path: path.join(outputDir, `action-demoted-${id}.png`), fullPage: true });
     if (!state.hash.includes('/card/' + canonical)) failures.push(`${id} should redirect/resolve to ${canonical}, got ${state.hash}`);
     if (state.patchPanelCount) failures.push(`${id} still renders a v9.67 patch panel after demotion`);
     if (INTERNAL_CARD_SLOP.test(state.text)) failures.push(`${id} leaks corrective, filler-methodology, or UNKNOWN copy after demotion`);
     if (state.whyNowCount !== 1 || !/Why this step now/i.test(state.text)) failures.push(`${id} canonical card does not render exactly one dynamic why-now section after demotion`);
-    if (id === 'web-client-session-proof-chain') {
+    if (id === 'linux-service-footprint-secret-review') {
+      if (!(state.v972 && Array.isArray(state.v972.foldedCardIds) && state.v972.foldedCardIds.includes(id))) failures.push(`${id} is not recorded as folded by v9.72`);
+    } else if (id === 'web-client-session-proof-chain') {
       if (!(state.v971 && state.v971.clientSessionDemoted)) failures.push(`${id} is not recorded as demoted by v9.71`);
     } else if (!state.demoted.includes(id)) failures.push(`${id} is not recorded as demoted by v9.68 disposition reconciliation`);
   }
@@ -136,7 +124,7 @@ function hasDecisionGuidance(text) {
     for (const failure of failures) console.error('- ' + failure);
     process.exit(1);
   }
-  console.log(`Action-first card UI validation passed for ${primaryCards.length} integrated primary cards and ${Object.keys(demotedCards).length} demoted card aliases with dynamic why-now guidance.`);
+  console.log(`Action-first card UI validation passed for ${primaryCards.length} integrated primary cards and ${Object.keys(demotedCards).length} demoted/folded card aliases with dynamic why-now guidance.`);
 })().catch((err) => {
   console.error(err);
   process.exit(1);
