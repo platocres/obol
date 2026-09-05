@@ -1,3 +1,12 @@
+## v9.62 — - Continued the generated `notes-batch-old-rubric-reviewed-remine-001` work with the next selected old-rubric reviewed source note after v9.61
+
+- Continued the generated `notes-batch-old-rubric-reviewed-remine-001` work with the next selected old-rubric reviewed source note after v9.61.
+- Re-mined the web-proxy skills-assessment source from the complete private review-packet route instead of relying on the old public rationale.
+- Added `data/product-hardening/web-proxy-transform-remining-v9.62.js` as a live Product Hardening extension.
+- Added three public-safe field notes for client-side control boundaries, reversible transform order, and generated HTTP capture before tool debugging.
+- Added a conservative pasted-output analyzer for browser/proxy/request-mutation evidence.
+- Updated progress without closing `notes-mechanic-backfill`; this is the second selected note of the generated 20-note batch, not completion of the full gate.
+
 ## v9.61 — - Began the generated `notes-batch-old-rubric-reviewed-remine-001` work with the first selected old-rubric reviewed source note
 
 - Began the generated `notes-batch-old-rubric-reviewed-remine-001` work with the first selected old-rubric reviewed source note.

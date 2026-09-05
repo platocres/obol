@@ -1,8 +1,8 @@
 'use strict';
 (function(root){
 const release=Object.freeze({
- version:'9.61.0',
- label:'v9.61',
+ version:'9.62.0',
+ label:'v9.62',
  phase:'product-hardening',
  phaseLabel:'Product Hardening',
  orangeBaseline:'v8.8',
@@ -13,7 +13,8 @@ const release=Object.freeze({
   'data/product-hardening/linux-privesc-remine-reconciliation-v9.59.js',
   'data/product-hardening/ui-quality-audit-rubric-v9.59.js',
   'data/product-hardening/private-only-superseded-remining-v9.60.js',
-  'data/product-hardening/credential-dump-remining-v9.61.js'
+  'data/product-hardening/credential-dump-remining-v9.61.js',
+  'data/product-hardening/web-proxy-transform-remining-v9.62.js'
  ])
 });
 function stampState(target){

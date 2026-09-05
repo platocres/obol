@@ -9,6 +9,7 @@ const checks=[
  ['tools/validate-note-mechanic-backfill.js'],
  ['tests/run-notes-batch-selector-tests.js'],
  ['tests/run-v9.61-tests.js'],
+ ['tests/run-v9.62-tests.js'],
  ['tools/validate-product-hardening-queue.js'],
  ['tools/sync-current-styles.js','--check'],
  ['tools/validate-style-current-equivalence.js'],
