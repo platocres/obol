@@ -4,26 +4,45 @@
   const WAVE = 'v9.64-pass-the-hash-dashboard-settle';
   const HOOK = '__passTheHashDashboardSettleV964';
 
-  function packet() {
-    return root.OBOL_PASS_THE_HASH_REMINING_PACKET_V964 || null;
+  function callPacket(name) {
+    const current = root[name] || null;
+    if (!current || typeof current.integrate !== 'function') return false;
+    try { return current.integrate(); } catch (_err) { return false; }
+  }
+
+  function applyVisibleRouteRepair() {
+    const result = callPacket('OBOL_VISIBLE_REMINED_CARDS_PACKET_V963');
+    return !!(result && !result.failures.length);
   }
 
   function applyPassTheHashIntegration() {
-    const current = packet();
-    if (!current || typeof current.integrate !== 'function') return false;
-    try {
-      const result = current.integrate();
-      return !!(result && result.progressIntegrated && result.queueIntegrated);
-    } catch (_err) {
-      return false;
-    }
+    const result = callPacket('OBOL_PASS_THE_HASH_REMINING_PACKET_V964');
+    return !!(result && result.progressIntegrated && result.queueIntegrated);
+  }
+
+  function applyRouteGuard() {
+    const result = callPacket('OBOL_NOTE_CARD_ROUTE_GUARD_PACKET_V964');
+    return !!(result && !result.failures.length);
+  }
+
+  function applyQueueSettle() {
+    const result = callPacket('OBOL_PASS_THE_HASH_QUEUE_SETTLE_PACKET_V964');
+    return !!(result && result.status === 'live-integrated');
+  }
+
+  function applyAllSettles() {
+    const visibleRoutes = applyVisibleRouteRepair();
+    const pth = applyPassTheHashIntegration();
+    const routeGuard = applyRouteGuard();
+    const queue = applyQueueSettle();
+    return { visibleRoutes, pth, routeGuard, queue };
   }
 
   function wrapRenderer(fn) {
     if (typeof fn !== 'function') return fn;
     if (fn[HOOK]) return fn;
     const wrapped = function passTheHashSettledDashboardRender() {
-      applyPassTheHashIntegration();
+      applyAllSettles();
       return fn.apply(this, arguments);
     };
     try { Object.defineProperty(wrapped, HOOK, { value: true }); } catch (_err) { wrapped[HOOK] = true; }
@@ -55,8 +74,16 @@
   }
 
   function settled() {
-    const state = root.OBOL_PASS_THE_HASH_REMINING_V964;
-    return !!(state && state.progressIntegrated && state.queueIntegrated && !state.failures.length);
+    const pth = root.OBOL_PASS_THE_HASH_REMINING_V964;
+    const queue = root.OBOL_PASS_THE_HASH_QUEUE_SETTLE_V964;
+    const guard = root.OBOL_NOTE_CARD_ROUTE_GUARD_V964;
+    const visible = root.OBOL_VISIBLE_REMINED_CARDS_V963;
+    return !!(
+      pth && pth.progressIntegrated && pth.queueIntegrated && !pth.failures.length &&
+      queue && queue.status === 'live-integrated' &&
+      guard && !guard.failures.length &&
+      visible && visible.status === 'live-integrated'
+    );
   }
 
   function scheduleRetries() {
@@ -64,7 +91,18 @@
     let tries = 0;
     const tick = () => {
       installRendererHook();
-      applyPassTheHashIntegration();
+      const applied = applyAllSettles();
+      root.OBOL_PASS_THE_HASH_DASHBOARD_SETTLE_V964 = Object.freeze({
+        wave: WAVE,
+        hookInstalled: true,
+        integrationApplied: applied.pth,
+        routeGuardApplied: applied.routeGuard,
+        visibleRouteRepairApplied: applied.visibleRoutes,
+        queueSettleApplied: applied.queue,
+        settled: settled(),
+        applyAllSettles,
+        installRendererHook,
+      });
       tries += 1;
       if (!settled() && tries < 180) window.setTimeout(tick, 50);
     };
@@ -76,12 +114,16 @@
   }
 
   const hookInstalled = installRendererHook();
-  const integrationApplied = applyPassTheHashIntegration();
+  const applied = applyAllSettles();
   root.OBOL_PASS_THE_HASH_DASHBOARD_SETTLE_V964 = Object.freeze({
     wave: WAVE,
     hookInstalled,
-    integrationApplied,
-    applyPassTheHashIntegration,
+    integrationApplied: applied.pth,
+    routeGuardApplied: applied.routeGuard,
+    visibleRouteRepairApplied: applied.visibleRoutes,
+    queueSettleApplied: applied.queue,
+    settled: settled(),
+    applyAllSettles,
     installRendererHook,
   });
   scheduleRetries();
