@@ -27,6 +27,7 @@ const demotedRoutes = [
   { id: 'fuzzer-payload-position-review', canonical: 'burp-intruder-fuzzing-workflow', marker: /Burp Intruder Fuzzing Workflow|Web Fuzzer Candidate Triage|Burp Intruder \/ Web Fuzzer Workflow/i },
   { id: 'fuzzer-result-delta-review', canonical: 'burp-intruder-fuzzing-workflow', marker: /Burp Intruder Fuzzing Workflow|Web Fuzzer Candidate Triage|Burp Intruder \/ Web Fuzzer Workflow/i },
 ];
+const INTERNAL_CARD_SLOP = /fills an unresolved methodology gap|methodology gap|\bUNKNOWN\b/i;
 
 fs.mkdirSync(outputDir, { recursive: true });
 
@@ -75,7 +76,7 @@ async function openCard(context, route, failures, options = {}) {
   if (/Unknown card/i.test(state.text)) routeFailures.push('route rendered Unknown card');
   if (!route.marker.test(state.text)) routeFailures.push('route marker did not match rendered content: ' + JSON.stringify((state.text || '').slice(0, 240)));
   if (state.patchPanelCount) routeFailures.push('route rendered a v9.67 action-first patch panel');
-  if (/Why this now|methodology gap|\bUNKNOWN\b/i.test(state.text)) routeFailures.push('route leaks methodology or UNKNOWN implementation copy');
+  if (INTERNAL_CARD_SLOP.test(state.text)) routeFailures.push('route leaks internal filler or UNKNOWN implementation copy');
   if (options.demoted) {
     if (!state.hash.includes('/card/' + route.canonical)) routeFailures.push(`demoted route did not canonicalize to ${route.canonical}; hash=${state.hash}`);
     if (route.id === 'web-client-session-proof-chain' && !(state.v971 && state.v971.clientSessionDemoted)) routeFailures.push('v9.71 did not report client/session demotion');
