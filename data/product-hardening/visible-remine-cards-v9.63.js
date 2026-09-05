@@ -69,9 +69,35 @@
     return lane;
   }
 
+  function routeGuardFallback(card) {
+    return !!(card && card.sourceMinedRouteGuard64);
+  }
+
+  function replaceExistingCard(card) {
+    const lanes = Array.isArray(root.OBOL_LANES) ? root.OBOL_LANES : Array.isArray(root.LANES) ? root.LANES : [];
+    let replaced = false;
+    for (const lane of lanes) {
+      if (!Array.isArray(lane.cards)) continue;
+      const index = lane.cards.findIndex((entry) => entry && entry.id === card.id);
+      if (index >= 0) {
+        card.lane = card.lane || lane.lane;
+        lane.cards[index] = card;
+        replaced = true;
+      }
+    }
+    if (root.CARDS && typeof root.CARDS === 'object') {
+      root.CARDS[card.id] = card;
+      replaced = true;
+    }
+    return replaced;
+  }
+
   function publishCard(lane, afterId, card) {
-    if (!lane || !card || liveCard(card.id)) return false;
+    if (!lane || !card) return false;
+    const existing = liveCard(card.id);
     card.lane = card.lane || lane.lane;
+    if (existing && !routeGuardFallback(existing)) return false;
+    if (existing && routeGuardFallback(existing)) return replaceExistingCard(card);
     if (typeof root.addCardAfter === 'function') return root.addCardAfter(lane, afterId, card);
     if (!Array.isArray(lane.cards)) lane.cards = [];
     const index = lane.cards.findIndex((entry) => entry && entry.id === afterId);
@@ -197,17 +223,19 @@
       after = card.id;
     }
     const installed = cardRows.filter((card) => liveCard(card.id)).length;
+    const fallbackCount = cardRows.filter((card) => routeGuardFallback(liveCard(card.id))).length;
     root.OBOL_VISIBLE_REMINED_CARD_IDS_V963 = freezeList(CARD_IDS);
     root.OBOL_VISIBLE_REMINED_CARDS_V963 = freezeObject({
       wave: WAVE,
-      status: installed === CARD_IDS.length ? 'live-integrated' : 'partial',
+      status: installed === CARD_IDS.length && fallbackCount === 0 ? 'live-integrated' : 'partial',
       cardIds: freezeList(CARD_IDS),
       noteIds: freezeList(NOTE_IDS),
       installedCount: installed,
+      fallbackCount,
       alreadyPresentCount: before,
       proofFile: PROOF_FILE,
     });
-    return installed === CARD_IDS.length;
+    return installed === CARD_IDS.length && fallbackCount === 0;
   }
 
   function currentRouteNeedsRepair() {
@@ -215,12 +243,12 @@
     if (!CARD_IDS.includes(id) || !liveCard(id)) return false;
     const target = root.document && root.document.getElementById && root.document.getElementById('view');
     const text = String(target && target.textContent || '');
-    return /Unknown card/i.test(text) || !text.trim();
+    return /Unknown card/i.test(text) || !text.trim() || routeGuardFallback(liveCard(id));
   }
 
   function repaintCurrentCardRoute() {
     if (!currentRouteNeedsRepair()) return false;
-    const key = routeCardId() + ':' + String(root.location && root.location.hash || '');
+    const key = routeCardId() + ':' + String(root.location && root.location.hash || '') + ':' + String(Date.now()).slice(0, -2);
     if (root.__OBOL_VISIBLE_REMINED_CARDS_LAST_REPAINT__ === key) return false;
     root.__OBOL_VISIBLE_REMINED_CARDS_LAST_REPAINT__ = key;
     if (typeof root.route === 'function') {
@@ -246,7 +274,9 @@
   function validate() {
     const failures = [];
     for (const id of CARD_IDS) {
-      if (!liveCard(id)) failures.push('Missing live card route for ' + id);
+      const card = liveCard(id);
+      if (!card) failures.push('Missing live card route for ' + id);
+      else if (routeGuardFallback(card)) failures.push('Required visible card is still served by fallback guard: ' + id);
     }
     return failures;
   }
