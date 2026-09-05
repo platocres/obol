@@ -11,18 +11,19 @@ const outputDir = process.env.OBOL_SMOKE_OUTPUT || path.join(__dirname, '..', 'a
 // ceilings below include the note-derived route/path guards added in v9.64, the
 // v9.65 fuzzer route guard, the v9.66 actionability contract/settle guards, the
 // v9.67 action-first cleanup data, the v9.69 upload/inclusion re-mining extension,
-// the v9.70 client/session analyzer, and the v9.71 action-spine AD/MSF re-mining
-// extension, but still fail loudly if the historical fragment chain leaks back into loading.
+// the v9.70 client/session analyzer, the v9.71 action-spine AD/MSF re-mining
+// extension, and the v9.71 dynamic why-now decorator, but still fail loudly if the
+// historical fragment chain leaks back into loading.
 const routes = [
-  { id: 'home', hash: '#/home', marker: /Home/i, requestBudget: 50 },
-  { id: 'targets', hash: '#/boxes', marker: /target/i, requestBudget: 54 },
-  { id: 'evidence', hash: '#/intake', marker: /evidence/i, requestBudget: 52 },
-  { id: 'next-steps', hash: '#/path', marker: /(next|path|recommend)/i, requestBudget: 56 },
-  { id: 'report', hash: '#/report', marker: /report/i, requestBudget: 52 },
-  { id: 'dashboard', hash: '#/dashboard', marker: /Product Hardening/i, currentDashboard: true, settleMs: 5200, requestBudget: 50 }
+  { id: 'home', hash: '#/home', marker: /Home/i, requestBudget: 51 },
+  { id: 'targets', hash: '#/boxes', marker: /target/i, requestBudget: 55 },
+  { id: 'evidence', hash: '#/intake', marker: /evidence/i, requestBudget: 53 },
+  { id: 'next-steps', hash: '#/path', marker: /(next|path|recommend)/i, requestBudget: 57 },
+  { id: 'report', hash: '#/report', marker: /report/i, requestBudget: 53 },
+  { id: 'dashboard', hash: '#/dashboard', marker: /Product Hardening/i, currentDashboard: true, settleMs: 5200, requestBudget: 51 }
 ];
 const HISTORICAL_FRAGMENT = /\/(?:assets|data)\/(?:core|app|intake|report|nmap|review|methodology|orange-fidelity|project-model|dashboard|source-delivery|obol)-v[\d.]+[^/]*$/;
-const INTERNAL_CARD_SLOP = /fills an unresolved methodology gap|methodology gap|\bUNKNOWN\b/i;
+const INTERNAL_CARD_SLOP = /fills an unresolved methodology gap|methodology gap|source-mining|source re-mining|release cleanup|patch panel|stabilizer|\bUNKNOWN\b/i;
 
 fs.mkdirSync(outputDir, { recursive: true });
 
