@@ -30,7 +30,8 @@ const release=Object.freeze({
   'data/product-hardening/web-upload-inclusion-remine-batch-v9.69.js',
   'data/product-hardening/client-session-remine-batch-v9.70.js',
   'data/product-hardening/ad-metasploit-remine-batch-v9.71.js',
-  'data/product-hardening/ad-metasploit-route-guard-v9.71.js'
+  'data/product-hardening/ad-metasploit-route-guard-v9.71.js',
+  'data/product-hardening/dynamic-why-now-v9.71.js'
  ])
 });
 function stampState(target){
