@@ -7,56 +7,21 @@ const vm = require('vm');
 const root = path.join(__dirname, '..');
 
 const REQUIRED_PATH_PLACEMENTS = Object.freeze({
-  'credential-dump-proof-chain': Object.freeze({
-    owner: 'data/product-hardening/visible-remine-cards-v9.63.js',
-    facts: ['credential.lsass_dump_artifact_observed', 'credential.offline_dump_parser_output_observed'],
-    evidenceCards: ['credential-dump-proof-chain'],
-  }),
-  'web-proxy-transform-proof-chain': Object.freeze({
-    owner: 'data/product-hardening/visible-remine-cards-v9.63.js',
-    facts: ['web.client_control_mutation_observed', 'web.reversible_transform_chain_observed', 'web.tool_generated_http_capture_observed'],
-    evidenceCards: ['web-proxy-transform-proof-chain'],
-  }),
-  'web-client-controls': Object.freeze({
-    owner: 'data/product-hardening/visible-remine-cards-v9.63.js',
-    facts: ['web.client_control_mutation_observed'],
-    evidenceCards: ['web-proxy-transform-proof-chain'],
-  }),
-  'web-authz-boundaries': Object.freeze({
-    owner: 'data/product-hardening/visible-remine-cards-v9.63.js',
-    facts: ['web.client_control_mutation_observed', 'web.scoped_server_behavior_observed'],
-    evidenceCards: ['web-proxy-transform-proof-chain'],
-  }),
-  'encoded-parameter-review': Object.freeze({
-    owner: 'data/product-hardening/visible-remine-cards-v9.63.js',
-    facts: ['web.reversible_transform_chain_observed', 'web.encoded_cookie_candidate_observed'],
-    evidenceCards: ['web-proxy-transform-proof-chain'],
-  }),
-  'tool-generated-http-review': Object.freeze({
-    owner: 'data/product-hardening/visible-remine-cards-v9.63.js',
-    facts: ['web.tool_generated_http_capture_observed'],
-    evidenceCards: ['web-proxy-transform-proof-chain'],
-  }),
-  'pass-the-hash-proof-chain': Object.freeze({
-    owner: 'data/product-hardening/pass-the-hash-remining-v9.64.js',
-    facts: ['auth.pass_the_hash_attempt_observed', 'auth.nt_hash_material_observed'],
-    evidenceCards: ['pass-the-hash-proof-chain'],
-  }),
-  'pth-remote-exec-artifacts': Object.freeze({
-    owner: 'data/product-hardening/pass-the-hash-remining-v9.64.js',
-    facts: ['auth.remote_admin_indicator_observed', 'auth.remote_execution_artifact_observed'],
-    evidenceCards: ['pass-the-hash-proof-chain'],
-  }),
-  'pth-token-filtering-check': Object.freeze({
-    owner: 'data/product-hardening/pass-the-hash-remining-v9.64.js',
-    facts: ['auth.failure_or_lockout_signal_observed', 'auth.token_filtering_or_restricted_admin_observed', 'auth.local_account_scope_observed'],
-    evidenceCards: ['pass-the-hash-proof-chain'],
-  }),
+  'credential-dump-proof-chain': Object.freeze({ owner: 'data/product-hardening/visible-remine-cards-v9.63.js', facts: ['credential.lsass_dump_artifact_observed', 'credential.offline_dump_parser_output_observed'], evidenceCards: ['credential-dump-proof-chain'] }),
+  'web-proxy-transform-proof-chain': Object.freeze({ owner: 'data/product-hardening/visible-remine-cards-v9.63.js', facts: ['web.client_control_mutation_observed', 'web.reversible_transform_chain_observed', 'web.tool_generated_http_capture_observed'], evidenceCards: ['web-proxy-transform-proof-chain'] }),
+  'web-client-controls': Object.freeze({ owner: 'data/product-hardening/visible-remine-cards-v9.63.js', facts: ['web.client_control_mutation_observed'], evidenceCards: ['web-proxy-transform-proof-chain'] }),
+  'web-authz-boundaries': Object.freeze({ owner: 'data/product-hardening/visible-remine-cards-v9.63.js', facts: ['web.client_control_mutation_observed', 'web.scoped_server_behavior_observed'], evidenceCards: ['web-proxy-transform-proof-chain'] }),
+  'encoded-parameter-review': Object.freeze({ owner: 'data/product-hardening/visible-remine-cards-v9.63.js', facts: ['web.reversible_transform_chain_observed', 'web.encoded_cookie_candidate_observed'], evidenceCards: ['web-proxy-transform-proof-chain'] }),
+  'tool-generated-http-review': Object.freeze({ owner: 'data/product-hardening/visible-remine-cards-v9.63.js', facts: ['web.tool_generated_http_capture_observed'], evidenceCards: ['web-proxy-transform-proof-chain'] }),
+  'pass-the-hash-proof-chain': Object.freeze({ owner: 'data/product-hardening/pass-the-hash-remining-v9.64.js', facts: ['auth.pass_the_hash_attempt_observed', 'auth.nt_hash_material_observed'], evidenceCards: ['pass-the-hash-proof-chain'] }),
+  'pth-remote-exec-artifacts': Object.freeze({ owner: 'data/product-hardening/pass-the-hash-remining-v9.64.js', facts: ['auth.remote_admin_indicator_observed', 'auth.remote_execution_artifact_observed'], evidenceCards: ['pass-the-hash-proof-chain'] }),
+  'pth-token-filtering-check': Object.freeze({ owner: 'data/product-hardening/pass-the-hash-remining-v9.64.js', facts: ['auth.failure_or_lockout_signal_observed', 'auth.token_filtering_or_restricted_admin_observed', 'auth.local_account_scope_observed'], evidenceCards: ['pass-the-hash-proof-chain'] }),
+  'burp-intruder-fuzzing-workflow': Object.freeze({ owner: 'data/product-hardening/burp-intruder-remining-v9.65.js', facts: ['web.fuzzer_workflow_observed', 'web.fuzzer_payload_position_observed'], evidenceCards: ['burp-intruder-fuzzing-workflow'] }),
+  'fuzzer-payload-position-review': Object.freeze({ owner: 'data/product-hardening/burp-intruder-remining-v9.65.js', facts: ['web.fuzzer_payload_position_observed', 'web.fuzzer_payload_transform_observed'], evidenceCards: ['burp-intruder-fuzzing-workflow'] }),
+  'fuzzer-result-delta-review': Object.freeze({ owner: 'data/product-hardening/burp-intruder-remining-v9.65.js', facts: ['web.fuzzer_response_delta_observed', 'web.fuzzer_hit_candidate_observed'], evidenceCards: ['burp-intruder-fuzzing-workflow'] }),
 });
 
-function read(rel) {
-  return fs.readFileSync(path.join(root, rel), 'utf8');
-}
+function read(rel) { return fs.readFileSync(path.join(root, rel), 'utf8'); }
 
 function currentReleaseExtensions() {
   const sandbox = { window: {}, globalThis: null };
@@ -75,28 +40,18 @@ function windowAround(source, needle, before = 800, after = 2400) {
   return source.slice(Math.max(0, index - before), Math.min(source.length, index + needle.length + after));
 }
 
-function hasLiteral(source, value) {
-  return source.includes(`'${value}'`) || source.includes(`"${value}"`);
-}
-
-function cardWindow(source, id) {
-  return windowAround(source, `id: '${id}'`) || windowAround(source, `id: "${id}"`);
-}
+function hasLiteral(source, value) { return source.includes(`'${value}'`) || source.includes(`"${value}"`); }
+function cardWindow(source, id) { return windowAround(source, `id: '${id}'`) || windowAround(source, `id: "${id}"`); }
 
 function validatesCardShape(chunk, id, failures) {
-  if (!chunk) {
-    failures.push(`Missing live card object for path placement target: ${id}`);
-    return;
-  }
+  if (!chunk) { failures.push(`Missing live card object for path placement target: ${id}`); return; }
   if (!/\bprereq\s*:/.test(chunk)) failures.push(`${id} has no prereq block, so the path engine has nothing to match`);
   if (!/\bproduces\s*:/.test(chunk)) failures.push(`${id} has no produces list, so the path engine cannot move state after it`);
   if (!/\bexpected\s*:/.test(chunk)) failures.push(`${id} has no expected proof signals for the operator`);
   if (!/\blane\s*:/.test(chunk)) failures.push(`${id} has no lane, so path placement can float unpredictably`);
 }
 
-function escapeRegExp(value) {
-  return String(value).replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
-}
+function escapeRegExp(value) { return String(value).replace(/[.*+?^${}()|[\]\\]/g, '\\$&'); }
 
 function validateNoteCardPathPlacement() {
   const extensions = currentReleaseExtensions();
@@ -116,9 +71,7 @@ function validateNoteCardPathPlacement() {
     validatesCardShape(chunk, id, failures);
     const linkedFacts = rule.facts.filter((fact) => hasLiteral(chunk, fact));
     if (!linkedFacts.length) failures.push(`${id} is not linked to any required Evidence fact in its prereq/path window: ${rule.facts.join(', ')}`);
-    for (const fact of rule.facts) {
-      if (!hasLiteral(allSource, fact)) failures.push(`${id} requires Evidence fact ${fact}, but no current extension emits or records it`);
-    }
+    for (const fact of rule.facts) if (!hasLiteral(allSource, fact)) failures.push(`${id} requires Evidence fact ${fact}, but no current extension emits or records it`);
     const evidenceCards = rule.evidenceCards.filter((cardId) => new RegExp(`cardId\\s*:\\s*['\"]${escapeRegExp(cardId)}['\"]`).test(allSource));
     if (!evidenceCards.length) failures.push(`${id} has no Evidence-ingestion activity that can put a related card into the actual path flow`);
   }
