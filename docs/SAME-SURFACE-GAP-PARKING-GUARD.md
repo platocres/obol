@@ -16,6 +16,23 @@ Build it now when all of these are true:
 
 A queue item is not a parking lot for work the agent simply chose not to finish.
 
+## Evidence ingestion is part of the build
+
+For Obol, a command, tool card, proof control, analyzer, or path item is not meaningfully built until pasted Evidence can use its output.
+
+Any built item that tells the operator to run a command, choose a proof mode, validate credentials, classify output, or record cleanup must also define how Evidence ingestion handles the resulting pasted terminal output, browser-observation text, or proof note.
+
+The minimum Evidence contract is:
+
+- identify the card or control that owns the pasted output;
+- emit a conservative activity for the relevant card;
+- emit only the outcome facts that the pasted output actually proves;
+- keep secrets, tokens, cookies, keys, flags, and target-specific values redacted;
+- move Next Steps forward only on supported facts, not vibes;
+- include release tests that paste representative output and assert the resulting activities and facts.
+
+Static cards, command templates, GUI controls, or dashboard rows without Evidence ingestion are incomplete unless the PR explicitly proves that no pasted output is expected from that item.
+
 ## Valid reasons to queue instead
 
 Queue a finding only when the PR can name a real blocker:
@@ -38,8 +55,12 @@ For a lane to close, the PR must either:
 - build the same-surface item now and mark it complete with proof; or
 - explicitly prove why the item is not same-surface, not safe, not testable, or not source-ready.
 
+If the built item affects commands, tools, proof controls, analyzers, or path movement, the PR must also prove Evidence ingestion for pasted output before claiming completion.
+
 ## PR review check
 
 Reviewers should reject any release that says a lane is complete while the PR also adds same-surface queued gaps that could have been built in the same pass.
 
-The right default is simple: build the thing, prove it, update the queue, and only then call the lane complete.
+Reviewers should also reject any release that adds a command/tool/control/analyzer surface but does not explain and test what pasted Evidence output does with that surface.
+
+The right default is simple: build the thing, wire Evidence ingestion, prove it, update the queue, and only then call the lane complete.
