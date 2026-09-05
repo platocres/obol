@@ -10,7 +10,8 @@ const release=Object.freeze({
   'data/product-hardening/credentials-auth-remining-v9.58.js',
   'data/product-hardening/proof-safety-controls-v9.58.js',
   'data/product-hardening/proof-safety-evidence-ingestion-v9.58.js',
-  'data/product-hardening/linux-privesc-remine-reconciliation-v9.59.js'
+  'data/product-hardening/linux-privesc-remine-reconciliation-v9.59.js',
+  'data/product-hardening/ui-quality-audit-rubric-v9.59.js'
  ])
 });
 function stampState(target){
