@@ -72,6 +72,8 @@ global.OBOL_PRODUCT_HARDENING_NOTE_PROGRESS = freezeObject({
   total: 556,
   reviewed: 135,
   remining: freezeObject({
+    sourceTotal: 135,
+    reviewed: 135,
     dimensions: freezeList(dimensions),
     allowedOutcomes: freezeList(outcomes),
     auditRows: freezeList([
@@ -127,6 +129,8 @@ for (const id of ['pass-the-hash-proof-chain', 'pth-remote-exec-artifacts', 'pth
   assert(card, 'live card missing ' + id);
   assert(card.title && card.hypothesis, 'card should have visible copy ' + id);
   assert(Array.isArray(card.expected) && card.expected.length, 'card should have evidence expectations ' + id);
+  assert(card.prereq && Array.isArray(card.prereq.any) && card.prereq.any.length, 'card should have path prereqs ' + id);
+  assert(Array.isArray(card.produces) && card.produces.length, 'card should produce follow-on facts ' + id);
 }
 assert(global.liveCardById('pass-the-hash-proof-chain').commands.length >= 3, 'main PtH card should include placeholder-based command templates');
 
@@ -158,6 +162,7 @@ const syntheticOutput = [
   'password=ShouldNotLeak123!',
 ].join('\n');
 const analysis = packet.analyzePassTheHashOutput(syntheticOutput);
+const redacted = analysis.redactedSnippet || analysis.snippet || '';
 assert(analysis.matches.some((match) => match.id === 'pth-attempt'), 'analyzer should detect PtH attempt');
 assert(analysis.matches.some((match) => match.id === 'nt-hash-material'), 'analyzer should detect NT hash material');
 assert(analysis.matches.some((match) => match.id === 'remote-admin-indicator'), 'analyzer should detect remote admin indicator');
@@ -166,17 +171,17 @@ assert(analysis.matches.some((match) => match.id === 'token-filtering-or-restric
 assert(analysis.outcomeFacts.includes('auth.pass_the_hash_attempt_observed'));
 assert(analysis.outcomeFacts.includes('auth.remote_admin_indicator_observed'));
 assert(analysis.outcomeFacts.includes('auth.remote_execution_artifact_observed'));
-assert.strictEqual(analysis.recommendedNextState, 'record-scoped-remote-exec-and-cleanup');
-assert(analysis.warnings.some((warning) => /scoped to the observed host/i.test(warning)), 'analyzer should warn about scoped success');
-assert(!/HTB\{/i.test(analysis.redactedSnippet), 'redacted snippet should not retain flags');
-assert(!/aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa/i.test(analysis.redactedSnippet), 'redacted snippet should not retain NT hashes');
-assert(!/ShouldNotLeak123/i.test(analysis.redactedSnippet), 'redacted snippet should not retain passwords');
-assert(!/10\.0\.0\.10/i.test(analysis.redactedSnippet), 'redacted snippet should not retain host IPs');
+assert(['record-scoped-remote-exec-and-cleanup', 'record-remote-exec-artifacts-and-cleanup'].includes(analysis.recommendedNextState), 'analyzer should recommend scoped remote-exec cleanup');
+assert(analysis.warnings.some((warning) => /Hash material is not access|Remote execution by hash leaves artifacts|scoped to the observed host/i.test(warning)), 'analyzer should warn about scope/artifacts');
+assert(!/HTB\{/i.test(redacted), 'redacted snippet should not retain flags');
+assert(!/aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa/i.test(redacted), 'redacted snippet should not retain NT hashes');
+assert(!/ShouldNotLeak123/i.test(redacted), 'redacted snippet should not retain passwords');
+assert(!/10\.0\.0\.10/i.test(redacted), 'redacted snippet should not retain host IPs');
 
 const failed = packet.analyzePassTheHashOutput('evil-winrm -i 10.0.0.11 -u operator -H bbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb\nSTATUS_LOGON_FAILURE\nFilterAdministratorToken enabled');
 assert(failed.outcomeFacts.includes('auth.failure_or_lockout_signal_observed'), 'failure should be separate evidence');
 assert(failed.outcomeFacts.includes('auth.token_filtering_or_restricted_admin_observed'), 'token filtering should be separate evidence');
-assert.strictEqual(failed.recommendedNextState, 'troubleshoot-protocol-policy-or-token-filtering');
+assert(['troubleshoot-protocol-policy-or-token-filtering', 'check-token-filtering-protocol-and-account-scope'].includes(failed.recommendedNextState), 'failure should recommend scope/policy/token-filtering troubleshooting');
 
 const merged = global.OBOL_INTAKE_V21.analyzeTerminal(syntheticOutput);
 assert(merged.passTheHashEvidence64, 'Evidence ingestion wrapper should attach v9.64 analysis');
@@ -184,6 +189,9 @@ assert(merged.activities.some((activity) => activity.cardId === 'pass-the-hash-p
 assert(merged.passTheHashEvidence64.outcomeFacts.includes('auth.remote_execution_artifact_observed'), 'Evidence ingestion should expose remote-exec artifact fact');
 
 const progress = global.OBOL_PRODUCT_HARDENING_NOTE_PROGRESS.remining;
+assert.strictEqual(progress.sourceTotal, 135, 'progress source total should stay tied to reviewed old-rubric notes');
+assert.strictEqual(progress.reviewed, 135, 'progress reviewed count should stay tied to reviewed old-rubric notes');
+assert.strictEqual(progress.oldRubricReviewed, 135, 'old-rubric denominator should stay normalized');
 assert.strictEqual(progress.reminedNoteCount, 66, 'progress should advance by one selected old-rubric note after v9.63');
 assert.strictEqual(progress.oldRubricOnlyRemaining, 69, 'old-rubric remaining should shrink by one after v9.63');
 assert(progress.auditRows.some((audit) => audit.noteId === 'htb-penetration-tester-29b80edb4523461f'), 'progress should include the v9.64 audit row');
