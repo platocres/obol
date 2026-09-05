@@ -11,7 +11,7 @@
  * suppresses historical schedulers and commits current route owners last.
  *
  * Historical fragment order sha256: 40e3006d9423d669acf5869b577ecf56a6ca2ee1629c95fd0fcc5d242d2c5f27
- * Generated body sha256: a7987276484d27db3a315365ee785b56f69a1870052f78bef918e82b89ce025f
+ * Generated body sha256: 5dca3a5d97a0e8e3e541e25430f18aaca5d824f9eaeee1d329475ab0d03e3bda
  * First historical fragment: assets/report-v2.js
  * Last historical fragment:  assets/app-v8.8.js
  */
@@ -1993,8 +1993,8 @@ if(__nativeMutationObserver)root.MutationObserver=__nativeMutationObserver;
 'use strict';
 (function(root){
 const release=Object.freeze({
- version:'9.69.0',
- label:'v9.69',
+ version:'9.70.0',
+ label:'v9.70',
  phase:'product-hardening',
  phaseLabel:'Product Hardening',
  orangeBaseline:'v8.8',
@@ -2019,7 +2019,8 @@ const release=Object.freeze({
   'data/product-hardening/actionable-card-contract-queue-note-v9.66.js',
   'data/product-hardening/action-first-card-cleanup-v9.67.js',
   'data/product-hardening/note-card-disposition-reconciliation-v9.68.js',
-  'data/product-hardening/web-upload-inclusion-remine-batch-v9.69.js'
+  'data/product-hardening/web-upload-inclusion-remine-batch-v9.69.js',
+  'data/product-hardening/client-session-remine-batch-v9.70.js'
  ])
 });
 function stampState(target){
