@@ -8,7 +8,8 @@ const release=Object.freeze({
  orangeBaseline:'v8.8',
  productHardeningExtensions:Object.freeze([
   'data/product-hardening/credentials-auth-remining-v9.58.js',
-  'data/product-hardening/proof-safety-controls-v9.58.js'
+  'data/product-hardening/proof-safety-controls-v9.58.js',
+  'data/product-hardening/proof-safety-evidence-ingestion-v9.58.js'
  ])
 });
 function stampState(target){
