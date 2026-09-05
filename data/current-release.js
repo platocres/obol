@@ -20,7 +20,8 @@ const release=Object.freeze({
   'data/product-hardening/pass-the-hash-dashboard-settle-v9.64.js',
   'data/product-hardening/note-card-route-guard-v9.64.js',
   'data/product-hardening/pass-the-hash-queue-settle-v9.64.js',
-  'data/product-hardening/burp-intruder-remining-v9.65.js'
+  'data/product-hardening/burp-intruder-remining-v9.65.js',
+  'data/product-hardening/burp-intruder-route-guard-v9.65.js'
  ])
 });
 function stampState(target){
