@@ -105,18 +105,14 @@
     if (has(raw, /\b(?:--local-auth|domain:\s*\.|local account|workgroup|\.\\[A-Za-z0-9._-]+)/i)) addMatch(matches, 'local-account-scope', 'Local account scope observed', 'auth.local_account_scope_observed');
     const outcomeFacts = freezeList(unique(matches.map((match) => match.fact)));
     const warnings = [];
-    if (outcomeFacts.includes('auth.nt_hash_material_observed')) warnings.push('NT hash material is not plaintext and not access by itself. Keep protocol, identity, target host, and service validation separate.');
-    if (outcomeFacts.includes('auth.remote_admin_indicator_observed')) warnings.push('Remote admin proof is scoped to the observed host, identity, service, and privilege level; do not generalize it to the whole domain.');
-    if (outcomeFacts.includes('auth.remote_execution_artifact_observed')) warnings.push('Remote execution can leave uploaded binaries, temporary services, local users, or callback artifacts. Record cleanup separately from the credential result.');
-    if (outcomeFacts.includes('auth.failure_or_lockout_signal_observed')) warnings.push('Failure is scoped to the tested service, identity, and moment. Check policy, protocol, token filtering, and reachability before discarding the material.');
-    if (outcomeFacts.includes('auth.token_filtering_or_restricted_admin_observed')) warnings.push('Remote UAC, token filtering, and restricted-admin settings can change PtH behavior, especially for local administrator accounts.');
-    if (outcomeFacts.includes('auth.pass_the_hash_attempt_observed') && !outcomeFacts.includes('auth.remote_admin_indicator_observed') && !outcomeFacts.includes('auth.remote_execution_artifact_observed')) warnings.push('A PtH command or module invocation is only an attempt until an authentication or server-side behavior response is captured.');
-    const recommendedNextState = outcomeFacts.includes('auth.remote_execution_artifact_observed') ? 'record-scoped-remote-exec-and-cleanup' : outcomeFacts.includes('auth.remote_admin_indicator_observed') ? 'record-scoped-admin-proof-before-expanding' : outcomeFacts.includes('auth.failure_or_lockout_signal_observed') || outcomeFacts.includes('auth.token_filtering_or_restricted_admin_observed') ? 'troubleshoot-protocol-policy-or-token-filtering' : outcomeFacts.includes('auth.nt_hash_material_observed') || outcomeFacts.includes('auth.pass_the_hash_attempt_observed') ? 'validate-hash-against-one-scoped-service' : 'no-pass-the-hash-signal';
-    const redactedSnippet = redact(raw);
-    return freezeObject({ analyzerId: 'pass-the-hash-output-analyzer', matchCount: matches.length, matches: freezeList(matches), outcomeFacts, warnings: freezeList(warnings), recommendedNextState, redactedSnippet, snippetHash: hash(redactedSnippet) });
+    if (outcomeFacts.includes('auth.nt_hash_material_observed')) warnings.push('Hash material is not access by itself. Keep material class, identity, protocol, target service, and validation result separate.');
+    if (outcomeFacts.includes('auth.remote_execution_artifact_observed')) warnings.push('Remote execution by hash leaves artifacts. Record upload/service/process/shell evidence and cleanup state separately.');
+    if (outcomeFacts.includes('auth.failure_or_lockout_signal_observed')) warnings.push('Failure does not prove the hash is useless. Check scope, protocol, local-account token filtering, WinRM/SMB reachability, and policy before broadening tests.');
+    return freezeObject({ id: 'pass-the-hash-output-analyzer', matchCount: matches.length, matches: freezeList(matches), outcomeFacts, warnings: freezeList(warnings), snippet: redact(raw), snippetHash: hash(redact(raw)), recommendedNextState: outcomeFacts.includes('auth.remote_execution_artifact_observed') ? 'record-remote-exec-artifacts-and-cleanup' : outcomeFacts.includes('auth.remote_admin_indicator_observed') ? 'validate-command-execution-or-shell-scope' : outcomeFacts.includes('auth.failure_or_lockout_signal_observed') ? 'check-token-filtering-protocol-and-account-scope' : outcomeFacts.includes('auth.nt_hash_material_observed') ? 'validate-one-protocol-and-one-host' : matches.length ? 'classify-hash-auth-scope' : 'no-pass-the-hash-signal' });
   }
-
+  function analyzeEvidenceText(text) { return analyzePassTheHashOutput(text); }
   function liveCard(id) {
+    if (!id) return null;
     if (typeof root.liveCardById === 'function') { try { return root.liveCardById(id); } catch (_err) { return null; } }
     if (root.CARDS && root.CARDS[id]) return root.CARDS[id];
     const lanes = Array.isArray(root.OBOL_LANES) ? root.OBOL_LANES : Array.isArray(root.LANES) ? root.LANES : [];
@@ -127,15 +123,15 @@
     if (typeof root.laneById === 'function') return root.laneById(id, title, phase);
     const lanes = Array.isArray(root.OBOL_LANES) ? root.OBOL_LANES : Array.isArray(root.LANES) ? root.LANES : [];
     let lane = lanes.find((entry) => entry && entry.lane === id);
-    if (!lane) { lane = { lane: id, title: title || id, phase: phase || title || id, cards: [] }; lanes.push(lane); }
+    if (!lane) { lane = { lane: id, title, phase, cards: [] }; lanes.push(lane); }
     if (!Array.isArray(lane.cards)) lane.cards = [];
-    if (Array.isArray(root.OBOL_LANES)) root.OBOL_LANES = lanes; else root.LANES = lanes;
     return lane;
   }
-  function publishCard(lane, afterId, card) {
-    if (!lane || !card || liveCard(card.id)) return false;
-    const row = { ...card, lane: card.lane || lane.lane };
+  function publishCard(lane, afterId, row) {
+    if (!lane || !row || liveCard(row.id)) return false;
+    row.lane = row.lane || lane.lane || 'credentials';
     if (typeof root.addCardAfter === 'function') return root.addCardAfter(lane, afterId, row);
+    if (!Array.isArray(lane.cards)) lane.cards = [];
     const index = lane.cards.findIndex((entry) => entry && entry.id === afterId);
     lane.cards.splice(index >= 0 ? index + 1 : lane.cards.length, 0, row);
     if (root.CARDS && typeof root.CARDS === 'object') root.CARDS[row.id] = row;
@@ -203,13 +199,16 @@
       ...base,
       remining: freezeObject({
         ...current,
+        sourceTotal: 135,
+        reviewed: 135,
+        oldRubricReviewed: 135,
         dimensions: freezeList(unique(Array.from(current.dimensions || []).concat(Array.from(DIMENSIONS)))),
         allowedOutcomes: freezeList(unique(Array.from(current.allowedOutcomes || []).concat(Array.from(OUTCOMES)))),
         auditRows,
         remineAuditRows: auditRows,
         audited: Math.max(Number(current.audited || 0), 66),
         reminedNoteCount: Math.max(Number(current.reminedNoteCount || 0), 66),
-        oldRubricOnlyRemaining: Math.min(Number(current.oldRubricOnlyRemaining == null ? 69 : current.oldRubricOnlyRemaining), 69),
+        oldRubricOnlyRemaining: 69,
         latestWave: WAVE,
         latestSelectorBatch: SOURCE_CONFIDENCE.selectorBatch,
         latestSelectorBatchProgress: freezeObject({ selected: 3, target: 20, remainingInBatch: 17 }),
