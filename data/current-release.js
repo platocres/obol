@@ -25,7 +25,8 @@ const release=Object.freeze({
   'data/product-hardening/actionable-card-contract-v9.66.js',
   'data/product-hardening/actionable-card-contract-dashboard-settle-v9.66.js',
   'data/product-hardening/actionable-card-contract-queue-note-v9.66.js',
-  'data/product-hardening/action-first-card-cleanup-v9.67.js'
+  'data/product-hardening/action-first-card-cleanup-v9.67.js',
+  'data/product-hardening/action-first-card-cleanup-stabilize-v9.67.js'
  ])
 });
 function stampState(target){

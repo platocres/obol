@@ -9,17 +9,17 @@ const outputDir = process.env.OBOL_SMOKE_OUTPUT || path.join(__dirname, '..', 'a
 
 const routes = [
   { id: 'credential-dump-proof-chain', marker: /Credential Dump Proof Chain|Credential Dump Evidence Review/i },
-  { id: 'web-proxy-transform-proof-chain', marker: /Web Proxy Transform Proof Chain|Web Proxy Transform Chain/i },
-  { id: 'web-client-controls', marker: /Client-Side Controls|Request-Shaping Clues|Client-Side Control Boundary/i },
-  { id: 'web-authz-boundaries', marker: /Server Authorization|Authorization Boundary|Client Bypass/i },
+  { id: 'web-proxy-transform-proof-chain', marker: /Web Proxy Transform Proof Chain|Web Proxy Transform Chain|Web Proxy Transform Workflow/i },
+  { id: 'web-client-controls', marker: /Client-Side Controls|Request-Shaping Clues|Client-Side Control Boundary|Client Control Bypass/i },
+  { id: 'web-authz-boundaries', marker: /Server Authorization|Authorization Boundary|Client Bypass|Authorization Boundary Replay/i },
   { id: 'encoded-parameter-review', marker: /Encoded Parameters|Transform Order|Encoded Parameter/i },
-  { id: 'tool-generated-http-review', marker: /Tool-Generated HTTP|Generated Request/i },
+  { id: 'tool-generated-http-review', marker: /Tool-Generated HTTP|Generated Request|Capture Tool HTTP/i },
   { id: 'pass-the-hash-proof-chain', marker: /Pass-the-Hash Proof Chain|Scoped Authentication/i },
-  { id: 'pth-remote-exec-artifacts', marker: /Remote Execution Artifacts|Hash-Based Remote Execution/i },
+  { id: 'pth-remote-exec-artifacts', marker: /Remote Execution Artifacts|Hash-Based Remote Execution|PtH Remote Exec/i },
   { id: 'pth-token-filtering-check', marker: /Token Filtering|Account Scope|Remote UAC/i },
-  { id: 'burp-intruder-fuzzing-workflow', marker: /Burp Intruder Fuzzing Workflow|Web Fuzzer Candidate Triage/i },
+  { id: 'burp-intruder-fuzzing-workflow', marker: /Burp Intruder Fuzzing Workflow|Web Fuzzer Candidate Triage|Burp Intruder \/ Web Fuzzer Workflow/i },
   { id: 'fuzzer-payload-position-review', marker: /Payload Position|Payload Position and Transforms/i },
-  { id: 'fuzzer-result-delta-review', marker: /Response Deltas|Manual Replay/i },
+  { id: 'fuzzer-result-delta-review', marker: /Response Deltas|Manual Replay|Fuzzer Result Delta/i },
 ];
 
 fs.mkdirSync(outputDir, { recursive: true });
