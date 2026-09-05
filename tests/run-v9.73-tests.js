@@ -65,7 +65,7 @@ assert.ok(globalThis.CARDS['burp-intruder-fuzzing-workflow'].fieldNoteIds.includ
 assert.ok(globalThis.CARDS['credential-dump-proof-chain'].fieldNoteIds.includes('note-windows-credential-artifact-boundary-v973'));
 assert.ok(!globalThis.CARDS['idor-mass-enumeration-review'],'IDOR value should fold into web-authz-boundaries instead of becoming a duplicate primary card');
 assert.ok(!globalThis.CARDS['http-method-tampering-review'],'method-tampering value should fold into web-authz-boundaries instead of becoming a duplicate primary card');
-const intake=globalThis.OBOL_INTAKE_V21.analyzeTerminal('OPTIONS Allow: GET POST HEAD 401 unauthorized uid=2 download.php file_id PHPSESSID sess_ access.log User-Agent base64 md5 decoded payload processing');
+const intake=globalThis.OBOL_INTAKE_V21.analyzeTerminal('OPTIONS Allow: GET POST HEAD 401 unauthorized uid=2 download.php file_id session cookie PHPSESSID sess_ access.log User-Agent base64 md5 decoded payload processing');
 assert.ok(intake.activities.some(activity=>activity.analyzerId==='web-boundary-evidence-analyzer-v9.73'));
 const facts=new Set(intake.activities.find(activity=>activity.analyzerId==='web-boundary-evidence-analyzer-v9.73').facts);
 for(const fact of ['web.http_method_surface_observed','web.method_auth_differential_candidate','web.object_reference_candidate','web.inclusion_poisoning_candidate','web.transform_chain_observed']) assert.ok(facts.has(fact),'missing fact '+fact);
