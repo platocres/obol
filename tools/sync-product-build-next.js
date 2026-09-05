@@ -64,6 +64,7 @@ runReleaseProductHardeningExtensions();
 if (fs.existsSync(queueHygieneFile)) runFile(queueHygieneFile);
 if (fs.existsSync(noteImpactFile)) runFile(noteImpactFile);
 if (fs.existsSync(sourceReviewPacketsFile)) runFile(sourceReviewPacketsFile);
+if (fs.existsSync(queueHygieneFile)) runFile(queueHygieneFile);
 runFile(runtimeConsolidationFile);
 
 const q = sandbox.window.OBOL_PRODUCT_HARDENING;
