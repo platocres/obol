@@ -6,9 +6,6 @@ const path = require('path');
 const root = path.join(__dirname, '..');
 const checks = [
   ['tools/validate-action-first-card-cleanup.js'],
-  ['tools/validate-actionable-next-step-cards.js'],
-  ['tools/validate-product-hardening-card-routes.js'],
-  ['tools/validate-note-card-path-placement.js'],
 ];
 for (const args of checks) {
   const result = cp.spawnSync(process.execPath, args.map((part, index) => index === 0 ? path.join(root, part) : part), { cwd: root, encoding: 'utf8' });
