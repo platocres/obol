@@ -10,4 +10,6 @@ Current v9.60 handoff:
 - Selection rule: select the next 20 already-reviewed notes that lack full-spectrum audit rows, using manifest/source order and excluding themes already closed by released re-mining proof.
 - Acceptance rule: every selected note receives a 16-dimension re-mining audit row plus public-safe product output, covered rationale, queued product gap, or private-boundary proof.
 
+After a batch closes, regenerate Product Build Next and follow the next generated `Next notes batch` until both notes-first gates are complete.
+
 Do not advance to `perf-service-worker` or any offline/performance item while this generated next notes batch or either notes-first gate remains active.
