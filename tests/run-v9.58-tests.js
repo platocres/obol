@@ -22,6 +22,10 @@ assert(syncScript.includes('releaseProductHardeningExtensions'), 'Product Build 
 assert(syncScript.includes('runReleaseProductHardeningExtensions'), 'Product Build Next sync must execute Product Hardening extensions before rendering the queue');
 assert(syncScript.includes('productHardeningExtensions'), 'Product Build Next sync must honor current-release extension declarations');
 assert(syncScript.includes('remining'), 'Product Build Next sync must include runtime-discovered re-mining extensions such as the merged XSS pass');
+const releaseSyncWorkflow = fs.readFileSync(path.join(__dirname, '..', '.github', 'workflows', 'sync-release-artifacts.yml'), 'utf8');
+assert(releaseSyncWorkflow.includes('data/product-hardening/**'), 'release sync workflow must run when product-hardening queue/runtime data changes');
+assert(releaseSyncWorkflow.includes('tools/sync-product-build-next.js'), 'release sync workflow must run when Product Build Next generator changes');
+assert(releaseSyncWorkflow.includes('node tools/sync-product-build-next.js --write'), 'release sync workflow must regenerate Product Build Next during release sync');
 
 assert.strictEqual(packet.status, 'live-integrated');
 assert.strictEqual(packet.wave, 'v9.58-credentials-auth-remine');
