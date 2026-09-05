@@ -1,3 +1,22 @@
+## v9.66 — Is a product-correction build for recent note-derived cards
+
+- Added `data/product-hardening/actionable-card-contract-v9.66.js`.
+  - Overlays note-derived cards with terminal commands or concrete GUI workflow steps.
+  - Adds expected evidence to paste back into Obol.
+  - Adds failure modes so a stuck operator can interpret bad or ambiguous output.
+  - Adds next-step guidance so the card moves the path forward instead of becoming a conceptual dead end.
+- Added `data/product-hardening/actionable-card-contract-dashboard-settle-v9.66.js`.
+  - Re-applies the actionability overlay before dashboard rendering when load order is slow.
+- Added `data/product-hardening/actionable-card-contract-queue-note-v9.66.js`.
+  - Leaves a Product Build Next note explaining that future note-mined cards must be practical operator cards, not conceptual buckets.
+- Added `tools/validate-actionable-next-step-cards.js`.
+  - Fails path-visible note-derived cards that lack commands or concrete GUI steps.
+  - Requires expected evidence, failure modes, and next-step guidance.
+- Added `docs/ACTIONABLE-CARD-CONTRACT.md` and `docs/NOTE-MINING-ACTIONABILITY.md`.
+  - Documents that a source note does not automatically become a card.
+  - Directs future agents to enrich existing Orange-map cards first.
+  - Keeps purely conceptual lessons in field notes unless they become real operator actions.
+
 ## v9.65 — Continues the notes-first Product Build Next queue after the v9.64 card-route repair. This build re-mines the next selected old-rubric note into public-safe web-fuzzer workflow behavior without copying private lab hosts, ports, discovered paths, answer strings, screenshots, or exact solution chains
 
 - Added `data/product-hardening/burp-intruder-remining-v9.65.js`.
