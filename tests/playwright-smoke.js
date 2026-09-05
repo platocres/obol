@@ -7,16 +7,16 @@ const { chromium } = require('playwright');
 const baseUrl = process.env.OBOL_SMOKE_BASE_URL || 'http://127.0.0.1:4173/index.html';
 const outputDir = process.env.OBOL_SMOKE_OUTPUT || path.join(__dirname, '..', 'artifacts', 'playwright-smoke');
 // requestBudget is the real proof that runtime consolidation holds in a browser.
-// Before consolidation these routes each fetched 321-365 JavaScript/CSS files; the
-// ceilings below leave headroom for lazy route groups but fail loudly if the
-// historical fragment chain ever leaks back into live loading.
+// Before consolidation these routes each fetched 321-365 JavaScript/CSS files. The
+// ceilings below now include the note-derived route/path guards added in v9.64,
+// but still fail loudly if the historical fragment chain leaks back into loading.
 const routes = [
-  { id: 'home', hash: '#/home', marker: /Home/i, requestBudget: 30 },
+  { id: 'home', hash: '#/home', marker: /Home/i, requestBudget: 36 },
   { id: 'targets', hash: '#/boxes', marker: /target/i, requestBudget: 40 },
   { id: 'evidence', hash: '#/intake', marker: /evidence/i, requestBudget: 40 },
-  { id: 'next-steps', hash: '#/path', marker: /(next|path|recommend)/i, requestBudget: 40 },
+  { id: 'next-steps', hash: '#/path', marker: /(next|path|recommend)/i, requestBudget: 44 },
   { id: 'report', hash: '#/report', marker: /report/i, requestBudget: 40 },
-  { id: 'dashboard', hash: '#/dashboard', marker: /Product Hardening/i, currentDashboard: true, settleMs: 5200, requestBudget: 30 }
+  { id: 'dashboard', hash: '#/dashboard', marker: /Product Hardening/i, currentDashboard: true, settleMs: 5200, requestBudget: 36 }
 ];
 const HISTORICAL_FRAGMENT = /\/(?:assets|data)\/(?:core|app|intake|report|nmap|review|methodology|orange-fidelity|project-model|dashboard|source-delivery|obol)-v[\d.]+[^/]*$/;
 
