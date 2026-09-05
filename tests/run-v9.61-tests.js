@@ -92,7 +92,9 @@ global.OBOL_INTAKE_V21 = {
   },
 };
 
+global.__OBOL_DEFER_PRODUCT_HARDENING_EXTENSIONS__ = true;
 require('../data/current-release.js');
+assert(global.__OBOL_DEFERRED_PRODUCT_HARDENING_EXTENSIONS__.includes('data/product-hardening/credential-dump-remining-v9.61.js'), 'current release should defer the v9.61 extension for isolated test loading');
 const packet = require('../data/product-hardening/credential-dump-remining-v9.61.js');
 
 assert(global.OBOL_CURRENT_RELEASE, 'current release should be published');
