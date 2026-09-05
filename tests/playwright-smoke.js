@@ -10,16 +10,16 @@ const outputDir = process.env.OBOL_SMOKE_OUTPUT || path.join(__dirname, '..', 'a
 // Before consolidation these routes each fetched 321-365 JavaScript/CSS files. The
 // ceilings below include the note-derived route/path guards added in v9.64, the
 // v9.65 fuzzer route guard, the v9.66 actionability contract/settle guards, the
-// v9.67 action-first cleanup overlay, the v9.69 upload/inclusion re-mining
-// extension, and the v9.70 client/session re-mining extension, but still fail
-// loudly if the historical fragment chain leaks back into loading.
+// v9.67 action-first cleanup data, the v9.69 upload/inclusion re-mining extension,
+// the v9.70 client/session analyzer, and the v9.71 action-spine AD/MSF re-mining
+// extension, but still fail loudly if the historical fragment chain leaks back into loading.
 const routes = [
-  { id: 'home', hash: '#/home', marker: /Home/i, requestBudget: 48 },
-  { id: 'targets', hash: '#/boxes', marker: /target/i, requestBudget: 52 },
-  { id: 'evidence', hash: '#/intake', marker: /evidence/i, requestBudget: 50 },
-  { id: 'next-steps', hash: '#/path', marker: /(next|path|recommend)/i, requestBudget: 54 },
-  { id: 'report', hash: '#/report', marker: /report/i, requestBudget: 50 },
-  { id: 'dashboard', hash: '#/dashboard', marker: /Product Hardening/i, currentDashboard: true, settleMs: 5200, requestBudget: 48 }
+  { id: 'home', hash: '#/home', marker: /Home/i, requestBudget: 50 },
+  { id: 'targets', hash: '#/boxes', marker: /target/i, requestBudget: 54 },
+  { id: 'evidence', hash: '#/intake', marker: /evidence/i, requestBudget: 52 },
+  { id: 'next-steps', hash: '#/path', marker: /(next|path|recommend)/i, requestBudget: 56 },
+  { id: 'report', hash: '#/report', marker: /report/i, requestBudget: 52 },
+  { id: 'dashboard', hash: '#/dashboard', marker: /Product Hardening/i, currentDashboard: true, settleMs: 5200, requestBudget: 50 }
 ];
 const HISTORICAL_FRAGMENT = /\/(?:assets|data)\/(?:core|app|intake|report|nmap|review|methodology|orange-fidelity|project-model|dashboard|source-delivery|obol)-v[\d.]+[^/]*$/;
 
@@ -81,6 +81,7 @@ async function installDashboardPaintObserver(page) {
       const text = await page.locator('body').innerText({ timeout: 5000 });
       if (!route.marker.test(text)) routeFailures.push('missing route marker ' + route.marker);
       if (/Unknown card/i.test(text)) routeFailures.push('rendered Unknown card');
+      if (/Why this now|methodology gap|\bUNKNOWN\b/i.test(text)) routeFailures.push('operator UI leaked methodology or UNKNOWN implementation copy');
       const requestCount = requests.size;
       observed.push(route.id + ':' + requestCount);
       if (requestCount > route.requestBudget) routeFailures.push('request budget exceeded: ' + requestCount + ' > ' + route.requestBudget);
@@ -88,7 +89,7 @@ async function installDashboardPaintObserver(page) {
       if (historical.length) routeFailures.push('historical runtime fragment requests: ' + historical.join(', '));
       if (route.currentDashboard) {
         const paints = await page.evaluate(() => window.__OBOL_DASHBOARD_PAINTS__ || []);
-        if (paints.some((paint) => /74 old-rubric-only notes remain|67 old-rubric-only notes remain|48 old-rubric-only notes remain/i.test(paint.text))) {
+        if (paints.some((paint) => /74 old-rubric-only notes remain|67 old-rubric-only notes remain|48 old-rubric-only notes remain|28 old-rubric-only notes remain/i.test(paint.text))) {
           routeFailures.push('dashboard rendered stale re-mining queue counts during paint');
         }
       }
