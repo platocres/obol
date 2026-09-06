@@ -1,8 +1,8 @@
 'use strict';
 (function(root){
 const release=Object.freeze({
- version:'9.74.0',
- label:'v9.74',
+ version:'9.75.0',
+ label:'v9.75',
  phase:'product-hardening',
  phaseLabel:'Product Hardening',
  orangeBaseline:'v8.8',
@@ -37,7 +37,8 @@ const release=Object.freeze({
   'data/product-hardening/pending-disposition-batch-v9.73.js',
   'data/product-hardening/pending-disposition-batch-v9.74.js',
   'data/product-hardening/path-copy-sanitizer-v9.74.js',
-  'data/product-hardening/source-note-clusters-current.js'
+  'data/product-hardening/source-note-clusters-current.js',
+  'data/product-hardening/global-source-note-clustering-v9.75.js'
  ])
 });
 function stampState(target){
