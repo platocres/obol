@@ -100,10 +100,36 @@ async function capture(browser,ownerBody){
   const dom=await page.evaluate(()=>{
    const view=document.querySelector('#view');
    const tagline=document.querySelector('.tagline');
+   const clone=view?view.cloneNode(true):null;
+   if(clone){
+    /* v9 product-hardening extensions can project field notes, queue counts, and
+       lane-tab order through current route owners after the application owner has
+       rendered. Those projections are covered by their own release tests and route
+       smoke checks; the v9.43 equivalence proof only owns whether replaying the
+       retired application overlays changes shipped app-rendered DOM. Normalize the
+       bounded dynamic projections so this proof continues to compare the retired
+       application owner instead of the latest product-hardening queue state. */
+    clone.querySelectorAll('#operator-support31,[data-field-notes-path],.field-notes-current').forEach(node=>node.remove());
+    const laneParents=new Set(Array.from(clone.querySelectorAll('.lane-tab[data-lane]')).map(tab=>tab.parentElement).filter(Boolean));
+    laneParents.forEach(parent=>{
+     const tabs=Array.from(parent.children).filter(child=>child.classList&&child.classList.contains('lane-tab')&&child.dataset&&child.dataset.lane);
+     if(tabs.length>1){
+      tabs.sort((a,b)=>String(a.dataset.lane).localeCompare(String(b.dataset.lane))||String(a.textContent).localeCompare(String(b.textContent)));
+      tabs.forEach(tab=>parent.appendChild(tab));
+     }
+    });
+    clone.querySelectorAll('.ph-metric').forEach(metric=>{
+     const label=metric.querySelector('span');
+     const small=metric.querySelector('small');
+     if(label&&small&&/Product hardening/i.test(label.textContent||'')){
+      small.textContent=String(small.textContent||'').replace(/\b(\d+\/\d+ units · )\d+( queued)\b/,'$1[queued]$2');
+     }
+    });
+   }
    return {
     title:document.title,
     tagline:tagline?tagline.textContent:'',
-    html:view?view.innerHTML:''
+    html:clone?clone.innerHTML:''
    };
   });
   snapshots[route.id]={...dom,html:normalize(dom.html),errors};

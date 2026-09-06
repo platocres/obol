@@ -1,3 +1,15 @@
+## v9.77 — Mines the active source-note cluster `source-note-cluster-web-upload-file-inclusion-001` for `web-upload-file-inclusion-expansion` from the complete private review-packet windows. The build keeps the output public-safe, extracts reusable operator mechanics, enriches the existing upload/inclusion proof-chain card, advances the cluster queue instead of resuming blind pending-note batches, and makes the Product Hardening Dashboard show that cluster progress directly
+
+- Adds `data/product-hardening/web-upload-inclusion-cluster-v9.77.js` as the public-safe product integration for this cluster.
+- Enriches the existing `web-upload-inclusion-proof-chain` card instead of creating a duplicate primary card.
+- Adds field-note guidance for file-handling impact ladders, file-read versus execution boundaries, canary and negative-control use, report evidence wording, and cluster-window split rationale.
+- Adds analyzer rules that recognize upload acceptance, serving behavior, inclusion transforms, fuzzing deltas, control pairs, and execution claims as separate Evidence facts.
+- Records completion metadata for the active cluster queue item and advances the source-note cluster ledger from 381 pending notes in 18 clusters to 341 pending notes in 17 clusters.
+- Updates the Product Hardening Dashboard so cluster-review progress, the last mined cluster, the next cluster, and the no-blind-batches handoff are first-class status instead of being hidden behind old-rubric or first-pass note counts.
+- Keeps adjacent XSS, credential, cracking, and SQLMap neighbor notes out of the upload/inclusion card instead of forcing packet-window neighbors into the wrong product surface.
+- Registers v9.77 in `data/current-release.js`.
+- Adds `tests/run-v9.77-tests.js` and updates source-cluster validation for the post-v9.77 ledger state.
+
 ## v9.76 — Repairs the Product Build Next handoff after v9.75 so the generated README and dashboard queue follow the active source-note cluster ledger instead of falling back to stale blind old-rubric batch language
 
 - Makes the Build Next queue hygiene owner aware of the v9.75 source-note cluster ledger.
