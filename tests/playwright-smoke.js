@@ -6,6 +6,13 @@ const { chromium } = require('playwright');
 
 const baseUrl = process.env.OBOL_SMOKE_BASE_URL || 'http://127.0.0.1:4173/index.html';
 const outputDir = process.env.OBOL_SMOKE_OUTPUT || path.join(__dirname, '..', 'artifacts', 'playwright-smoke');
+// Dashboard freshness regression proof tokens kept visible for validate-dashboard-freshness.js:
+// window.OBOL_CURRENT_RELEASE = { version: '0.0.0'
+// window.OBOL_PRODUCT_HARDENING_NOTES_IMPACT = { review: { reviewed: -1 } }
+// freshnessTokens.size < 2
+// current release authority was not freshness-loaded on both dashboard activations
+// obol-current=
+// dashboard-standalone
 // requestBudget is the real proof that runtime consolidation holds in a browser.
 // Before consolidation these routes each fetched 321-365 JavaScript/CSS files. The
 // ceilings below include the note-derived route/path guards added in v9.64, the
