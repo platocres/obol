@@ -1,8 +1,8 @@
 'use strict';
 (function(root){
 const release=Object.freeze({
- version:'9.73.0',
- label:'v9.73',
+ version:'9.74.0',
+ label:'v9.74',
  phase:'product-hardening',
  phaseLabel:'Product Hardening',
  orangeBaseline:'v8.8',
@@ -34,7 +34,10 @@ const release=Object.freeze({
   'data/product-hardening/dynamic-why-now-v9.71.js',
   'data/product-hardening/linux-final-remine-batch-v9.72.js',
   'data/product-hardening/linux-final-route-guard-v9.72.js',
-  'data/product-hardening/pending-disposition-batch-v9.73.js'
+  'data/product-hardening/pending-disposition-batch-v9.73.js',
+  'data/product-hardening/pending-disposition-batch-v9.74.js',
+  'data/product-hardening/path-copy-sanitizer-v9.74.js',
+  'data/product-hardening/source-note-clusters-current.js'
  ])
 });
 function stampState(target){
