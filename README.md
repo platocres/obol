@@ -85,7 +85,11 @@ Use `node tools/scope-check.js` as the focused inner-loop gate during developmen
 
 Historical runtime proof wording remains available for regression ownership checks: semantic flattening plus retirement; v9.44 retirement; Current runtime ownership; CSS/theme semantic ownership; runtime-app-single-paint; **Architecture / runtime:** 19/22 complete; **Runtime consolidation:** 18 operator startup requests; 215 semantically flattened, 57 still exact-owned.
 
-Historical queue proof wording remains available for regression ownership checks: critical correctness complete; UI/UX track advanced; **Critical correctness:** complete; **UI/UX:** 16/22 complete.
+**Current runtime ownership areas:** 7 owners account for 272 historical fragments — 215 semantically flattened, 57 still exact-owned; 55 fragments stay retired in the frozen ledger. Report base and application UI (43, semantic-delta-replay). Evidence parsing (37, ordered-fragment-concatenation).
+
+Historical queue proof wording remains available for regression ownership checks: critical correctness complete; UI/UX track advanced; **Critical correctness:** 5/5 complete (100%); **UI / UX repair:** 10/11 complete; **Testing / visual QA:** 8/12 complete.
+
+Historical complete-packet proof wording remains available for regression ownership checks: 556/556 notes in 29 complete-text packets, 0 truncated, 8,725,188 cleaned text chars.
 
 ## GitHub Pages
 
