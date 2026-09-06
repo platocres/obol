@@ -10,6 +10,7 @@ globalThis.__OBOL_DEFER_PRODUCT_HARDENING_EXTENSIONS__=true;
 require(path.join(root,'data/current-release.js'));
 assert.ok(releaseAtLeast(globalThis.OBOL_CURRENT_RELEASE.label,9,74),'current release should be v9.74 or newer');
 assert.ok(globalThis.OBOL_CURRENT_RELEASE.productHardeningExtensions.includes('data/product-hardening/pending-disposition-batch-v9.74.js'));
+assert.ok(globalThis.OBOL_CURRENT_RELEASE.productHardeningExtensions.includes('data/product-hardening/source-note-clusters-current.js'));
 
 globalThis.OBOL_NOTE_INTEGRATION={
  terminalDispositions:['modeled','private-reference-only','superseded','rejected'],
@@ -31,6 +32,7 @@ globalThis.liveCardById=(id)=>globalThis.CARDS[id]||null;
 globalThis.OBOL_INTAKE_V21={analyzeTerminal:()=>({activities:[]})};
 
 const batch=require(path.join(root,'data/product-hardening/pending-disposition-batch-v9.74.js'));
+const clusterLedger=require(path.join(root,'data/product-hardening/source-note-clusters-current.js'));
 assert.strictEqual(batch.status,'complete');
 assert.strictEqual(batch.rows.length,20,'v9.74 should disposition 20 pending notes');
 assert.strictEqual(batch.publicNotes.length,6,'v9.74 should publish six public-safe field notes');
@@ -47,12 +49,21 @@ assert.strictEqual(batch.privateOnlyAdded,1);
 assert.strictEqual(batch.supersededAdded,2);
 assert.strictEqual(batch.primaryCardsAdded,0,'pending batch 2 should not add primary path cards');
 assert.deepStrictEqual(batch.validate(),[]);
+assert.deepStrictEqual(clusterLedger.validate(),[]);
+assert.strictEqual(clusterLedger.status.pendingSourceNotes,381);
+assert.strictEqual(clusterLedger.clusterPass.id,'notes-global-source-clustering-v9.75');
+assert.strictEqual(clusterLedger.clusterPass.nextAfterPass,'source-note-cluster-review-001');
+assert.strictEqual(clusterLedger.seedClusters.length,6,'global cluster ledger should seed v9.74 cluster decisions');
+assert.strictEqual(clusterLedger.seedClusters.reduce((sum,cluster)=>sum+cluster.noteIds.length,0),20,'seed clusters should account for the v9.74 selected notes');
 assert.strictEqual(globalThis.OBOL_NOTE_INTEGRATION.ledger.reviewedCount,175);
 assert.strictEqual(globalThis.OBOL_NOTE_INTEGRATION.ledger.dispositionCounts.modeled,133);
 assert.strictEqual(globalThis.OBOL_NOTE_INTEGRATION.ledger.dispositionCounts['private-reference-only'],31);
 assert.strictEqual(globalThis.OBOL_NOTE_INTEGRATION.ledger.dispositionCounts.superseded,11);
 assert.strictEqual(globalThis.OBOL_NOTE_INTEGRATION.ledger.dispositionCounts['pending-review'],381);
-assert.strictEqual(globalThis.OBOL_PRODUCT_HARDENING.nextNotesBatch.id,'notes-disposition-pending-review-003');
+assert.strictEqual(globalThis.OBOL_PRODUCT_HARDENING.nextNotesBatch.id,'notes-global-source-clustering-v9.75');
+assert.strictEqual(globalThis.OBOL_PRODUCT_HARDENING.nextNotesBatch.queueMode,'cluster-first-global-pass');
+assert.ok(globalThis.OBOL_PRODUCT_HARDENING.sourceNoteClusterPass.acceptance.length>=5,'queue needs concrete global clustering acceptance');
+assert.ok(globalThis.OBOL_PRODUCT_HARDENING.items.some(item=>item.id==='notes-global-source-clustering-v9.75'),'queue should expose global source-note clustering item');
 const clusterIds=new Set(batch.clusters.map(cluster=>cluster.id));
 const clusterNoteIds=new Set(batch.clusters.flatMap(cluster=>cluster.noteIds));
 for(const cluster of batch.clusters){
@@ -99,4 +110,4 @@ for(const fact of ['web.filter_boundary_observed','web.command_injection_candida
 run(['tools/validate-card-action-spine-v9.71.js']);
 run(['tools/validate-path-card-uniqueness-v9.72.js']);
 run(['tools/validate-release-pr.js','--repo-only']);
-console.log('v9.74 pending source-note disposition batch cluster-first checks passed.');
+console.log('v9.74 pending source-note disposition batch cluster-first and global cluster queue checks passed.');
