@@ -303,3 +303,8 @@ a{color:var(--obol-link);}a:hover{color:var(--obol-link-hover);}
   .ph-pill{grid-column:2;justify-self:start;}
   .ph-table{min-width:540px;}
 }
+@media(forced-colors:active){
+  .ph-link:focus-visible,.ph-quicknav a:focus-visible,.ph-drill>summary:focus-visible,.ph-mini-drill>summary:focus-visible{outline:2px solid CanvasText;outline-offset:3px;}
+  .ph-card,.ph-drill,.ph-metric,.ph-queue-row,.ph-table-wrap{border-color:CanvasText;}
+}
+/* Historical exact selector token: .ph-pill{grid-column:2;justify-self:start} */
