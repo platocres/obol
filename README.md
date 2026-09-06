@@ -38,32 +38,31 @@ Obol remains a website the user can visit and use: no backend, account system, t
 ## Product Build Next
 
 <!-- OBOL-PRODUCT-BUILD-NEXT:START -->
-Generated from the same queue sources as the Product Hardening Dashboard. Do not edit this block manually outside the queue owners or their current-release projection.
+Generated from the same queue sources as the Product Hardening Dashboard. Do not edit this block manually.
 
-**Current product-hardening queue:** 268/658 complete (41%), 7 concrete queued, 9 modeled/standing items.
+**Current product-hardening queue:** 226/657 complete (34%), 6 concrete queued, 9 modeled/standing items.
 **Private notes source:** [`https://github.com/platocres/obol-source-notes/tree/main/sources/raw`](https://github.com/platocres/obol-source-notes/tree/main/sources/raw) — 556 notes and 1326 embedded resources accounted.
 **Private review packets:** `platocres/obol-source-notes@agent/review-packets:data/review-packets/manifest.json` — 556/556 notes, 29 packets, 0 truncated.
-**Notes review status:** 175/556 reviewed; 381 pending; 133 modeled; 31 private-only.
-**Source re-mining status:** 135/135 full-spectrum re-mined; 0 old-rubric-only notes remain.
-**Source-note cluster status:** 381/381 pending notes clustered into 18 public-safe cluster review items; 0 pending notes remain unclustered.
-**Next notes batch:** **Mine web upload and file inclusion cluster** (`source-note-cluster-web-upload-file-inclusion-001`) — read the complete packet text for `web-upload-file-inclusion-expansion` from `platocres/obol-source-notes@agent/review-packets:data/review-packets/manifest.json`.
-**Selector:** Select cluster `web-upload-file-inclusion-expansion` from `data/product-hardening/source-note-clusters-current.js`, re-read every assigned source-window note from complete packet text, and mine the whole cluster before terminal dispositions.
-**Acceptance:** Ship public-safe product mechanics from the whole cluster, then disposition each note with card/analyzer/field-note/report/queue/private rationale. Do not create a new primary card unless the cluster has a complete v9.71 action spine and passes v9.72 uniqueness. Do not resume blind 20-note batches.
+**Notes review status:** 135/556 reviewed; 401 pending; 133 modeled; 31 private-only.
+**Source re-mining status:** 126/175 full-spectrum re-mined; 49 old-rubric-only notes remain.
+**Next notes batch:** **Old-rubric reviewed source re-mining batch 3** (`notes-batch-old-rubric-reviewed-remine-003`) — 9 notes from `platocres/obol-source-notes@agent/review-packets:data/review-packets/manifest.json`.
+**Selector:** Select the next 9 already-reviewed notes that lack full-spectrum audit rows, using manifest/source order and excluding themes already closed by released re-mining proof.
+**Acceptance:** Every selected note receives a 16-dimension re-mining audit row plus public-safe product output, covered rationale, queued product gap, or private-boundary proof. Do not advance to offline/performance work after this batch unless both note gates are complete.
 
-**Recommended work package:** **Notes Impact and Source Re-mining** — 3 concrete live items / 19 tracked.
-**Next concrete entry:** **Mine web upload and file inclusion cluster**
+**Recommended work package:** **Notes Impact and Source Re-mining** — 2 concrete live items / 18 tracked.
+**Next concrete entry:** **Re-mine all already-reviewed notes from original sources**
 **Ownership area:** `notes/impact-packets`
 **Package dependencies:** Notes Integration Foundation.
 **Package detail:** Use the Product Hardening Dashboard for full track ledgers and `data/product-hardening/work-packages.js` for the long-form package guidance.
 
 **Highest-priority concrete live items:**
-1. **Mine web upload and file inclusion cluster** — Use the completed v9.75 cluster ledger to mine the first ready cluster as one coherent product build before terminal note dispositions resume.
-2. **Burn down all 556 note dispositions** — Continue note mining from cluster queue items until every source note has a terminal disposition.
-3. **Quiet service worker caching** — Improve repeat-load and offline behavior without prompting users to install anything.
-4. **IndexedDB workspace storage** — Support durable larger local workspaces, multiple engagements, and cached indexes while remaining browser-local.
-5. **Web Workers for heavy tasks** — Move evidence parsing, search indexing, and report generation off the UI thread.
+1. **Re-mine all already-reviewed notes from original sources** — Concrete notes-first gate: 9 already-reviewed old-rubric-only notes still need full-spectrum source re-mining before offline/performance work can become next.
+2. **Burn down all 556 note dispositions** — Concrete notes-first gate: 381 private source notes still need disposition/mining before offline/performance work can become next.
+3. **Mine web upload and file inclusion cluster** — Read the complete packet text for the first ready cluster and ship product mechanics before terminal dispositions resume.
+4. **Quiet service worker caching** — Improve repeat-load and offline behavior without prompting users to install anything.
+5. **IndexedDB workspace storage** — Support durable larger local workspaces, multiple engagements, and cached indexes while remaining browser-local.
 
-**Queue automation:** `data/product-hardening/product-hardening-queue.js`, `data/product-hardening/source-note-clusters-current.js`, `data/product-hardening/build-next-queue-hygiene-current.js`, `data/product-hardening/note-progress-current.js`, and `data/product-hardening/work-packages.js` are the queue owners. The dashboard and this README projection consume those same sources.
+**Queue automation:** `data/product-hardening/product-hardening-queue.js`, `data/product-hardening/build-next-queue-hygiene-current.js`, `data/product-hardening/note-progress-current.js`, and `data/product-hardening/work-packages.js` are the queue owners. The dashboard and this README projection consume those same sources.
 Generated by `node tools/sync-product-build-next.js --write`. Verify with `node tools/sync-product-build-next.js --check`.
 <!-- OBOL-PRODUCT-BUILD-NEXT:END -->
 
