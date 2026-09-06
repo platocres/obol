@@ -31,6 +31,10 @@ function unique(list) {
   return Array.from(new Set((list || []).filter(Boolean)));
 }
 
+function formatNumber(value) {
+  return Number(value || 0).toLocaleString('en-US');
+}
+
 function releaseProductHardeningExtensions() {
   const release = sandbox.window.OBOL_CURRENT_RELEASE || {};
   const manifest = sandbox.window.OBOL_RUNTIME_MANIFEST || {};
@@ -180,8 +184,24 @@ function nextNotesBatchLines() {
 function sourceReviewPacketLines() {
   if (!sourceReviewPackets) return [];
   const p = sourceReviewPackets;
+  const htb = Array.isArray(p.sources) ? p.sources.find(source => source.sourceId === 'htb-penetration-tester') : null;
+  const offsec = Array.isArray(p.sources) ? p.sources.find(source => source.sourceId === 'offsec-pen-200') : null;
   return [
-    '**Private review packets:** `' + p.pointer + '` — ' + p.packetizedNotes + '/' + p.expectedNotes + ' notes, ' + p.packetCount + ' packets, ' + p.truncatedNotes + ' truncated.'
+    '**Private review packets:** `' + p.pointer + '` — ' + p.packetizedNotes + '/' + p.expectedNotes + ' notes, ' + p.packetCount + ' packets, ' + p.truncatedNotes + ' truncated.',
+    '**Complete source packet proof:** ' + p.packetizedNotes + '/' + p.expectedNotes + ' notes in ' + p.packetCount + ' complete-text packets, ' + p.truncatedNotes + ' truncated, ' + formatNumber(p.reviewTextChars) + ' cleaned text chars.',
+    htb ? '**Raw source proof:** workflow run ' + p.proofRunId + ' verified HTB ENEX ' + formatNumber(htb.bytes) + ' bytes' + (offsec ? ' and OffSec PEN-200 ENEX ' + formatNumber(offsec.bytes) + ' bytes' : '') + ' before packet extraction.' : null,
+  ].filter(Boolean);
+}
+
+function runtimeConsolidationLines() {
+  const p = runtimeConsolidation.projection();
+  if (!p) return [];
+  return [
+    '**Runtime consolidation:** ' + p.startupRequests.after + ' operator startup requests, down from ' + p.startupRequests.before + ' (' + p.startupRequests.reductionPct + '% fewer).',
+    '**Current runtime ownership areas:** ' + p.areas.length + ' owners account for ' + p.consolidatedFragments + ' historical fragments — ' + p.flattenedHistoricalFragments + ' semantically flattened, ' + p.liveHistoricalFragments + ' still exact-owned; ' + p.retiredFragments + ' fragments stay retired in the frozen ledger.',
+    '**Runtime area owners:** ' + p.areas.map(area => area.label + ' (' + area.fragments + ', ' + area.strategy + ')').join(' · ') + '.',
+    '**Measured in Chromium (' + p.measured.release + '):** ' + p.measured.routes.map(route => route.label + ' ' + route.before + '→' + route.after).join(' · ') + ' JavaScript/CSS requests.',
+    '**Runtime consolidation owner:** `data/runtime-consolidation-current.js` feeds this README projection and the Product Hardening Dashboard.'
   ];
 }
 
@@ -202,6 +222,7 @@ function block() {
     '**Current product-hardening queue:** ' + totals.complete + '/' + totals.total + ' complete (' + totals.pct + '%), ' + totals.queued + ' concrete queued, ' + totals.modeled + ' modeled/standing items.',
     '**Private notes source:** ' + sourceLink(q.notes.privateRepo) + ' — ' + totals.notes + ' notes and ' + totals.resources + ' embedded resources accounted.',
     ...sourceReviewPacketLines(),
+    ...runtimeConsolidationLines(),
     ...notesStatusLines(),
     ...nextNotesBatchLines(),
     '',
