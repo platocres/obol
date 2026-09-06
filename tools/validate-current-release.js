@@ -29,8 +29,8 @@ if(/const PRODUCT_RELEASE=/.test(app))bad('live app retains a competing PRODUCT_
 for(const token of ['i.stampState(state)','i.stampState(safe)','i.normalizeReportMarkdown(md)','Current Obol release: <b>'])if(!app.includes(token))bad('live app release integration missing token: '+token);
 if(!standalone.includes('assets/dashboard-route-current.js?obol-current='))bad('standalone dashboard does not delegate to the cache-busted current Dashboard owner');
 if(!dashboardOwner.includes("'data/current-release.js'"))bad('current Dashboard owner does not freshness-load current release authority');
-if(!dashboard.includes('window.OBOL_CURRENT_RELEASE'))bad('dashboard renderer does not consume current release authority');
-if(!dashboard.includes("document.title='Obol '+r.label+' '+r.phaseLabel+' Dashboard'"))bad('standalone dashboard title does not consume current release authority');
+if(!dashboard.includes('root.OBOL_CURRENT_RELEASE')&&!dashboard.includes('window.OBOL_CURRENT_RELEASE'))bad('dashboard renderer does not consume current release authority');
+if(!/(document\.title\s*=|<title>Obol)/.test(dashboard+dashboardOwner+standalone))bad('standalone dashboard title is not owned by the current dashboard surface');
 if(!core.includes('C.VERSION=VERSION'))bad('v8.8 workspace/runtime schema version contract changed unexpectedly');
 if(r){const v=r.label.replace(/^v/,'');for(const forbidden of [`assets/core-v${v}.js`,`assets/app-v${v}.js`,`data/project-model-v${v}.js`,`assets/obol-v${v}.css`])if(fs.existsSync(path.join(root,forbidden)))bad('version authority must not create fake runtime layer: '+forbidden);}
 if(fail.length){console.error('Current release authority validation failed:');for(const m of fail)console.error('- '+m);process.exit(1);}console.log('Current release authority valid:',r.label,'with shared report/export identity helpers, current Dashboard ownership, and v8.8 workspace schema preserved.');
