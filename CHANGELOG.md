@@ -1,3 +1,11 @@
+## v9.76 — Repairs the Product Build Next handoff after v9.75 so the generated README and dashboard queue follow the active source-note cluster ledger instead of falling back to stale blind old-rubric batch language
+
+- Makes the Build Next queue hygiene owner aware of the v9.75 source-note cluster ledger.
+- Promotes `source-note-cluster-web-upload-file-inclusion-001` as the concrete next notes item when the cluster ledger is complete.
+- Keeps the note disposition burn-down gate active while routing the next work through whole-cluster mining.
+- Updates generated Product Build Next rendering so cluster-review batches use `targetCount`, `sourceSelector`, and whole-cluster acceptance text.
+- Adds a v9.76 regression test that fails if Product Build Next regresses to blind old-rubric or pending slices after clustering.
+
 ## v9.75 — Completes the global source-note clustering pass requested after v9.74. Instead of continuing with blind 20-note pending batches, the remaining pending source-note work is now organized into cluster review queue items
 
 - Updates `data/product-hardening/source-note-clusters-current.js` from a seeded handoff into the active global cluster ledger.
