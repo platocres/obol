@@ -76,6 +76,15 @@ a{color:var(--obol-link);}a:hover{color:var(--obol-link-hover);}
   border:1px solid rgba(142,203,255,.25);
   background:rgba(13,27,42,.72);
 }
+.ph-link:hover{
+  color:var(--obol-link-hover);
+  border-color:rgba(142,203,255,.55);
+  background:rgba(20,48,75,.88);
+}
+.ph-link:focus-visible{
+  outline:3px solid var(--obol-focus);
+  outline-offset:3px;
+}
 .ph-quicknav{
   display:flex;
   flex-wrap:wrap;
