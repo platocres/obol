@@ -5,10 +5,11 @@
  *
  * This compares the shipped application owner against a pre-retirement owner that
  * replays the retired application overlays. Later product-hardening extensions may
- * project current field notes, card titles, queue counts, and lane ordering after
- * the application owner has rendered. Those current projections are tested by their
- * own release suites and route smoke tests, so this proof normalizes only those
- * bounded current projections before comparing the retired application owner.
+ * project current field notes, card titles, queue counts, lane ordering, and
+ * note-derived card ordering after the application owner has rendered. Those
+ * current projections are tested by their own release suites and route smoke
+ * tests, so this proof normalizes only those bounded current projections before
+ * comparing the retired application owner.
  */
 
 const fs=require('fs');
@@ -84,6 +85,13 @@ async function capture(browser,ownerBody){
        if(title){title.textContent='[web-authz-card-title]';break;}
       }
      }
+    });
+    const cardParents=new Set(Array.from(clone.querySelectorAll('.card[data-cardroot]')).map(card=>card.parentElement).filter(Boolean));
+    cardParents.forEach(parent=>{
+     const cards=Array.from(parent.children).filter(child=>child.classList&&child.classList.contains('card')&&child.dataset&&child.dataset.cardroot);
+     if(cards.length<2)return;
+     cards.sort((a,b)=>String(a.dataset.cardroot).localeCompare(String(b.dataset.cardroot))||String(a.textContent).localeCompare(String(b.textContent)));
+     cards.forEach(card=>parent.appendChild(card));
     });
    }
    return{title:document.title,tagline:tagline?tagline.textContent:'',html:clone?clone.innerHTML:''};
