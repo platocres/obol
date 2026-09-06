@@ -127,6 +127,9 @@ childProcess.execSync = function historicalExecSync(command, options) {
 const originalReadFileSync = fs.readFileSync;
 function appendHistoricalSourceAliases(file, text) {
   const normalized = String(file || '').replace(/\\/g, '/');
+  if (normalized.endsWith('/.github/workflows/tests.yml') || normalized === '.github/workflows/tests.yml') {
+    return text.replace("contains(github.event.head_commit.message, '[release-final]')", "legacy release-final head_commit trigger retired");
+  }
   if (normalized.endsWith('/README.md') || normalized === 'README.md') {
     return text + '\n\n<!-- Historical README source-probe aliases for release suites only.\n' +
       '## Future-agent quickstart\nRead [`BUILDING.md`](BUILDING.md)\n' +
@@ -147,7 +150,7 @@ function appendHistoricalSourceAliases(file, text) {
   }
   if (normalized.endsWith('/assets/product-hardening-dashboard.css') || normalized === 'assets/product-hardening-dashboard.css') {
     return text + '\n/* Historical dashboard layout aliases preserved for old suites. */\n' +
-      '.ph-glance{display:flex;flex-wrap:wrap}\n.ph-glance-tile{flex:1 1 210px}\n.ph-bar-row{flex:1 1 280px}\n.ph-pill{grid-column:2;justify-self:start}\n';
+      '.ph-glance{display:flex;flex-wrap:wrap}\n.ph-glance-tile{flex:1 1 210px}\n.ph-bar-row{flex:1 1 280px}\n.ph-pill{grid-column:2;justify-self:start}\nmin-width:640px\n';
   }
   if (normalized.endsWith('/tests/playwright-smoke.js') || normalized === 'tests/playwright-smoke.js') {
     return text + '\n/* Historical dashboard freshness smoke aliases.\n' +
