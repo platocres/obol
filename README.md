@@ -4,7 +4,7 @@ Obol is a static, browser-local workspace for OSCP-style labs, Active Directory 
 
 Live site: `https://platocres.github.io/obol/`
 
-Current release: **v9.76**
+Current release: **v9.77**
 
 Open `#/dashboard` for the active Product Hardening Dashboard and Product Build Next queue.
 
@@ -40,26 +40,27 @@ Obol remains a website the user can visit and use: no backend, account system, t
 <!-- OBOL-PRODUCT-BUILD-NEXT:START -->
 Generated from the same queue sources as the Product Hardening Dashboard. Do not edit this block manually.
 
-**Current product-hardening queue:** 226/657 complete (34%), 6 concrete queued, 9 modeled/standing items.
+**Current product-hardening queue:** 227/657 complete (35%), 6 concrete queued, 9 modeled/standing items.
 **Private notes source:** [`https://github.com/platocres/obol-source-notes/tree/main/sources/raw`](https://github.com/platocres/obol-source-notes/tree/main/sources/raw) — 556 notes and 1326 embedded resources accounted.
 **Private review packets:** `platocres/obol-source-notes@agent/review-packets:data/review-packets/manifest.json` — 556/556 notes, 29 packets, 0 truncated.
-**Notes review status:** 175/556 reviewed; 381 pending; 133 modeled; 31 private-only.
-**Source re-mining status:** 175/175 full-spectrum re-mined; 0 old-rubric-only notes remain.
-**Source-note cluster status:** 381/381 pending notes clustered into 18 public-safe cluster review items; 0 pending notes remain unclustered.
-**Next notes batch:** **File upload, file inclusion, traversal, and log-poisoning proof boundaries** (`source-note-cluster-web-upload-file-inclusion-001`) — 40 notes from `platocres/obol-source-notes@agent/review-packets:data/review-packets/manifest.json`.
-**Queue mode:** `cluster-review` for cluster `web-upload-file-inclusion-expansion`.
-**Selector:** Read complete packet text for cluster web-upload-file-inclusion-expansion from platocres/obol-source-notes@agent/review-packets:data/review-packets/manifest.json; mine the whole cluster before terminal dispositions.
+**Notes review status:** 215/556 reviewed; 341 pending; 133 modeled; 31 private-only.
+**Source re-mining status:** 215/215 full-spectrum re-mined; 0 old-rubric-only notes remain.
+**Source-note cluster status:** 341/341 pending notes clustered into 17 public-safe cluster review items; 0 pending notes remain unclustered.
+**Last notes batch:** **File upload, file inclusion, traversal, and log-poisoning proof boundaries** (`source-note-cluster-web-upload-file-inclusion-001`) — completed in v9.77 from 441,925 characters of complete review text.
+**Next notes batch:** **IDOR, HTTP verb tampering, and authorization replay boundaries** (`source-note-cluster-web-authz-idor-verb-tampering`) — 18 notes from `platocres/obol-source-notes@agent/review-packets:data/review-packets/manifest.json`.
+**Queue mode:** `cluster-review` for cluster `web-authz-idor-verb-tampering`.
+**Selector:** Read complete packet text for cluster web-authz-idor-verb-tampering from platocres/obol-source-notes@agent/review-packets:data/review-packets/manifest.json; mine the whole cluster before terminal dispositions.
 **Acceptance:** Ship public-safe product mechanics from the whole cluster, then disposition each note with card/analyzer/field-note/report/queue/private rationale.
 
 **Recommended work package:** **Notes Impact and Source Re-mining** — 2 concrete live items / 19 tracked.
-**Next concrete entry:** **File upload, file inclusion, traversal, and log-poisoning proof boundaries**
+**Next concrete entry:** **IDOR, HTTP verb tampering, and authorization replay boundaries**
 **Ownership area:** `notes/impact-packets`
 **Package dependencies:** Notes Integration Foundation.
 **Package detail:** Use the Product Hardening Dashboard for full track ledgers and `data/product-hardening/work-packages.js` for the long-form package guidance.
 
 **Highest-priority concrete live items:**
-1. **File upload, file inclusion, traversal, and log-poisoning proof boundaries** — Cluster-driven notes gate: 40 pending source notes in `web-upload-file-inclusion-expansion` must be mined from complete packet text before terminal dispositions resume.
-2. **Burn down all 556 note dispositions** — Concrete notes-first gate: 381 private source notes remain pending and are now organized into 18 cluster review items; mine the active cluster queue before terminal dispositions continue.
+1. **IDOR, HTTP verb tampering, and authorization replay boundaries** — Cluster-driven notes gate: 18 pending source notes in `web-authz-idor-verb-tampering` must be mined from complete packet text before terminal dispositions resume.
+2. **Burn down all 556 note dispositions** — Concrete notes-first gate: 341 private source notes remain pending and are organized into 17 cluster review items; mine the active cluster queue before terminal dispositions continue.
 3. **Quiet service worker caching** — Improve repeat-load and offline behavior without prompting users to install anything.
 4. **IndexedDB workspace storage** — Support durable larger local workspaces, multiple engagements, and cached indexes while remaining browser-local.
 5. **Web Workers for heavy tasks** — Move evidence parsing, search indexing, and report generation off the UI thread.
