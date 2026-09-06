@@ -11,6 +11,7 @@ const outputDir = process.env.OBOL_SMOKE_OUTPUT || path.join(__dirname, '..', 'a
 // window.OBOL_PRODUCT_HARDENING_NOTES_IMPACT = { review: { reviewed: -1 } }
 // freshnessTokens.size < 2
 // current release authority was not freshness-loaded on both dashboard activations
+// route.whenRendered
 // obol-current=
 // dashboard-standalone
 // requestBudget is the real proof that runtime consolidation holds in a browser.
