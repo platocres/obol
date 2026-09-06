@@ -10,9 +10,9 @@ Open `#/dashboard` for the active Product Hardening Dashboard and Product Build 
 
 The README is the entrypoint and current handoff. The README is not a changelog. Detailed build mechanics live in [`docs/AGENT-WORKFLOW.md`](docs/AGENT-WORKFLOW.md), release mechanics live in [`BUILDING.md`](BUILDING.md), and release history lives in [`CHANGELOG.md`](CHANGELOG.md).
 
-## Future-agent quickstart
+## Continue developing (start here)
 
-Told to "read the README and keep developing"? This is the single agent quickstart.
+Told to "read the README and keep developing"? This is the single agent quickstart and future-agent handoff.
 
 1. **Use one active PR.** Keep one open release/product-hardening PR for active product-hardening work. Check for open release/product-hardening PRs first. Continue the active one if it exists; otherwise open one normal non-draft PR for the work.
 2. **Read the canonical docs by ownership.** Use [`docs/AGENT-WORKFLOW.md`](docs/AGENT-WORKFLOW.md) for the full agent loop, [`BUILDING.md`](BUILDING.md) for release/CI rules, [`docs/PRODUCT-HARDENING.md`](docs/PRODUCT-HARDENING.md) for the product-hardening contract, and the notes docs below only when the queued work involves note mining.
