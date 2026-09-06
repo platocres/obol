@@ -40,13 +40,12 @@ Obol remains a website the user can visit and use: no backend, account system, t
 <!-- OBOL-PRODUCT-BUILD-NEXT:START -->
 Generated from the same queue sources as the Product Hardening Dashboard. Do not edit this block manually.
 
-**Current product-hardening queue:** 227/657 complete (35%), 6 concrete queued, 9 modeled/standing items.
+**Current product-hardening queue:** 226/657 complete (34%), 6 concrete queued, 9 modeled/standing items.
 **Private notes source:** [`https://github.com/platocres/obol-source-notes/tree/main/sources/raw`](https://github.com/platocres/obol-source-notes/tree/main/sources/raw) — 556 notes and 1326 embedded resources accounted.
 **Private review packets:** `platocres/obol-source-notes@agent/review-packets:data/review-packets/manifest.json` — 556/556 notes, 29 packets, 0 truncated.
 **Notes review status:** 215/556 reviewed; 341 pending; 133 modeled; 31 private-only.
 **Source re-mining status:** 215/215 full-spectrum re-mined; 0 old-rubric-only notes remain.
 **Source-note cluster status:** 341/341 pending notes clustered into 17 public-safe cluster review items; 0 pending notes remain unclustered.
-**Last notes batch:** **File upload, file inclusion, traversal, and log-poisoning proof boundaries** (`source-note-cluster-web-upload-file-inclusion-001`) — completed in v9.77 from 441,925 characters of complete review text.
 **Next notes batch:** **IDOR, HTTP verb tampering, and authorization replay boundaries** (`source-note-cluster-web-authz-idor-verb-tampering`) — 18 notes from `platocres/obol-source-notes@agent/review-packets:data/review-packets/manifest.json`.
 **Queue mode:** `cluster-review` for cluster `web-authz-idor-verb-tampering`.
 **Selector:** Read complete packet text for cluster web-authz-idor-verb-tampering from platocres/obol-source-notes@agent/review-packets:data/review-packets/manifest.json; mine the whole cluster before terminal dispositions.
@@ -60,7 +59,7 @@ Generated from the same queue sources as the Product Hardening Dashboard. Do not
 
 **Highest-priority concrete live items:**
 1. **IDOR, HTTP verb tampering, and authorization replay boundaries** — Cluster-driven notes gate: 18 pending source notes in `web-authz-idor-verb-tampering` must be mined from complete packet text before terminal dispositions resume.
-2. **Burn down all 556 note dispositions** — Concrete notes-first gate: 341 private source notes remain pending and are organized into 17 cluster review items; mine the active cluster queue before terminal dispositions continue.
+2. **Burn down all 556 note dispositions** — Concrete notes-first gate: 341 private source notes remain pending and are now organized into 17 cluster review items; mine the active cluster queue before terminal dispositions continue.
 3. **Quiet service worker caching** — Improve repeat-load and offline behavior without prompting users to install anything.
 4. **IndexedDB workspace storage** — Support durable larger local workspaces, multiple engagements, and cached indexes while remaining browser-local.
 5. **Web Workers for heavy tasks** — Move evidence parsing, search indexing, and report generation off the UI thread.

@@ -11,7 +11,7 @@
  * suppresses historical schedulers and commits current route owners last.
  *
  * Historical fragment order sha256: 40e3006d9423d669acf5869b577ecf56a6ca2ee1629c95fd0fcc5d242d2c5f27
- * Generated body sha256: 77eb24f5facb2906836ed60916322396145a304d50e61246afbc50eccfdd8eef
+ * Generated body sha256: 38fef748ca6e56888f0b3eb90c39e05d1adbb37c62c7da7c30bc8e30e4da24e5
  * First historical fragment: assets/report-v2.js
  * Last historical fragment:  assets/app-v8.8.js
  */
@@ -1993,8 +1993,8 @@ if(__nativeMutationObserver)root.MutationObserver=__nativeMutationObserver;
 'use strict';
 (function(root){
 const release=Object.freeze({
- version:'9.76.0',
- label:'v9.76',
+ version:'9.77.0',
+ label:'v9.77',
  phase:'product-hardening',
  phaseLabel:'Product Hardening',
  orangeBaseline:'v8.8',
@@ -2030,7 +2030,8 @@ const release=Object.freeze({
   'data/product-hardening/pending-disposition-batch-v9.74.js',
   'data/product-hardening/path-copy-sanitizer-v9.74.js',
   'data/product-hardening/source-note-clusters-current.js',
-  'data/product-hardening/global-source-note-clustering-v9.75.js'
+  'data/product-hardening/global-source-note-clustering-v9.75.js',
+  'data/product-hardening/web-upload-inclusion-cluster-v9.77.js'
  ])
 });
 function stampState(target){
