@@ -60,11 +60,13 @@ function boxAlreadyCurrent(box,why){
  const text=str(box.innerText||box.textContent||'');
  return text.includes(why.title)&&text.includes(why.body);
 }
+function pruneExternalBoxes(view){
+ allWhyBoxes().forEach(box=>{if(!view.contains(box))box.remove();});
+}
 function replaceOrInsert(cardRoot,view,why){
- const boxes=allWhyBoxes();
- boxes.forEach(box=>{if(!view.contains(box))box.remove();});
+ pruneExternalBoxes(view);
  const scoped=Array.from(view.querySelectorAll('[data-obol-dynamic-why-now]'));
- if(scoped.length===1&&boxAlreadyCurrent(scoped[0],why))return;
+ if(scoped.length===1&&boxAlreadyCurrent(scoped[0],why))return false;
  const html=boxHtml(why);
  if(scoped.length){
   scoped[0].outerHTML=html;
@@ -76,6 +78,7 @@ function replaceOrInsert(cardRoot,view,why){
  }
  const finalBoxes=Array.from(view.querySelectorAll('[data-obol-dynamic-why-now]'));
  finalBoxes.slice(1).forEach(box=>box.remove());
+ return true;
 }
 function stabilize(){
  if(typeof document==='undefined'||!isCardRoute())return null;
@@ -101,12 +104,18 @@ function schedule(){
  else if(typeof root.setTimeout==='function')root.setTimeout(run,0);
  else run();
 }
+function scheduleBurst(){
+ schedule();
+ if(typeof root.setTimeout==='function'){
+  [75,150,300,600,1200].forEach(delay=>root.setTimeout(schedule,delay));
+ }
+}
 function patchFunction(name){
  if(typeof root[name]!=='function'||root[name].__obolWhyNowRouteStable)return;
  const original=root[name];
  root[name]=function obolWhyNowRouteStable(){
   const result=original.apply(this,arguments);
-  schedule();
+  scheduleBurst();
   return result;
  };
  root[name].__obolWhyNowRouteStable=true;
@@ -118,18 +127,13 @@ function install(){
  patchFunction('route');
  patchFunction('viewCard');
  if(typeof root.addEventListener==='function'){
-  root.addEventListener('hashchange',schedule);
-  root.addEventListener('DOMContentLoaded',schedule);
-  root.addEventListener('load',schedule);
+  root.addEventListener('hashchange',scheduleBurst);
+  root.addEventListener('DOMContentLoaded',scheduleBurst);
+  root.addEventListener('load',scheduleBurst);
  }
- if(typeof MutationObserver!=='undefined'&&typeof document!=='undefined'){
-  const start=()=>{if(document.body&&!root.__OBOL_DYNAMIC_WHY_NOW_ROUTE_OBSERVER__){root.__OBOL_DYNAMIC_WHY_NOW_ROUTE_OBSERVER__=new MutationObserver(schedule);root.__OBOL_DYNAMIC_WHY_NOW_ROUTE_OBSERVER__.observe(document.body,{childList:true,subtree:true});schedule();}};
-  start();
-  if(typeof root.addEventListener==='function')root.addEventListener('DOMContentLoaded',start);
- }
- schedule();
+ scheduleBurst();
 }
-const api=Object.freeze({wave:WAVE,install,stabilize,buildWhy,currentCardRoot});
+const api=Object.freeze({wave:WAVE,install,stabilize,buildWhy,currentCardRoot,boxAlreadyCurrent});
 root.OBOL_DYNAMIC_WHY_NOW_ROUTE_STABILITY_V977=api;
 install();
 if(typeof module!=='undefined'&&module.exports)module.exports=api;
