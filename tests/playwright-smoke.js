@@ -13,8 +13,9 @@ const outputDir = process.env.OBOL_SMOKE_OUTPUT || path.join(__dirname, '..', 'a
 // v9.67 action-first cleanup data, the v9.69 upload/inclusion re-mining extension,
 // the v9.70 client/session analyzer, the v9.71 action-spine AD/MSF re-mining
 // extension, the v9.71 dynamic why-now decorator, the v9.72 final Linux
-// re-mining route guard, and the v9.73-v9.74 pending disposition batches. They
-// still fail loudly if the historical fragment chain leaks back into loading.
+// re-mining route guard, the v9.73-v9.74 pending disposition batches, and the
+// v9.74 source-note cluster queue ledger. They still fail loudly if the historical
+// fragment chain leaks back into loading.
 const routes = [
   { id: 'home', hash: '#/home', marker: /Home/i, requestBudget: 58 },
   { id: 'targets', hash: '#/boxes', marker: /target/i, requestBudget: 62 },
