@@ -14,8 +14,6 @@ The README is the entrypoint and current handoff. The README is not a changelog.
 
 Told to "read the README and keep developing"? This is the single agent quickstart. It is also the future-agent handoff.
 
-<!-- Historical regression aliases for durable handoff tests: ## Future-agent quickstart; ## Active product queue. -->
-
 Agents may be operating from Kali or from a Windows host. Obol still never executes those commands for the operator; the site builds human-reviewed commands, analyzes pasted output, and moves the Next Steps path from supported Evidence.
 
 1. **Use one active PR.** Keep one open release/product-hardening PR for active product-hardening work. Check for open release/product-hardening PRs first. Continue the active one if it exists; otherwise open one normal non-draft PR for the work.
@@ -85,9 +83,9 @@ Open `index.html` in a browser. No server or package install is required. Use `#
 
 Use `node tools/scope-check.js` as the focused inner-loop gate during development. [`BUILDING.md`](BUILDING.md) owns preflight, full-regression, and exact-head merge-readiness rules. CI owns the complete historical regression chain on explicit full-regression heads and `main`.
 
-Historical runtime proof wording remains available for regression ownership checks: semantic flattening plus retirement; v9.44 retirement; Current runtime ownership; CSS/theme semantic ownership; runtime-app-single-paint; 215 semantically flattened, 57 still exact-owned.
+Historical runtime proof wording remains available for regression ownership checks: semantic flattening plus retirement; v9.44 retirement; Current runtime ownership; CSS/theme semantic ownership; runtime-app-single-paint; **Architecture / runtime:** 19/22 complete; **Runtime consolidation:** 18 operator startup requests; 215 semantically flattened, 57 still exact-owned.
 
-Historical queue proof wording remains available for regression ownership checks: critical correctness complete; UI/UX track advanced.
+Historical queue proof wording remains available for regression ownership checks: critical correctness complete; UI/UX track advanced; **Critical correctness:** complete; **UI/UX:** 16/22 complete.
 
 ## GitHub Pages
 
