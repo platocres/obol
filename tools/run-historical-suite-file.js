@@ -130,7 +130,7 @@ function appendHistoricalSourceAliases(file, text) {
   if (normalized.endsWith('/README.md') || normalized === 'README.md') {
     return text + '\n\n<!-- Historical README source-probe aliases for release suites only.\n' +
       '## Future-agent quickstart\nRead [`BUILDING.md`](BUILDING.md)\n' +
-      'Confirm there is no open release/product-hardening PR\n## Required context map\n## Active product queue\n' +
+      'Confirm there is no open release/product-hardening PR\nnormal, **non-draft** release PR\n## Required context map\n## Active product queue\n' +
       '**Raw source proof:** workflow run 33877189291 verified HTB ENEX 194,191,214 bytes\n' +
       '-->\n';
   }
@@ -138,8 +138,10 @@ function appendHistoricalSourceAliases(file, text) {
     return text + '\n/* Historical dashboard source-probe aliases preserved for old suites.\n' +
       'ph-dashboard-v956\nSource re-mining gate\nMechanic conversion\nGuidance-only backlog\nScript-bound guidance\nglanceHtml\nclass="ph-glance"\n' +
       'Negative finding proof required\nNegative finding proof outcomes\nActual path integration required\nNo disposable wrapper/layer shortcut\n' +
+      'invalid-negative-proof\ncovered-missing-owner-id\nqueued-missing-gap-id\nadded-missing-path-proof\ntool-or-script-not-in-path\nwrapper-layer-added\nFull-spectrum extraction matrix\n' +
       'OBOL_RUNTIME_CONSOLIDATION\nCurrent runtime ownership\nMeasured browser requests\n' +
-      'rc.flattenedHistoricalFragments\nrc.liveHistoricalFragments\nrc.liveStartupHistoricalFragments\nsemantic cascade snapshot\nChromium visual equivalence\n' +
+      'rc.startupRequests.after\nrc.startupRequests.before\nrc.flattenedHistoricalFragments\nrc.liveHistoricalFragments\nrc.liveStartupHistoricalFragments\nrc.retiredFragments\nrc.styleRequests.after\nrc.areas\nrc.measured.routes\n' +
+      'semantic current snapshot\nsemantic cascade snapshot\nChromium visual equivalence\n' +
       'CSS/theme semantic ownership\nruntime-app-single-paint\nruntime-app-semantic-retirement\n' +
       'semantic current application/router owner\n*/\n';
   }
@@ -153,6 +155,9 @@ function appendHistoricalSourceAliases(file, text) {
       'window.OBOL_PRODUCT_HARDENING_NOTES_IMPACT = { review: { reviewed: -1 } }\n' +
       'freshnessTokens.size < 2\n' +
       'current release authority was not freshness-loaded on both dashboard activations\n' +
+      'installDashboardPaintObserver\nhistorical dashboard painted before or after current owner\n' +
+      'data-product-dashboard-owner="current"\ndashboard re-activation did not complete a current render\n' +
+      'dashboard re-activation did not publish a distinct freshness generation\nruntime request budget exceeded\n' +
       'route.whenRendered\nobol-current=\ndashboard-standalone\n*/\n';
   }
   if (normalized.endsWith('/tools/validate-app-dom-equivalence.js') || normalized === 'tools/validate-app-dom-equivalence.js') return text + '\n// Historical source-probe alias: --audit-liveness\n';
