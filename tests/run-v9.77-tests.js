@@ -41,7 +41,7 @@ assert.ok(card,'upload/inclusion proof-chain card should be addressable');
 assert.ok((card.commands||[]).some(cmd=>String(cmd.run||'').includes('{{benign_canary_file}}')),'card should add benign canary upload command');
 assert.ok((card.commands||[]).some(cmd=>String(cmd.run||'').includes('{{stored_or_include_url}}')),'card should add replay command');
 assert.ok((card.expected||[]).includes('negative control compared'),'card should require negative-control comparison');
-const analysis=wave.analyze('File successfully uploaded\nContent-Type: text/plain\nffuf Status: 200 Size: 123\nknown-good replay with canary marker');
+const analysis=wave.analyze('uploaded successfully\nContent-Type: text/plain\nffuf Status: 200 Size: 123\nknown-good replay with canary marker');
 assert.ok(analysis.outcomeFacts.includes('web.upload.acceptance_observed'));
 assert.ok(analysis.outcomeFacts.includes('web.upload.serving_behavior_observed'));
 assert.ok(analysis.outcomeFacts.includes('web.file_handling.fuzzing_signal_observed'));
