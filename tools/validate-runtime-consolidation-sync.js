@@ -2,12 +2,9 @@
 
 /*
  * Keeps the Product Hardening Dashboard and the generated README Product Build Next
- * block reporting the same runtime-consolidation figures.
- *
- * Both surfaces read data/runtime-consolidation-current.js. This validator proves the
- * README block matches that projection value for value, and that the dashboard renderer
- * and both dashboard entrypoints actually consume the projection rather than keeping
- * their own counts.
+ * block reporting the same runtime-consolidation figures without making the README
+ * carry the detailed runtime ledger. The dashboard owns the drill-down detail; README
+ * owns the compact agent handoff line.
  */
 
 const assert=require('assert');
@@ -26,41 +23,33 @@ for(const rel of ['data/runtime-manifest.js','data/runtime-consolidation-current
 }
 const owner=sandbox.window.OBOL_RUNTIME_CONSOLIDATION;
 assert(owner,'data/runtime-consolidation-current.js exposes OBOL_RUNTIME_CONSOLIDATION');
-// The projection is evaluated in a VM realm, so its arrays carry a different prototype
-// than this realm's — compare contents, not identity.
 assert.deepStrictEqual(Array.from(owner.validate()),[],'runtime consolidation projection is self-consistent');
 
 const p=owner.projection();
 assert(p,'runtime consolidation projection resolves against the runtime manifest');
 
-/* ---- README block matches the projection ---------------------------------- */
+/* ---- README compact handoff matches the projection ------------------------- */
 
 const readme=read('README.md').replace(/\r\n/g,'\n');
 const block=(readme.match(/<!-- OBOL-PRODUCT-BUILD-NEXT:START -->[\s\S]*?<!-- OBOL-PRODUCT-BUILD-NEXT:END -->/)||[''])[0];
 assert(block,'README exposes the generated Product Build Next block');
 
-const startupAreas=p.areas.filter(area=>area.scope==='startup');
-const lazyAreas=p.areas.filter(area=>area.scope==='lazy');
-const expected=[
- '**Runtime consolidation:** '+p.startupRequests.after+' operator startup requests, down from '+p.startupRequests.before+' ('+p.startupRequests.reductionPct+'% fewer).',
- '**Current runtime ownership areas:** '+p.areas.length+' owners account for '+p.consolidatedFragments+' historical fragments — '+p.flattenedHistoricalFragments+' semantically flattened, '+p.liveHistoricalFragments+' still exact-owned; '+p.retiredFragments+' fragments stay retired in the frozen ledger.',
- '**Runtime area owners:** '+p.areas.map(area=>area.label+' ('+area.fragments+', '+area.strategy+')').join(' · ')+'.',
- '**Measured in Chromium ('+p.measured.release+'):** '+p.measured.routes.map(route=>route.label+' '+route.before+'→'+route.after).join(' · ')+' JavaScript/CSS requests.'
-];
-for(const line of expected){
- assert(block.includes(line),'README Product Build Next is out of sync with the runtime consolidation projection.\nExpected line: '+line+'\nRun node tools/sync-product-build-next.js --write');
+const compactLine='**Runtime consolidation:** '+p.startupRequests.after+' operator startup requests, down from '+p.startupRequests.before+' ('+p.startupRequests.reductionPct+'% fewer).';
+const ownerLine='**Runtime consolidation owner:** `data/runtime-consolidation-current.js` feeds this README projection and the Product Hardening Dashboard.';
+for(const line of [compactLine,ownerLine]){
+ assert(block.includes(line),'README Product Build Next is out of sync with the compact runtime consolidation projection.\nExpected line: '+line+'\nRun node tools/sync-product-build-next.js --write');
 }
-assert(block.includes('data/runtime-consolidation-current.js'),'README block names the shared consolidation projection owner');
+assert(!block.includes('**Runtime area owners:**'),'README Product Build Next must keep runtime owner ledgers in the dashboard, not the handoff block');
+assert(!block.includes('**Measured in Chromium ('),'README Product Build Next must keep browser-measurement ledgers in the dashboard, not the handoff block');
 
-/* ---- dashboard consumes the same projection -------------------------------- */
+/* ---- dashboard consumes the same projection and owns the detailed ledger ---- */
 
 const dashboard=read('assets/product-hardening-dashboard.js');
 assert(dashboard.includes('OBOL_RUNTIME_CONSOLIDATION'),'dashboard renderer reads the shared consolidation projection');
 assert(!/const\s+rc\s*=\s*\{/.test(dashboard),'dashboard must not keep its own consolidation numbers');
-for(const field of ['rc.startupRequests.after','rc.startupRequests.before','rc.flattenedHistoricalFragments','rc.liveHistoricalFragments','rc.liveStartupHistoricalFragments','rc.retiredFragments','rc.styleRequests.after','rc.areas','rc.measured.routes']){
- assert(dashboard.includes(field),'dashboard does not render projection field '+field);
+for(const token of ['Current runtime ownership','Measured browser requests','data/runtime-consolidation-current.js']){
+ assert(dashboard.includes(token),'dashboard does not expose runtime consolidation detail token '+token);
 }
-assert(dashboard.includes('data/runtime-consolidation-current.js'),'dashboard footer attributes the consolidation figures to the shared projection');
 
 const routeOwner=read('assets/dashboard-route-current.js');
 for(const rel of ['data/runtime-manifest.js','data/runtime-consolidation-current.js']){
@@ -73,5 +62,7 @@ assert(manifest.lazy.productHardening.includes('data/runtime-consolidation-curre
 const sync=read('tools/sync-product-build-next.js');
 assert(sync.includes('runtime-consolidation-current.js'),'README generator reads the shared consolidation projection');
 assert(sync.includes('runtimeConsolidation.validate()'),'README generator refuses to publish an invalid consolidation projection');
+assert(sync.includes('function runtimeStatusLines()'),'README generator renders the compact runtime status handoff');
+assert(!sync.includes('function runtimeConsolidationLines()'),'README generator must not render detailed runtime-consolidation ledgers into README');
 
-console.log('Runtime consolidation sync valid: README and Product Hardening Dashboard both project '+p.startupRequests.after+'/'+p.startupRequests.before+' startup requests and '+p.areas.length+' ownership areas from data/runtime-consolidation-current.js.');
+console.log('Runtime consolidation sync valid: README projects compact '+p.startupRequests.after+'/'+p.startupRequests.before+' startup requests while the Product Hardening Dashboard owns detailed runtime ledger rendering from data/runtime-consolidation-current.js.');
