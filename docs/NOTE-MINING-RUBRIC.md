@@ -16,7 +16,7 @@ Agents must use the private source notes as source knowledge and mine them aggre
 
 Public Obol must contain Obol-owned outputs. That means new wording, generalized concepts, synthetic examples, variable-based command templates, and product behavior that stands on its own without exposing or mimicking the private note. Light paraphrase is not enough. Swapping words, reordering sentences, or removing obvious target names while preserving the source's expression or solution flow is still copying.
 
-`private-only` means useful material exists, but the raw/private source substance itself cannot be published. Before marking a dimension `private-only`, the agent must check whether the durable idea can be re-authored into public-safe path guidance, tool cards, GUI controls, command templates, analyzers, lesson boxes, troubleshooting, cleanup, report guidance, or a product gap.
+`private-only` means useful material exists, but the raw/private source substance itself cannot be published. `private-only` is a boundary for raw/private source substance, not a discard bucket for reusable lessons. Before marking a dimension `private-only`, the agent must check whether the durable idea can be re-authored into public-safe path guidance, tool cards, GUI controls, command templates, analyzers, lesson boxes, troubleshooting, cleanup, report guidance, or a product gap.
 
 See [`NOTE-DERIVATION-STANDARD.md`](NOTE-DERIVATION-STANDARD.md) for the full standard.
 
