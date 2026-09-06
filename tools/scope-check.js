@@ -23,6 +23,7 @@ const checks=[
  ['tests/run-v9.73-tests.js'],
  ['tests/run-v9.74-tests.js'],
  ['tests/run-v9.75-tests.js'],
+ ['tests/run-v9.76-tests.js'],
  ['tools/validate-source-note-clusters.js'],
  ['tools/validate-card-action-spine-v9.71.js'],
  ['tools/validate-linux-final-remine-v9.72.js'],
