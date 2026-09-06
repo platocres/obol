@@ -1,11 +1,11 @@
-name: Obol full historical PR gate
+name: Obol PR full regression suite
 
 on:
   pull_request:
     types: [opened, synchronize, reopened, ready_for_review]
 
 concurrency:
-  group: obol-full-regression-pr-${{ github.event.pull_request.number || github.ref }}
+  group: obol-pr-full-regression-${{ github.event.pull_request.number || github.ref }}
   cancel-in-progress: true
 
 permissions:
@@ -13,7 +13,7 @@ permissions:
   pull-requests: read
 
 jobs:
-  full-historical-regression:
+  syntax-all-js:
     if: github.event.pull_request.draft == false
     runs-on: ubuntu-latest
     steps:
@@ -23,5 +23,96 @@ jobs:
         uses: actions/setup-node@v4
         with:
           node-version: '24'
-      - name: Run complete historical regression chain
-        run: node tools/run-historical-contracts.js
+      - name: Check every JavaScript file
+        run: node tools/run-historical-contracts.js --phase syntax
+
+  legacy-core-contracts:
+    if: github.event.pull_request.draft == false
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+      - name: Set up Node
+        uses: actions/setup-node@v4
+        with:
+          node-version: '24'
+      - name: Run v2 through v4 preservation suites
+        run: node tools/run-historical-contracts.js --phase legacy-core
+
+  v5-v8-runtime-contracts:
+    if: github.event.pull_request.draft == false
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+      - name: Set up Node
+        uses: actions/setup-node@v4
+        with:
+          node-version: '24'
+      - name: Run v5 through v8 runtime preservation suites
+        run: node tools/run-historical-contracts.js --phase v5-v8-runtime
+
+  v9-early-product-contracts:
+    if: github.event.pull_request.draft == false
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+      - name: Set up Node
+        uses: actions/setup-node@v4
+        with:
+          node-version: '24'
+      - name: Run v9.0 through v9.29 product-hardening suites
+        run: node tools/run-historical-contracts.js --phase v9-early-product
+
+  v9-mid-product-contracts:
+    if: github.event.pull_request.draft == false
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+      - name: Set up Node
+        uses: actions/setup-node@v4
+        with:
+          node-version: '24'
+      - name: Run v9.30 through v9.55 product-hardening suites
+        run: node tools/run-historical-contracts.js --phase v9-mid-product
+
+  v9-current-product-contracts:
+    if: github.event.pull_request.draft == false
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+      - name: Set up Node
+        uses: actions/setup-node@v4
+        with:
+          node-version: '24'
+      - name: Run v9.56 and newer product-hardening suites
+        run: node tools/run-historical-contracts.js --phase v9-current-product
+
+  quality-preservation-contracts:
+    if: github.event.pull_request.draft == false
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+      - name: Set up Node
+        uses: actions/setup-node@v4
+        with:
+          node-version: '24'
+      - name: Run permanent quality and history validators
+        run: node tools/run-historical-contracts.js --phase quality-preservation
+
+  generated-sync-contracts:
+    if: github.event.pull_request.draft == false
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+      - name: Set up Node
+        uses: actions/setup-node@v4
+        with:
+          node-version: '24'
+      - name: Check generated artifacts are synchronized
+        run: node tools/run-historical-contracts.js --phase generated-sync
