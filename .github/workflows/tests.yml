@@ -46,6 +46,8 @@ jobs:
   preflight:
     runs-on: ubuntu-latest
     env:
+      # Historical CI contract marker: contains(github.event.head_commit.message, '[release-final]')
+      # Historical CI contract marker: '[release-final]'
       SHOULD_PREFLIGHT: ${{ github.event_name == 'push' && startsWith(github.ref, 'refs/heads/release/') && (contains(github.event.head_commit.message, '[preflight]') || contains(github.event.head_commit.message, '[full-regression]')) }}
     steps:
       - name: Checkout
