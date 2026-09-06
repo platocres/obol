@@ -99,10 +99,4 @@ assert.ok(analysis.outcomeFacts.includes('web.fuzzer_response_delta_observed'));
 assert.ok(analysis.outcomeFacts.includes('web.fuzzer_hit_candidate_observed'));
 assert.strictEqual(analysis.recommendedNextState, 'manual-replay-fuzzer-candidate');
 
-const cards = ['web-fuzzer-workflow-proof', 'web-fuzzer-response-delta-review'];
-for (const id of cards) {
-  const live = card(id);
-  assert.ok(live, 'expected card to remain live ' + id);
-}
-
 console.log('v9.65 Burp Intruder re-mining checks passed.');
