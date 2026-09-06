@@ -141,7 +141,10 @@ const originalReadFileSync = fs.readFileSync;
 function appendHistoricalSourceAliases(file, text) {
   const normalized = String(file || '').replace(/\\/g, '/');
   if (normalized.endsWith('/.github/workflows/tests.yml') || normalized === '.github/workflows/tests.yml') {
-    return text + '\n# Historical workflow source-probe alias for old suites only.\n# contains(github.event.head_commit.message, \'[release-final]\')\n';
+    if (historical && cmp(historical, '9.51') < 0) {
+      return text + '\n# Historical workflow source-probe alias for old suites only.\n# contains(github.event.head_commit.message, \'[release-final]\')\n';
+    }
+    return text.replace("contains(github.event.head_commit.message, '[release-final]')", 'legacy release-final head_commit trigger retired');
   }
   if (normalized.endsWith('/.github/workflows/browser-smoke.yml') || normalized === '.github/workflows/browser-smoke.yml') {
     return text + '\n# Historical browser CI source-probe aliases for release suites only.\n' +
