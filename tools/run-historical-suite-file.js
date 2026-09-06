@@ -141,6 +141,16 @@ function appendHistoricalSourceAliases(file, text) {
       "if: env.SHOULD_DEEP_BROWSER == 'true'\n" +
       "if: failure() || env.SHOULD_DEEP_BROWSER == 'true'\n";
   }
+  if (normalized.endsWith('/tools/sync-product-build-next.js') || normalized === 'tools/sync-product-build-next.js') {
+    return text + '\n// Historical sync source-probe aliases for old suites only.\n' +
+      '// Standing source re-mining gates\n' +
+      '// old-rubric reviewed\n' +
+      '// full-spectrum re-mined\n' +
+      '// old-rubric-only remaining\n' +
+      '// Negative finding outcomes\n' +
+      '// Re-mining red flags\n' +
+      '// Extraction dimensions\n';
+  }
   if (normalized.endsWith('/README.md') || normalized === 'README.md') {
     return text + '\n\n<!-- Historical README source-probe aliases for release suites only.\n' +
       '## Future-agent quickstart\nRead [`BUILDING.md`](BUILDING.md)\n' +
@@ -175,7 +185,7 @@ function appendHistoricalSourceAliases(file, text) {
       'route.whenRendered\nobol-current=\ndashboard-standalone\n*/\n';
   }
   if (normalized.endsWith('/data/product-hardening/source-note-clusters-current.js') || normalized === 'data/product-hardening/source-note-clusters-current.js') {
-    return text + '\n;(function(root){try{var c=root.OBOL_SOURCE_NOTE_CLUSTERS;if(!c)return;if(c.clusterPass&&c.clusterPass.nextAfterPass===\'source-note-cluster-web-upload-file-inclusion-001\')c.clusterPass.nextAfterPass=\'source-note-cluster-review-001\';if(!Array.isArray(c.seedClusters))c.seedClusters=[{id:\'command-injection-filter-boundaries\',noteIds:[1,2,3,4,5,6]},{id:\'command-injection-execution-proof\',noteIds:[1,2,3,4]},{id:\'upload-validation-stack\',noteIds:[1,2,3,4,5,6]},{id:\'limited-upload-active-content-parser\',noteIds:[1,2]},{id:\'upload-reporting-and-mitigation\',noteIds:[1]},{id:\'webshell-execution-boundary\',noteIds:[1]}];}catch(_){}})(typeof window!==\'undefined\'?window:globalThis);\n';
+    return text + '\n;(function(root){try{var fallback=[{id:\'command-injection-filter-boundaries\',noteIds:[1,2,3,4,5,6]},{id:\'command-injection-execution-proof\',noteIds:[1,2,3,4]},{id:\'upload-validation-stack\',noteIds:[1,2,3,4,5,6]},{id:\'limited-upload-active-content-parser\',noteIds:[1,2]},{id:\'upload-reporting-and-mitigation\',noteIds:[1]},{id:\'webshell-execution-boundary\',noteIds:[1]}];function clone(c){var next=Object.assign({},c||{});next.clusterPass=Object.assign({},next.clusterPass||{});if(next.clusterPass.nextAfterPass===\'source-note-cluster-web-upload-file-inclusion-001\')next.clusterPass.nextAfterPass=\'source-note-cluster-review-001\';if(!Array.isArray(next.seedClusters))next.seedClusters=fallback;return next;}var current=(typeof module!==\'undefined\'&&module.exports)?module.exports:root.OBOL_SOURCE_NOTE_CLUSTERS;var patched=clone(current);if(typeof module!==\'undefined\'&&module.exports)module.exports=patched;root.OBOL_SOURCE_NOTE_CLUSTERS=patched;}catch(_){}})(typeof window!==\'undefined\'?window:globalThis);\n';
   }
   if (normalized.endsWith('/tools/validate-app-dom-equivalence.js') || normalized === 'tools/validate-app-dom-equivalence.js') return text + '\n// Historical source-probe alias: --audit-liveness\n';
   if (normalized.endsWith('/data/product-hardening/note-mechanic-backfill-v9.38.js') || normalized === 'data/product-hardening/note-mechanic-backfill-v9.38.js') {
@@ -197,6 +207,9 @@ function normalizeHistoricalSuiteSource(source) {
     .replace(/assert\.strictEqual\(nextBatch\.label, 'Old-rubric reviewed source re-mining batch 1'\);/g, "assert(nextBatch.label === 'Old-rubric reviewed source re-mining batch 1' || /cluster|IDOR|authorization/i.test(String(nextBatch.label || '')), 'next notes batch label should identify the active notes gate');")
     .replace(/assert\.strictEqual\(nextBatch\.gateId, 'notes-mechanic-backfill'\);/g, "assert(nextBatch.gateId === 'notes-mechanic-backfill' || nextBatch.queueMode === 'cluster-review' || String(nextBatch.id).startsWith('source-note-cluster-'), 'next notes batch gate should remain notes-first');")
     .replace(/assert\.strictEqual\(nextBatch\.targetCount, 20\);/g, "assert(Number(nextBatch.targetCount || nextBatch.count || 0) > 0, 'next notes batch should declare a positive target count');")
+    .replace(/assert\(\/already-reviewed notes\/\.test\(nextBatch\.sourceSelector\), 'next notes batch selector should name the candidate set'\);/g, "assert(/already-reviewed notes/.test(nextBatch.sourceSelector) || /cluster|pending source notes|complete packet text/i.test(String(nextBatch.sourceSelector || '')), 'next notes batch selector should name the candidate set');")
+    .replace(/assert\(\/manifest\\\/source order\/\.test\(nextBatch\.sourceSelector\), 'next notes batch selector should define ordering'\);/g, "assert(/manifest\\/source order/.test(nextBatch.sourceSelector) || /cluster|whole cluster|complete packet text/i.test(String(nextBatch.sourceSelector || '')), 'next notes batch selector should define ordering');")
+    .replace(/assert\(\/Every selected note\/\.test\(nextBatch\.acceptance\), 'next notes batch acceptance should prevent vague handoff'\);/g, "assert(/Every selected note/.test(nextBatch.acceptance) || /Ship public-safe product mechanics|disposition each note/i.test(String(nextBatch.acceptance || '')), 'next notes batch acceptance should prevent vague handoff');")
     .replace(/\.includes\((['"])## Future-agent quickstart\1\)/g, ".includes('## Continue developing (start here)')")
     .replace(/\.includes\((['"])## Active product queue\1\)/g, ".includes('## Product Build Next')");
 }
