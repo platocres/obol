@@ -5,11 +5,16 @@ const root=path.join(__dirname,'..');
 function load(rel){require(path.join(root,rel));}
 
 globalThis.__OBOL_DEFER_PRODUCT_HARDENING_EXTENSIONS__=true;
+globalThis.setTimeout=undefined;
+globalThis.addEventListener=undefined;
 load('data/current-release.js');
 load('data/product-hardening/source-note-clusters-current.js');
 load('data/product-hardening/global-source-note-clustering-v9.75.js');
-for(const src of globalThis.OBOL_CURRENT_RELEASE.productHardeningExtensions||[]){
- try{load(src);}catch(_err){}
+if(globalThis.OBOL_CURRENT_RELEASE.label==='v9.77'){
+ load('data/note-integration.js');
+ globalThis.OBOL_LANES=[];
+ globalThis.CARDS={};
+ load('data/product-hardening/web-upload-inclusion-cluster-v9.77.js');
 }
 const clusters=globalThis.OBOL_SOURCE_NOTE_CLUSTERS;
 assert.ok(clusters,'source note cluster ledger should be installed');
