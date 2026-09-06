@@ -11,7 +11,7 @@
  * suppresses historical schedulers and commits current route owners last.
  *
  * Historical fragment order sha256: 40e3006d9423d669acf5869b577ecf56a6ca2ee1629c95fd0fcc5d242d2c5f27
- * Generated body sha256: edc1f73622bfb7106f1425d14b8895ac3e598b04a97e884d5a3e6c69e76e481e
+ * Generated body sha256: 9e6b498a32269c195108360da5c3b06a65c9436f4c4018c9c186847fcb9ce0fa
  * First historical fragment: assets/report-v2.js
  * Last historical fragment:  assets/app-v8.8.js
  */
@@ -2032,7 +2032,8 @@ const release=Object.freeze({
   'data/product-hardening/source-note-clusters-current.js',
   'data/product-hardening/global-source-note-clustering-v9.75.js',
   'data/product-hardening/web-upload-inclusion-cluster-v9.77.js',
-  'data/product-hardening/dynamic-why-now-route-stabilizer-v9.77.js'
+  'data/product-hardening/dynamic-why-now-route-stabilizer-v9.77.js',
+  'data/product-hardening/v9.77-release-stability-repair.js'
  ])
 });
 function stampState(target){
