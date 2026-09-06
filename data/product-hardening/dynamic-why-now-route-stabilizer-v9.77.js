@@ -1,6 +1,7 @@
 'use strict';
 (function(root){
 const WAVE='v9.77-dynamic-why-now-route-stability';
+let baseApi=null;
 function str(v){return String(v==null?'':v);}
 function esc(v){return str(v).replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));}
 function routeId(){try{const m=str(root.location&&root.location.hash||'').match(/^#\/?card\/([^/?#]+)/);return m?decodeURIComponent(m[1]):'';}catch(_){return'';}}
@@ -36,6 +37,14 @@ function actionLabel(card){
  return tools[0]||'card workflow';
 }
 function buildWhy(card){
+ if(baseApi&&typeof baseApi.compute==='function'){
+  try{
+   const computed=baseApi.compute(card);
+   if(computed&&computed.body&&/current path|You have|This card is relevant|missing proof|paste the result back/i.test(computed.body)){
+    return Object.freeze(Object.assign({},computed,{wave:WAVE,cardId:card&&card.id||routeId()}));
+   }
+  }catch(_){}
+ }
  const title=headingText(null,card&&card.title||card&&card.id||'this card');
  const action=actionLabel(card);
  const body='This card is relevant to the current path because '+title+' turns an evidence gap into a bounded proof step. The missing proof is still unresolved until you run or replay the '+action+' action and paste the result back. Use the pasted evidence to move forward, retry with a control, or choose a safer branch.';
@@ -45,10 +54,17 @@ function boxHtml(why){
  return '<section class="obol-why-now card" data-obol-dynamic-why-now="'+esc(why.cardId||'card')+'"><div class="card-body"><h3>'+esc(why.title)+'</h3><p>'+esc(why.body)+'</p></div></section>';
 }
 function allWhyBoxes(){return typeof document==='undefined'?[]:Array.from(document.querySelectorAll('[data-obol-dynamic-why-now]'));}
+function boxAlreadyCurrent(box,why){
+ if(!box)return false;
+ if(str(box.getAttribute('data-obol-dynamic-why-now'))!==str(why.cardId||'card'))return false;
+ const text=str(box.innerText||box.textContent||'');
+ return text.includes(why.title)&&text.includes(why.body);
+}
 function replaceOrInsert(cardRoot,view,why){
  const boxes=allWhyBoxes();
  boxes.forEach(box=>{if(!view.contains(box))box.remove();});
  const scoped=Array.from(view.querySelectorAll('[data-obol-dynamic-why-now]'));
+ if(scoped.length===1&&boxAlreadyCurrent(scoped[0],why))return;
  const html=boxHtml(why);
  if(scoped.length){
   scoped[0].outerHTML=html;
@@ -97,6 +113,7 @@ function patchFunction(name){
 }
 function install(){
  const previous=root.OBOL_DYNAMIC_WHY_NOW||{};
+ baseApi=previous;
  root.OBOL_DYNAMIC_WHY_NOW=Object.freeze(Object.assign({},previous,{wave:WAVE,stabilize,decorate:function(){try{if(typeof previous.decorate==='function')previous.decorate();}catch(_){}return stabilize();}}));
  patchFunction('route');
  patchFunction('viewCard');
