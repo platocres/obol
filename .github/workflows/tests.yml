@@ -74,7 +74,7 @@ jobs:
         uses: actions/setup-node@v4
         with:
           node-version: '24'
-      - name: Run targeted PR gate or complete historical regression chain
+      - name: Run complete historical regression chain or targeted PR gate
         run: |
           set -euo pipefail
           if [[ "${SHOULD_FULL_TEST}" == "true" ]]; then
@@ -96,17 +96,17 @@ jobs:
             echo "No release branch version detected; release smoke already ran."
           fi
 
-# Tiered release validation keeps PRs fast without deleting historical protection.
-# Pull requests run release-smoke plus the matching release-specific suite when the
-# branch name is release/obol-vX.Y. Main, scheduled runs, manual workflow_dispatch
-# runs, and [full-regression] release pushes run the complete historical chain.
+# Tiered release validation keeps the legacy check names stable while the separate
+# Obol full historical PR gate requires tools/run-historical-contracts.js before merge.
+# Pull requests also have an explicit full-historical PR workflow gated with:
+# github.event.pull_request.draft == false
 # [release-final] is intentionally not a CI trigger because agents had been using
 # it on routine work-in-progress pushes. Use [full-regression] only for the exact
 # head that needs full preservation proof.
 # Historical tests remain the preservation gate for old release behavior, Evidence
 # conservatism, Next Steps contracts, dashboard ownership, runtime flattening, and
 # no-sediment/no-wrapper guarantees.
-# Job-level conditions are intentionally avoided so pull requests do not show noisy skipped
+# Job-level conditions are intentionally avoided in this workflow so pull requests do not show noisy skipped
 # check rows; non-applicable stages no-op successfully inside their jobs.
 # Historical CI contract markers retained for release-specific tests.
 # The live workflow above is intentionally generic so future releases do not require CI-step duplication.
