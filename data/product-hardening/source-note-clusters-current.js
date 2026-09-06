@@ -1,107 +1,154 @@
 'use strict';
 (function(root){
 const SOURCE_ROUTE='platocres/obol-source-notes@agent/review-packets:data/review-packets/manifest.json';
-const SOURCE_PACKET_ROUTE='data/review-packets/manifest.json';
 const CLUSTER_PASS_ID='notes-global-source-clustering-v9.75';
-const NEXT_CLUSTER_QUEUE='source-note-cluster-review-001';
+const NEXT_CLUSTER_QUEUE='source-note-cluster-web-upload-file-inclusion-001';
+const SOURCE_INDEXES=Object.freeze([
+ {sourceId:'htb-penetration-tester',path:'data/htb-penetration-tester-note-index.json',sha:'ef727b18e5d9cfb0c4e9183abd348b6228aca90c',noteCount:352},
+ {sourceId:'offsec-pen-200',path:'data/offsec-pen-200-note-index.json',sha:'3667e5ce7eb14a7c0edae6dec8f684920f7c2ac7',noteCount:204},
+ {sourceId:'combined-ledger-seed',path:'data/note-integration-ledger.seed.json',sha:'95ff360d3b37cc90d10deaa106c33d34127dd989',noteCount:556}
+]);
 const status=Object.freeze({
- schemaVersion:'1.0.0',
+ schemaVersion:'2.0.0',
  phase:'global-source-note-clustering',
- state:'queued',
+ state:'complete',
+ completedBy:'v9.75',
  sourceRoute:SOURCE_ROUTE,
- packetManifest:SOURCE_PACKET_ROUTE,
+ indexSources:SOURCE_INDEXES.map(src=>src.path),
  totalSourceNotes:556,
  reviewedSourceNotes:175,
  pendingSourceNotes:381,
+ clusteredPendingNotes:381,
+ clusterCount:18,
+ readyClusterCount:12,
+ privateHeavyClusterCount:2,
+ needsSplitClusterCount:4,
  oldRubricOnlyRemaining:0,
- priorBatchSelector:'notes-disposition-pending-review-002',
- currentQueueItem:CLUSTER_PASS_ID,
+ priorQueueItem:'notes-global-source-clustering-v9.75',
  nextClusterReviewQueue:NEXT_CLUSTER_QUEUE,
- publicSafety:'Cluster records may expose note IDs, packet IDs, generalized themes, owner cards, and product-shape decisions. They must not expose private note prose, target values, credentials, flags, screenshots, exact payload recipes, or solution chains.'
+ publicSafety:'Cluster records expose only public-safe IDs, source windows, generalized themes, owner cards, and product-shape decisions. They do not expose private note prose, target values, credentials, flags, screenshots, exact payload recipes, or solution chains.'
 });
 function freezeList(list){return Object.freeze((list||[]).slice());}
+function obj(row){return Object.freeze(row);}
+function range(packet,sourceId,offset,count,first,last){return obj({packet,sourceId,offset,count,firstNoteId:first,lastNoteId:last,pendingSelector:'remaining-notes-after-terminal-disposition-exclusion'});}
+function reviewed(row){return Object.freeze(Object.assign({status:'shipped',pendingAssignment:false,dispositionState:'clustered-reviewed-notes',sourceRoute:SOURCE_ROUTE,readiness:'shipped-in-v9.74'},row,{packets:freezeList(row.packets),noteIds:freezeList(row.noteIds),ownerCards:freezeList(row.ownerCards),outputIds:freezeList(row.outputIds),futureGaps:freezeList(row.futureGaps),tags:freezeList(row.tags)}));}
 function cluster(row){return Object.freeze(Object.assign({
- status:'seeded',
- dispositionState:'clustered-reviewed-notes',
+ status:'ready-to-mine',
+ pendingAssignment:true,
  sourceRoute:SOURCE_ROUTE,
- pendingAssignment:false,
- publicSafety:'public-safe generalized cluster metadata only'
-},row,{noteIds:freezeList(row.noteIds),packets:freezeList(row.packets),ownerCards:freezeList(row.ownerCards),outputIds:freezeList(row.outputIds),futureGaps:freezeList(row.futureGaps),tags:freezeList(row.tags)}));}
-const seedClusters=Object.freeze([
- cluster({id:'command-injection-filter-boundaries',title:'Command injection filter and transform boundaries',packets:['data/review-packets/htb-penetration-tester-02.json'],noteIds:['htb-penetration-tester-70cf95dedd0e85ea','htb-penetration-tester-cd2a79968f06c316','htb-penetration-tester-9890ef6631388080','htb-penetration-tester-c0bac92536dc9bf5','htb-penetration-tester-5eb818fceca72c56','htb-penetration-tester-526b318523ab2df4'],ownerCards:['web-authz-boundaries'],outputIds:['note-command-injection-filter-differential-v974'],futureGaps:['command-injection-proof-boundary-card'],tags:['web','command-injection','filters','differential-proof']}),
- cluster({id:'command-injection-execution-proof',title:'Command injection source-sink and execution proof chain',packets:['data/review-packets/htb-penetration-tester-02.json'],noteIds:['htb-penetration-tester-30704fd073e4b0ec','htb-penetration-tester-1f7bd1e8dc160f42','htb-penetration-tester-414e5da50b6b4b1b','htb-penetration-tester-54995c5e5eb492cb'],ownerCards:['web-authz-boundaries'],outputIds:['note-command-injection-proof-chain-v974'],futureGaps:['command-injection-proof-boundary-card'],tags:['web','command-injection','source-sink','proof-boundary']}),
- cluster({id:'upload-validation-stack',title:'Upload validation stack and storage/retrieval boundaries',packets:['data/review-packets/htb-penetration-tester-02.json'],noteIds:['htb-penetration-tester-009ff7c58b458f28','htb-penetration-tester-2926bcc5bef7edaf','htb-penetration-tester-f4573a054a8cae90','htb-penetration-tester-a5bfb6c1b8929288','htb-penetration-tester-7c06d706a2177e95','htb-penetration-tester-c4908e3a1e1e948d'],ownerCards:['web-upload-inclusion-proof-chain'],outputIds:['note-upload-validation-stack-v974'],futureGaps:[],tags:['web','file-upload','validation','retrieval-proof']}),
- cluster({id:'limited-upload-active-content-parser',title:'Limited upload active-content and parser boundaries',packets:['data/review-packets/htb-penetration-tester-02.json'],noteIds:['htb-penetration-tester-6791b6c6ff556cd6','htb-penetration-tester-1031d47bd5ab9ad8'],ownerCards:['web-upload-inclusion-proof-chain'],outputIds:['note-limited-upload-active-content-v974'],futureGaps:['limited-upload-parser-boundary-cards'],tags:['web','file-upload','active-content','parser-boundary']}),
- cluster({id:'upload-reporting-and-mitigation',title:'Upload reporting and mitigation checklist',packets:['data/review-packets/htb-penetration-tester-02.json'],noteIds:['htb-penetration-tester-f53541ee19664082'],ownerCards:['web-upload-inclusion-proof-chain'],outputIds:['note-upload-reporting-mitigation-v974'],futureGaps:[],tags:['web','file-upload','reporting','mitigation']}),
- cluster({id:'webshell-execution-boundary',title:'Web shell and reverse-shell execution boundary',packets:['data/review-packets/htb-penetration-tester-02.json'],noteIds:['htb-penetration-tester-b6c7a5bd41d8ac64'],ownerCards:['web-upload-inclusion-proof-chain'],outputIds:['note-webshell-execution-boundary-v974'],futureGaps:[],tags:['web','file-upload','webshell','execution-proof']})
+ assignmentBasis:'global note-index title/tag/source-window clustering; future builds re-read complete packet text before terminal disposition',
+ publicSafety:'public-safe generalized cluster metadata only',
+ outputIds:[],
+ futureGaps:[],
+ unresolved:[]
+},row,{sourceIndexes:freezeList(row.sourceIndexes||SOURCE_INDEXES.map(src=>src.path)),assignmentWindows:freezeList(row.assignmentWindows),ownerCards:freezeList(row.ownerCards),proposedFeatures:freezeList(row.proposedFeatures),expectedOutputs:freezeList(row.expectedOutputs),futureGaps:freezeList(row.futureGaps),tags:freezeList(row.tags),unresolved:freezeList(row.unresolved)}));}
+const reviewedSeedClusters=Object.freeze([
+ reviewed({id:'command-injection-filter-boundaries',title:'Command injection filter and transform boundaries',packets:['data/review-packets/htb-penetration-tester-02.json'],noteIds:['htb-penetration-tester-70cf95dedd0e85ea','htb-penetration-tester-cd2a79968f06c316','htb-penetration-tester-9890ef6631388080','htb-penetration-tester-c0bac92536dc9bf5','htb-penetration-tester-5eb818fceca72c56','htb-penetration-tester-526b318523ab2df4'],ownerCards:['web-authz-boundaries'],outputIds:['note-command-injection-filter-differential-v974'],futureGaps:['command-injection-proof-boundary-card'],tags:['web','command-injection','filters','differential-proof']}),
+ reviewed({id:'command-injection-execution-proof',title:'Command injection source-sink and execution proof chain',packets:['data/review-packets/htb-penetration-tester-02.json'],noteIds:['htb-penetration-tester-30704fd073e4b0ec','htb-penetration-tester-1f7bd1e8dc160f42','htb-penetration-tester-414e5da50b6b4b1b','htb-penetration-tester-54995c5e5eb492cb'],ownerCards:['web-authz-boundaries'],outputIds:['note-command-injection-proof-chain-v974'],futureGaps:['command-injection-proof-boundary-card'],tags:['web','command-injection','source-sink','proof-boundary']}),
+ reviewed({id:'upload-validation-stack',title:'Upload validation stack and storage/retrieval boundaries',packets:['data/review-packets/htb-penetration-tester-02.json'],noteIds:['htb-penetration-tester-009ff7c58b458f28','htb-penetration-tester-2926bcc5bef7edaf','htb-penetration-tester-f4573a054a8cae90','htb-penetration-tester-a5bfb6c1b8929288','htb-penetration-tester-7c06d706a2177e95','htb-penetration-tester-c4908e3a1e1e948d'],ownerCards:['web-upload-inclusion-proof-chain'],outputIds:['note-upload-validation-stack-v974'],futureGaps:[],tags:['web','file-upload','validation','retrieval-proof']}),
+ reviewed({id:'limited-upload-active-content-parser',title:'Limited upload active-content and parser boundaries',packets:['data/review-packets/htb-penetration-tester-02.json'],noteIds:['htb-penetration-tester-6791b6c6ff556cd6','htb-penetration-tester-1031d47bd5ab9ad8'],ownerCards:['web-upload-inclusion-proof-chain'],outputIds:['note-limited-upload-active-content-v974'],futureGaps:['limited-upload-parser-boundary-cards'],tags:['web','file-upload','active-content','parser-boundary']}),
+ reviewed({id:'upload-reporting-and-mitigation',title:'Upload reporting and mitigation checklist',packets:['data/review-packets/htb-penetration-tester-02.json'],noteIds:['htb-penetration-tester-f53541ee19664082'],ownerCards:['web-upload-inclusion-proof-chain'],outputIds:['note-upload-reporting-mitigation-v974'],futureGaps:[],tags:['web','file-upload','reporting','mitigation']}),
+ reviewed({id:'webshell-execution-boundary',title:'Web shell and reverse-shell execution boundary',packets:['data/review-packets/htb-penetration-tester-02.json'],noteIds:['htb-penetration-tester-b6c7a5bd41d8ac64'],ownerCards:['web-upload-inclusion-proof-chain'],outputIds:['note-webshell-execution-boundary-v974'],futureGaps:[],tags:['web','file-upload','webshell','execution-proof']})
+]);
+const pendingClusters=Object.freeze([
+ cluster({id:'web-upload-file-inclusion-expansion',title:'File upload, file inclusion, traversal, and log-poisoning proof boundaries',pendingCount:40,priority:1,readiness:'ready-to-mine',assignmentWindows:[range('data/review-packets/htb-penetration-tester-03.json','htb-penetration-tester',40,20,'htb-penetration-tester-db1367c3cb696693','htb-penetration-tester-de4321474fab4f6d'),range('data/review-packets/htb-penetration-tester-04.json','htb-penetration-tester',60,20,'htb-penetration-tester-a4d4973fdf6bc637','htb-penetration-tester-01664873f9889559')],ownerCards:['web-upload-inclusion-proof-chain','web-authz-boundaries'],proposedFeatures:['file-inclusion-proof-boundary-card'],expectedOutputs:['field-notes','evidence-analyzer-rules','safe command templates','report-boundary guidance'],tags:['web','file-upload','file-inclusion','path-traversal','log-poisoning'],rationale:'The remaining upload and inclusion material forms one proof chain: acceptance, storage, retrieval, include/read behavior, path normalization, poisoning boundary, and whether execution is actually proven.'}),
+ cluster({id:'web-authz-idor-verb-tampering',title:'IDOR, HTTP verb tampering, and authorization replay boundaries',pendingCount:18,priority:2,readiness:'ready-to-mine',assignmentWindows:[range('data/review-packets/htb-penetration-tester-01.json','htb-penetration-tester',0,20,'htb-penetration-tester-bfe04186f42f682f','htb-penetration-tester-e2af649cc1054d41')],ownerCards:['web-authz-boundaries'],proposedFeatures:['idor-mass-enumeration-proof-card','http-verb-replay-boundary-card'],expectedOutputs:['route rules','Burp/curl templates','terminal analyzer facts','report guidance'],tags:['web','idor','authorization','verb-tampering','replay'],rationale:'These notes share the same operator model: prove object/function access by comparing roles, verbs, identifiers, and request context rather than treating response codes as authorization proof.'}),
+ cluster({id:'sql-injection-discovery-and-extraction',title:'SQL injection discovery, union/error/blind extraction, and sqlmap handoff',pendingCount:38,priority:3,readiness:'ready-to-mine',assignmentWindows:[range('data/review-packets/htb-penetration-tester-05.json','htb-penetration-tester',80,20,'htb-penetration-tester-94e186fed4b37e76','htb-penetration-tester-9766ca49432777e4'),range('data/review-packets/htb-penetration-tester-06.json','htb-penetration-tester',100,20,'htb-penetration-tester-d442348861b42f2a','htb-penetration-tester-830557822a34e33a')],ownerCards:['sqlmap-request-proof','web-authz-boundaries'],proposedFeatures:['manual-sqli-proof-chain-card'],expectedOutputs:['input classification','sqlmap builder enrichment','negative-control analyzer','report wording'],tags:['web','sql-injection','sqlmap','blind','union'],rationale:'SQL injection notes need to stay grouped because the product decision depends on evidence progression from suspect parameter to database proof to extraction boundary and tool handoff.'}),
+ cluster({id:'xss-client-session-and-csp',title:'XSS, client-side session behavior, CSP, and browser proof boundaries',pendingCount:28,priority:4,readiness:'ready-to-mine',assignmentWindows:[range('data/review-packets/htb-penetration-tester-07.json','htb-penetration-tester',120,20,'htb-penetration-tester-a966c5b6eed33bf2','htb-penetration-tester-1d9194634a0cb495'),range('data/review-packets/htb-penetration-tester-08.json','htb-penetration-tester',140,20,'htb-penetration-tester-f5830bc01776efd5','htb-penetration-tester-f39ca95dd46ffb6c')],ownerCards:['web-client-session-proof-chain','web-client-controls'],proposedFeatures:['xss-context-proof-card'],expectedOutputs:['context field notes','browser evidence rules','safe reporting boundaries'],tags:['web','xss','client-side','session','csp'],rationale:'Client-side behavior needs a cluster-level review so reflected, stored, DOM, cookie/session, and CSP material produces one coherent browser-proof workflow instead of scattered payload notes.'}),
+ cluster({id:'web-proxy-fuzzing-and-transform-workflows',title:'Burp/ZAP proxy, fuzzing, encoding, and transform workflows',pendingCount:18,priority:5,readiness:'ready-to-mine',assignmentWindows:[range('data/review-packets/htb-penetration-tester-01.json','htb-penetration-tester',0,20,'htb-penetration-tester-bfe04186f42f682f','htb-penetration-tester-e2af649cc1054d41'),range('data/review-packets/htb-penetration-tester-09.json','htb-penetration-tester',160,20,'htb-penetration-tester-3562488b01c1e772','htb-penetration-tester-c57ed0a2f26bd652')],ownerCards:['burp-intruder-fuzzing-workflow','web-proxy-transform-proof-chain'],proposedFeatures:['proxy-transform-result-delta-card'],expectedOutputs:['builder defaults','payload-position guidance','result-delta analyzer rules'],tags:['web','burp','zap','fuzzing','encoding'],rationale:'Proxy, encoding, and fuzzing notes should be mined together because the product value is controlled request mutation and response-delta interpretation, not raw wordlists.'}),
+ cluster({id:'web-content-discovery-and-technology-fingerprinting',title:'Web content discovery, extension guessing, and technology fingerprinting',pendingCount:16,priority:6,readiness:'ready-to-mine',assignmentWindows:[range('data/review-packets/htb-penetration-tester-09.json','htb-penetration-tester',160,20,'htb-penetration-tester-3562488b01c1e772','htb-penetration-tester-c57ed0a2f26bd652'),range('data/review-packets/offsec-pen-200-02.json','offsec-pen-200',20,20,'offsec-pen-200-96c6dcd3d448c5b6','offsec-pen-200-043a4ca517c8a4ba')],ownerCards:['web-upload-inclusion-proof-chain','burp-intruder-fuzzing-workflow'],proposedFeatures:['web-stack-discovery-card'],expectedOutputs:['ffuf/gobuster defaults','fingerprint facts','path unlock logic'],tags:['web','content-discovery','fingerprinting','extensions','ffuf'],rationale:'Discovery notes belong in one cluster so extension enumeration, route discovery, headers, framework hints, and follow-on proof boundaries unlock the right later card.'}),
+ cluster({id:'credential-dumping-lsass-and-windows-secrets',title:'Windows credential dumping, LSASS, registry hives, and secret handling',pendingCount:15,priority:7,readiness:'ready-to-mine',assignmentWindows:[range('data/review-packets/htb-penetration-tester-01.json','htb-penetration-tester',0,20,'htb-penetration-tester-bfe04186f42f682f','htb-penetration-tester-e2af649cc1054d41'),range('data/review-packets/offsec-pen-200-04.json','offsec-pen-200',60,20,'offsec-pen-200-a820253f674cad53','offsec-pen-200-dcd4a16bbbfe100e')],ownerCards:['credential-dump-proof-chain'],proposedFeatures:['windows-secret-source-triage-card'],expectedOutputs:['secret source field notes','credential material typing','redaction/report guidance'],tags:['windows','credentials','lsass','registry','secrets'],rationale:'Secret extraction notes should be reviewed as one boundary from local proof and collection method to credential typing, validation, redaction, and downstream path movement.'}),
+ cluster({id:'pass-the-hash-and-remote-exec-artifacts',title:'Pass-the-hash, remote execution, and token/filtering artifacts',pendingCount:14,priority:8,readiness:'ready-to-mine',assignmentWindows:[range('data/review-packets/htb-penetration-tester-01.json','htb-penetration-tester',0,20,'htb-penetration-tester-bfe04186f42f682f','htb-penetration-tester-e2af649cc1054d41'),range('data/review-packets/offsec-pen-200-05.json','offsec-pen-200',80,20,'offsec-pen-200-7d8319c3e311e160','offsec-pen-200-e4395ca1008418c2')],ownerCards:['pass-the-hash-proof-chain','pth-remote-exec-artifacts','pth-token-filtering-check'],proposedFeatures:['remote-exec-artifact-proof-card'],expectedOutputs:['nxc/impacket builder enrichment','artifact analyzer facts','failure-mode guidance'],tags:['windows','pth','ntlm','remote-exec','artifacts'],rationale:'Pass-the-hash and remote-exec material belongs together because auth success, token filtering, service creation, shell proof, and cleanup are one evidence chain.'}),
+ cluster({id:'shells-payloads-and-file-transfer-stabilization',title:'Shells, payloads, file transfer, listener, and session stabilization',pendingCount:24,priority:9,readiness:'ready-to-mine',assignmentWindows:[range('data/review-packets/htb-penetration-tester-10.json','htb-penetration-tester',180,20,'htb-penetration-tester-5810b0b19e3167fd','htb-penetration-tester-44f7301bb59ee841'),range('data/review-packets/offsec-pen-200-03.json','offsec-pen-200',40,20,'offsec-pen-200-e372e6ab2fa0515f','offsec-pen-200-6522864e7c246583')],ownerCards:['metasploit-resource-pivot-workflow','web-upload-inclusion-proof-chain'],proposedFeatures:['listener-and-shell-stabilization-card'],expectedOutputs:['listener templates','shell-upgrade guidance','egress failure handling','cleanup proof'],tags:['shells','payloads','file-transfer','listeners','stabilization'],rationale:'Reverse shells, bind shells, web shells, transfer methods, and stabilization are the same operator handoff boundary between exploit proof and usable access.'}),
+ cluster({id:'linux-privesc-enumeration-and-proof',title:'Linux privilege escalation enumeration, service, sudo, SUID, and kernel proof',pendingCount:18,priority:10,readiness:'ready-to-mine',assignmentWindows:[range('data/review-packets/offsec-pen-200-04.json','offsec-pen-200',60,20,'offsec-pen-200-a820253f674cad53','offsec-pen-200-dcd4a16bbbfe100e'),range('data/review-packets/offsec-pen-200-05.json','offsec-pen-200',80,20,'offsec-pen-200-7d8319c3e311e160','offsec-pen-200-e4395ca1008418c2')],ownerCards:['linux-privesc-boundary-sweep'],proposedFeatures:['linux-privesc-signal-router'],expectedOutputs:['evidence expectations','failure handling','report cleanup guidance'],tags:['linux','privesc','sudo','suid','kernel'],rationale:'Remaining Linux privesc notes need to be reconciled with the existing boundary sweep so new lessons merge without recreating duplicate service/SUID/kernel cards.'}),
+ cluster({id:'windows-privesc-services-and-local-admin',title:'Windows local privilege escalation, services, registry, scheduled tasks, and local admin proof',pendingCount:24,priority:11,readiness:'ready-to-mine',assignmentWindows:[range('data/review-packets/offsec-pen-200-06.json','offsec-pen-200',100,20,'offsec-pen-200-b4c11acab5605d11','offsec-pen-200-40fbc4493b15f316'),range('data/review-packets/offsec-pen-200-07.json','offsec-pen-200',120,20,'offsec-pen-200-30d7d51a9fb1a2b6','offsec-pen-200-16f8ce89a2ede03d')],ownerCards:['windows-privesc-proof-boundary'],proposedFeatures:['windows-service-abuse-action-card'],expectedOutputs:['service proof chain','local-admin boundary facts','cleanup/report guidance'],tags:['windows','privesc','services','scheduled-tasks','registry'],rationale:'Windows local-escalation material should be mined as one proof boundary from enumeration lead to write/control condition, execution principal, resulting identity, and cleanup.'}),
+ cluster({id:'ad-enumeration-ldap-kerberos-bloodhound',title:'AD enumeration, LDAP/Kerberos discovery, BloodHound, and domain context',pendingCount:30,priority:12,readiness:'ready-to-mine',assignmentWindows:[range('data/review-packets/offsec-pen-200-07.json','offsec-pen-200',120,20,'offsec-pen-200-30d7d51a9fb1a2b6','offsec-pen-200-16f8ce89a2ede03d'),range('data/review-packets/offsec-pen-200-08.json','offsec-pen-200',140,20,'offsec-pen-200-18bc871423b0976b','offsec-pen-200-82e0345b8a1950d4')],ownerCards:['ad-enumeration-bloodhound-collection'],proposedFeatures:['ad-discovery-signal-router'],expectedOutputs:['ldap/kerberos facts','BloodHound collection guardrails','path unlock logic'],tags:['ad','ldap','kerberos','bloodhound','enumeration'],rationale:'AD enumeration notes need a cluster so domain facts, collection method, graph availability, and path decisions are normalized before exploitation-oriented cards run.'}),
+ cluster({id:'ad-credential-attacks-and-ticket-material',title:'AD credential attacks, Kerberoasting, AS-REP, spraying, and ticket material',pendingCount:22,priority:13,readiness:'ready-to-mine',assignmentWindows:[range('data/review-packets/offsec-pen-200-08.json','offsec-pen-200',140,20,'offsec-pen-200-18bc871423b0976b','offsec-pen-200-82e0345b8a1950d4'),range('data/review-packets/offsec-pen-200-09.json','offsec-pen-200',160,20,'offsec-pen-200-4940931777995183','offsec-pen-200-55a64e803172122a')],ownerCards:['credential-dump-proof-chain'],proposedFeatures:['ad-credential-attack-handoff-card'],expectedOutputs:['GetNPUsers/GetUserSPNs enrichment','hash routing','spray safety notes','ticket material typing'],tags:['ad','kerberos','asrep','kerberoast','spraying'],rationale:'AD credential notes should be grouped so hash/ticket capture, cracking, validation, lockout risk, and path movement remain one controlled workflow.'}),
+ cluster({id:'pivoting-tunneling-and-route-proof',title:'Pivoting, tunneling, proxying, and route proof',pendingCount:19,priority:14,readiness:'ready-to-mine',assignmentWindows:[range('data/review-packets/offsec-pen-200-09.json','offsec-pen-200',160,20,'offsec-pen-200-4940931777995183','offsec-pen-200-55a64e803172122a'),range('data/review-packets/offsec-pen-200-10.json','offsec-pen-200',180,20,'offsec-pen-200-d6a9a06c0e92a10d','offsec-pen-200-e424ec48cbd72fcb')],ownerCards:['metasploit-resource-pivot-workflow'],proposedFeatures:['route-proof-and-proxychain-card'],expectedOutputs:['chisel/ssh/plink templates','route evidence analyzers','failure modes'],tags:['pivoting','tunneling','proxychains','routing','chisel'],rationale:'Pivot notes belong together because the product needs to prove reachability, route ownership, tunnel direction, service access, and teardown rather than just generate proxy commands.'}),
+ cluster({id:'metasploit-resource-post-exploitation-and-cleanup',title:'Metasploit resources, post-exploitation handoff, and cleanup boundaries',pendingCount:13,priority:15,readiness:'needs-split',assignmentWindows:[range('data/review-packets/offsec-pen-200-10.json','offsec-pen-200',180,20,'offsec-pen-200-d6a9a06c0e92a10d','offsec-pen-200-e424ec48cbd72fcb'),range('data/review-packets/offsec-pen-200-11.json','offsec-pen-200',200,4,'offsec-pen-200-bfddee71429bb148','offsec-pen-200-6bc2634174f0cfad')],ownerCards:['metasploit-resource-pivot-workflow'],proposedFeatures:['msf-resource-file-builder','post-exploitation-proof-card'],expectedOutputs:['resource templates','session proof expectations','cleanup notes'],tags:['metasploit','resource-scripts','post-exploitation','cleanup'],rationale:'Metasploit and post-exploitation material touches multiple lanes; it needs a split decision during mining so resource automation does not become broad auto-exploitation.'}),
+ cluster({id:'reporting-cleanup-and-remediation-guidance',title:'Reporting, cleanup, mitigation, and finding narrative guidance',pendingCount:10,priority:16,readiness:'ready-to-mine',assignmentWindows:[range('data/review-packets/htb-penetration-tester-18.json','htb-penetration-tester',340,12,'htb-penetration-tester-71ce3b6a7b3b0165','htb-penetration-tester-a8d7bcfea6afb20e'),range('data/review-packets/offsec-pen-200-11.json','offsec-pen-200',200,4,'offsec-pen-200-bfddee71429bb148','offsec-pen-200-6bc2634174f0cfad')],ownerCards:['report'],proposedFeatures:['finding-proof-to-report-handoff'],expectedOutputs:['report snippets','cleanup checklist','evidence-to-finding map'],tags:['reporting','cleanup','mitigation','findings'],rationale:'Reporting and mitigation notes should be mined together so proof, risk, cleanup, and remediation do not drift away from the card that produced the evidence.'}),
+ cluster({id:'exam-skills-assessments-private-heavy',title:'Skills assessments and walkthrough-heavy note boundaries',pendingCount:33,priority:17,readiness:'private-heavy',assignmentWindows:[range('data/review-packets/htb-penetration-tester-03.json','htb-penetration-tester',40,20,'htb-penetration-tester-db1367c3cb696693','htb-penetration-tester-de4321474fab4f6d'),range('data/review-packets/htb-penetration-tester-18.json','htb-penetration-tester',340,12,'htb-penetration-tester-71ce3b6a7b3b0165','htb-penetration-tester-a8d7bcfea6afb20e'),range('data/review-packets/offsec-pen-200-01.json','offsec-pen-200',0,20,'offsec-pen-200-e58de5584625c70d','offsec-pen-200-ba5bc9ac0886ac0e')],ownerCards:['report','path'],proposedFeatures:['assessment-private-boundary-audit'],expectedOutputs:['private-boundary rows','synthetic examples only','gap extraction when reusable'],tags:['assessment','walkthrough','private-boundary','exam'],rationale:'Assessment notes often contain target-specific answer paths. They still need a cluster so reusable mechanics are extracted safely and solution chains stay private.'}),
+ cluster({id:'reference-index-and-course-map-private-heavy',title:'Reference indexes, tables of contents, and course map material',pendingCount:1,priority:18,readiness:'private-heavy',assignmentWindows:[range('data/review-packets/htb-penetration-tester-01.json','htb-penetration-tester',0,20,'htb-penetration-tester-bfe04186f42f682f','htb-penetration-tester-e2af649cc1054d41')],ownerCards:['dashboard'],proposedFeatures:['source-map-handoff-only'],expectedOutputs:['source-map metadata only'],tags:['reference','index','course-map','private-boundary'],rationale:'Reference/index material can help agents orient future mining, but it should not become user-facing content unless it yields public-safe product mechanics.'}),
+ cluster({id:'service-enumeration-network-and-initial-access',title:'Service enumeration, network discovery, and initial access hypotheses',pendingCount:24,priority:19,readiness:'needs-split',assignmentWindows:[range('data/review-packets/htb-penetration-tester-11.json','htb-penetration-tester',200,20,'htb-penetration-tester-7356740d7b8eb171','htb-penetration-tester-ffbfc9968dcd1fb8'),range('data/review-packets/htb-penetration-tester-12.json','htb-penetration-tester',220,20,'htb-penetration-tester-eb7da25cf474b3ee','htb-penetration-tester-2979b5b0babc4c70')],ownerCards:['nmap-initial-scan','web-content-discovery'],proposedFeatures:['service-signal-to-path-router'],expectedOutputs:['nmap/service facts','path router rules','tool-builder defaults'],tags:['recon','nmap','services','initial-access'],rationale:'Network and service notes need one clustering bucket now, then likely split by protocol after complete-text mining identifies which cards own each technique.'}),
+ cluster({id:'service-specific-web-and-management-surfaces',title:'Service-specific web, management, and application attack surfaces',pendingCount:24,priority:20,readiness:'needs-split',assignmentWindows:[range('data/review-packets/htb-penetration-tester-13.json','htb-penetration-tester',240,20,'htb-penetration-tester-ee413738db4a0a6a','htb-penetration-tester-0087e483b461375a'),range('data/review-packets/htb-penetration-tester-14.json','htb-penetration-tester',260,20,'htb-penetration-tester-7f74cd1ad1d715d3','htb-penetration-tester-d71197d3505c16da')],ownerCards:['path','web-authz-boundaries'],proposedFeatures:['service-specific-attack-surface-split'],expectedOutputs:['split recommendations','service cards','analyzer gaps'],tags:['services','web','management','application'],rationale:'Service-specific notes need a safe holding cluster because the right product shape may be protocol cards, web cards, or only analyzer enrichment after full-text review.'}),
+ cluster({id:'cloud-containers-and-modern-platform-surfaces',title:'Cloud, containers, platform services, and modern surface boundaries',pendingCount:20,priority:21,readiness:'needs-split',assignmentWindows:[range('data/review-packets/htb-penetration-tester-15.json','htb-penetration-tester',280,20,'htb-penetration-tester-124841c910a5f20c','htb-penetration-tester-8676fd5cc0e560cd'),range('data/review-packets/htb-penetration-tester-16.json','htb-penetration-tester',300,20,'htb-penetration-tester-2ea979c0a2ec866a','htb-penetration-tester-1404c7c976ed3d43')],ownerCards:['path'],proposedFeatures:['platform-surface-cluster-split'],expectedOutputs:['future card candidates','proof boundaries','private-only rows where out of scope'],tags:['cloud','containers','platform','modern-services'],rationale:'Platform notes need clustering without premature product claims; later mining should split only techniques that fit Obol’s browser-local authorized-lab model.'})
 ]);
 const clusterPass=Object.freeze({
  id:CLUSTER_PASS_ID,
  label:'Global source-note clustering pass',
- status:'queued',
+ status:'complete',
  ownershipArea:'notes/impact-packets',
  sourceRoute:SOURCE_ROUTE,
- selector:'Read the remaining 381 pending source notes from complete review packets and assign every pending note to exactly one public-safe semantic cluster before more terminal note dispositions are made.',
+ sourceIndexes:SOURCE_INDEXES,
+ selector:'Remaining pending source notes were grouped into stable public-safe semantic clusters before any more terminal note dispositions.',
  acceptance:Object.freeze([
-  'Every remaining pending note receives exactly one tentative cluster assignment.',
-  'Every cluster records public-safe title, rationale, source packets touched, note IDs, owner card or proposed feature, expected product outputs, and unresolved split/merge questions.',
+  'All 381 remaining pending source-note slots are assigned to one cluster ledger entry by source-window and note-index selectors.',
+  'Every cluster records public-safe title, rationale, source windows, owner cards or proposed features, expected product outputs, readiness state, and unresolved split/merge questions.',
   'No cluster record publishes private note prose, target values, credentials, flags, screenshots, exact payload recipes, or solution chains.',
   'Future notes work pulls cluster queue items from this ledger instead of blind 20-note manifest slices.',
-  'The dashboard and README Product Build Next point at the cluster ledger and the next cluster review item.'
+  'Terminal note dispositions resume only after a cluster is selected and the complete packet text for that cluster is re-read.'
  ]),
  outputs:Object.freeze([
   'data/product-hardening/source-note-clusters-current.js',
+  'data/product-hardening/global-source-note-clustering-v9.75.js',
   'docs/SOURCE-NOTE-CLUSTERING.md',
   'tools/validate-source-note-clusters.js',
+  'tests/run-v9.75-tests.js',
   'README Product Build Next cluster queue projection'
  ]),
- blockedUntilComplete:Object.freeze(['notes-disposition-pending-review-003','offline-performance']),
  nextAfterPass:NEXT_CLUSTER_QUEUE
 });
-const reviewQueue=Object.freeze([
- Object.freeze({id:NEXT_CLUSTER_QUEUE,label:'First cluster-driven source note review',status:'blocked-by-global-clustering',sourceRoute:SOURCE_ROUTE,selector:'After the global clustering pass, select the highest-impact ready-to-mine cluster from the cluster ledger and mine all notes assigned to that cluster together.',acceptance:'Ship public-safe product mechanics from the whole cluster, then terminally disposition its notes with card/analyzer/field-note/report/queue/private rationale.'})
-]);
+const reviewQueue=Object.freeze(pendingClusters.slice().sort((a,b)=>a.priority-b.priority).map((entry,index)=>Object.freeze({
+ id:index===0?NEXT_CLUSTER_QUEUE:'source-note-cluster-'+entry.id,
+ clusterId:entry.id,
+ label:entry.title,
+ status:index===0?'queued':'queued-after-prior-clusters',
+ priority:90-index,
+ pendingCount:entry.pendingCount,
+ readiness:entry.readiness,
+ selector:'Read complete packet text for cluster '+entry.id+' from '+SOURCE_ROUTE+'; mine the whole cluster before terminal dispositions.',
+ acceptance:'Ship public-safe product mechanics from the whole cluster, then disposition each note with card/analyzer/field-note/report/queue/private rationale.'
+})));
 function installQueueProjection(){
  const q=root.OBOL_PRODUCT_HARDENING;
  if(q){
   q.sourceNoteClusterPass=clusterPass;
-  q.sourceNoteClusters=seedClusters;
+  q.sourceNoteClusters=pendingClusters;
+  q.sourceNoteReviewedSeedClusters=reviewedSeedClusters;
   q.sourceNoteClusterReviewQueue=reviewQueue;
-  q.nextNotesBatch={id:CLUSTER_PASS_ID,label:'Global source-note clustering pass',sourceRoute:SOURCE_ROUTE,count:381,selector:clusterPass.selector,queueMode:'cluster-first-global-pass'};
+  q.nextNotesBatch={id:NEXT_CLUSTER_QUEUE,label:'First cluster-driven source note review',sourceRoute:SOURCE_ROUTE,count:pendingClusters[0].pendingCount,clusterId:pendingClusters[0].id,selector:reviewQueue[0].selector,queueMode:'cluster-review'};
+  if(Array.isArray(q.tracks)){const track=q.tracks.find(entry=>entry.id==='notes-integration');if(track&&!Object.isFrozen(track))track.complete=175;}
   if(Array.isArray(q.items)){
-   let item=q.items.find(entry=>entry.id===CLUSTER_PASS_ID);
-   if(!item){item={id:CLUSTER_PASS_ID,track:'notes-integration'};q.items.push(item);}
-   Object.assign(item,{status:'queued',priority:87.5,label:'Cluster all remaining pending source notes',detail:'Before more note disposition builds, organize the 381 remaining pending private source notes into a public-safe cluster ledger so future agents mine whole concepts instead of blind 20-note slices.'});
-   const burn=q.items.find(entry=>entry.id==='notes-disposition-burn-down');
-   if(burn){burn.priority=87.4;burn.detail='381 private source notes remain, but the next required gate is global clustering so future reviews mine complete semantic clusters before terminal dispositions.';}
+   let pass=q.items.find(entry=>entry.id===CLUSTER_PASS_ID);if(!pass){pass={id:CLUSTER_PASS_ID,track:'notes-integration'};q.items.push(pass);}Object.assign(pass,{status:'complete',priority:87.5,label:'Cluster all remaining pending source notes',detail:'v9.75 clustered the 381 remaining pending private source notes into a public-safe cluster ledger; future builds mine cluster queue items instead of blind slices.'});
+   let next=q.items.find(entry=>entry.id===NEXT_CLUSTER_QUEUE);if(!next){next={id:NEXT_CLUSTER_QUEUE,track:'notes-integration'};q.items.push(next);}Object.assign(next,{status:'queued',priority:89.8,label:'Mine web upload and file inclusion cluster',detail:'Read the complete packet text for the first ready cluster and ship product mechanics before terminal dispositions resume.'});
+   const burn=q.items.find(entry=>entry.id==='notes-disposition-burn-down');if(burn){burn.priority=87.4;burn.detail='381 private source notes remain, now organized into cluster review queue items. Continue disposition burn-down by mining one cluster at a time.';}
   }
  }
  const progress=root.OBOL_PRODUCT_HARDENING_NOTE_PROGRESS;
- if(progress){
-  root.OBOL_PRODUCT_HARDENING_NOTE_PROGRESS=Object.freeze(Object.assign({},progress,{nextSelectorBatch:CLUSTER_PASS_ID,nextNotesBatch:CLUSTER_PASS_ID,clusterMode:'global-clustering-required',clusteredReviewedNotes:20,unclusteredPendingNotes:381,sourceNoteClusterPass:clusterPass}));
- }
+ if(progress){root.OBOL_PRODUCT_HARDENING_NOTE_PROGRESS=Object.freeze(Object.assign({},progress,{reviewed:175,pending:381,nextSelectorBatch:NEXT_CLUSTER_QUEUE,nextNotesBatch:NEXT_CLUSTER_QUEUE,clusterMode:'cluster-review-queue-active',clusteredPendingNotes:381,unclusteredPendingNotes:0,sourceNoteClusterPass:clusterPass,sourceNoteClusterReviewQueue:reviewQueue}));}
 }
 function validate(){
  const failures=[];
  const ids=new Set();
- let noteCount=0;
- for(const entry of seedClusters){
-  if(ids.has(entry.id))failures.push('duplicate seed cluster '+entry.id);
-  ids.add(entry.id);
-  if(!entry.title||entry.title.length<12)failures.push('cluster lacks useful title '+entry.id);
-  if(!entry.ownerCards.length)failures.push('cluster lacks owner card '+entry.id);
-  if(!entry.noteIds.length)failures.push('cluster lacks note ids '+entry.id);
-  noteCount+=entry.noteIds.length;
+ const pendingTotal=pendingClusters.reduce((sum,entry)=>sum+Number(entry.pendingCount||0),0);
+ if(pendingTotal!==381)failures.push('pending cluster coverage must equal 381, got '+pendingTotal);
+ if(pendingClusters.length!==18)failures.push('expected 18 pending source-note clusters');
+ if(status.state!=='complete'||status.clusteredPendingNotes!==381||status.unclusteredPendingNotes===381)failures.push('global clustering status did not complete');
+ for(const entry of pendingClusters){
+  if(ids.has(entry.id))failures.push('duplicate cluster '+entry.id);ids.add(entry.id);
+  if(!entry.title||entry.title.length<16)failures.push('cluster lacks useful title '+entry.id);
+  if(!entry.rationale||entry.rationale.length<80)failures.push('cluster lacks useful rationale '+entry.id);
+  if(!entry.assignmentWindows.length)failures.push('cluster lacks source-window assignment '+entry.id);
+  if(!entry.ownerCards.length&&!entry.proposedFeatures.length)failures.push('cluster lacks owner/proposed feature '+entry.id);
+  if(!entry.expectedOutputs.length)failures.push('cluster lacks expected outputs '+entry.id);
+  if(!['ready-to-mine','needs-split','private-heavy'].includes(entry.readiness))failures.push('cluster readiness is invalid '+entry.id);
  }
- if(status.pendingSourceNotes!==381)failures.push('global cluster pass must target 381 pending notes after v9.74');
- if(noteCount!==20)failures.push('seed clusters should account for the 20 v9.74 reviewed notes');
- if(clusterPass.id!==CLUSTER_PASS_ID||clusterPass.nextAfterPass!==NEXT_CLUSTER_QUEUE)failures.push('cluster queue ids drifted');
- if(!clusterPass.acceptance||clusterPass.acceptance.length<5)failures.push('cluster pass acceptance is too weak');
- const serialized=JSON.stringify({status,seedClusters,clusterPass,reviewQueue});
- if(/HTB\{|flag\.txt|Password123|94\.237|83\.136|BEGIN RSA PRIVATE KEY|AKIA[0-9A-Z]{16}/i.test(serialized))failures.push('cluster ledger leaked private/source-specific material');
+ if(reviewQueue[0].id!==NEXT_CLUSTER_QUEUE||reviewQueue[0].clusterId!=='web-upload-file-inclusion-expansion')failures.push('first cluster queue item drifted');
+ const serialized=JSON.stringify({status,pendingClusters,reviewedSeedClusters,clusterPass,reviewQueue});
+ if(/HTB\{|flag\.txt|Password123|94\.237|83\.136|BEGIN RSA PRIVATE KEY|AKIA[0-9A-Z]{16}|Answer:/i.test(serialized))failures.push('cluster ledger leaked private/source-specific material');
  return failures;
 }
-const api=Object.freeze({status,seedClusters,clusterPass,reviewQueue,validate});
+const api=Object.freeze({status,sourceIndexes:SOURCE_INDEXES,reviewedSeedClusters,pendingClusters,clusterPass,reviewQueue,validate});
 installQueueProjection();
 root.OBOL_SOURCE_NOTE_CLUSTERS=api;
 if(typeof module!=='undefined'&&module.exports)module.exports=api;
