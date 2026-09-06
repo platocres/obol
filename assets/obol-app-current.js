@@ -11,7 +11,7 @@
  * suppresses historical schedulers and commits current route owners last.
  *
  * Historical fragment order sha256: 40e3006d9423d669acf5869b577ecf56a6ca2ee1629c95fd0fcc5d242d2c5f27
- * Generated body sha256: 356ab6a8e82d87ea2f820a16cbc75e7d27b10f6fb794b25b3e6c12f8f95c31e6
+ * Generated body sha256: 0c0b5d54de07a784eae28eec7e889c23b79356d633d4fafec3084e80443119b1
  * First historical fragment: assets/report-v2.js
  * Last historical fragment:  assets/app-v8.8.js
  */
@@ -1993,8 +1993,8 @@ if(__nativeMutationObserver)root.MutationObserver=__nativeMutationObserver;
 'use strict';
 (function(root){
 const release=Object.freeze({
- version:'9.70.0',
- label:'v9.70',
+ version:'9.75.0',
+ label:'v9.75',
  phase:'product-hardening',
  phaseLabel:'Product Hardening',
  orangeBaseline:'v8.8',
@@ -2021,7 +2021,16 @@ const release=Object.freeze({
   'data/product-hardening/note-card-disposition-reconciliation-v9.68.js',
   'data/product-hardening/web-upload-inclusion-remine-batch-v9.69.js',
   'data/product-hardening/client-session-remine-batch-v9.70.js',
-  'data/product-hardening/client-session-route-guard-v9.70.js'
+  'data/product-hardening/ad-metasploit-remine-batch-v9.71.js',
+  'data/product-hardening/ad-metasploit-route-guard-v9.71.js',
+  'data/product-hardening/dynamic-why-now-v9.71.js',
+  'data/product-hardening/linux-final-remine-batch-v9.72.js',
+  'data/product-hardening/linux-final-route-guard-v9.72.js',
+  'data/product-hardening/pending-disposition-batch-v9.73.js',
+  'data/product-hardening/pending-disposition-batch-v9.74.js',
+  'data/product-hardening/path-copy-sanitizer-v9.74.js',
+  'data/product-hardening/source-note-clusters-current.js',
+  'data/product-hardening/global-source-note-clustering-v9.75.js'
  ])
 });
 function stampState(target){

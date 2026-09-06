@@ -1,3 +1,12 @@
+## v9.75 — Completes the global source-note clustering pass requested after v9.74. Instead of continuing with blind 20-note pending batches, the remaining pending source-note work is now organized into cluster review queue items
+
+- Updates `data/product-hardening/source-note-clusters-current.js` from a seeded handoff into the active global cluster ledger.
+- Adds `data/product-hardening/global-source-note-clustering-v9.75.js`.
+- Adds `tools/validate-source-note-clusters.js`.
+- Adds `tests/run-v9.75-tests.js`.
+- Updates `docs/SOURCE-NOTE-CLUSTERING.md`.
+- Updates README Product Build Next from the global clustering pass to the first cluster-driven review item.
+
 ## v9.70 — Continues the notes-first Product Build Next queue by completing the second full 20-note old-rubric reviewed source re-mining batch
 
 - Added `data/product-hardening/client-session-remine-batch-v9.70.js`.
