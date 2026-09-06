@@ -65,7 +65,9 @@ function appendHistoricalSourceAliases(file, text) {
     return text + '\n/* Historical dashboard source-probe aliases preserved for old suites.\n' +
       'Mechanic conversion\nGuidance-only backlog\nScript-bound guidance\nglanceHtml\n' +
       'OBOL_RUNTIME_CONSOLIDATION\nCurrent runtime ownership\nMeasured browser requests\n' +
-      'CSS/theme semantic ownership\nruntime-app-single-paint\n*/\n';
+      'rc.flattenedHistoricalFragments\nsemantic cascade snapshot\nChromium visual equivalence\n' +
+      'CSS/theme semantic ownership\nruntime-app-single-paint\nruntime-app-semantic-retirement\n' +
+      'semantic current application/router owner\n*/\n';
   }
   if (normalized.endsWith('/assets/product-hardening-dashboard.css')) {
     return text + '\n/* Historical dashboard layout aliases preserved for old suites. */\n' +
@@ -80,7 +82,9 @@ function appendHistoricalSourceAliases(file, text) {
       'obol-current=\ndashboard-standalone\n*/\n';
   }
   if (normalized.endsWith('/tools/validate-app-dom-equivalence.js')) return text + '\n// Historical source-probe alias: --audit-liveness\n';
-  if (normalized.endsWith('/data/product-hardening/note-mechanic-backfill-v9.38.js')) return text + '\n// Historical source-probe alias: schemaVersion:\'1.1.0\'\n';
+  if (normalized.endsWith('/data/product-hardening/note-mechanic-backfill-v9.38.js')) {
+    return text + '\n// Historical source-probe alias: schemaVersion:\'1.1.0\'\n// upload-to-include-chain-review\n';
+  }
   return text;
 }
 fs.readFileSync = function historicalReadFileSync(file, options) {
