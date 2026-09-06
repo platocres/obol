@@ -11,7 +11,7 @@
  * suppresses historical schedulers and commits current route owners last.
  *
  * Historical fragment order sha256: 40e3006d9423d669acf5869b577ecf56a6ca2ee1629c95fd0fcc5d242d2c5f27
- * Generated body sha256: 0c0b5d54de07a784eae28eec7e889c23b79356d633d4fafec3084e80443119b1
+ * Generated body sha256: 77eb24f5facb2906836ed60916322396145a304d50e61246afbc50eccfdd8eef
  * First historical fragment: assets/report-v2.js
  * Last historical fragment:  assets/app-v8.8.js
  */
@@ -1993,8 +1993,8 @@ if(__nativeMutationObserver)root.MutationObserver=__nativeMutationObserver;
 'use strict';
 (function(root){
 const release=Object.freeze({
- version:'9.75.0',
- label:'v9.75',
+ version:'9.76.0',
+ label:'v9.76',
  phase:'product-hardening',
  phaseLabel:'Product Hardening',
  orangeBaseline:'v8.8',
