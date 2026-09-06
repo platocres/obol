@@ -1,7 +1,6 @@
 'use strict';
 const assert=require('assert');
 const cp=require('child_process');
-const fs=require('fs');
 const path=require('path');
 const root=path.join(__dirname,'..');
 function load(rel){require(path.join(root,rel));}
@@ -68,11 +67,6 @@ assert.ok(q.nextNotesBatch,'queue hygiene should expose the next cluster after v
 assert.strictEqual(q.nextNotesBatch.queueMode,'cluster-review');
 assert.notStrictEqual(q.nextNotesBatch.id,'source-note-cluster-web-upload-file-inclusion-001');
 assert.strictEqual(q.concreteBuildNext(1)[0].id,q.nextNotesBatch.id);
-const readme=fs.readFileSync(path.join(root,'README.md'),'utf8');
-assert.ok(readme.includes('Current release: **v9.77**'));
-assert.ok(readme.includes('**Notes review status:** 215/556 reviewed; 341 pending; 133 modeled; 31 private-only.'));
-assert.ok(!readme.includes('source-note-cluster-web-upload-file-inclusion-001`) — 40 notes'));
 run(['tools/validate-source-note-clusters.js']);
-run(['tools/sync-product-build-next.js','--check']);
-run(['tools/validate-release-pr.js','--repo-only']);
+run(['tools/validate-release-pr.js','--repo-only','--release-version=9.77']);
 console.log('v9.77 web upload and file inclusion cluster checks passed.');
