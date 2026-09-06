@@ -20,7 +20,30 @@ function upsert(entry){const existing=item(entry.id);if(existing){Object.assign(
 function mark(id,status,detail){const target=item(id);if(!target)return null;target.status=status;if(detail)target.detail=detail;return target;}
 function queueSort(a,b){return (Number(a.priority)||9999)-(Number(b.priority)||9999)||String(a.label||a.id).localeCompare(String(b.label||b.id));}
 function asNumber(value,fallback){const n=Number(value);return Number.isFinite(n)?n:fallback;}
+function clusterLedger(){const clusters=root.OBOL_SOURCE_NOTE_CLUSTERS;return clusters&&clusters.status&&clusters.status.state==='complete'?clusters:null;}
+function clusterReviewQueue(){const clusters=clusterLedger();return clusters&&Array.isArray(clusters.reviewQueue)?clusters.reviewQueue:[];}
 function noteState(){
+ const clusters=clusterLedger();
+ if(clusters){
+  const s=clusters.status||{};
+  const total=asNumber(s.totalSourceNotes,556);
+  const pending=asNumber(s.pendingSourceNotes,0);
+  const reviewed=asNumber(s.reviewedSourceNotes,Math.max(0,total-pending));
+  const oldRemaining=asNumber(s.oldRubricOnlyRemaining,0);
+  return Object.freeze({
+   total,
+   reviewed,
+   fullSpectrum:reviewed,
+   oldReviewed:reviewed,
+   oldRubricOnlyRemaining:oldRemaining,
+   pending,
+   clusteredPending:asNumber(s.clusteredPendingNotes,0),
+   unclusteredPending:asNumber(s.unclusteredPendingNotes,0),
+   clusterCount:asNumber(s.clusterCount,0),
+   clusterQueueActive:pending>0,
+   complete:pending===0&&oldRemaining===0
+  });
+ }
  const progress=root.OBOL_PRODUCT_HARDENING_NOTE_PROGRESS||{};
  const notes=root.OBOL_NOTE_INTEGRATION||{};
  const ledger=notes.ledger||{};
@@ -31,7 +54,7 @@ function noteState(){
  const oldReviewed=asNumber(remining.oldRubricReviewed,asNumber(remining.reviewed,reviewed));
  const computedOldRubricOnlyRemaining=Math.max(0,Math.min(reviewed,oldReviewed)-fullSpectrum);
  const pending=Math.max(0,total-reviewed);
- return Object.freeze({total,reviewed,fullSpectrum,oldReviewed,oldRubricOnlyRemaining:computedOldRubricOnlyRemaining,pending,complete:pending===0&&computedOldRubricOnlyRemaining===0});
+ return Object.freeze({total,reviewed,fullSpectrum,oldReviewed,oldRubricOnlyRemaining:computedOldRubricOnlyRemaining,pending,clusteredPending:0,unclusteredPending:pending,clusterCount:0,clusterQueueActive:false,complete:pending===0&&computedOldRubricOnlyRemaining===0});
 }
 function isStandingGate(entry){return !!(entry&&entry.standingGate);}
 function concreteItems(){return q.items.slice().sort(queueSort).filter(entry=>entry&&entry.status==='queued'&&!isStandingGate(entry));}
@@ -42,8 +65,40 @@ function oldRubricBatchNumber(state){
  return completed+1;
 }
 function batchToken(value){return String(value).padStart(3,'0');}
+function clusterBatch(state){
+ const clusters=clusterLedger();
+ if(!clusters||state.pending<=0)return null;
+ const queue=clusterReviewQueue();
+ const pendingClusters=Array.isArray(clusters.pendingClusters)?clusters.pendingClusters:[];
+ const nextId=(clusters.status&&clusters.status.nextClusterReviewQueue)||(queue[0]&&queue[0].id)||'source-note-cluster-web-upload-file-inclusion-001';
+ const queueItem=queue.find(entry=>entry&&entry.id===nextId)||queue[0]||{};
+ const clusterId=queueItem.clusterId||'web-upload-file-inclusion-expansion';
+ const cluster=pendingClusters.find(entry=>entry&&entry.id===clusterId)||pendingClusters[0]||{};
+ const count=asNumber(queueItem.targetCount,asNumber(queueItem.pendingCount,asNumber(cluster.pendingCount,40)));
+ const label=queueItem.label||'Mine web upload and file inclusion cluster';
+ const selector=queueItem.selector||('Select cluster `'+clusterId+'` from `data/product-hardening/source-note-clusters-current.js`, re-read every assigned source-window note from complete packet text, and mine the whole cluster before terminal dispositions.');
+ const acceptance=queueItem.acceptance||'Ship public-safe product mechanics from the whole cluster, then disposition each note with card/analyzer/field-note/report/queue/private rationale. Do not create a new primary card unless the cluster has a complete v9.71 action spine and passes v9.72 uniqueness.';
+ return Object.freeze({
+  id:nextId,
+  label,
+  gateId:'notes-disposition-burn-down',
+  sourceRoute:clusters.status.sourceRoute,
+  sourceSelector:selector,
+  targetCount:count,
+  remainingBeforeBatch:state.pending,
+  remainingAfterBatch:Math.max(0,state.pending-count),
+  requiredDimensions:nextBatchDimensions,
+  acceptance,
+  queueMode:'cluster-review',
+  clusterId,
+  clusterTitle:cluster.title||label,
+  readiness:cluster.readiness||'ready-to-mine'
+ });
+}
 function nextNotesBatch(state){
  const sourceRoute='platocres/obol-source-notes@agent/review-packets:data/review-packets/manifest.json';
+ const clustered=clusterBatch(state);
+ if(clustered)return clustered;
  if(state.oldRubricOnlyRemaining>0){
   const size=Math.min(20,state.oldRubricOnlyRemaining);
   const batchNumber=oldRubricBatchNumber(state);
@@ -84,7 +139,31 @@ function addToReminePackage(){
  if(!pkg)return;
  const ids=new Set(Array.isArray(pkg.itemIds)?pkg.itemIds:[]);
  reminePackageIds.concat(noteBurnDownGateIds).forEach(id=>ids.add(id));
+ if(q.nextNotesBatch&&q.nextNotesBatch.id)ids.add(q.nextNotesBatch.id);
+ clusterReviewQueue().forEach(entry=>{if(entry&&entry.id)ids.add(entry.id);});
  pkg.itemIds=Array.from(ids);
+}
+function activateClusterReviewItem(batch,state){
+ if(!batch||batch.queueMode!=='cluster-review')return;
+ upsert({
+  id:batch.id,
+  track:'notes-integration',
+  status:'queued',
+  priority:87.05,
+  label:batch.label,
+  detail:'Cluster-driven notes gate: '+batch.targetCount+' pending source notes in `'+batch.clusterId+'` must be mined from complete packet text before terminal dispositions resume.',
+  acceptance:batch.acceptance,
+  queueMode:'cluster-review',
+  clusterId:batch.clusterId,
+  clusterTitle:batch.clusterTitle,
+  blockingNotesGate:true,
+  standingGate:false,
+  sourceRoute:batch.sourceRoute
+ });
+ if(state&&state.clusterQueueActive){
+  const stale=['notes-batch-old-rubric-reviewed-remine-003','notes-batch-pending-disposition-001'];
+  stale.forEach(id=>{const target=item(id);if(target&&target.status==='queued')target.status='complete';});
+ }
 }
 function activateNotesFirstGates(state){
  const batch=nextNotesBatch(state);
@@ -98,7 +177,7 @@ function activateNotesFirstGates(state){
   remine.status=state.oldRubricOnlyRemaining>0?'queued':'complete';
   remine.detail=state.oldRubricOnlyRemaining>0
    ? 'Concrete notes-first gate: '+state.oldRubricOnlyRemaining+' already-reviewed old-rubric-only notes still need full-spectrum source re-mining before offline/performance work can become next.'
-   : 'Complete: all already-reviewed notes have full-spectrum re-mining coverage; continue to fresh pending-note disposition burn-down before offline/performance work.';
+   : 'Complete: all already-reviewed notes have full-spectrum re-mining coverage; continue to clustered pending-note burn-down before offline/performance work.';
   remine.acceptance='No offline/performance queue item may appear before this gate while old-rubric-only reviewed notes remain.';
  }
  const burn=item('notes-disposition-burn-down');
@@ -110,12 +189,13 @@ function activateNotesFirstGates(state){
   burn.nextNotesBatch=batch&&batch.gateId==='notes-disposition-burn-down'?batch:null;
   burn.status=state.pending>0?'queued':'complete';
   burn.detail=state.pending>0
-   ? 'Concrete notes-first gate: '+state.pending+' private source notes still need disposition/mining before offline/performance work can become next.'
+   ? (state.clusterQueueActive?'Concrete notes-first gate: '+state.pending+' private source notes remain pending and are now organized into '+state.clusterCount+' cluster review items; mine the active cluster queue before terminal dispositions continue.':'Concrete notes-first gate: '+state.pending+' private source notes still need disposition/mining before offline/performance work can become next.')
    : 'Complete: all private source notes have been dispositioned/mined.';
   burn.acceptance='No offline/performance queue item may appear before this gate while any source notes remain pending.';
  }
+ activateClusterReviewItem(batch,state);
  q.nextNotesBatch=batch;
- q.notesFirstGate=Object.freeze({schemaVersion:'1.1.0',active:!state.complete,state,nextNotesBatch:batch});
+ q.notesFirstGate=Object.freeze({schemaVersion:'1.2.0',active:!state.complete,state,nextNotesBatch:batch});
 }
 upsert({id:'notes-remine-ad-pivoting',track:'notes-integration',status:'complete',priority:86.88,label:'Re-mine reviewed AD and pivoting notes',detail:completedByReleasedProof['notes-packet-ad-pivoting']});
 Object.entries(completedByReleasedProof).forEach(([id,detail])=>mark(id,'complete',detail));
@@ -135,27 +215,37 @@ q.validateQueueHygiene=function(){
  const currentState=noteState();
  const next=q.concreteBuildNext(12);
  const nextIds=next.map(entry=>entry.id);
+ const batch=q.nextNotesBatch;
+ const clusterActive=!!(batch&&batch.queueMode==='cluster-review');
  if(!currentState.complete){
-  if(!q.nextNotesBatch)failures.push('active notes-first gate does not expose a concrete next notes batch');
-  if(q.nextNotesBatch&&(!q.nextNotesBatch.id||!q.nextNotesBatch.sourceRoute||!q.nextNotesBatch.sourceSelector||!q.nextNotesBatch.targetCount))failures.push('next notes batch handoff is missing id, source route, selector, or count');
-  if(currentState.oldRubricOnlyRemaining>0&&q.nextNotesBatch&&q.nextNotesBatch.gateId!=='notes-mechanic-backfill')failures.push('old-rubric note re-mining is incomplete but next notes batch is not tied to notes-mechanic-backfill');
-  if(currentState.pending>0&&currentState.oldRubricOnlyRemaining===0&&q.nextNotesBatch&&q.nextNotesBatch.gateId!=='notes-disposition-burn-down')failures.push('pending note burn-down is incomplete but next notes batch is not tied to notes-disposition-burn-down');
-  if(currentState.oldRubricOnlyRemaining>0&&nextIds[0]!=='notes-mechanic-backfill')failures.push('old-rubric note re-mining is incomplete but notes-mechanic-backfill is not the next concrete item');
-  if(currentState.oldRubricOnlyRemaining===0&&currentState.pending>0&&nextIds[0]!=='notes-disposition-burn-down')failures.push('pending note disposition burn-down is incomplete but notes-disposition-burn-down is not the next concrete item');
+  if(!batch)failures.push('active notes-first gate does not expose a concrete next notes batch');
+  if(batch&&(!batch.id||!batch.sourceRoute||!(batch.sourceSelector||batch.selector)||!(batch.targetCount||batch.count)))failures.push('next notes batch handoff is missing id, source route, selector, or count');
+  if(clusterActive){
+   if(!batch.clusterId)failures.push('cluster-review next notes batch is missing clusterId');
+   if(!String(batch.acceptance||'').includes('whole cluster'))failures.push('cluster-review next notes batch must require whole cluster mining');
+   if(nextIds[0]!==batch.id)failures.push('cluster-review handoff is active but the selected source-note cluster is not the next concrete item');
+  }else{
+   if(currentState.oldRubricOnlyRemaining>0&&batch&&batch.gateId!=='notes-mechanic-backfill')failures.push('old-rubric note re-mining is incomplete but next notes batch is not tied to notes-mechanic-backfill');
+   if(currentState.pending>0&&currentState.oldRubricOnlyRemaining===0&&batch&&batch.gateId!=='notes-disposition-burn-down')failures.push('pending note burn-down is incomplete but next notes batch is not tied to notes-disposition-burn-down');
+   if(currentState.oldRubricOnlyRemaining>0&&nextIds[0]!=='notes-mechanic-backfill')failures.push('old-rubric note re-mining is incomplete but notes-mechanic-backfill is not the next concrete item');
+   if(currentState.oldRubricOnlyRemaining===0&&currentState.pending>0&&nextIds[0]!=='notes-disposition-burn-down')failures.push('pending note disposition burn-down is incomplete but notes-disposition-burn-down is not the next concrete item');
+  }
   const firstPerf=nextIds.findIndex(id=>String(id||'').startsWith('perf-'));
-  const firstNote=nextIds.findIndex(id=>noteBurnDownGateIds.includes(id));
+  const firstNote=nextIds.findIndex(id=>noteBurnDownGateIds.includes(id)||(clusterActive&&id===batch.id));
   if(firstPerf!==-1&&(firstNote===-1||firstPerf<firstNote))failures.push('offline/performance work appeared before active notes-first burn-down gates');
  }
  for(const entry of next){
   if(isStandingGate(entry))failures.push(entry.id+' leaked into concrete Build Next output while marked as standing-only');
   if(entry.id==='notes-packet-ad-pivoting')failures.push('completed AD/pivoting packet leaked into concrete Build Next output');
   if(entry.id==='notes-remine-private-superseded')failures.push('completed private/superseded re-mine leaked into concrete Build Next output');
+  if(clusterActive&&/^notes-batch-(old-rubric-reviewed-remine|pending-disposition)/.test(entry.id))failures.push('blind note batch leaked into concrete Build Next while cluster queue is active: '+entry.id);
  }
+ if(clusterLedger()&&!clusterActive)failures.push('source-note cluster ledger is complete but Build Next did not expose a cluster-review next notes batch');
  if(originalBuildNext&&originalBuildNext(20).some(entry=>entry&&entry.id==='notes-packet-ad-pivoting')){
   const ad=item('notes-packet-ad-pivoting');
   if(ad&&ad.status==='queued')failures.push('base queue still exposes AD/pivoting as queued before hygiene');
  }
  return failures;
 };
-root.OBOL_PRODUCT_HARDENING_QUEUE_HYGIENE=Object.freeze({schemaVersion:'1.3.0',noteBurnDownGateIds,completedByReleasedProof,reminePackageIds,notesFirstGate:q.notesFirstGate,nextNotesBatch:q.nextNotesBatch,concreteBuildNext:q.concreteBuildNext,standingBuildGates:q.standingBuildGates,validate:q.validateQueueHygiene});
+root.OBOL_PRODUCT_HARDENING_QUEUE_HYGIENE=Object.freeze({schemaVersion:'1.4.0',noteBurnDownGateIds,completedByReleasedProof,reminePackageIds,notesFirstGate:q.notesFirstGate,nextNotesBatch:q.nextNotesBatch,sourceNoteClusterReviewQueue:clusterReviewQueue(),concreteBuildNext:q.concreteBuildNext,standingBuildGates:q.standingBuildGates,validate:q.validateQueueHygiene});
 })(typeof window!=='undefined'?window:globalThis);
