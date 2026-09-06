@@ -4,7 +4,7 @@ Obol is a static, browser-local workspace for OSCP-style labs, Active Directory 
 
 Live site: `https://platocres.github.io/obol/`
 
-Current release: **v9.73**
+Current release: **v9.74**
 
 Open `#/dashboard` for the active Product Hardening Dashboard and Product Build Next queue.
 
@@ -40,12 +40,12 @@ Obol remains a website the user can visit and use: no backend, account system, t
 <!-- OBOL-PRODUCT-BUILD-NEXT:START -->
 Generated from the same queue sources as the Product Hardening Dashboard. Do not edit this block manually.
 
-**Current product-hardening queue:** 247/657 complete (38%), 6 concrete queued, 9 modeled/standing items.
+**Current product-hardening queue:** 267/657 complete (41%), 6 concrete queued, 9 modeled/standing items.
 **Private notes source:** [`https://github.com/platocres/obol-source-notes/tree/main/sources/raw`](https://github.com/platocres/obol-source-notes/tree/main/sources/raw) — 556 notes and 1326 embedded resources accounted.
 **Private review packets:** `platocres/obol-source-notes@agent/review-packets:data/review-packets/manifest.json` — 556/556 notes, 29 packets, 0 truncated.
-**Notes review status:** 155/556 reviewed; 401 pending; 116 modeled; 30 private-only.
+**Notes review status:** 175/556 reviewed; 381 pending; 133 modeled; 31 private-only.
 **Source re-mining status:** 135/135 full-spectrum re-mined; 0 old-rubric-only notes remain.
-**Next notes batch:** **Pending source note disposition batch 2** (`notes-disposition-pending-review-002`) — 20 notes from `platocres/obol-source-notes@agent/review-packets:data/review-packets/manifest.json`.
+**Next notes batch:** **Pending source note disposition batch 3** (`notes-disposition-pending-review-003`) — 20 notes from `platocres/obol-source-notes@agent/review-packets:data/review-packets/manifest.json`.
 **Selector:** Select the next 20 unreviewed private source notes in manifest/source order, re-mine from original text, and publish only generalized product mechanics.
 **Acceptance:** Every selected note receives a terminal disposition plus public-safe product output, a covered rationale, a queued product gap, or private-boundary proof. Keep the full-spectrum 16-dimension rubric for any note that produces a card, analyzer, tool-builder change, path branch, or report mechanic. Do not advance to offline/performance work until the pending-note disposition gate is complete.
 
@@ -56,7 +56,7 @@ Generated from the same queue sources as the Product Hardening Dashboard. Do not
 **Package detail:** Use the Product Hardening Dashboard for full track ledgers and `data/product-hardening/work-packages.js` for the long-form package guidance.
 
 **Highest-priority concrete live items:**
-1. **Burn down all 556 note dispositions** — Concrete notes-first gate: 401 private source notes still need disposition/mining before offline/performance work can become next.
+1. **Burn down all 556 note dispositions** — Concrete notes-first gate: 381 private source notes still need disposition/mining before offline/performance work can become next.
 2. **Quiet service worker caching** — Improve repeat-load and offline behavior without prompting users to install anything.
 3. **IndexedDB workspace storage** — Support durable larger local workspaces, multiple engagements, and cached indexes while remaining browser-local.
 4. **Web Workers for heavy tasks** — Move evidence parsing, search indexing, and report generation off the UI thread.
