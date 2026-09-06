@@ -22,7 +22,7 @@ Agents may be operating from Kali or from a Windows host. Obol still never execu
 4. **Batch carefully.** Use the recommended coherent work package when it keeps one PR inside the same ownership area. Every item advanced or closed still needs its own acceptance criteria and proof.
 5. **For notes work, use the generated Next notes batch or cluster queue.** Re-mine from raw private notes or the complete sequential packet fallback, not old summaries. **Extract the value, not the wording.** Public Obol gets re-authored guidance, synthetic examples, generalized templates, path logic, tool cards, analyzers, lesson boxes, and product mechanics; it must not copy course prose, flags, credentials, targets, screenshots, or exact solution chains. With v9.75, future note builds must use the cluster queue in `data/product-hardening/source-note-clusters-current.js` and mine whole clusters instead of blind 20-note slices. See [`docs/RAW-NOTES-LFS.md`](docs/RAW-NOTES-LFS.md), [`docs/NOTE-DERIVATION-STANDARD.md`](docs/NOTE-DERIVATION-STANDARD.md), [`docs/NOTE-MINING-RUBRIC.md`](docs/NOTE-MINING-RUBRIC.md), [`docs/NOTES-INTEGRATION.md`](docs/NOTES-INTEGRATION.md), [`docs/NOTES-IMPACT.md`](docs/NOTES-IMPACT.md), and [`docs/SOURCE-NOTE-CLUSTERING.md`](docs/SOURCE-NOTE-CLUSTERING.md).
 6. **Use live tracking, not release narrative.** Do not use `CHANGELOG.md` to decide what remains to be re-mined. Current status lives in Product Build Next, the Product Hardening Dashboard, `data/product-hardening/source-note-clusters-current.js`, and `data/product-hardening/note-progress-current.js`.
-7. **Land and prove the work.** Update stable current owners instead of adding disposable wrappers, sync generated outputs, run the focused validators for the touched ownership area, and keep the exact final head green.
+7. **Land and prove the work.** Wire new outputs into the actual user-visible Next Steps / Orange path surface where relevant, update stable current owners instead of adding disposable wrappers, sync generated outputs, run the focused validators for the touched ownership area, and keep the exact final head green.
 
 Product Build Next source note: This block is generated from `data/product-hardening/product-hardening-queue.js`. Do not edit it manually. Recommended work-package metadata comes from `data/product-hardening/work-packages.js`.
 
@@ -83,7 +83,9 @@ Open `index.html` in a browser. No server or package install is required. Use `#
 
 Use `node tools/scope-check.js` as the focused inner-loop gate during development. [`BUILDING.md`](BUILDING.md) owns preflight, full-regression, and exact-head merge-readiness rules. CI owns the complete historical regression chain on explicit full-regression heads and `main`.
 
-Historical runtime proof wording remains available for regression ownership checks: semantic flattening plus retirement; v9.44 retirement; Current runtime ownership; CSS/theme semantic ownership; runtime-app-single-paint; **Architecture / runtime:** 19/22 complete; **Runtime consolidation:** 18 operator startup requests; 215 semantically flattened, 57 still exact-owned.
+Historical runtime proof wording remains available for regression ownership checks: semantic flattening plus retirement; v9.44 retirement; Current runtime ownership; CSS/theme semantic ownership; runtime-app-single-paint; **Architecture / runtime:** 19/22 complete; **Runtime consolidation:** 5 operator startup requests, down from 286 (98% fewer); 215 semantically flattened, 57 still exact-owned.
+
+**Runtime consolidation:** 5 operator startup requests, down from 286 (98% fewer).
 
 **Current runtime ownership areas:** 7 owners account for 272 historical fragments — 215 semantically flattened, 57 still exact-owned; 55 fragments stay retired in the frozen ledger. Report base and application UI (43, semantic-delta-replay). Evidence parsing (37, ordered-fragment-concatenation).
 
