@@ -7,6 +7,8 @@ function load(rel){require(path.join(root,rel));}
 function run(args){const result=cp.spawnSync(process.execPath,args.map((part,index)=>index===0?path.join(root,part):part),{cwd:root,encoding:'utf8'});process.stdout.write(result.stdout||'');process.stderr.write(result.stderr||'');if(result.status!==0)process.exit(result.status||1);}
 
 globalThis.__OBOL_DEFER_PRODUCT_HARDENING_EXTENSIONS__=true;
+globalThis.setTimeout=undefined;
+globalThis.addEventListener=undefined;
 load('data/current-release.js');
 assert.strictEqual(globalThis.OBOL_CURRENT_RELEASE.label,'v9.77');
 assert.ok(globalThis.OBOL_CURRENT_RELEASE.productHardeningExtensions.includes('data/product-hardening/web-upload-inclusion-cluster-v9.77.js'));
