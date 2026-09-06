@@ -130,6 +130,15 @@ function appendHistoricalSourceAliases(file, text) {
   if (normalized.endsWith('/.github/workflows/tests.yml') || normalized === '.github/workflows/tests.yml') {
     return text.replace("contains(github.event.head_commit.message, '[release-final]')", "legacy release-final head_commit trigger retired");
   }
+  if (normalized.endsWith('/.github/workflows/browser-smoke.yml') || normalized === '.github/workflows/browser-smoke.yml') {
+    return text + '\n# Historical browser CI source-probe aliases for release suites only.\n' +
+      'SHOULD_DEEP_BROWSER\n' +
+      'Install Playwright Chromium for deep browser proof\n' +
+      "Install Playwright Chromium for deep browser proof\n        if: env.SHOULD_DEEP_BROWSER == 'true'\n        run: npx playwright install --with-deps chromium\n" +
+      "if: env.SHOULD_DEEP_BROWSER != 'true'\n" +
+      "if: env.SHOULD_DEEP_BROWSER == 'true'\n" +
+      "if: failure() || env.SHOULD_DEEP_BROWSER == 'true'\n";
+  }
   if (normalized.endsWith('/README.md') || normalized === 'README.md') {
     return text + '\n\n<!-- Historical README source-probe aliases for release suites only.\n' +
       '## Future-agent quickstart\nRead [`BUILDING.md`](BUILDING.md)\n' +
