@@ -104,7 +104,7 @@ function suiteFiles() {
     .filter(name => /^run-v.*-tests\.js$/.test(name))
     .sort(natural);
 }
-function testTasks(files) { return files.map(f => ({ argv: resolveArgv(['tests/' + f]) })); }
+function testTasks(files) { return files.map(f => ({ argv: resolveArgv(['tools/run-historical-suite-file.js', 'tests/' + f]) })); }
 function phaseTasks(phase) {
   const suites = suiteFiles();
   if (phase === 'syntax') return syntaxTasks();
