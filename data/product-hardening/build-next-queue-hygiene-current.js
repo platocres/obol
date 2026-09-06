@@ -140,7 +140,6 @@ function addToReminePackage(){
  const ids=new Set(Array.isArray(pkg.itemIds)?pkg.itemIds:[]);
  reminePackageIds.concat(noteBurnDownGateIds).forEach(id=>ids.add(id));
  if(q.nextNotesBatch&&q.nextNotesBatch.id)ids.add(q.nextNotesBatch.id);
- clusterReviewQueue().forEach(entry=>{if(entry&&entry.id)ids.add(entry.id);});
  pkg.itemIds=Array.from(ids);
 }
 function activateClusterReviewItem(batch,state){
@@ -247,5 +246,5 @@ q.validateQueueHygiene=function(){
  }
  return failures;
 };
-root.OBOL_PRODUCT_HARDENING_QUEUE_HYGIENE=Object.freeze({schemaVersion:'1.4.0',noteBurnDownGateIds,completedByReleasedProof,reminePackageIds,notesFirstGate:q.notesFirstGate,nextNotesBatch:q.nextNotesBatch,sourceNoteClusterReviewQueue:clusterReviewQueue(),concreteBuildNext:q.concreteBuildNext,standingBuildGates:q.standingBuildGates,validate:q.validateQueueHygiene});
+root.OBOL_PRODUCT_HARDENING_QUEUE_HYGIENE=Object.freeze({schemaVersion:'1.4.1',noteBurnDownGateIds,completedByReleasedProof,reminePackageIds,notesFirstGate:q.notesFirstGate,nextNotesBatch:q.nextNotesBatch,sourceNoteClusterReviewQueue:clusterReviewQueue(),concreteBuildNext:q.concreteBuildNext,standingBuildGates:q.standingBuildGates,validate:q.validateQueueHygiene});
 })(typeof window!=='undefined'?window:globalThis);
