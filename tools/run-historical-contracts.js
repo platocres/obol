@@ -99,21 +99,48 @@ const PHASE_TASKS = Object.freeze({
     ['tools/validate-current-boot.js'],
     ['tools/validate-runtime-manifest.js'],
     ['tools/validate-runtime-bundles.js'],
-    ['tools/validate-runtime-loading.js']
+    ['tools/validate-runtime-loading.js'],
+    ['tools/validate-runtime-consolidation-sync.js'],
+    ['tools/validate-current-workflow.js'],
+    ['tools/validate-app-current-equivalence.js'],
+    ['tools/validate-app-semantic-current.js'],
+    ['tools/validate-core-current-equivalence.js'],
+    ['tools/validate-domain-current-equivalence.js'],
+    ['tools/validate-evidence-current-equivalence.js'],
+    ['tools/validate-style-current-equivalence.js'],
+    ['tools/validate-current-owner-styles.js'],
+    ['tools/validate-asset-references.js'],
+    ['tools/audit-dashboard-runtime-dependencies.js', '--require-retired'],
+    ['tools/sync-app-current.js', '--check'],
+    ['tools/sync-core-current.js', '--check'],
+    ['tools/sync-domain-current.js', '--check'],
+    ['tools/sync-current-styles.js', '--check'],
+    ['tools/sync-runtime-bundles.js', '--check']
   ],
   'v9-early-product': [
     ['tools/validate-actionable-next-step-cards.js'],
     ['tools/validate-card-action-spine-v9.71.js'],
     ['tools/validate-product-hardening-card-routes.js'],
     ['tools/validate-path-card-uniqueness-v9.72.js'],
-    ['tools/validate-action-first-card-cleanup.js']
+    ['tools/validate-action-first-card-cleanup.js'],
+    ['tools/validate-path-views.js'],
+    ['tools/validate-field-notes-ui.js'],
+    ['tools/validate-accessibility-contract.js'],
+    ['tools/validate-responsive-layout.js'],
+    ['tools/validate-tool-builder-platform.js'],
+    ['tools/validate-dashboard-compat-equivalence.js'],
+    ['tools/validate-dashboard-freshness.js']
   ],
   'v9-mid-product': [
     ['tools/validate-note-integration.js'],
     ['tools/validate-source-note-clusters.js'],
     ['tools/validate-notes-impact.js'],
     ['tools/validate-note-card-disposition-reconciliation.js'],
-    ['tools/validate-note-card-path-placement.js']
+    ['tools/validate-note-card-path-placement.js'],
+    ['tools/validate-note-derivation-docs.js'],
+    ['tools/validate-note-mechanic-backfill.js'],
+    ['tools/validate-note-remining-audits.js'],
+    ['tools/validate-linux-final-remine-v9.72.js']
   ],
   'v9-current-product': [
     ['tests/run-v9.78-tests.js'],
@@ -132,7 +159,10 @@ const PHASE_TASKS = Object.freeze({
   'generated-sync': [
     ['tools/sync-readme-build-next.js', '--check'],
     ['tools/sync-product-build-next.js', '--check'],
-    ['tools/sync-current-release.js', '--check']
+    ['tools/sync-current-release.js', '--check'],
+    ['tools/sync-core-current.js', '--check'],
+    ['tools/sync-release-docs.js', '--check'],
+    ['tools/sync-current-changelog.js', '--check']
   ]
 });
 
