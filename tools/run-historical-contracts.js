@@ -117,6 +117,7 @@ function phaseTasks(phase) {
   if (phase === 'v9-mid-product') return testTasks(suites.filter(f => inRange(f, [9, 30, 0], [9, 56, 0])));
   if (phase === 'v9-current-product') return testTasks(suites.filter(f => inRange(f, [9, 56, 0], null)));
   if (phase === 'quality-preservation') return [
+    ['tools/validate-pr-test-governance.js'],
     ['tools/validate-historical-tests.js'],
     ['tools/validate-release-pr.js'],
     ['tools/validate-release-quality.js'],
