@@ -4,7 +4,7 @@ Obol is a static, browser-local workspace for OSCP-style labs, Active Directory 
 
 Live site: `https://platocres.github.io/obol/`
 
-Current release: **v9.80**
+Current release: **v9.81**
 
 Open `#/dashboard` for the active Product Hardening Dashboard and Product Build Next queue.
 
@@ -49,30 +49,31 @@ Historical Orange AD mindmap source: `https://orange-cyberdefense.github.io/ocd-
 <!-- OBOL-PRODUCT-BUILD-NEXT:START -->
 Generated from the same queue sources as the Product Hardening Dashboard. Do not edit this block manually.
 
-**Current product-hardening queue:** 226/657 complete (34%), 6 concrete queued, 9 modeled/standing items.
+**Current product-hardening queue:** 234/657 complete (36%), 6 concrete queued, 9 modeled/standing items.
 **Private notes source:** [`https://github.com/platocres/obol-source-notes/tree/main/sources/raw`](https://github.com/platocres/obol-source-notes/tree/main/sources/raw) — 556 notes and 1326 embedded resources accounted.
 **Private review packets:** `platocres/obol-source-notes@agent/review-packets:data/review-packets/manifest.json` — 556/556 notes, 29 packets, 0 truncated.
 **Complete source packet proof:** 556/556 notes in 29 complete-text packets, 0 truncated, 8,725,188 cleaned text chars.
 **Raw source proof:** workflow run 33877189291 verified HTB ENEX 194,191,214 bytes and OffSec PEN-200 ENEX 110,367,324 bytes before packet extraction.
 **Runtime consolidation:** 5 operator startup requests, down from 286 (98% fewer).
 **Runtime consolidation owner:** `data/runtime-consolidation-current.js` feeds this README projection and the Product Hardening Dashboard.
-**Notes review status:** 299/556 reviewed; 257 pending; 133 modeled; 31 private-only.
-**Source re-mining status:** 299/299 full-spectrum re-mined; 0 old-rubric-only notes remain.
-**Source-note cluster status:** 257/257 pending notes clustered into 15 public-safe cluster review items; 0 pending notes remain unclustered.
-**Next notes batch:** **Browser client cookie, session, and transform fuzzing workflows** (`source-note-cluster-browser-client-cookie-transform-workflows`) — 8 notes from `platocres/obol-source-notes@agent/review-packets:data/review-packets/manifest.json`.
-**Queue mode:** `cluster-review` for cluster `browser-client-cookie-transform-workflows`.
-**Selector:** Select cluster `browser-client-cookie-transform-workflows` from `data/product-hardening/source-note-clusters-current.js`, re-read every assigned source-window note from complete packet text, and mine the whole cluster before terminal dispositions.
+**Notes review status:** 307/556 reviewed; 249 pending; 141 modeled; 31 private-only.
+**Source re-mining status:** 307/307 full-spectrum re-mined; 0 old-rubric-only notes remain.
+**Source-note cluster status:** 249/249 pending notes clustered into 14 public-safe cluster review items; 0 pending notes remain unclustered.
+**Latest cluster reconciliation:** v9.81 corrected the generated browser cookie/session transform label after full packet review showed the assigned window was AD, SMB, pivoting, trusts, DCSync, privileged access, and Kerberos workflow material.
+**Next notes batch:** **Burp/ZAP proxy, fuzzing, encoding, and transform workflows** (`source-note-cluster-web-proxy-fuzzing-and-transform-workflows`) — 10 notes from `platocres/obol-source-notes@agent/review-packets:data/review-packets/manifest.json`.
+**Queue mode:** `cluster-review` for cluster `web-proxy-fuzzing-and-transform-workflows`.
+**Selector:** Select cluster `web-proxy-fuzzing-and-transform-workflows` from `data/product-hardening/source-note-clusters-current.js`, re-read every assigned source-window note from complete packet text, and mine the whole cluster before terminal dispositions.
 **Acceptance:** Ship public-safe product mechanics from the whole cluster, then disposition each note with card/analyzer/field-note/report/queue/private rationale.
 
 **Recommended work package:** **Notes Impact and Source Re-mining** — 2 concrete live items / 19 tracked.
-**Next concrete entry:** **Browser client cookie, session, and transform fuzzing workflows**
+**Next concrete entry:** **Burp/ZAP proxy, fuzzing, encoding, and transform workflows**
 **Ownership area:** `notes/impact-packets`
 **Package dependencies:** Notes Integration Foundation.
 **Package detail:** Use the Product Hardening Dashboard for full track ledgers and `data/product-hardening/work-packages.js` for the long-form package guidance.
 
 **Highest-priority concrete live items:**
-1. **Browser client cookie, session, and transform fuzzing workflows** — Cluster-driven notes gate: 8 pending source notes in `browser-client-cookie-transform-workflows` must be mined from complete packet text before terminal dispositions resume.
-2. **Burn down all 556 note dispositions** — Concrete notes-first gate: 257 private source notes remain pending and are now organized into 15 cluster review items; mine the active cluster queue before terminal dispositions continue.
+1. **Burp/ZAP proxy, fuzzing, encoding, and transform workflows** — Cluster-driven notes gate: 10 pending source notes in `web-proxy-fuzzing-and-transform-workflows` must be mined from complete packet text before terminal dispositions resume.
+2. **Burn down all 556 note dispositions** — Concrete notes-first gate: 249 private source notes remain pending and are now organized into 14 cluster review items; mine the active cluster queue before terminal dispositions continue.
 3. **Quiet service worker caching** — Improve repeat-load and offline behavior without prompting users to install anything.
 4. **IndexedDB workspace storage** — Support durable larger local workspaces, multiple engagements, and cached indexes while remaining browser-local.
 5. **Web Workers for heavy tasks** — Move evidence parsing, search indexing, and report generation off the UI thread.
