@@ -1,3 +1,11 @@
+## v9.79 — Obol v9.79 mines the next Product Build Next source-note cluster, `source-note-cluster-sql-injection-discovery-and-extraction`, covering SQL injection discovery, UNION and error/blind proof boundaries, database enumeration, and sqlmap handoff
+
+- adds a command-bearing `sqlmap-request-proof` card for SQLi triage, column-count probing, visible UNION placement, request-file sqlmap handoff, database enumeration, narrow dump proof, and gated file-read branches;
+- adds contextual field notes for SQLi hypothesis triage, UNION column/visibility proof, database enumeration order, sqlmap request handoff, blind/error/time technique separation, file/shell risk boundaries, and report/remediation language;
+- adds the `sql-injection-evidence-analyzer-v979` analyzer for syntax/error clues, UNION and column probing, database metadata enumeration, sqlmap output, blind/time evidence, data extraction, and file/shell branch evidence;
+- keeps authorization and SQL injection adjacent but separate so SQLi data access does not accidentally become object/role authorization proof;
+- completes the SQLi cluster queue item and advances the next notes-first queue item to the XSS/client/session cluster.
+
 ## v9.78 — Obol v9.78 mines the next source-note cluster, `source-note-cluster-web-authz-idor-verb-tampering`, covering IDOR, HTTP verb tampering, and authorization replay boundaries from the complete private review packet route
 
 - re-reads the assigned complete packet window from `platocres/obol-source-notes@agent/review-packets:data/review-packets/htb-penetration-tester-01.json`;
