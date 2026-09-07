@@ -143,7 +143,7 @@ const PHASE_TASKS = Object.freeze({
     ['tools/validate-linux-final-remine-v9.72.js']
   ],
   'v9-current-product': [
-    ['tests/run-v9.78-tests.js'],
+    ['tests/run-v9.79-tests.js'],
     ['tests/run-notes-batch-selector-tests.js'],
     ['tools/validate-current-release.js'],
     ['tools/validate-product-hardening-queue.js'],
@@ -179,20 +179,11 @@ async function runPhase(phase) {
   if (await runPool(list)) process.exit(1);
   console.log('Regression phase passed: ' + phase);
 }
-function requestedPhase() {
-  const i = process.argv.indexOf('--phase');
-  if (i >= 0) return process.argv[i + 1];
-  const eq = process.argv.find(arg => arg.startsWith('--phase='));
-  return eq ? eq.slice('--phase='.length) : '';
+
+async function main() {
+  const idx = process.argv.indexOf('--phase');
+  if (idx !== -1) return runPhase(process.argv[idx + 1]);
+  for (const phase of PHASES) await runPhase(phase);
+  console.log('Complete Obol historical/current regression contract passed.');
 }
-
-(async () => {
-  if (process.argv.includes('--list-phases')) { console.log(PHASES.join('\n')); return; }
-  const phase = requestedPhase();
-  if (phase) { await runPhase(phase); return; }
-
-  // Main/manual mode: keep the complete chain in one command for exact-head final proof.
-  if (await runPool(syntaxTasks())) process.exit(1);
-  for (const p of PHASES.filter(p => p !== 'syntax')) await runPhase(p);
-  console.log('Complete regression contract runner passed.');
-})().catch(e => { console.error(e && e.stack || e); process.exit(1); });
+main().catch(err => { console.error(err && err.stack || err); process.exit(1); });
