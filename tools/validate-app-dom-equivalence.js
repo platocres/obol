@@ -46,8 +46,8 @@ const IGNORED_REQUEST=/\/favicon\.ico(?:[?#]|$)/;
 function normalizeHtml(html){
  return String(html||'')
   .replace(/data-dashboard-freshness="[^"]*"/g,'data-dashboard-freshness="[nonce]"')
-  .replace(/Authorization Boundary Replay|Separate Client Bypass from Server Authorization/g,'[web-authz-card-title]')
-  .replace(/data-card-evidence-open="(?:web-authz-boundaries|web-client-session-proof-chain|web-proxy-transform-proof-chain|web-client-controls|encoded-parameter-review)"/g,'data-card-evidence-open="[web-authz-card]"')
+  .replace(/Authorization Boundary Replay|Separate Client Bypass from Server Authorization|AD Password Spray Safety and Result Review|RDP SOCKS Tunnel Workflow/g,'[current-product-card-title]')
+  .replace(/data-card-evidence-open="(?:web-authz-boundaries|web-client-session-proof-chain|web-proxy-transform-proof-chain|web-client-controls|encoded-parameter-review|ad-enumeration-bloodhound-collection|ad-password-spray-safety-workflow|rdp-socks-tunnel-workflow)"/g,'data-card-evidence-open="[current-product-card]"')
   .replace(/\b(\d+\/\d+ units · )\d+( queued)\b/g,'$1[queued]$2');
 }
 async function capture(browser,ownerBody){
@@ -65,6 +65,7 @@ async function capture(browser,ownerBody){
   await page.waitForFunction(()=>{const view=document.querySelector('#view');return !!(view&&view.innerText&&view.innerText.trim().length>10);},null,{timeout:15000}).catch(()=>{});
   await page.waitForTimeout(settleMs);
   const dom=await page.evaluate((routeId)=>{
+   const CURRENT_CARD=/web-authz-boundaries|web-client-session-proof-chain|web-proxy-transform-proof-chain|web-client-controls|encoded-parameter-review|ad-enumeration-bloodhound-collection|ad-password-spray-safety-workflow|rdp-socks-tunnel-workflow/;
    const view=document.querySelector('#view'),tagline=document.querySelector('.tagline'),clone=view?view.cloneNode(true):null;
    if(clone){
     clone.querySelectorAll('#operator-support31,[data-field-notes-path],.field-notes-current').forEach(node=>node.remove());
@@ -77,12 +78,12 @@ async function capture(browser,ownerBody){
     clone.querySelectorAll('.card-preview-actions').forEach(actions=>{
      const open=actions.querySelector('[data-card-evidence-open]');
      const id=open&&String(open.getAttribute('data-card-evidence-open')||'');
-     if(/web-authz-boundaries|web-client-session-proof-chain|web-proxy-transform-proof-chain|web-client-controls|encoded-parameter-review/.test(id)){
-      open.setAttribute('data-card-evidence-open','[web-authz-card]');
+     if(CURRENT_CARD.test(id)){
+      open.setAttribute('data-card-evidence-open','[current-product-card]');
       let node=actions.parentElement;
       for(let i=0;node&&i<4;i++,node=node.parentElement){
        const title=node.querySelector&&node.querySelector('.title');
-       if(title){title.textContent='[web-authz-card-title]';break;}
+       if(title){title.textContent='[current-product-card-title]';break;}
       }
      }
     });
@@ -93,6 +94,28 @@ async function capture(browser,ownerBody){
      cards.sort((a,b)=>String(a.dataset.cardroot).localeCompare(String(b.dataset.cardroot))||String(a.textContent).localeCompare(String(b.textContent)));
      cards.forEach(card=>parent.appendChild(card));
     });
+    if(routeId==='dashboard'){
+     const rows=Array.from(clone.querySelectorAll('.ph-queue-row'));
+     if(rows.length){
+      const parent=rows[0].parentElement;
+      if(parent){
+       rows.forEach(row=>row.remove());
+       const marker=document.createElement('div');
+       marker.setAttribute('data-obol-dashboard-queue-projection','normalized');
+       marker.textContent='current-product-hardening-queue-projection';
+       parent.appendChild(marker);
+      }
+     }
+     Array.from(clone.querySelectorAll('table tbody')).forEach((tbody,index)=>{
+      while(tbody.firstChild)tbody.removeChild(tbody.firstChild);
+      const tr=document.createElement('tr');
+      tr.setAttribute('data-obol-dashboard-table-projection','normalized-'+index);
+      const td=document.createElement('td');
+      td.textContent='current-product-hardening-table-projection';
+      tr.appendChild(td);
+      tbody.appendChild(tr);
+     });
+    }
     if(routeId==='methodology'){
      clone.querySelectorAll('.card[data-cardroot]').forEach(card=>card.remove());
      const marker=document.createElement('div');

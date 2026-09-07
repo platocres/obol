@@ -1,8 +1,8 @@
 'use strict';
 (function(root){
 const release=Object.freeze({
- version:'9.81.0',
- label:'v9.81',
+ version:'9.82.0',
+ label:'v9.82',
  phase:'product-hardening',
  phaseLabel:'Product Hardening',
  orangeBaseline:'v8.8',
@@ -45,7 +45,8 @@ const release=Object.freeze({
   'data/product-hardening/web-authz-idor-verb-cluster-v9.78.js',
   'data/product-hardening/sql-injection-cluster-v9.79.js',
   'data/product-hardening/xss-client-session-csp-cluster-v9.80.js',
-  'data/product-hardening/ad-pivot-smb-trust-cluster-v9.81.js'
+  'data/product-hardening/ad-pivot-smb-trust-cluster-v9.81.js',
+  'data/product-hardening/ad-initial-enum-spray-rdp-socks-cluster-v9.82.js'
  ])
 });
 function stampState(target){

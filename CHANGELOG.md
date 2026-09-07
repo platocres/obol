@@ -1,3 +1,14 @@
+## v9.82 — - Corrects the queued `source-note-cluster-web-proxy-fuzzing-and-transform-workflows` item after complete packet review showed the assigned source window was AD, Kerberos, LOTL, credentialed enumeration, password policy, password spraying, Inveigh, and RDP SOCKS workflow material rather than Burp/ZAP proxy fuzzing
+
+- Corrects the queued `source-note-cluster-web-proxy-fuzzing-and-transform-workflows` item after complete packet review showed the assigned source window was AD, Kerberos, LOTL, credentialed enumeration, password policy, password spraying, Inveigh, and RDP SOCKS workflow material rather than Burp/ZAP proxy fuzzing.
+- Records the corrected completed cluster identity as `ad-initial-enum-credential-spray-rdp-socks-workflows`.
+- Enriches the existing `ad-enumeration-bloodhound-collection` card with Kerberoast-from-Linux boundaries, LOTL host/domain enumeration, credentialed Linux enumeration, security-control posture review, LAPS posture, Inveigh boundary handling, and passive/active domain discovery staging.
+- Adds the new `ad-password-spray-safety-workflow` card because password policy, target-list provenance, spray cadence, result validation, and lockout safety form a distinct operator action spine.
+- Adds the new `rdp-socks-tunnel-workflow` card because RDP dynamic virtual channel setup, plugin load, server start, local SOCKS listener proof, Proxifier routing, and final reachability form a distinct operator action spine.
+- Adds public-safe field notes for Kerberoasting boundaries, LOTL enumeration, credentialed Linux enumeration, security controls, RDP SOCKS double pivots, password-policy review, spray target-list provenance, spray result validation, Inveigh/LLMNR boundaries, and staged initial domain enumeration.
+- Adds `ad-initial-enum-spray-rdp-socks-analyzer-v982` for pasted Kerberoast, LOTL, CME/SMBMap/RPC/BloodHound, Defender/AppLocker/LAPS, RDP SOCKS, password policy, spray, Inveigh, and passive/active discovery evidence.
+- Advances notes burn-down to 317/556 reviewed, leaves 239 pending notes in 13 clusters, and moves Product Build Next to `source-note-cluster-web-content-discovery-and-technology-fingerprinting`.
+
 ## v9.81 — Corrects the next notes-cluster handoff before product work drifts into the wrong surface
 
 - Corrects the mislabeled `source-note-cluster-browser-client-cookie-transform-workflows` queue item after complete packet review showed the assigned source window was AD, SMB, pivoting, trusts, DCSync, privileged access, and Kerberos workflow material.

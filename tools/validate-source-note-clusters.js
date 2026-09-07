@@ -22,6 +22,7 @@ if(versionAtLeast(label,'v9.78'))load('data/product-hardening/web-authz-idor-ver
 if(versionAtLeast(label,'v9.79'))load('data/product-hardening/sql-injection-cluster-v9.79.js');
 if(versionAtLeast(label,'v9.80'))load('data/product-hardening/xss-client-session-csp-cluster-v9.80.js');
 if(versionAtLeast(label,'v9.81'))load('data/product-hardening/ad-pivot-smb-trust-cluster-v9.81.js');
+if(versionAtLeast(label,'v9.82'))load('data/product-hardening/ad-initial-enum-spray-rdp-socks-cluster-v9.82.js');
 const clusters=globalThis.OBOL_SOURCE_NOTE_CLUSTERS;
 assert.ok(clusters,'source note cluster ledger should be installed');
 assert.ok(clusters.status,'source note cluster ledger needs status');
@@ -109,6 +110,21 @@ if(label==='v9.81'){
  assert.ok(!clusters.reviewQueue.some(item=>item&&item.id==='source-note-cluster-browser-client-cookie-transform-workflows'),'corrected/mislabeled cluster queue should not remain queued');
  assert.ok(!clusters.pendingClusters.some(cluster=>cluster&&cluster.id==='browser-client-cookie-transform-workflows'),'corrected/mislabeled cluster should not remain pending');
  assert.ok(clusters.reviewQueue[0]&&clusters.reviewQueue[0].id==='source-note-cluster-web-proxy-fuzzing-and-transform-workflows','next cluster should advance to proxy/fuzzing');
+}
+if(label==='v9.82'){
+ assert.ok(globalThis.OBOL_WEB_AUTHZ_IDOR_VERB_CLUSTER_V978,'v9.78 source cluster mining should still install before v9.82');
+ assert.ok(globalThis.OBOL_SQLI_DISCOVERY_EXTRACTION_CLUSTER_V979,'v9.79 source cluster mining should still install before v9.82');
+ assert.ok(globalThis.OBOL_XSS_CLIENT_SESSION_CSP_CLUSTER_V980,'v9.80 source cluster mining should still install before v9.82');
+ assert.ok(globalThis.OBOL_AD_PIVOT_SMB_TRUST_CLUSTER_V981,'v9.81 source cluster mining should still install before v9.82');
+ assert.ok(globalThis.OBOL_AD_INITIAL_ENUM_SPRAY_RDP_SOCKS_CLUSTER_V982,'v9.82 source cluster mining should install');
+ assert.strictEqual(clusters.status.latestCompletedClusterQueue,'source-note-cluster-web-proxy-fuzzing-and-transform-workflows');
+ assert.strictEqual(clusters.status.latestCompletedClusterId,'ad-initial-enum-credential-spray-rdp-socks-workflows');
+ assert.strictEqual(clusters.status.latestCompletedOriginalClusterId,'web-proxy-fuzzing-and-transform-workflows');
+ assert.strictEqual(clusters.status.pendingSourceNotes,239);
+ assert.strictEqual(clusters.status.clusterCount,13);
+ assert.ok(!clusters.reviewQueue.some(item=>item&&item.id==='source-note-cluster-web-proxy-fuzzing-and-transform-workflows'),'corrected web-proxy cluster queue should not remain queued');
+ assert.ok(!clusters.pendingClusters.some(cluster=>cluster&&cluster.id==='web-proxy-fuzzing-and-transform-workflows'),'corrected web-proxy cluster should not remain pending');
+ assert.ok(clusters.reviewQueue[0]&&clusters.reviewQueue[0].id==='source-note-cluster-web-content-discovery-and-technology-fingerprinting','next cluster should advance to web content discovery');
 }
 const serialized=JSON.stringify(clusters);
 assert.ok(!/HTB\{|flag\.txt|Password123|94\.237|83\.136|Answer:|BEGIN RSA PRIVATE KEY|AKIA[0-9A-Z]{16}/i.test(serialized),'cluster ledger leaked private/source-specific material');
