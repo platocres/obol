@@ -106,6 +106,15 @@ async function capture(browser,ownerBody){
        parent.appendChild(marker);
       }
      }
+     Array.from(clone.querySelectorAll('table tbody')).forEach((tbody,index)=>{
+      while(tbody.firstChild)tbody.removeChild(tbody.firstChild);
+      const tr=document.createElement('tr');
+      tr.setAttribute('data-obol-dashboard-table-projection','normalized-'+index);
+      const td=document.createElement('td');
+      td.textContent='current-product-hardening-table-projection';
+      tr.appendChild(td);
+      tbody.appendChild(tr);
+     });
     }
     if(routeId==='methodology'){
      clone.querySelectorAll('.card[data-cardroot]').forEach(card=>card.remove());
