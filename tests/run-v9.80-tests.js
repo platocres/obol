@@ -35,28 +35,40 @@ assert.ok(wave,'v9.80 XSS/client/session/CSP cluster integration should expose s
 assert.strictEqual(wave.status,'live-integrated');
 assert.strictEqual(wave.activeQueueId,'source-note-cluster-xss-client-session-and-csp');
 assert.strictEqual(wave.activeClusterId,'xss-client-session-and-csp');
+assert.strictEqual(wave.primaryCardId,'web-client-session-proof-chain');
+assert.strictEqual(wave.controlsCardId,'web-client-controls');
+assert.strictEqual(wave.removedWrapperCardId,'xss-browser-proof-boundary');
 assert.strictEqual(wave.generatedClusterQueue,'source-note-cluster-browser-client-cookie-transform-workflows');
 assert.strictEqual(wave.reviewTextChars,745120);
 assert.strictEqual(wave.noteCount,28);
 assert.deepStrictEqual(wave.failures,[]);
 assert.ok(wave.notesIntegrated,'field notes should integrate');
-assert.ok(wave.cardInstalled,'XSS/browser proof card should install');
+assert.ok(wave.primaryCardIntegrated,'XSS/browser proof mechanics should enrich the existing session proof card');
+assert.ok(wave.controlsCardIntegrated,'CSP/browser controls should enrich the existing controls card');
+assert.ok(wave.wrapperCardRemoved,'v9.80 must not leave a separate wrapper card behind');
 assert.ok(wave.clusterCompleted,'cluster ledger should update');
 assert.ok(wave.queuePatched,'product queue should point to the reconciled next cluster');
 
 const notes=globalThis.OBOL_NOTE_INTEGRATION.publicFieldNotes||[];
 const noteIds=new Set(notes.map(note=>note&&note.id).filter(Boolean));
 for(const id of wave.publicNoteIds)assert.ok(noteIds.has(id),'missing v9.80 public field note '+id);
+assert.ok(!globalThis.CARDS||!globalThis.CARDS['xss-browser-proof-boundary'],'v9.80 should not create an XSS wrapper card');
 
-const card=globalThis.CARDS&&globalThis.CARDS['xss-browser-proof-boundary'];
-assert.ok(card,'XSS browser proof card should be addressable');
+const card=globalThis.CARDS&&globalThis.CARDS['web-client-session-proof-chain'];
+assert.ok(card,'existing client-session proof card should remain addressable');
 const commandRuns=(card.commands||[]).map(cmd=>String(cmd.run||''));
-assert.ok(commandRuns.some(run=>run.includes('{{url_with_unique_marker}}')),'card should include inert reflection-marker command');
-assert.ok(commandRuns.some(run=>/content-security-policy/i.test(run)),'card should include CSP/header review command');
-assert.ok(commandRuns.some(run=>/innerHTML|document\\.write|localStorage/.test(run)),'card should include DOM source/sink review command');
-assert.ok((card.expected||[]).includes('reflection context classified before execution claim'),'card should keep reflection and execution separate');
-assert.ok((card.produces||[]).includes('web.xss.browser_proof_reviewed'),'card should produce browser proof review fact');
+assert.ok(commandRuns.some(run=>run.includes('{{url_with_unique_marker}}')),'existing card should include inert reflection-marker command');
+assert.ok(commandRuns.some(run=>/innerHTML|document\\.write|localStorage/.test(run)),'existing card should include DOM source/sink review command');
+assert.ok((card.expected||[]).includes('reflection context classified before execution claim'),'existing card should keep reflection and execution separate');
+assert.ok((card.produces||[]).includes('web.xss.browser_proof_reviewed'),'existing card should produce browser proof review fact');
+assert.ok((card.sourceXss80||{}).integratedInto==='existing-card','source marker should say the work integrated into an existing card');
 assert.ok(!/source-mining|release cleanup|patch panel|\bUNKNOWN\b/i.test(JSON.stringify(card)),'card must not leak internal implementation slop');
+
+const controls=globalThis.CARDS&&globalThis.CARDS['web-client-controls'];
+assert.ok(controls,'existing browser controls card should remain addressable');
+const controlRuns=(controls.commands||[]).map(cmd=>String(cmd.run||''));
+assert.ok(controlRuns.some(run=>/content-security-policy/i.test(run)),'controls card should include CSP/header review command');
+assert.ok((controls.produces||[]).includes('web.xss.csp_controls_reviewed'),'controls card should produce CSP review fact');
 
 const analysis=wave.analyze('Burp Scanner reports reflected XSS. Repeater shows marker in an HTML attribute. Browser console executed a harmless proof marker, but Content-Security-Policy script-src blocks inline script. Set-Cookie session has HttpOnly SameSite=Lax. DOM sink uses innerHTML from location.hash.');
 assert.ok(analysis.outcomeFacts.includes('web.xss.browser_execution_observed'));
@@ -100,4 +112,4 @@ run(['tools/validate-note-card-path-placement.js']);
 run(['tools/validate-actionable-next-step-cards.js']);
 run(['tools/validate-action-first-card-cleanup.js']);
 run(['tools/validate-release-pr.js','--repo-only','--release-version=9.80']);
-console.log('v9.80 XSS, client session, CSP, browser proof, and cluster-reconciliation checks passed.');
+console.log('v9.80 XSS/client-session/CSP mechanics integrated into existing cards without a wrapper card.');
