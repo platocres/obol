@@ -21,12 +21,25 @@ const browser = read('.github/workflows/browser-smoke.yml');
 const main = read('.github/workflows/tests.yml');
 const docs = read('docs/TEST-GOVERNANCE.md');
 
-// PR regression: exactly one job, non-draft gated, running the complete runner.
+// PR regression: granular parallel phase jobs for fast diagnosis, gated by one
+// aggregate check so branch protection only has to require the aggregate.
 assert(/pull_request:\n\s+types: \[opened, synchronize, reopened, ready_for_review\]/.test(full), 'full PR regression workflow should run on PR lifecycle events');
-assert(/^  full-historical-regression:\n/m.test(full), 'PR regression workflow should expose a single regression job');
-assert(/^  full-historical-regression:\n\s+if: github\.event\.pull_request\.draft == false/m.test(full), 'the PR regression job should be non-draft gated');
-assert(/node tools\/run-historical-contracts\.js\s*$/m.test(full), 'the PR regression job should run the complete regression runner (no --phase slicing)');
-assert(!/--phase/.test(full), 'the lean PR regression job should not split the suite into per-phase required checks');
+const phaseJobs = [
+  'syntax-all-js',
+  'legacy-core-contracts',
+  'v5-v8-runtime-contracts',
+  'v9-early-product-contracts',
+  'v9-mid-product-contracts',
+  'v9-current-product-contracts',
+  'quality-preservation-contracts',
+  'generated-sync-contracts',
+];
+for (const job of phaseJobs) {
+  assert(new RegExp('^  ' + job + ':\\n\\s+if: github\\.event\\.pull_request\\.draft == false', 'm').test(full), 'phase job missing or not non-draft gated: ' + job);
+}
+assert((full.match(/--phase\s+[a-z0-9-]+/g) || []).length >= phaseJobs.length, 'each phase job should run one named regression phase for granular diagnosis');
+assert(/^  full-historical-regression:\n\s+needs:/m.test(full), 'the aggregate regression gate should depend on the phase jobs rather than re-running them');
+for (const job of phaseJobs) assert(full.includes('- ' + job + '\n'), 'aggregate regression gate must wait on phase job: ' + job);
 
 // Browser smoke: runs full + deep browser proofs on PRs.
 assert(/pull_request:/.test(browser), 'browser smoke should run on PRs');

@@ -8,17 +8,24 @@ past release forever.
 
 ## PR gates are the forward ratchet
 
-Every pull request runs two required gates:
+Every pull request runs a lean, honest set of checks. Only **two** are
+required in branch protection:
 
-- **`regression`** (`.github/workflows/full-regression-pr.yml`) - one job that
-  runs the complete contract suite through `node tools/run-historical-contracts.js`.
+- **`full-historical-regression`** (`.github/workflows/full-regression-pr.yml`) -
+  an aggregate gate that turns green only when every regression phase passes.
 - **`browser-smoke`** (`.github/workflows/browser-smoke.yml`) - route smoke,
   action-first card UI smoke, full browser smoke, and the deep browser
   ownership proofs.
 
-Those two checks are the entire required PR surface. Keep the branch ruleset
-requiring exactly `regression` and `browser-smoke`; do not promote individual
-sub-steps into separate required checks.
+Keep the branch ruleset requiring exactly those two.
+
+The regression suite still runs as **separate, parallel phase jobs** (syntax,
+legacy-core, runtime, cards/UI, notes, current-product, quality, generated-sync)
+so a failure points straight at the area that broke instead of forcing a
+re-run of one long job one fix at a time. Those phase rows are for diagnosis;
+the aggregate `full-historical-regression` gate (which just waits on them via
+`needs:` and re-runs nothing) is what merge protection requires. Adding a phase
+or moving a check between phases therefore never changes the required set.
 
 ## Tests protect current behavior and durable contracts, not frozen per-release state
 
