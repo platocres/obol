@@ -111,13 +111,13 @@ function patchCard(){
  const base=findCard(CARD_ID);
  if(!base)return false;
  const additions=[
-  {tool:'curl',run:'curl -i -s -k "{{baseline_url}}"'},
-  {tool:'curl',run:'curl -i -s -k "{{url_with_unique_marker}}" | sed -n "1,80p"'},
-  {tool:'Burp Repeater',run:'Replay baseline, inert marker, encoded marker, and context-safe browser proof as separate labeled tabs.'},
-  {tool:'browser devtools',run:'Open DevTools Console and Elements; trigger the candidate flow; record whether the harmless proof marker executes, reflects, stores, or is blocked.'},
-  {tool:'grep',run:'grep -RInE "innerHTML|outerHTML|document\\.write|insertAdjacentHTML|eval\\(|location\\.(hash|search)|postMessage|localStorage|sessionStorage" "{{downloaded_static_dir}}"'},
-  {tool:'curl',run:'curl -s -k -I "{{url}}" | grep -Ei "content-security-policy|set-cookie|x-frame-options|x-content-type-options|referrer-policy"'},
-  {tool:'browser devtools',run:'Use the Security, Console, Network, and Application panels to record CSP blocks, cookie flags, storage readability, and same-origin behavior.'}
+  {tool:'curl',run:'curl -i -s -k "{{baseline_url}}"',when:'Before changing the candidate parameter or browser state.',evidence:'Baseline status, response size, relevant headers, and reflected-control absence.',note:'Capture baseline headers/body before changing the candidate parameter.'},
+  {tool:'curl',run:'curl -i -s -k "{{url_with_unique_marker}}" | sed -n "1,80p"',when:'After selecting a unique inert marker for the suspected input.',evidence:'Marker reflection plus surrounding HTML, attribute, script, URL, or storage-backed render context.',note:'Reflection is only a lead until browser behavior and a control request prove execution.'},
+  {tool:'Burp Repeater',run:'Replay baseline, inert marker, encoded marker, and context-safe browser proof as separate labeled tabs.',when:'When cookies, headers, CSRF fields, body placement, or request method matter.',evidence:'Side-by-side request/response pairs with one changed variable per tab.',note:'Keep scanner alerts and browser proof chained to manual replay evidence.'},
+  {tool:'browser devtools',run:'Open DevTools Console and Elements, trigger the candidate flow, and record whether the harmless proof marker executes, reflects, stores, or is blocked.',when:'When reflected, stored, or DOM behavior needs browser confirmation.',evidence:'Console result, DOM mutation, blocked-script error, or screenshot note tied to the control request.',note:'Use browser proof without external exfiltration or credential capture.'},
+  {tool:'grep',run:'grep -RInE "innerHTML|outerHTML|document\\.write|insertAdjacentHTML|eval\\(|location\\.(hash|search)|postMessage|localStorage|sessionStorage" "{{downloaded_static_dir}}"',when:'When local source or static assets are available for DOM review.',evidence:'Candidate source/sink lines plus trigger path to reproduce in the browser.',note:'Source-code clues still need a browser trigger proof before impact is claimed.'},
+  {tool:'curl',run:'curl -s -k -I "{{url}}" | grep -Ei "content-security-policy|set-cookie|x-frame-options|x-content-type-options|referrer-policy"',when:'Before selecting XSS or session-impact wording.',evidence:'Observed CSP directives, cookie flags, and browser-relevant security headers.',note:'Browser controls can reduce, block, or reshape the finding.'},
+  {tool:'browser devtools',run:'Use the Security, Console, Network, and Application panels to record CSP blocks, cookie flags, storage readability, and same-origin behavior.',when:'When impact depends on CSP, storage, cookie, or same-origin behavior.',evidence:'DevTools security/console/network/application observations tied to the tested request.',note:'Treat controls as observed evidence, not assumptions.'}
  ];
  const card=Object.assign({},base);
  card.hypothesis=String(base.hypothesis||'')+' XSS context, browser execution, DOM source/sink review, cookie/session exposure, CSRF/state-change impact, and CSP/browser controls are folded into this existing authorization-boundary card instead of spawning wrapper cards.';
