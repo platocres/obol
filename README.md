@@ -61,8 +61,9 @@ Generated from the same queue sources as the Product Hardening Dashboard. Do not
 **Source-note cluster status:** 257/257 pending notes clustered into 15 public-safe cluster review items; 0 pending notes remain unclustered.
 **Next notes batch:** **Browser client cookie, session, and transform fuzzing workflows** (`source-note-cluster-browser-client-cookie-transform-workflows`) — 8 notes from `platocres/obol-source-notes@agent/review-packets:data/review-packets/manifest.json`.
 **Queue mode:** `cluster-review` for cluster `browser-client-cookie-transform-workflows`.
-**Selector:** Select cluster `browser-client-cookie-transform-workflows` from `data/product-hardening/source-note-clusters-current.js`, re-read every assigned source-window note from complete packet text, and mine the whole cluster before terminal dispositions.
+**Selector:** Read complete packet text for cluster browser-client-cookie-transform-workflows from platocres/obol-source-notes@agent/review-packets:data/review-packets/manifest.json; mine the whole cluster before terminal dispositions.
 **Acceptance:** Ship public-safe product mechanics from the whole cluster, then disposition each note with card/analyzer/field-note/report/queue/private rationale.
+**Cluster reconciliation:** v9.80 completed the XSS/client/session/CSP cluster and split browser cookie/session transform fuzzing into this generated downstream cluster instead of blindly advancing the old broad proxy/fuzzing item.
 
 **Recommended work package:** **Notes Impact and Source Re-mining** — 2 concrete live items / 19 tracked.
 **Next concrete entry:** **Browser client cookie, session, and transform fuzzing workflows**
