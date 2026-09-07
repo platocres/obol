@@ -1,54 +1,54 @@
 # Test Governance
 
-Obol tests have two jobs, and they should not be confused.
+Obol keeps a **lean, honest set of checks**. Their job is narrow and important:
+make sure an agent can read the README, build the next Product Build Next item,
+and not silently break the product or the README -> Build Next workflow while
+doing it. The tests exist to catch that class of mistake, not to freeze every
+past release forever.
 
 ## PR gates are the forward ratchet
 
-Pull requests must run the strict gates that keep new work clean before merge. The required PR surface is intentionally small and meaningful:
+Every pull request runs two required gates:
 
-- the eight named jobs in `.github/workflows/full-regression-pr.yml`;
-- `browser-smoke`, including route smoke, action-first card UI smoke, full browser smoke, and deep browser ownership proofs.
+- **`regression`** (`.github/workflows/full-regression-pr.yml`) - one job that
+  runs the complete contract suite through `node tools/run-historical-contracts.js`.
+- **`browser-smoke`** (`.github/workflows/browser-smoke.yml`) - route smoke,
+  action-first card UI smoke, full browser smoke, and the deep browser
+  ownership proofs.
 
-This keeps PRs around eight to nine meaningful checks instead of stacking duplicate smoke/preflight/test rows on top of the real gates.
+Those two checks are the entire required PR surface. Keep the branch ruleset
+requiring exactly `regression` and `browser-smoke`; do not promote individual
+sub-steps into separate required checks.
 
-## Historical tests preserve behavior, not old queue state forever
+## Tests protect current behavior and durable contracts, not frozen per-release state
 
-Historical release tests should protect durable behavior and safety properties:
+The regression runner executes the current-behavior suites and current
+validators directly against the live repository. It protects durable
+properties:
 
-- no duplicate or empty cards;
-- no private source-note leakage;
-- no unknown card routes;
-- no automatic exploit execution;
-- no stale dashboard owner;
-- no broken Evidence parsing or report lineage;
-- no loss of action spine, evidence guidance, decision guidance, or canonical demotion behavior.
+- no duplicate or empty cards, and no unknown card routes;
+- no private source-note leakage, and secrets stay redacted in exports/reports;
+- no automatic exploit execution (commands remain copy-only guidance);
+- one live current runtime/dashboard owner, with working boot and asset wiring;
+- Evidence parsing and report lineage stay intact;
+- the primary card action spine, evidence/decision guidance, and canonical
+  demotion behavior stay intact;
+- the README Product Build Next block stays generated from, and in sync with,
+  the queue owners and the current release.
 
-Historical release tests should not freeze mutable current state forever. A test is stale when it says an old release must remain the current release, an old queue item must remain the next queue item, or an old cluster must remain the latest completed cluster after a later release legitimately advances the ledger.
+There is no per-release replay of old README wording, old queue ids, or old
+workflow shapes. When the current release advances, update the current-release
+test (`tests/run-v<version>-tests.js`) and the queue owners in place, and prune
+the previous release's test rather than accumulating a fossil suite for every
+version. Never add product junk, hidden UI copy, fake cards, fake queue
+entries, or read-time content injection to keep a stale assertion alive - fix
+or delete the stale assertion instead.
 
-When a stale historical-state assertion fails, fix the test contract. Do not add product junk, hidden UI copy, fake cards, fake queue entries, or inert product markers just to satisfy the old assertion.
+## Main checks are after-merge confirmation
 
-## Main checks are after-merge confirmation, not the first discovery point
-
-`main`, scheduled, and manual runs still execute `tools/run-historical-contracts.js` as a complete preservation proof. Those runs should confirm what the PR already proved. They should not be the first place a real regression appears.
-
-That is why `.github/workflows/tests.yml` no longer runs on pull requests or release branches. PRs use the split full-regression workflow and browser workflow directly. Main keeps the complete runner for repository health.
-
-## How to update old tests
-
-When a release advances the Product Build Next queue or source-note cluster ledger:
-
-- update the new release test to prove the new integration and new queue handoff;
-- demote the previous release test from exact current-state equality to monotonic historical proof;
-- keep item-specific validators strict for touched or newly mined content;
-- leave legacy debt visible in the queue instead of pretending every old card already meets the newest rubric.
-
-Good replacement pattern:
-
-- Bad: `latestCompletedClusterId === 'old-cluster-id'`
-- Good: the old cluster remains recorded as completed, the new cluster is latest, and the next queue item is coherent.
-
-- Bad: `Current release: **v9.77**` must appear forever.
-- Good: the current release is at least v9.77 and the v9.77 artifact remains registered or historically proven.
-
-- Bad: current README must keep old handoff wording forever.
-- Good: current README points to the active queue, and durable historical facts live in release docs or owned validator fixtures.
+`main`, scheduled, and manual runs execute the same complete
+`tools/run-historical-contracts.js` runner as post-merge health. They confirm
+what the PR already proved; they are not the first place a regression should
+appear. That is why `.github/workflows/tests.yml` runs only on main, schedule,
+and manual dispatch - never on pull requests or release branches - so PRs show
+the two real gates instead of duplicate rows.

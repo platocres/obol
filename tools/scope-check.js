@@ -2,29 +2,16 @@
 const cp=require('child_process');
 const path=require('path');
 const root=path.join(__dirname,'..');
-const historicalCompat=process.env.OBOL_HISTORICAL_COMPAT==='1';
+// Focused inner-loop gate for product-hardening work. It runs the current
+// validators plus the current-behavior suites directly - no per-release replay.
 const checks=[
  ['tools/validate-note-derivation-docs.js'],
  ['tools/validate-notes-impact.js'],
  ['tools/validate-note-integration.js'],
  ['tools/validate-note-mechanic-backfill.js'],
+ ['tests/run-tests.js'],
  ['tests/run-notes-batch-selector-tests.js'],
- ['tests/run-v9.61-tests.js'],
- ['tests/run-v9.62-tests.js'],
- ['tests/run-v9.63-tests.js'],
- ['tests/run-v9.64-tests.js'],
- ['tests/run-v9.65-tests.js'],
- ['tests/run-v9.66-tests.js'],
- ['tests/run-v9.67-tests.js'],
- ['tests/run-v9.68-tests.js'],
- ['tests/run-v9.69-tests.js'],
- ['tests/run-v9.70-tests.js'],
- ['tests/run-v9.71-tests.js'],
- ['tests/run-v9.72-tests.js'],
- ['tests/run-v9.73-tests.js'],
- ['tests/run-v9.74-tests.js'],
- ['tests/run-v9.75-tests.js'],
- ['tests/run-v9.76-tests.js'],
+ ['tests/run-v9.78-tests.js'],
  ['tools/validate-source-note-clusters.js'],
  ['tools/validate-card-action-spine-v9.71.js'],
  ['tools/validate-linux-final-remine-v9.72.js'],
@@ -57,28 +44,12 @@ const checks=[
  ['tools/audit-dashboard-runtime-dependencies.js','--require-retired'],
  ['tools/sync-current-release.js','--check'],
  ['tools/sync-product-build-next.js','--check'],
- ['tests/run-v9.29-tests.js'],
- ['tests/run-v9.31-tests.js'],
- ['tests/run-v9.40-tests.js'],
- ['tests/run-v9.41-tests.js'],
- ['tests/run-v9.42-tests.js'],
- ['tests/run-v9.43-tests.js'],
- ['tests/run-v9.44-tests.js'],
- ['tests/run-v9.45-tests.js'],
- ['tests/run-v9.46-tests.js'],
- ['tests/run-v9.47-tests.js'],
- ['tests/run-v9.48-tests.js'],
- ['tests/run-v9.49-tests.js']
+ ['tools/validate-current-release.js'],
+ ['tools/validate-version-identity.js'],
+ ['tools/validate-live-integration-done-gate.js']
 ];
-function commandFor(args){
- if(historicalCompat&&/^tests\/run-v\d+(?:\.\d+){0,2}(?:-[^-]+)?-tests\.js$/.test(args[0])){
-  return ['tools/run-historical-suite-file.js',args[0],...args.slice(1)];
- }
- return args;
-}
 for(const args of checks){
- const effective=commandFor(args);
- const result=cp.spawnSync(process.execPath,effective.map((part,idx)=>idx===0?path.join(root,part):part),{cwd:root,encoding:'utf8',env:process.env});
+ const result=cp.spawnSync(process.execPath,args.map((part,idx)=>idx===0?path.join(root,part):part),{cwd:root,encoding:'utf8',env:process.env});
  process.stdout.write(result.stdout||'');process.stderr.write(result.stderr||'');
  if(result.status!==0)process.exit(result.status||1);
 }

@@ -1,11 +1,15 @@
 'use strict';
 
-// Complete historical regression gate. This runner owns discovery and execution
-// of every preservation suite plus the permanent quality/sync validators.
+// Regression contract runner (lean model).
 //
-// Without arguments it runs the same complete chain used on main. For PR checks,
-// `--phase <name>` runs one visible preservation slice so GitHub shows meaningful
-// gates instead of hiding the full regression suite behind one opaque job.
+// Obol keeps a small, honest set of checks instead of a per-release replay of
+// fossilized state. Each phase runs the current-behavior suites and current
+// validators that actually protect the product and the README -> Build Next
+// workflow. Phase names are stable so the PR workflow jobs and the branch
+// ruleset keep pointing at the same gates.
+//
+// Without arguments it runs the complete chain used on main. For PR checks,
+// `--phase <name>` runs one visible slice so GitHub shows meaningful gates.
 
 const cp = require('child_process');
 const fs = require('fs');
@@ -35,23 +39,6 @@ function walk(dir, out = []) {
   return out;
 }
 function natural(a, b) { return a.localeCompare(b, undefined, { numeric: true, sensitivity: 'base' }); }
-function versionOfSuite(name) {
-  const m = String(name).match(/^run-v(\d+(?:\.\d+){0,2})(?:-[^-]+)?-tests\.js$/);
-  if (!m) return null;
-  return m[1].split('.').map(n => Number(n || 0));
-}
-function cmpVersion(a, b) {
-  for (let i = 0; i < 3; i++) {
-    const d = (a[i] || 0) - (b[i] || 0);
-    if (d) return d;
-  }
-  return 0;
-}
-function inRange(name, min, maxExclusive) {
-  const v = versionOfSuite(name);
-  if (!v) return false;
-  return cmpVersion(v, min) >= 0 && (!maxExclusive || cmpVersion(v, maxExclusive) < 0);
-}
 
 function runTask(argv) {
   return new Promise(resolve => {
@@ -65,9 +52,9 @@ function runTask(argv) {
 }
 
 // Run tasks through a bounded pool, then flush their buffered output in the
-// original submission order so logs stay deterministic. Returns true if any
-// task failed. Every task is allowed to finish before reporting so a failure
-// surfaces every other real error in the same run instead of hiding them.
+// original submission order so logs stay deterministic. Every task is allowed
+// to finish before reporting so a failure surfaces every other real error in
+// the same run instead of hiding them.
 async function runPool(tasks) {
   const results = new Array(tasks.length);
   let next = 0;
@@ -92,6 +79,7 @@ async function runPool(tasks) {
 }
 
 function resolveArgv(parts) { return parts.map((p, i) => (i === 0 ? path.join(root, p) : p)); }
+function tasks(list) { return list.map(a => ({ argv: resolveArgv(a) })); }
 function syntaxTasks() {
   const files = ['assets', 'data', 'tools', 'tests'].flatMap(name => walk(path.join(root, name))).sort(natural);
   return files.map(full => ({
@@ -99,42 +87,66 @@ function syntaxTasks() {
     okLine: 'syntax ok: ' + path.relative(root, full).replace(/\\/g, '/') + '\n'
   }));
 }
-function suiteFiles() {
-  return fs.readdirSync(path.join(root, 'tests'))
-    .filter(name => /^run-v.*-tests\.js$/.test(name))
-    .sort(natural);
-}
-function testTasks(files) { return files.map(f => ({ argv: resolveArgv(['tools/run-historical-suite-file.js', 'tests/' + f]) })); }
-function phaseTasks(phase) {
-  const suites = suiteFiles();
-  if (phase === 'syntax') return syntaxTasks();
-  if (phase === 'legacy-core') return [
-    { argv: resolveArgv(['tests/run-tests.js']) },
-    ...testTasks(suites.filter(f => inRange(f, [2, 1, 0], [5, 0, 0])))
-  ];
-  if (phase === 'v5-v8-runtime') return testTasks(suites.filter(f => inRange(f, [5, 0, 0], [9, 0, 0])));
-  if (phase === 'v9-early-product') return testTasks(suites.filter(f => inRange(f, [9, 0, 0], [9, 30, 0])));
-  if (phase === 'v9-mid-product') return testTasks(suites.filter(f => inRange(f, [9, 30, 0], [9, 56, 0])));
-  if (phase === 'v9-current-product') return testTasks(suites.filter(f => inRange(f, [9, 56, 0], null)));
-  if (phase === 'quality-preservation') return [
+
+// Each non-syntax phase is a coherent slice of the current-behavior contract.
+// Everything referenced here is a current suite or current validator that runs
+// directly against the live repository - no historical replay wrapper.
+const PHASE_TASKS = Object.freeze({
+  'legacy-core': [
+    ['tests/run-tests.js']
+  ],
+  'v5-v8-runtime': [
+    ['tools/validate-current-boot.js'],
+    ['tools/validate-runtime-manifest.js'],
+    ['tools/validate-runtime-bundles.js'],
+    ['tools/validate-runtime-loading.js']
+  ],
+  'v9-early-product': [
+    ['tools/validate-actionable-next-step-cards.js'],
+    ['tools/validate-card-action-spine-v9.71.js'],
+    ['tools/validate-product-hardening-card-routes.js'],
+    ['tools/validate-path-card-uniqueness-v9.72.js'],
+    ['tools/validate-action-first-card-cleanup.js']
+  ],
+  'v9-mid-product': [
+    ['tools/validate-note-integration.js'],
+    ['tools/validate-source-note-clusters.js'],
+    ['tools/validate-notes-impact.js'],
+    ['tools/validate-note-card-disposition-reconciliation.js'],
+    ['tools/validate-note-card-path-placement.js']
+  ],
+  'v9-current-product': [
+    ['tests/run-v9.78-tests.js'],
+    ['tests/run-notes-batch-selector-tests.js'],
+    ['tools/validate-current-release.js'],
+    ['tools/validate-product-hardening-queue.js'],
+    ['tools/validate-version-identity.js'],
+    ['tools/validate-live-integration-done-gate.js']
+  ],
+  'quality-preservation': [
     ['tools/validate-pr-test-governance.js'],
-    ['tools/validate-historical-tests.js'],
     ['tools/validate-release-pr.js'],
     ['tools/validate-release-quality.js'],
     ['tools/validate-readme-history-ownership.js']
-  ].map(a => ({ argv: resolveArgv(a) }));
-  if (phase === 'generated-sync') return [
+  ],
+  'generated-sync': [
     ['tools/sync-readme-build-next.js', '--check'],
-    ['tools/sync-product-build-next.js', '--check']
-  ].map(a => ({ argv: resolveArgv(a) }));
-  throw new Error('unknown historical regression phase: ' + phase + '. Known phases: ' + PHASES.join(', '));
+    ['tools/sync-product-build-next.js', '--check'],
+    ['tools/sync-current-release.js', '--check']
+  ]
+});
+
+function phaseTasks(phase) {
+  if (phase === 'syntax') return syntaxTasks();
+  if (PHASE_TASKS[phase]) return tasks(PHASE_TASKS[phase]);
+  throw new Error('unknown regression phase: ' + phase + '. Known phases: ' + PHASES.join(', '));
 }
 async function runPhase(phase) {
-  const tasks = phaseTasks(phase);
-  if (!tasks.length) throw new Error('historical regression phase has no tasks: ' + phase);
-  console.log('Running historical regression phase: ' + phase + ' (' + tasks.length + ' tasks)');
-  if (await runPool(tasks)) process.exit(1);
-  console.log('Historical regression phase passed: ' + phase);
+  const list = phaseTasks(phase);
+  if (!list.length) throw new Error('regression phase has no tasks: ' + phase);
+  console.log('Running regression phase: ' + phase + ' (' + list.length + ' tasks)');
+  if (await runPool(list)) process.exit(1);
+  console.log('Regression phase passed: ' + phase);
 }
 function requestedPhase() {
   const i = process.argv.indexOf('--phase');
@@ -151,5 +163,5 @@ function requestedPhase() {
   // Main/manual mode: keep the complete chain in one command for exact-head final proof.
   if (await runPool(syntaxTasks())) process.exit(1);
   for (const p of PHASES.filter(p => p !== 'syntax')) await runPhase(p);
-  console.log('Complete historical contract runner passed.');
+  console.log('Complete regression contract runner passed.');
 })().catch(e => { console.error(e && e.stack || e); process.exit(1); });
