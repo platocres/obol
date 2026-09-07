@@ -23,15 +23,15 @@ const outputDir = process.env.OBOL_SMOKE_OUTPUT || path.join(__dirname, '..', 'a
 // extension, the v9.71 dynamic why-now decorator, the v9.72 final Linux
 // re-mining route guard, the v9.73-v9.74 pending disposition batches, the v9.74
 // source-note cluster queue ledger, the v9.75 global clustering extension, and
-// the v9.77-v9.81 cluster-mining extensions. They still fail loudly if the
+// the v9.77-v9.82 cluster-mining extensions. They still fail loudly if the
 // historical fragment chain leaks back into loading.
 const routes = [
-  { id: 'home', hash: '#/home', marker: /Home/i, requestBudget: 61 },
-  { id: 'targets', hash: '#/boxes', marker: /target/i, requestBudget: 67 },
-  { id: 'evidence', hash: '#/intake', marker: /evidence/i, requestBudget: 64 },
-  { id: 'next-steps', hash: '#/path', marker: /(next|path|recommend)/i, requestBudget: 68 },
-  { id: 'report', hash: '#/report', marker: /report/i, requestBudget: 62 },
-  { id: 'dashboard', hash: '#/dashboard', marker: /Product Hardening/i, currentDashboard: true, settleMs: 5200, requestBudget: 62 }
+  { id: 'home', hash: '#/home', marker: /Home/i, requestBudget: 62 },
+  { id: 'targets', hash: '#/boxes', marker: /target/i, requestBudget: 68 },
+  { id: 'evidence', hash: '#/intake', marker: /evidence/i, requestBudget: 65 },
+  { id: 'next-steps', hash: '#/path', marker: /(next|path|recommend)/i, requestBudget: 69 },
+  { id: 'report', hash: '#/report', marker: /report/i, requestBudget: 63 },
+  { id: 'dashboard', hash: '#/dashboard', marker: /Product Hardening/i, currentDashboard: true, settleMs: 5200, requestBudget: 63 }
 ];
 const HISTORICAL_FRAGMENT = /\/(?:assets|data)\/(?:core|app|intake|report|nmap|review|methodology|orange-fidelity|project-model|dashboard|source-delivery|obol)-v[\d.]+[^/]*$/;
 const METHODOLOGY_FILLER = /fills an unresolved methodology gap|methodology gap/i;
