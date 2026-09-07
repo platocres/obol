@@ -11,7 +11,7 @@
  * suppresses historical schedulers and commits current route owners last.
  *
  * Historical fragment order sha256: 40e3006d9423d669acf5869b577ecf56a6ca2ee1629c95fd0fcc5d242d2c5f27
- * Generated body sha256: 57554e7c7de83fb6676c65c5529cdf1f6765ccee251a6c0e21738965a466fc44
+ * Generated body sha256: 950fcf9d0261ab0dd8d640e347b353a193115d7deefbd02ecead9ddc37473163
  * First historical fragment: assets/report-v2.js
  * Last historical fragment:  assets/app-v8.8.js
  */
@@ -1993,8 +1993,8 @@ if(__nativeMutationObserver)root.MutationObserver=__nativeMutationObserver;
 'use strict';
 (function(root){
 const release=Object.freeze({
- version:'9.81.0',
- label:'v9.81',
+ version:'9.82.0',
+ label:'v9.82',
  phase:'product-hardening',
  phaseLabel:'Product Hardening',
  orangeBaseline:'v8.8',
@@ -2037,7 +2037,8 @@ const release=Object.freeze({
   'data/product-hardening/web-authz-idor-verb-cluster-v9.78.js',
   'data/product-hardening/sql-injection-cluster-v9.79.js',
   'data/product-hardening/xss-client-session-csp-cluster-v9.80.js',
-  'data/product-hardening/ad-pivot-smb-trust-cluster-v9.81.js'
+  'data/product-hardening/ad-pivot-smb-trust-cluster-v9.81.js',
+  'data/product-hardening/ad-initial-enum-spray-rdp-socks-cluster-v9.82.js'
  ])
 });
 function stampState(target){
