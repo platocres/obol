@@ -12,6 +12,7 @@ const checks=[
  ['tests/run-tests.js'],
  ['tests/run-notes-batch-selector-tests.js'],
  ['tests/run-v9.78-tests.js'],
+ ['tests/run-v9.79-tests.js'],
  ['tools/validate-source-note-clusters.js'],
  ['tools/validate-card-action-spine-v9.71.js'],
  ['tools/validate-linux-final-remine-v9.72.js'],
