@@ -1,8 +1,8 @@
 'use strict';
 (function(root){
 const release=Object.freeze({
- version:'9.80.0',
- label:'v9.80',
+ version:'9.81.0',
+ label:'v9.81',
  phase:'product-hardening',
  phaseLabel:'Product Hardening',
  orangeBaseline:'v8.8',
@@ -44,7 +44,8 @@ const release=Object.freeze({
   'data/product-hardening/v9.77-release-stability-repair.js',
   'data/product-hardening/web-authz-idor-verb-cluster-v9.78.js',
   'data/product-hardening/sql-injection-cluster-v9.79.js',
-  'data/product-hardening/xss-client-session-csp-cluster-v9.80.js'
+  'data/product-hardening/xss-client-session-csp-cluster-v9.80.js',
+  'data/product-hardening/ad-pivot-smb-trust-cluster-v9.81.js'
  ])
 });
 function stampState(target){
