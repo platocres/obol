@@ -3,6 +3,7 @@ const assert=require('assert');
 const path=require('path');
 const root=path.join(__dirname,'..');
 function load(rel){require(path.join(root,rel));}
+function versionAtLeast(actual,minimum){const a=String(actual||'').replace(/^v/i,'').split('.').map(Number),b=String(minimum||'').replace(/^v/i,'').split('.').map(Number);for(let i=0;i<3;i++){const d=(a[i]||0)-(b[i]||0);if(d)return d>0;}return true;}
 
 globalThis.__OBOL_DEFER_PRODUCT_HARDENING_EXTENSIONS__=true;
 globalThis.setTimeout=undefined;
@@ -10,21 +11,17 @@ globalThis.addEventListener=undefined;
 load('data/current-release.js');
 load('data/product-hardening/source-note-clusters-current.js');
 load('data/product-hardening/global-source-note-clustering-v9.75.js');
-if(['v9.77','v9.78','v9.79','v9.80'].includes(globalThis.OBOL_CURRENT_RELEASE.label)){
+const label=globalThis.OBOL_CURRENT_RELEASE&&globalThis.OBOL_CURRENT_RELEASE.label;
+if(versionAtLeast(label,'v9.77')){
  load('data/note-integration.js');
  globalThis.OBOL_LANES=[];
  globalThis.CARDS={};
  load('data/product-hardening/web-upload-inclusion-cluster-v9.77.js');
 }
-if(['v9.78','v9.79','v9.80'].includes(globalThis.OBOL_CURRENT_RELEASE.label)){
- load('data/product-hardening/web-authz-idor-verb-cluster-v9.78.js');
-}
-if(['v9.79','v9.80'].includes(globalThis.OBOL_CURRENT_RELEASE.label)){
- load('data/product-hardening/sql-injection-cluster-v9.79.js');
-}
-if(globalThis.OBOL_CURRENT_RELEASE.label==='v9.80'){
- load('data/product-hardening/xss-client-session-csp-cluster-v9.80.js');
-}
+if(versionAtLeast(label,'v9.78'))load('data/product-hardening/web-authz-idor-verb-cluster-v9.78.js');
+if(versionAtLeast(label,'v9.79'))load('data/product-hardening/sql-injection-cluster-v9.79.js');
+if(versionAtLeast(label,'v9.80'))load('data/product-hardening/xss-client-session-csp-cluster-v9.80.js');
+if(versionAtLeast(label,'v9.81'))load('data/product-hardening/ad-pivot-smb-trust-cluster-v9.81.js');
 const clusters=globalThis.OBOL_SOURCE_NOTE_CLUSTERS;
 assert.ok(clusters,'source note cluster ledger should be installed');
 assert.ok(clusters.status,'source note cluster ledger needs status');
@@ -53,40 +50,40 @@ for(const cluster of clusters.pendingClusters){
 }
 assert.ok(globalThis.OBOL_SOURCE_NOTE_CLUSTERING_V975,'v9.75 clustering extension should install');
 assert.strictEqual(globalThis.OBOL_SOURCE_NOTE_CLUSTERING_V975.status,'complete');
-if(['v9.77','v9.78','v9.79','v9.80'].includes(globalThis.OBOL_CURRENT_RELEASE.label)){
+if(versionAtLeast(label,'v9.77')){
  assert.ok(globalThis.OBOL_WEB_UPLOAD_INCLUSION_CLUSTER_V977,'v9.77 source cluster mining should install');
  assert.notStrictEqual(clusters.status.latestCompletedClusterQueue,'notes-global-source-clustering-v9.75','cluster review must advance beyond the seed clustering pass');
  assert.ok(!clusters.reviewQueue.some(item=>item&&item.id==='source-note-cluster-web-upload-file-inclusion-001'),'completed upload/inclusion cluster should not remain queued');
  assert.ok(!clusters.pendingClusters.some(cluster=>cluster&&cluster.id==='web-upload-file-inclusion-expansion'),'completed upload/inclusion cluster should not remain pending');
 }
-if(globalThis.OBOL_CURRENT_RELEASE.label==='v9.77'){
+if(label==='v9.77'){
  assert.strictEqual(clusters.status.latestCompletedClusterQueue,'source-note-cluster-web-upload-file-inclusion-001');
  assert.strictEqual(clusters.status.latestCompletedClusterId,'web-upload-file-inclusion-expansion');
  assert.strictEqual(clusters.status.pendingSourceNotes,341);
  assert.strictEqual(clusters.status.clusterCount,17);
 }
-if(globalThis.OBOL_CURRENT_RELEASE.label==='v9.78'){
+if(label==='v9.78'){
  assert.ok(globalThis.OBOL_WEB_AUTHZ_IDOR_VERB_CLUSTER_V978,'v9.78 source cluster mining should install');
  assert.strictEqual(clusters.status.latestCompletedClusterQueue,'source-note-cluster-web-authz-idor-verb-tampering');
  assert.strictEqual(clusters.status.latestCompletedClusterId,'web-authz-idor-verb-tampering');
  assert.strictEqual(clusters.status.pendingSourceNotes,323);
  assert.strictEqual(clusters.status.clusterCount,16);
- assert.ok(!clusters.reviewQueue.some(item=>item&&item.id==='source-note-cluster-web-authz-idor-verb-tampering'),'completed authorization cluster should not remain queued');
- assert.ok(!clusters.pendingClusters.some(cluster=>cluster&&cluster.id==='web-authz-idor-verb-tampering'),'completed authorization cluster should not remain pending');
+ assert.ok(!clusters.reviewQueue.some(item=>item&&item.id==='source-note-cluster-web-authz-idor-verb-tampering'));
+ assert.ok(!clusters.pendingClusters.some(cluster=>cluster&&cluster.id==='web-authz-idor-verb-tampering'));
  assert.ok(clusters.reviewQueue[0]&&/sql-injection/i.test(clusters.reviewQueue[0].id+clusters.reviewQueue[0].label),'next cluster should advance to SQL injection');
 }
-if(globalThis.OBOL_CURRENT_RELEASE.label==='v9.79'){
+if(label==='v9.79'){
  assert.ok(globalThis.OBOL_WEB_AUTHZ_IDOR_VERB_CLUSTER_V978,'v9.78 source cluster mining should still install before v9.79');
  assert.ok(globalThis.OBOL_SQLI_DISCOVERY_EXTRACTION_CLUSTER_V979,'v9.79 source cluster mining should install');
  assert.strictEqual(clusters.status.latestCompletedClusterQueue,'source-note-cluster-sql-injection-discovery-and-extraction');
  assert.strictEqual(clusters.status.latestCompletedClusterId,'sql-injection-discovery-and-extraction');
  assert.strictEqual(clusters.status.pendingSourceNotes,285);
  assert.strictEqual(clusters.status.clusterCount,15);
- assert.ok(!clusters.reviewQueue.some(item=>item&&item.id==='source-note-cluster-sql-injection-discovery-and-extraction'),'completed SQL injection cluster should not remain queued');
- assert.ok(!clusters.pendingClusters.some(cluster=>cluster&&cluster.id==='sql-injection-discovery-and-extraction'),'completed SQL injection cluster should not remain pending');
+ assert.ok(!clusters.reviewQueue.some(item=>item&&item.id==='source-note-cluster-sql-injection-discovery-and-extraction'));
+ assert.ok(!clusters.pendingClusters.some(cluster=>cluster&&cluster.id==='sql-injection-discovery-and-extraction'));
  assert.ok(clusters.reviewQueue[0]&&/xss|client|session/i.test(clusters.reviewQueue[0].id+clusters.reviewQueue[0].label),'next cluster should advance to XSS/client/session');
 }
-if(globalThis.OBOL_CURRENT_RELEASE.label==='v9.80'){
+if(label==='v9.80'){
  assert.ok(globalThis.OBOL_WEB_AUTHZ_IDOR_VERB_CLUSTER_V978,'v9.78 source cluster mining should still install before v9.80');
  assert.ok(globalThis.OBOL_SQLI_DISCOVERY_EXTRACTION_CLUSTER_V979,'v9.79 source cluster mining should still install before v9.80');
  assert.ok(globalThis.OBOL_XSS_CLIENT_SESSION_CSP_CLUSTER_V980,'v9.80 source cluster mining should install');
@@ -94,10 +91,24 @@ if(globalThis.OBOL_CURRENT_RELEASE.label==='v9.80'){
  assert.strictEqual(clusters.status.latestCompletedClusterId,'xss-client-session-and-csp');
  assert.strictEqual(clusters.status.pendingSourceNotes,257);
  assert.strictEqual(clusters.status.clusterCount,15);
- assert.ok(!clusters.reviewQueue.some(item=>item&&item.id==='source-note-cluster-xss-client-session-and-csp'),'completed XSS/client/session cluster should not remain queued');
- assert.ok(!clusters.pendingClusters.some(cluster=>cluster&&cluster.id==='xss-client-session-and-csp'),'completed XSS/client/session cluster should not remain pending');
+ assert.ok(!clusters.reviewQueue.some(item=>item&&item.id==='source-note-cluster-xss-client-session-and-csp'));
+ assert.ok(!clusters.pendingClusters.some(cluster=>cluster&&cluster.id==='xss-client-session-and-csp'));
  assert.ok(clusters.pendingClusters.some(cluster=>cluster&&cluster.id==='browser-client-cookie-transform-workflows'),'v9.80 should generate the browser/cookie transform cluster during queue reconciliation');
  assert.ok(clusters.reviewQueue[0]&&clusters.reviewQueue[0].id==='source-note-cluster-browser-client-cookie-transform-workflows','next cluster should advance to generated browser/cookie transform work');
+}
+if(label==='v9.81'){
+ assert.ok(globalThis.OBOL_WEB_AUTHZ_IDOR_VERB_CLUSTER_V978,'v9.78 source cluster mining should still install before v9.81');
+ assert.ok(globalThis.OBOL_SQLI_DISCOVERY_EXTRACTION_CLUSTER_V979,'v9.79 source cluster mining should still install before v9.81');
+ assert.ok(globalThis.OBOL_XSS_CLIENT_SESSION_CSP_CLUSTER_V980,'v9.80 source cluster mining should still install before v9.81');
+ assert.ok(globalThis.OBOL_AD_PIVOT_SMB_TRUST_CLUSTER_V981,'v9.81 source cluster mining should install');
+ assert.strictEqual(clusters.status.latestCompletedClusterQueue,'source-note-cluster-browser-client-cookie-transform-workflows');
+ assert.strictEqual(clusters.status.latestCompletedClusterId,'ad-pivot-smb-trust-kerberos-workflows');
+ assert.strictEqual(clusters.status.latestCompletedOriginalClusterId,'browser-client-cookie-transform-workflows');
+ assert.strictEqual(clusters.status.pendingSourceNotes,249);
+ assert.strictEqual(clusters.status.clusterCount,14);
+ assert.ok(!clusters.reviewQueue.some(item=>item&&item.id==='source-note-cluster-browser-client-cookie-transform-workflows'),'corrected/mislabeled cluster queue should not remain queued');
+ assert.ok(!clusters.pendingClusters.some(cluster=>cluster&&cluster.id==='browser-client-cookie-transform-workflows'),'corrected/mislabeled cluster should not remain pending');
+ assert.ok(clusters.reviewQueue[0]&&clusters.reviewQueue[0].id==='source-note-cluster-web-proxy-fuzzing-and-transform-workflows','next cluster should advance to proxy/fuzzing');
 }
 const serialized=JSON.stringify(clusters);
 assert.ok(!/HTB\{|flag\.txt|Password123|94\.237|83\.136|Answer:|BEGIN RSA PRIVATE KEY|AKIA[0-9A-Z]{16}/i.test(serialized),'cluster ledger leaked private/source-specific material');
