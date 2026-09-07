@@ -4,7 +4,7 @@ Obol is a static, browser-local workspace for OSCP-style labs, Active Directory 
 
 Live site: `https://platocres.github.io/obol/`
 
-Current release: **v9.78**
+Current release: **v9.79**
 
 Open `#/dashboard` for the active Product Hardening Dashboard and Product Build Next queue.
 
@@ -55,23 +55,23 @@ Generated from the same queue sources as the Product Hardening Dashboard. Do not
 **Raw source proof:** workflow run 33877189291 verified HTB ENEX 194,191,214 bytes and OffSec PEN-200 ENEX 110,367,324 bytes before packet extraction.
 **Runtime consolidation:** 5 operator startup requests, down from 286 (98% fewer).
 **Runtime consolidation owner:** `data/runtime-consolidation-current.js` feeds this README projection and the Product Hardening Dashboard.
-**Notes review status:** 233/556 reviewed; 323 pending; 133 modeled; 31 private-only.
-**Source re-mining status:** 233/233 full-spectrum re-mined; 0 old-rubric-only notes remain.
-**Source-note cluster status:** 323/323 pending notes clustered into 16 public-safe cluster review items; 0 pending notes remain unclustered.
-**Next notes batch:** **SQL injection discovery, union/error/blind extraction, and sqlmap handoff** (`source-note-cluster-sql-injection-discovery-and-extraction`) — 38 notes from `platocres/obol-source-notes@agent/review-packets:data/review-packets/manifest.json`.
-**Queue mode:** `cluster-review` for cluster `sql-injection-discovery-and-extraction`.
-**Selector:** Read complete packet text for cluster sql-injection-discovery-and-extraction from platocres/obol-source-notes@agent/review-packets:data/review-packets/manifest.json; mine the whole cluster before terminal dispositions.
+**Notes review status:** 271/556 reviewed; 285 pending; 133 modeled; 31 private-only.
+**Source re-mining status:** 271/271 full-spectrum re-mined; 0 old-rubric-only notes remain.
+**Source-note cluster status:** 285/285 pending notes clustered into 15 public-safe cluster review items; 0 pending notes remain unclustered.
+**Next notes batch:** **XSS, client-side session behavior, CSP, and browser proof boundaries** (`source-note-cluster-xss-client-session-and-csp`) — 28 notes from `platocres/obol-source-notes@agent/review-packets:data/review-packets/manifest.json`.
+**Queue mode:** `cluster-review` for cluster `xss-client-session-and-csp`.
+**Selector:** Read complete packet text for cluster xss-client-session-and-csp from platocres/obol-source-notes@agent/review-packets:data/review-packets/manifest.json; mine the whole cluster before terminal dispositions.
 **Acceptance:** Ship public-safe product mechanics from the whole cluster, then disposition each note with card/analyzer/field-note/report/queue/private rationale.
 
 **Recommended work package:** **Notes Impact and Source Re-mining** — 2 concrete live items / 19 tracked.
-**Next concrete entry:** **SQL injection discovery, union/error/blind extraction, and sqlmap handoff**
+**Next concrete entry:** **XSS, client-side session behavior, CSP, and browser proof boundaries**
 **Ownership area:** `notes/impact-packets`
 **Package dependencies:** Notes Integration Foundation.
 **Package detail:** Use the Product Hardening Dashboard for full track ledgers and `data/product-hardening/work-packages.js` for the long-form package guidance.
 
 **Highest-priority concrete live items:**
-1. **SQL injection discovery, union/error/blind extraction, and sqlmap handoff** — Cluster-driven notes gate: 38 pending source notes in `sql-injection-discovery-and-extraction` must be mined from complete packet text before terminal dispositions resume.
-2. **Burn down all 556 note dispositions** — Concrete notes-first gate: 323 private source notes remain pending and are now organized into 16 cluster review items; mine the active cluster queue before terminal dispositions continue.
+1. **XSS, client-side session behavior, CSP, and browser proof boundaries** — Cluster-driven notes gate: 28 pending source notes in `xss-client-session-and-csp` must be mined from complete packet text before terminal dispositions resume.
+2. **Burn down all 556 note dispositions** — Concrete notes-first gate: 285 private source notes remain pending and are now organized into 15 cluster review items; mine the active cluster queue before terminal dispositions continue.
 3. **Quiet service worker caching** — Improve repeat-load and offline behavior without prompting users to install anything.
 4. **IndexedDB workspace storage** — Support durable larger local workspaces, multiple engagements, and cached indexes while remaining browser-local.
 5. **Web Workers for heavy tasks** — Move evidence parsing, search indexing, and report generation off the UI thread.

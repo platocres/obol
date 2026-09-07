@@ -11,7 +11,7 @@
  * suppresses historical schedulers and commits current route owners last.
  *
  * Historical fragment order sha256: 40e3006d9423d669acf5869b577ecf56a6ca2ee1629c95fd0fcc5d242d2c5f27
- * Generated body sha256: dee1a8d00e72405b48bfa7c9deea4b356c40934451b2703a52419de41db75e80
+ * Generated body sha256: 8a70318bd629c779d4f9272b4d106eb1d0f3bf52e125416291da79d821a6ec4c
  * First historical fragment: assets/report-v2.js
  * Last historical fragment:  assets/app-v8.8.js
  */
@@ -1993,8 +1993,8 @@ if(__nativeMutationObserver)root.MutationObserver=__nativeMutationObserver;
 'use strict';
 (function(root){
 const release=Object.freeze({
- version:'9.78.0',
- label:'v9.78',
+ version:'9.79.0',
+ label:'v9.79',
  phase:'product-hardening',
  phaseLabel:'Product Hardening',
  orangeBaseline:'v8.8',
@@ -2034,7 +2034,8 @@ const release=Object.freeze({
   'data/product-hardening/web-upload-inclusion-cluster-v9.77.js',
   'data/product-hardening/dynamic-why-now-route-stabilizer-v9.77.js',
   'data/product-hardening/v9.77-release-stability-repair.js',
-  'data/product-hardening/web-authz-idor-verb-cluster-v9.78.js'
+  'data/product-hardening/web-authz-idor-verb-cluster-v9.78.js',
+  'data/product-hardening/sql-injection-cluster-v9.79.js'
  ])
 });
 function stampState(target){
