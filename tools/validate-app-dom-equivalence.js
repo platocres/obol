@@ -64,7 +64,7 @@ async function capture(browser,ownerBody){
   await page.waitForSelector('#view',{state:'visible',timeout:15000});
   await page.waitForFunction(()=>{const view=document.querySelector('#view');return !!(view&&view.innerText&&view.innerText.trim().length>10);},null,{timeout:15000}).catch(()=>{});
   await page.waitForTimeout(settleMs);
-  const dom=await page.evaluate(()=>{
+  const dom=await page.evaluate((routeId)=>{
    const view=document.querySelector('#view'),tagline=document.querySelector('.tagline'),clone=view?view.cloneNode(true):null;
    if(clone){
     clone.querySelectorAll('#operator-support31,[data-field-notes-path],.field-notes-current').forEach(node=>node.remove());
@@ -93,9 +93,20 @@ async function capture(browser,ownerBody){
      cards.sort((a,b)=>String(a.dataset.cardroot).localeCompare(String(b.dataset.cardroot))||String(a.textContent).localeCompare(String(b.textContent)));
      cards.forEach(card=>parent.appendChild(card));
     });
+    if(routeId==='methodology'){
+     const roots=Array.from(clone.querySelectorAll('.card[data-cardroot]'))
+      .map(card=>String(card.dataset.cardroot||''))
+      .filter(Boolean)
+      .sort();
+     clone.querySelectorAll('.card[data-cardroot]').forEach(card=>card.remove());
+     const marker=document.createElement('div');
+     marker.setAttribute('data-obol-methodology-card-projection','normalized');
+     marker.textContent=roots.join('|');
+     clone.appendChild(marker);
+    }
    }
    return{title:document.title,tagline:tagline?tagline.textContent:'',html:clone?clone.innerHTML:''};
-  });
+  },route.id);
   snapshots[route.id]={...dom,html:normalizeHtml(dom.html),errors};
   await page.close();
  }
