@@ -49,17 +49,16 @@ Historical Orange AD mindmap source: `https://orange-cyberdefense.github.io/ocd-
 <!-- OBOL-PRODUCT-BUILD-NEXT:START -->
 Generated from the same queue sources as the Product Hardening Dashboard. Do not edit this block manually.
 
-**Current product-hardening queue:** 234/657 complete (36%), 6 concrete queued, 9 modeled/standing items.
+**Current product-hardening queue:** 226/657 complete (34%), 6 concrete queued, 9 modeled/standing items.
 **Private notes source:** [`https://github.com/platocres/obol-source-notes/tree/main/sources/raw`](https://github.com/platocres/obol-source-notes/tree/main/sources/raw) — 556 notes and 1326 embedded resources accounted.
 **Private review packets:** `platocres/obol-source-notes@agent/review-packets:data/review-packets/manifest.json` — 556/556 notes, 29 packets, 0 truncated.
 **Complete source packet proof:** 556/556 notes in 29 complete-text packets, 0 truncated, 8,725,188 cleaned text chars.
 **Raw source proof:** workflow run 33877189291 verified HTB ENEX 194,191,214 bytes and OffSec PEN-200 ENEX 110,367,324 bytes before packet extraction.
 **Runtime consolidation:** 5 operator startup requests, down from 286 (98% fewer).
 **Runtime consolidation owner:** `data/runtime-consolidation-current.js` feeds this README projection and the Product Hardening Dashboard.
-**Notes review status:** 307/556 reviewed; 249 pending; 141 modeled; 31 private-only.
+**Notes review status:** 307/556 reviewed; 249 pending; 133 modeled; 31 private-only.
 **Source re-mining status:** 307/307 full-spectrum re-mined; 0 old-rubric-only notes remain.
 **Source-note cluster status:** 249/249 pending notes clustered into 14 public-safe cluster review items; 0 pending notes remain unclustered.
-**Latest cluster reconciliation:** v9.81 corrected the generated browser cookie/session transform label after full packet review showed the assigned window was AD, SMB, pivoting, trusts, DCSync, privileged access, and Kerberos workflow material.
 **Next notes batch:** **Burp/ZAP proxy, fuzzing, encoding, and transform workflows** (`source-note-cluster-web-proxy-fuzzing-and-transform-workflows`) — 10 notes from `platocres/obol-source-notes@agent/review-packets:data/review-packets/manifest.json`.
 **Queue mode:** `cluster-review` for cluster `web-proxy-fuzzing-and-transform-workflows`.
 **Selector:** Select cluster `web-proxy-fuzzing-and-transform-workflows` from `data/product-hardening/source-note-clusters-current.js`, re-read every assigned source-window note from complete packet text, and mine the whole cluster before terminal dispositions.

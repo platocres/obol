@@ -1,3 +1,12 @@
+## v9.81 — Corrects the next notes-cluster handoff before product work drifts into the wrong surface
+
+- Corrects the mislabeled `source-note-cluster-browser-client-cookie-transform-workflows` queue item after complete packet review showed the assigned source window was AD, SMB, pivoting, trusts, DCSync, privileged access, and Kerberos workflow material.
+- Records the corrected completed cluster identity as `ad-pivot-smb-trust-kerberos-workflows` without creating a browser-cookie, SMB, DCSync, trust, Kerberos, or pivot wrapper card.
+- Enriches the existing `ad-enumeration-bloodhound-collection` card with SMB, RPC, trust, SPN/Kerberoast, replication-rights, remote-access, and bounded DCSync proof guidance.
+- Enriches the existing `metasploit-resource-pivot-workflow` card with SSH local forwarding, dynamic SOCKS, proxychains scan, and Metasploit route proof boundaries.
+- Adds public-safe field notes and the `ad-pivot-smb-trust-evidence-analyzer-v981` analyzer for SMB, pivot, trust, DCSync, remote-access, Kerberos, and ACL evidence.
+- Advances the notes burn-down to 307/556 reviewed, leaves 249 pending notes in 14 clusters, and moves Product Build Next to `source-note-cluster-web-proxy-fuzzing-and-transform-workflows`.
+
 ## v9.80 — Obol v9.80 mines the next Product Build Next source-note cluster, `source-note-cluster-xss-client-session-and-csp`, covering XSS context classification, client-side session behavior, CSP and browser controls, scanner triage, and browser-proof boundaries
 
 - adds a command-bearing `xss-browser-proof-boundary` card for inert reflection checks, context classification, safe browser proof, Burp/ZAP replay, DOM source/sink review, CSP/header checks, and cookie/session impact boundaries;
