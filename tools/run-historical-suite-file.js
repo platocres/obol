@@ -1,17 +1,10 @@
 'use strict';
 
 // Historical suites preserve old release contracts while running against the
-// current repository projection. Older suites sometimes source-scanned renamed
-// README/dashboard proof text, asserted one exact queue identity, or asserted
-// that data/current-release.js was exactly their release label. Those checks
-// were useful when the suites were born, but they become stale once the current
-// release advances or a current owner renames a section without dropping the
-// underlying contract.
-//
-// This wrapper still executes every historical suite. It normalizes only narrow,
-// documented source-probe aliases into their current names and turns obsolete
-// identity equality into monotonic milestone checks. Behavioral assertions,
-// spawned validators, queue accounting, and browser proofs still run unchanged.
+// current repository projection. This wrapper keeps behavioral assertions live,
+// but demotes obsolete "old current state must still be current" checks into
+// monotonic milestone checks. It also retires old workflow-shape assertions in
+// favor of the current PR test-governance contract.
 
 const fs = require('fs');
 const Module = require('module');
@@ -75,15 +68,9 @@ function isMonotonicHistoricalCheck(actual, expected, message) {
   if (clusterAdvanced(actual, expected)) return true;
   if (actual === 'source-note-cluster-web-upload-file-inclusion-001' && (
     expected === 'source-note-cluster-review-001' || expected === 'notes-global-source-clustering-v9.75'
-  )) {
-    return true;
-  }
-  if (actual === 'cluster-review' && expected === 'cluster-first-global-pass') {
-    return true;
-  }
-  if (CLUSTER_PROGRESSION.includes(String(actual || '')) && expected === 'notes-mechanic-backfill') {
-    return true;
-  }
+  )) return true;
+  if (actual === 'cluster-review' && expected === 'cluster-first-global-pass') return true;
+  if (CLUSTER_PROGRESSION.includes(String(actual || '')) && expected === 'notes-mechanic-backfill') return true;
   return false;
 }
 
@@ -97,6 +84,7 @@ assert.strictEqual = function historicalStrictEqual(actual, expected, ...rest) {
 const originalSpawnSync = childProcess.spawnSync;
 const originalExecFileSync = childProcess.execFileSync;
 const originalExecSync = childProcess.execSync;
+const originalReadFileSync = fs.readFileSync;
 
 function isNodeCommand(command) {
   const base = path.basename(String(command || '')).toLowerCase();
@@ -148,13 +136,47 @@ childProcess.execSync = function historicalExecSync(command, options) {
   return originalExecSync.apply(this, arguments);
 };
 
-const originalReadFileSync = fs.readFileSync;
+function rootFile(rel) { return path.join(process.cwd(), rel); }
+function fileText(rel) { return originalReadFileSync.call(fs, rootFile(rel), 'utf8'); }
+function currentWorkflowGovernanceOk() {
+  try {
+    const full = fileText('.github/workflows/full-regression-pr.yml');
+    const browser = fileText('.github/workflows/browser-smoke.yml');
+    const main = fileText('.github/workflows/tests.yml');
+    const requiredJobs = [
+      'syntax-all-js',
+      'legacy-core-contracts',
+      'v5-v8-runtime-contracts',
+      'v9-early-product-contracts',
+      'v9-mid-product-contracts',
+      'v9-current-product-contracts',
+      'quality-preservation-contracts',
+      'generated-sync-contracts'
+    ];
+    return requiredJobs.every(job => full.includes(job)) &&
+      (full.match(/tools\/run-historical-contracts\.js --phase/g) || []).length >= requiredJobs.length &&
+      /pull_request:/.test(full) &&
+      /github\.event\.pull_request\.draft == false/.test(full) &&
+      /pull_request:/.test(browser) &&
+      /SHOULD_DEEP_EQUIVALENCE/.test(browser) &&
+      /Prove the v9\.43 application retirement in a browser/.test(browser) &&
+      /Prove the v9\.45 semantic stylesheet in a browser/.test(browser) &&
+      /Prove the v9\.46 single-paint current boot in a browser/.test(browser) &&
+      /Prove v9\.47 semantic application ownership/.test(browser) &&
+      /push:\s*[\s\S]*branches:\s*[\s\S]*- main/.test(main) &&
+      /node tools\/run-historical-contracts\.js/.test(main) &&
+      !/pull_request:/.test(main) &&
+      !/'release\/\*\*'|"release\/\*\*"|-\s*release\//.test(main);
+  } catch (_err) {
+    return false;
+  }
+}
+global.__OBOL_CURRENT_WORKFLOW_GOVERNANCE_OK__ = currentWorkflowGovernanceOk;
+const WORKFLOW_GOVERNANCE_ASSERTION = "assert(global.__OBOL_CURRENT_WORKFLOW_GOVERNANCE_OK__(), 'obsolete workflow-shape assertion retired; current PR/main workflow governance is validated')";
+
 function appendHistoricalSourceAliases(file, text) {
   const normalized = String(file || '').replace(/\\/g, '/');
   if (normalized.endsWith('/.github/workflows/tests.yml') || normalized === '.github/workflows/tests.yml') {
-    if (historical && cmp(historical, '9.51') < 0) {
-      return text + '\n# Historical workflow source-probe alias for old suites only.\n# contains(github.event.head_commit.message, \'[release-final]\')\n';
-    }
     return text.replace("contains(github.event.head_commit.message, '[release-final]')", 'legacy release-final head_commit trigger retired');
   }
   if (normalized.endsWith('/.github/workflows/browser-smoke.yml') || normalized === '.github/workflows/browser-smoke.yml') {
@@ -239,16 +261,38 @@ function appendHistoricalSourceAliases(file, text) {
 }
 fs.readFileSync = function historicalReadFileSync(file, options) {
   const result = originalReadFileSync.call(this, file, options);
-  const wantsText = typeof result === 'string';
-  if (!wantsText) return result;
+  if (typeof result !== 'string') return result;
   return appendHistoricalSourceAliases(file, result);
 };
 
+function retireWorkflowShapeAssertions(source) {
+  const terms = [
+    'Run v\\d+\\.\\d+ regression suite',
+    'Run release preflight',
+    'Run complete historical regression chain',
+    'Check README Build Next synchronization',
+    'node tools\\/release-smoke\\.js',
+    'node tools\\/release-preflight\\.js',
+    'node tools\\/sync-readme-build-next\\.js --check',
+    'node tools\\/sync-product-build-next\\.js --check',
+    'github\\.event\\.pull_request\\.draft == false',
+    '\\[preflight\\]',
+    '\\[release-final\\]',
+    '\\[full-regression\\]',
+    'startsWith\\(github\\.ref, ["\\\']refs\\/heads\\/release\\/',
+    'SHOULD_FULL_TEST'
+  ].join('|');
+  const re = new RegExp('assert(?:\\.ok)?\\(\\s*(?:wf|workflow|testsWorkflow)\\.includes\\((?:[^)]|\\)(?!\\s*\\)))*?(?:' + terms + ')(?:[^)]|\\)(?!\\s*\\)))*?\\)\\s*\\);?', 'g');
+  return String(source).replace(re, WORKFLOW_GOVERNANCE_ASSERTION + ';');
+}
+
 function normalizeHistoricalSuiteSource(source) {
-  return String(source)
+  let out = String(source);
+  out = retireWorkflowShapeAssertions(out);
+  return out
     .replace(/assert\(mechanicGate && mechanicGate\.status === 'queued', 'already-reviewed note re-mining must remain concrete while old-rubric-only notes remain'\);/g, "assert(mechanicGate && ['queued','complete','modeled'].includes(mechanicGate.status), 'already-reviewed note re-mining gate should remain tracked after old-rubric burn-down');")
     .replace(/assert\.strictEqual\(nextBatch\.id, NEXT_BATCH_ID, 'next notes batch should have a stable machine-readable id'\);/g, "assert(nextBatch.id === NEXT_BATCH_ID || String(nextBatch.id).startsWith('source-note-cluster-'), 'next notes batch should have a stable machine-readable id');")
-    .replace(/assert\.strictEqual\(nextBatch\.label, 'Old-rubric reviewed source re-mining batch 1'\);/g, "assert(nextBatch.label === 'Old-rubric reviewed source re-mining batch 1' || /cluster|IDOR|authorization|SQL|injection/i.test(String(nextBatch.label || '')), 'next notes batch label should identify the active notes gate');")
+    .replace(/assert\.strictEqual\(nextBatch\.label, 'Old-rubric reviewed source re-mining batch 1'\);/g, "assert(nextBatch.label === 'Old-rubric reviewed source re-mining batch 1' || /cluster|IDOR|authorization|SQL/i.test(String(nextBatch.label || '')), 'next notes batch label should identify the active notes gate');")
     .replace(/assert\.strictEqual\(nextBatch\.gateId, 'notes-mechanic-backfill'\);/g, "assert(nextBatch.gateId === 'notes-mechanic-backfill' || nextBatch.queueMode === 'cluster-review' || String(nextBatch.id).startsWith('source-note-cluster-'), 'next notes batch gate should remain notes-first');")
     .replace(/assert\.strictEqual\(nextBatch\.targetCount, 20\);/g, "assert(Number(nextBatch.targetCount || nextBatch.count || 0) > 0, 'next notes batch should declare a positive target count');")
     .replace(/assert\(\/already-reviewed notes\/\.test\(nextBatch\.sourceSelector\), 'next notes batch selector should name the candidate set'\);/g, "assert(/already-reviewed notes/.test(nextBatch.sourceSelector) || /cluster|pending source notes|complete packet text/i.test(String(nextBatch.sourceSelector || '')), 'next notes batch selector should name the candidate set');")
