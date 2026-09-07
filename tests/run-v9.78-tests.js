@@ -5,12 +5,18 @@ const path=require('path');
 const root=path.join(__dirname,'..');
 function load(rel){require(path.join(root,rel));}
 function run(args){const result=cp.spawnSync(process.execPath,args.map((part,index)=>index===0?path.join(root,part):part),{cwd:root,encoding:'utf8'});process.stdout.write(result.stdout||'');process.stderr.write(result.stderr||'');if(result.status!==0)process.exit(result.status||1);}
+function versionAtLeast(actual,minimum){
+ const a=String(actual||'').replace(/^v/i,'').split('.').map(Number);
+ const b=String(minimum||'').replace(/^v/i,'').split('.').map(Number);
+ for(let i=0;i<3;i++){const d=(a[i]||0)-(b[i]||0);if(d)return d>0;}
+ return true;
+}
 
 globalThis.__OBOL_DEFER_PRODUCT_HARDENING_EXTENSIONS__=true;
 globalThis.setTimeout=undefined;
 globalThis.addEventListener=undefined;
 load('data/current-release.js');
-assert.strictEqual(globalThis.OBOL_CURRENT_RELEASE.label,'v9.78');
+assert.ok(versionAtLeast(globalThis.OBOL_CURRENT_RELEASE.label,'v9.78'),'current release should be v9.78 or newer');
 assert.ok(globalThis.OBOL_CURRENT_RELEASE.productHardeningExtensions.includes('data/product-hardening/web-authz-idor-verb-cluster-v9.78.js'));
 
 load('data/product-hardening/product-hardening-queue.js');
