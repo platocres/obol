@@ -154,7 +154,8 @@ const PHASE_TASKS = Object.freeze({
     ['tools/validate-pr-test-governance.js'],
     ['tools/validate-release-pr.js'],
     ['tools/validate-release-quality.js'],
-    ['tools/validate-readme-history-ownership.js']
+    ['tools/validate-readme-history-ownership.js'],
+    ['tools/validate-open-pr-uniqueness.js']
   ],
   'generated-sync': [
     ['tools/sync-readme-build-next.js', '--check'],
