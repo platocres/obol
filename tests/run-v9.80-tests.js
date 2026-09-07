@@ -58,7 +58,7 @@ assert.ok((card.expected||[]).includes('reflection context classified before exe
 assert.ok((card.produces||[]).includes('web.xss.browser_proof_reviewed'),'card should produce browser proof review fact');
 assert.ok(!/source-mining|release cleanup|patch panel|\bUNKNOWN\b/i.test(JSON.stringify(card)),'card must not leak internal implementation slop');
 
-const analysis=wave.analyze('Burp Scanner reports reflected XSS. Repeater shows marker in an HTML attribute. Browser console logs harmless proof, but Content-Security-Policy script-src blocks inline script. Set-Cookie session has HttpOnly SameSite=Lax. DOM sink uses innerHTML from location.hash.');
+const analysis=wave.analyze('Burp Scanner reports reflected XSS. Repeater shows marker in an HTML attribute. Browser console executed a harmless proof marker, but Content-Security-Policy script-src blocks inline script. Set-Cookie session has HttpOnly SameSite=Lax. DOM sink uses innerHTML from location.hash.');
 assert.ok(analysis.outcomeFacts.includes('web.xss.browser_execution_observed'));
 assert.ok(analysis.outcomeFacts.includes('web.xss.context_or_source_sink_observed'));
 assert.ok(analysis.outcomeFacts.includes('web.xss.browser_control_observed'));
