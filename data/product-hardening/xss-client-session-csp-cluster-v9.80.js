@@ -4,6 +4,7 @@ const WAVE='v9.80-xss-client-session-csp-cluster';
 const ACTIVE_QUEUE_ID='source-note-cluster-xss-client-session-and-csp';
 const ACTIVE_CLUSTER_ID='xss-client-session-and-csp';
 const CARD_ID='web-authz-boundaries';
+const REMOVED_WRAPPER_ID='xss-browser-proof-boundary';
 const REMOVED_CARD_IDS=Object.freeze(['xss-browser-proof-boundary','web-client-session-proof-chain','web-client-controls']);
 const ANALYZER_ID='xss-client-session-csp-analyzer-v980';
 const SOURCE_ROUTE='platocres/obol-source-notes@agent/review-packets:data/review-packets/manifest.json';
