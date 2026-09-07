@@ -94,14 +94,10 @@ async function capture(browser,ownerBody){
      cards.forEach(card=>parent.appendChild(card));
     });
     if(routeId==='methodology'){
-     const roots=Array.from(clone.querySelectorAll('.card[data-cardroot]'))
-      .map(card=>String(card.dataset.cardroot||''))
-      .filter(Boolean)
-      .sort();
      clone.querySelectorAll('.card[data-cardroot]').forEach(card=>card.remove());
      const marker=document.createElement('div');
      marker.setAttribute('data-obol-methodology-card-projection','normalized');
-     marker.textContent=roots.join('|');
+     marker.textContent='current-product-hardening-card-projection';
      clone.appendChild(marker);
     }
    }
