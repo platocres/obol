@@ -6,7 +6,7 @@ const root=path.join(__dirname,'..');
 const PHASES=Object.freeze(['syntax','legacy-core','v5-v8-runtime','v9-early-product','v9-mid-product','v9-current-product','quality-preservation','generated-sync']);
 function walk(dir,out=[]){for(const entry of fs.readdirSync(dir,{withFileTypes:true})){if(entry.name==='.git'||entry.name==='node_modules')continue;const full=path.join(dir,entry.name);if(entry.isDirectory())walk(full,out);else if(entry.name.endsWith('.js'))out.push(full);}return out;}
 function natural(a,b){return a.localeCompare(b,undefined,{numeric:true,sensitivity:'base'});}
-function resolveArgv(parts){return parts.map((part,index)=>index===0?path.join(root,part):part);}
+function resolveArgv(parts){return parts.map((part,index)=>index===0&&!String(part).startsWith('-')?path.join(root,part):part);}
 function run(parts){const argv=resolveArgv(parts);const result=cp.spawnSync(process.execPath,argv,{cwd:root,encoding:'utf8'});process.stdout.write(result.stdout||'');process.stderr.write(result.stderr||'');if(result.status!==0)process.exit(result.status||1);}
 function syntax(){const files=['assets','data','tools','tests'].flatMap(name=>walk(path.join(root,name))).sort(natural);for(const file of files){run(['--check',file]);console.log('syntax ok: '+path.relative(root,file).replace(/\\/g,'/'));}}
 const PHASE_TASKS=Object.freeze({
