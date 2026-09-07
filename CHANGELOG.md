@@ -1,3 +1,11 @@
+## v9.80 — Obol v9.80 mines the next Product Build Next source-note cluster, `source-note-cluster-xss-client-session-and-csp`, covering XSS context classification, client-side session behavior, CSP and browser controls, scanner triage, and browser-proof boundaries
+
+- adds a command-bearing `xss-browser-proof-boundary` card for inert reflection checks, context classification, safe browser proof, Burp/ZAP replay, DOM source/sink review, CSP/header checks, and cookie/session impact boundaries;
+- adds contextual field notes for XSS context classification, browser proof, DOM source/sink evidence, cookie/session boundaries, CSP/browser controls, scanner triage, report/remediation language, and cluster reconciliation;
+- adds the `xss-client-session-csp-analyzer-v980` analyzer for browser execution signals, DOM source/sink clues, CSP and browser-control behavior, cookie/session material, scanner leads, and encoding/sanitization boundaries;
+- keeps reflected/stored/DOM XSS, session exposure, CSRF/state-change impact, and browser controls separate so a reflected marker or scanner alert does not become an overstated execution claim;
+- completes the XSS/client/session/CSP cluster queue item and reconciles the downstream queue by splitting browser cookie/session transform fuzzing out of the broader proxy/fuzzing cluster.
+
 ## v9.79 — Obol v9.79 mines the next Product Build Next source-note cluster, `source-note-cluster-sql-injection-discovery-and-extraction`, covering SQL injection discovery, UNION and error/blind proof boundaries, database enumeration, and sqlmap handoff
 
 - adds a command-bearing `sqlmap-request-proof` card for SQLi triage, column-count probing, visible UNION placement, request-file sqlmap handoff, database enumeration, narrow dump proof, and gated file-read branches;
