@@ -24,7 +24,7 @@ jobs:
     timeout-minutes: 15
     env:
       SHOULD_FULL_BROWSER: ${{ github.event_name == 'pull_request' || github.ref == 'refs/heads/main' || github.event_name == 'workflow_dispatch' || github.event_name == 'schedule' || (github.event_name == 'push' && startsWith(github.ref, 'refs/heads/release/') && contains(github.event.head_commit.message, '[full-regression]')) }}
-      SHOULD_DEEP_EQUIVALENCE: ${{ github.ref == 'refs/heads/main' || github.event_name == 'workflow_dispatch' || github.event_name == 'schedule' || (github.event_name == 'push' && startsWith(github.ref, 'refs/heads/release/') && contains(github.event.head_commit.message, '[full-regression]')) }}
+      SHOULD_DEEP_EQUIVALENCE: ${{ github.event_name == 'pull_request' || github.ref == 'refs/heads/main' || github.event_name == 'workflow_dispatch' || github.event_name == 'schedule' || (github.event_name == 'push' && startsWith(github.ref, 'refs/heads/release/') && contains(github.event.head_commit.message, '[full-regression]')) }}
     steps:
       - name: Checkout
         uses: actions/checkout@v4

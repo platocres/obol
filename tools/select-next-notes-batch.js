@@ -50,6 +50,24 @@ function validateManifest(manifest, required = REQUIRED_MANIFEST) {
   return failures;
 }
 
+function createPublicSourceProof(manifest) {
+  const proof = {
+    schema_version: manifest.schema_version,
+    truncation_policy: manifest.truncation_policy,
+    note_count: manifest.note_count,
+    unique_note_count: manifest.unique_note_count,
+    resource_count: manifest.resource_count,
+    truncated_note_count: manifest.truncated_note_count,
+    window_marker_count: manifest.window_marker_count,
+    packet_count: Array.from(manifest.packets || []).length,
+  };
+  Object.defineProperties(proof, {
+    review_text_policy: { value: manifest.review_text_policy, enumerable: false },
+    review_text_chars: { value: manifest.review_text_chars, enumerable: false },
+  });
+  return Object.freeze(proof);
+}
+
 function loadPacketItems(manifest, packetsRoot) {
   if (!packetsRoot) die('packetsRoot is required for batch selection');
   const items = [];
@@ -70,7 +88,6 @@ function loadPacketItems(manifest, packetsRoot) {
         packetOffset: packet.offset,
         packetIndex: index,
         sourceOrder: Number(packet.offset || 0) + index,
-        title: String(item.title || ''),
       }));
     });
   }
@@ -101,18 +118,7 @@ function selectNextOldRubricBatch(options) {
     schemaVersion: '1.0.0',
     batchId: options.batchId || 'notes-batch-old-rubric-reviewed-remine-001',
     sourceRoute: options.sourceRoute || 'platocres/obol-source-notes@agent/review-packets:data/review-packets/manifest.json',
-    sourceProof: Object.freeze({
-      schema_version: manifest.schema_version,
-      review_text_policy: manifest.review_text_policy,
-      truncation_policy: manifest.truncation_policy,
-      note_count: manifest.note_count,
-      unique_note_count: manifest.unique_note_count,
-      resource_count: manifest.resource_count,
-      review_text_chars: manifest.review_text_chars,
-      truncated_note_count: manifest.truncated_note_count,
-      window_marker_count: manifest.window_marker_count,
-      packet_count: Array.from(manifest.packets || []).length,
-    }),
+    sourceProof: createPublicSourceProof(manifest),
     selectionPolicy: 'manifest/source order; already-reviewed only; exclude notes with full-spectrum audit rows or released re-mining proof',
     requestedCount: batchSize,
     selectedCount: selected.length,

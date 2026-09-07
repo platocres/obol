@@ -3,13 +3,9 @@
 // Complete historical regression gate. This runner owns discovery and execution
 // of every preservation suite plus the permanent quality/sync validators.
 //
-// Each unit runs in its own isolated Node process exactly as before; the only
-// change from the original sequential runner is that independent units execute
-// concurrently through a bounded worker pool. Coverage is identical — every file
-// is still syntax-checked and every suite still runs — but wall-clock time drops
-// roughly by the available parallelism, so ordinary commits and pushes gate
-// faster. Historical suites are hermetic (they write only to unique os.tmpdir
-// paths) and the validators are read-only, so concurrent execution is safe.
+// Without arguments it runs the same complete chain used on main. For PR checks,
+// `--phase <name>` runs one visible preservation slice so GitHub shows meaningful
+// gates instead of hiding the full regression suite behind one opaque job.
 
 const cp = require('child_process');
 const fs = require('fs');
@@ -17,6 +13,17 @@ const path = require('path');
 const os = require('os');
 const root = path.join(__dirname, '..');
 const CONCURRENCY = Math.max(2, Math.min((os.cpus() || []).length || 4, 8));
+
+const PHASES = Object.freeze([
+  'syntax',
+  'legacy-core',
+  'v5-v8-runtime',
+  'v9-early-product',
+  'v9-mid-product',
+  'v9-current-product',
+  'quality-preservation',
+  'generated-sync'
+]);
 
 function walk(dir, out = []) {
   for (const entry of fs.readdirSync(dir, { withFileTypes: true })) {
@@ -28,6 +35,23 @@ function walk(dir, out = []) {
   return out;
 }
 function natural(a, b) { return a.localeCompare(b, undefined, { numeric: true, sensitivity: 'base' }); }
+function versionOfSuite(name) {
+  const m = String(name).match(/^run-v(\d+(?:\.\d+){0,2})(?:-[^-]+)?-tests\.js$/);
+  if (!m) return null;
+  return m[1].split('.').map(n => Number(n || 0));
+}
+function cmpVersion(a, b) {
+  for (let i = 0; i < 3; i++) {
+    const d = (a[i] || 0) - (b[i] || 0);
+    if (d) return d;
+  }
+  return 0;
+}
+function inRange(name, min, maxExclusive) {
+  const v = versionOfSuite(name);
+  if (!v) return false;
+  return cmpVersion(v, min) >= 0 && (!maxExclusive || cmpVersion(v, maxExclusive) < 0);
+}
 
 function runTask(argv) {
   return new Promise(resolve => {
@@ -68,32 +92,63 @@ async function runPool(tasks) {
 }
 
 function resolveArgv(parts) { return parts.map((p, i) => (i === 0 ? path.join(root, p) : p)); }
-
-(async () => {
-  // Phase 1: syntax-check every runtime, data, tool, and test file (read-only).
+function syntaxTasks() {
   const files = ['assets', 'data', 'tools', 'tests'].flatMap(name => walk(path.join(root, name))).sort(natural);
-  const syntaxTasks = files.map(full => ({
+  return files.map(full => ({
     argv: ['--check', full],
     okLine: 'syntax ok: ' + path.relative(root, full).replace(/\\/g, '/') + '\n'
   }));
-  if (await runPool(syntaxTasks)) process.exit(1);
-
-  // Phase 2: framing validators, the full historical suite set, and the
-  // permanent quality/sync gates. Each is an isolated process.
-  const suiteFiles = fs.readdirSync(path.join(root, 'tests'))
+}
+function suiteFiles() {
+  return fs.readdirSync(path.join(root, 'tests'))
     .filter(name => /^run-v.*-tests\.js$/.test(name))
     .sort(natural);
-  const runTasks = [
+}
+function testTasks(files) { return files.map(f => ({ argv: resolveArgv(['tools/run-historical-suite-file.js', 'tests/' + f]) })); }
+function phaseTasks(phase) {
+  const suites = suiteFiles();
+  if (phase === 'syntax') return syntaxTasks();
+  if (phase === 'legacy-core') return [
+    { argv: resolveArgv(['tests/run-tests.js']) },
+    ...testTasks(suites.filter(f => inRange(f, [2, 1, 0], [5, 0, 0])))
+  ];
+  if (phase === 'v5-v8-runtime') return testTasks(suites.filter(f => inRange(f, [5, 0, 0], [9, 0, 0])));
+  if (phase === 'v9-early-product') return testTasks(suites.filter(f => inRange(f, [9, 0, 0], [9, 30, 0])));
+  if (phase === 'v9-mid-product') return testTasks(suites.filter(f => inRange(f, [9, 30, 0], [9, 56, 0])));
+  if (phase === 'v9-current-product') return testTasks(suites.filter(f => inRange(f, [9, 56, 0], null)));
+  if (phase === 'quality-preservation') return [
     ['tools/validate-historical-tests.js'],
     ['tools/validate-release-pr.js'],
-    ['tests/run-tests.js'],
-    ...suiteFiles.map(f => ['tests/' + f]),
     ['tools/validate-release-quality.js'],
-    ['tools/validate-readme-history-ownership.js'],
+    ['tools/validate-readme-history-ownership.js']
+  ].map(a => ({ argv: resolveArgv(a) }));
+  if (phase === 'generated-sync') return [
     ['tools/sync-readme-build-next.js', '--check'],
     ['tools/sync-product-build-next.js', '--check']
   ].map(a => ({ argv: resolveArgv(a) }));
-  if (await runPool(runTasks)) process.exit(1);
+  throw new Error('unknown historical regression phase: ' + phase + '. Known phases: ' + PHASES.join(', '));
+}
+async function runPhase(phase) {
+  const tasks = phaseTasks(phase);
+  if (!tasks.length) throw new Error('historical regression phase has no tasks: ' + phase);
+  console.log('Running historical regression phase: ' + phase + ' (' + tasks.length + ' tasks)');
+  if (await runPool(tasks)) process.exit(1);
+  console.log('Historical regression phase passed: ' + phase);
+}
+function requestedPhase() {
+  const i = process.argv.indexOf('--phase');
+  if (i >= 0) return process.argv[i + 1];
+  const eq = process.argv.find(arg => arg.startsWith('--phase='));
+  return eq ? eq.slice('--phase='.length) : '';
+}
 
+(async () => {
+  if (process.argv.includes('--list-phases')) { console.log(PHASES.join('\n')); return; }
+  const phase = requestedPhase();
+  if (phase) { await runPhase(phase); return; }
+
+  // Main/manual mode: keep the complete chain in one command for exact-head final proof.
+  if (await runPool(syntaxTasks())) process.exit(1);
+  for (const p of PHASES.filter(p => p !== 'syntax')) await runPhase(p);
   console.log('Complete historical contract runner passed.');
 })().catch(e => { console.error(e && e.stack || e); process.exit(1); });

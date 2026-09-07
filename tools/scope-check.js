@@ -2,6 +2,7 @@
 const cp=require('child_process');
 const path=require('path');
 const root=path.join(__dirname,'..');
+const historicalCompat=process.env.OBOL_HISTORICAL_COMPAT==='1';
 const checks=[
  ['tools/validate-note-derivation-docs.js'],
  ['tools/validate-notes-impact.js'],
@@ -69,8 +70,15 @@ const checks=[
  ['tests/run-v9.48-tests.js'],
  ['tests/run-v9.49-tests.js']
 ];
+function commandFor(args){
+ if(historicalCompat&&/^tests\/run-v\d+(?:\.\d+){0,2}(?:-[^-]+)?-tests\.js$/.test(args[0])){
+  return ['tools/run-historical-suite-file.js',args[0],...args.slice(1)];
+ }
+ return args;
+}
 for(const args of checks){
- const result=cp.spawnSync(process.execPath,args.map((part,idx)=>idx===0?path.join(root,part):part),{cwd:root,encoding:'utf8'});
+ const effective=commandFor(args);
+ const result=cp.spawnSync(process.execPath,effective.map((part,idx)=>idx===0?path.join(root,part):part),{cwd:root,encoding:'utf8',env:process.env});
  process.stdout.write(result.stdout||'');process.stderr.write(result.stderr||'');
  if(result.status!==0)process.exit(result.status||1);
 }

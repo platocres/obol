@@ -10,6 +10,8 @@ const DEFAULT_DIMENSIONS=[
 ];
 const ALLOWED_OUTCOMES=['added','covered','queued','private-only','not-applicable','blocked'];
 const GENERIC_NEGATIVES=new Set(['','none','no','no change','not useful','n/a','na','null','undefined']);
+const PATH_INTEGRATION_DIMENSIONS=new Set(['path-bindings','path-movement']);
+const PATH_OWNER_IDS=new Set(['path','next-steps','nextsteps','next_steps']);
 const PRODUCT_HARDENING_FALLBACK=[
  'data/runtime-consolidation-current.js',
  'data/current-release.js',
@@ -49,6 +51,10 @@ function outcomeOf(decision){
  if(typeof decision==='string')return decision.trim();
  if(decision&&typeof decision==='object')return String(decision.outcome||'').trim();
  return '';
+}
+function provesPathIntegration(decision){
+ const ownerIds=list(decision.ownerIds||decision.ownerId).map(id=>String(id).trim().toLowerCase());
+ return decision.actualPathIntegrated===true||list(decision.pathIds).length||hasText(decision.actualNextStepsPathId)||ownerIds.some(id=>PATH_OWNER_IDS.has(id));
 }
 function validateReMiningAudits(progress){
  const failures=[];
@@ -99,10 +105,11 @@ function validateReMiningAudits(progress){
    }
    const objectDecision=decision&&typeof decision==='object'?decision:{};
    if(outcome==='added'){
-    const proofRefs=list(objectDecision.proofRefs).concat(list(objectDecision.changedOwners),list(objectDecision.pathIds),list(objectDecision.toolIds),list(objectDecision.analyzerIds),list(objectDecision.reportIds));
-    if(!proofRefs.length)failures.push(`${label}: ${dimension} added outcome needs proofRefs, changedOwners, pathIds, toolIds, analyzerIds, or reportIds`);
-    if(objectDecision.operatorFacing!==false&&!(objectDecision.actualPathIntegrated===true||list(objectDecision.pathIds).length||hasText(objectDecision.actualNextStepsPathId))){
-     failures.push(`${label}: ${dimension} added operator-facing output must prove actual Next Steps path integration`);
+    const proofRefs=list(objectDecision.proofRefs)
+     .concat(list(objectDecision.changedOwners),list(objectDecision.pathIds),list(objectDecision.toolIds),list(objectDecision.analyzerIds),list(objectDecision.reportIds),list(objectDecision.ownerIds||objectDecision.ownerId));
+    if(!proofRefs.length)failures.push(`${label}: ${dimension} added outcome needs proofRefs, changedOwners, pathIds, toolIds, analyzerIds, reportIds, or ownerIds`);
+    if(objectDecision.operatorFacing!==false&&PATH_INTEGRATION_DIMENSIONS.has(dimension)&&!provesPathIntegration(objectDecision)){
+     failures.push(`${label}: ${dimension} added path-facing output must prove actual Next Steps path integration`);
     }
    }else if(outcome==='covered'){
     if(!list(objectDecision.ownerIds||objectDecision.ownerId).length)failures.push(`${label}: ${dimension} covered outcome needs existing owner ID`);

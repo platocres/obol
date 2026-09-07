@@ -45,7 +45,7 @@ const fixture=JSON.parse(read('tests/fixtures/responsive-v9.11-viewports.json'))
 const releaseDoc=read('docs/v9.11.md');
 
 for(const token of ['@media(max-width:980px)','@media(max-width:720px)','table.tracker','overflow-x:auto','#modal','.cmd-opts','.cred-row,.flag-row'])assert(responsive.includes(token),'responsive owner preserves '+token);
-for(const token of ['@media(max-width:820px)','@media(max-width:600px)','.ph-pill{grid-column:2;justify-self:start}','min-width:680px'])assert(dashboard.includes(token),'dashboard responsive owner preserves '+token);
+for(const token of ['@media(max-width:1200px)','@media(max-width:760px)','.ph-pill{grid-column:2;justify-self:start}','min-width:640px'])assert(dashboard.includes(token),'dashboard responsive owner preserves '+token);
 assert(bridge.includes("addStyle88('assets/responsive-current.css')"),'current v8.8 bridge loads stable responsive owner');
 assert(fieldNotes.includes('.field-notes-current>summary{position:relative'),'field-note affordance remains anchored at narrow widths');
 assert.deepStrictEqual(fixture.viewports.map(v=>v.id),['narrow-laptop','exam-split','tablet-portrait','mobile'],'canonical responsive viewport fixture remains stable');

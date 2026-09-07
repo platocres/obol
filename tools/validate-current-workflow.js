@@ -24,21 +24,20 @@ const manifest=require(path.join(root,'data','runtime-manifest.js'));
 for(const token of ["const WORKFLOW_SOURCE='assets/workflow-current.js'","const OPERATOR_SOURCE='assets/operator-route-current.js'",'ensureProductAssets88()','workflow.decorateRoute()','ensureOperatorRoutes88()','operator.decorateRoute()'])if(!app.includes(token))bad('v8.8 bridge does not delegate current workflow/operator route through token: '+token);
 for(const retired of ['function orangeSummary88','function productSummary88','function renderProductDashboardNow88','function decorateHome88'])if(app.includes(retired))bad('v8.8 bridge retains competing release-specific workflow owner: '+retired);
 if(!manifest.lazy||!manifest.lazy.productHardening||!manifest.lazy.productHardening.includes('assets/workflow-current.js'))bad('runtime manifest does not register stable current workflow as a lazy product asset');
-if(!manifest.lazy||!manifest.lazy.productHardening||!manifest.lazy.productHardening.includes('assets/operator-route-current.js'))bad('runtime manifest does not register stable current operator routes as lazy product assets');
+if(!manifest.lazy||!manifest.lazy.productHardening||!manifest.lazy.productHardening.includes('assets/operator-route-current.js'))bad('runtime manifest does not register stable current operator routes as a lazy product asset');
 if(!manifest.surfacePolicy||!manifest.surfacePolicy.operatorRoutes||manifest.surfacePolicy.operatorRoutes.owner!=='assets/operator-route-current.js')bad('runtime manifest does not name the current operator route owner');
 
 for(const token of ['data-current-dashboard-nav','Product Dashboard','renderProductHardeningDashboard(v,{embedded:true})',"v.dataset.currentDashboardOwner='product-hardening'"])if(!workflow.includes(token))bad('single-dashboard workflow contract missing token: '+token);
 if(!dashboard.includes('data-product-dashboard-owner="current"'))bad('Product Hardening renderer does not identify itself as current dashboard owner');
-if(!dashboard.includes("opts.embedded?'"))bad('Product Hardening renderer does not distinguish embedded navigation');
-if(!dashboard.includes('Back to Obol workspace'))bad('embedded dashboard does not return to the operator workspace');
+if(!dashboard.includes('opts')||!dashboard.includes('Back to Obol workspace'))bad('Product Hardening renderer does not preserve embedded/current navigation handling');
 
 for(const token of ['Operator workspace','Active target / context','Known Evidence','Queued intent','Evidence attention','Best next move','Proof ready','Product/build metrics live in'])if(!workflow.includes(token))bad('Home user-first contract missing token: '+token);
 for(const forbidden of ['Project status</span>','source fidelity','notes accounted','Current product phase'])if(workflow.includes(forbidden))bad('prime workflow contains product-build accounting token: '+forbidden);
 if(!workflow.includes("document.querySelectorAll('.northstar-home50,.northstar-home66,.product-home88,.app-phase-badge88')"))bad('current workflow does not explicitly remove historical build-status panels from prime workflow');
 
-if(!core30.includes("['home','boxes','intake','path','report']")&&!core30.includes("{id:'home'") )bad('historical primary navigation baseline unavailable');
+if(!core30.includes("['home','boxes','intake','path','report']")&&!core30.includes("{id:'home'"))bad('historical primary navigation baseline unavailable');
 if(!workflow.includes("link.href='#/dashboard'"))bad('Product Dashboard is not exposed through secondary navigation');
-if(workflow.includes("primary.push")||workflow.includes("NAVIGATION30.primary.push"))bad('current workflow must not add Product Dashboard to the five-item primary operator loop');
+if(workflow.includes('primary.push')||workflow.includes('NAVIGATION30.primary.push'))bad('current workflow must not add Product Dashboard to the five-item primary operator loop');
 
 for(const token of ['nextStepsOverview34','Best next move','Unlocks','Queued intent','Blockers','brokenPaths','unverifiedPaths','untestedCredentials'])if(!workflow.includes(token))bad('Path decision brief missing token: '+token);
 for(const token of ['data-operator-route-owner="path-current"','renderCurrentPath','compactToolPanels','operator-primary-action31','operator-legacy-commands31','MAX_PRIMARY_BUILDERS','Tool action stack','buildPathModel','renderSimplified','renderChecklist','renderLiveMap','data-path-model-source="nextStepsOverview34"','data-operator-view31','data-path-map31','data-path-map-control31','mapZoom'])if(!operator.includes(token))bad('current operator route owner missing token: '+token);

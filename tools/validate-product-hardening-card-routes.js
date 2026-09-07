@@ -105,6 +105,21 @@ function collectLiveCardsFromSource(source) {
   const cardObject = /\{\s*id\s*:\s*['"]([^'"]+)['"][\s\S]{0,900}?title\s*:\s*['"][^'"]+['"][\s\S]{0,2200}?hypothesis\s*:/g;
   let match;
   while ((match = cardObject.exec(source))) ids.push(match[1]);
+
+  const cardIdConst = source.match(/\bconst\s+CARD_ID\s*=\s*['"]([^'"]+)['"]/);
+  if (cardIdConst && /(?:replaceCard\(|installCard\(|live-card:'\s*\+\s*CARD_ID|live-card:"\s*\+\s*CARD_ID)/.test(source)) {
+    ids.push(cardIdConst[1]);
+  }
+
+  const installedCardConst = /\bconst\s+([A-Z0-9_]+_CARD_ID|CARD_ID)\s*=\s*['"]([^'"]+)['"]/g;
+  while ((match = installedCardConst.exec(source))) {
+    const name = match[1];
+    const value = match[2];
+    const escaped = name.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
+    const installs = new RegExp('(?:replaceCard|patchCard|upsertCard|installCard)\\s*\\([\\s\\S]{0,120}' + escaped + '|live-card:[\'" ]*\\+\\s*' + escaped).test(source);
+    if (installs) ids.push(value);
+  }
+
   return ids;
 }
 

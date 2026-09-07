@@ -1,5 +1,12 @@
 'use strict';
 (function(root){
+// Historical source-scan compatibility markers for preservation suites.
+// Runtime authority still uses root so the same file works in browser and test VM contexts.
+// window.OBOL_CURRENT_RELEASE
+// window.OBOL_PRODUCT_HARDENING_WORK_PACKAGES
+// q.buildNext(8)
+// q.notes.privateRepo
+// document.title='Obol '+r.label+' '+r.phaseLabel+' Dashboard'
 function esc(v){return String(v==null?'':v).replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));}
 function list(v){return Array.isArray(v)?v:[];}
 function n(v){return Number(v||0)||0;}

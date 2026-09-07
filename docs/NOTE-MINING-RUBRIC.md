@@ -16,7 +16,7 @@ Agents must use the private source notes as source knowledge and mine them aggre
 
 Public Obol must contain Obol-owned outputs. That means new wording, generalized concepts, synthetic examples, variable-based command templates, and product behavior that stands on its own without exposing or mimicking the private note. Light paraphrase is not enough. Swapping words, reordering sentences, or removing obvious target names while preserving the source's expression or solution flow is still copying.
 
-`private-only` is a boundary for raw/private source substance, not a discard bucket for reusable lessons. Before marking a dimension `private-only`, the agent must check whether the durable idea can be re-authored into public-safe path guidance, tool cards, GUI controls, command templates, analyzers, lesson boxes, troubleshooting, cleanup, report guidance, or a product gap.
+`private-only` means useful material exists, but the raw/private source substance itself cannot be published. `private-only` is a boundary for raw/private source substance, not a discard bucket for reusable lessons. Before marking a dimension `private-only`, the agent must check whether the durable idea can be re-authored into public-safe path guidance, tool cards, GUI controls, command templates, analyzers, lesson boxes, troubleshooting, cleanup, report guidance, or a product gap.
 
 See [`NOTE-DERIVATION-STANDARD.md`](NOTE-DERIVATION-STANDARD.md) for the full standard.
 
@@ -138,7 +138,7 @@ For every extraction dimension in the full-spectrum checklist, the audit record 
 - `added` means the product change was implemented and, when operator-facing, wired into the actual Next Steps / Orange path surface.
 - `covered` means the capability was already covered by an existing Obol owner, and the audit cites the exact path, tool, analyzer, report, or workflow owner ID.
 - `queued` means the capability was not implemented in this pass but was filed as a concrete product gap or queue item, and the audit cites that queue item ID.
-- `private-only` means useful raw/private material exists but cannot itself be public; the audit gives a public-safe reason and, when durable value was extracted elsewhere, cites the rewritten owner or explains why no additional public-safe output remains.
+- `private-only` means useful material exists but cannot itself be public; the audit gives a public-safe reason and, when durable value was extracted elsewhere, cites the rewritten owner or explains why no additional public-safe output remains.
 - `not-applicable` means the source was re-read and the dimension genuinely does not apply; the audit gives a short reason.
 - `blocked` means the reviewer cannot decide from the available public-safe context; the audit names the blocker and the next required action.
 

@@ -106,6 +106,7 @@ async function waitForWhyNow(page) {
   for (const [id, canonical] of Object.entries(demotedCards)) {
     await page.goto(`${baseUrl}#/card/${id}`, { waitUntil: 'domcontentloaded' });
     await waitForViewReady(page);
+    await waitForCardText(page);
     await waitForWhyNow(page);
     await page.waitForTimeout(600);
     const state = await page.evaluate(() => {
