@@ -65,49 +65,12 @@ jobs:
           echo "Running complete historical regression chain."
           node tools/run-historical-contracts.js
 
-# PR validation ownership:
+# Test governance summary:
 # - Pull requests run .github/workflows/full-regression-pr.yml for the eight visible
 #   preservation/product-hardening/sync gates.
 # - Pull requests run .github/workflows/browser-smoke.yml for route, action-first UI,
 #   full browser smoke, and deep v9.43-v9.47 browser proofs.
 # - This workflow is deliberately limited to main, schedule, and manual dispatch so PRs
 #   do not show duplicate smoke/preflight/test rows on top of the real PR gates.
-#
-# Historical CI source-probe notes:
-# [release-final] is intentionally not a CI trigger because agents had been using it on
-# routine work-in-progress pushes. Historical suites that once scanned for the old token
-# must be demoted to durable PR-gate assertions rather than forcing the live workflow to
-# retain obsolete release-branch behavior.
-#
-# The live workflow above is intentionally generic so future releases do not require
-# CI-step duplication. Historical test preservation is owned by tools/run-historical-contracts.js
-# and its named --phase slices in the PR workflow.
-#
-# Historical CI ledger, not executable PR jobs:
-# Older preservation suites source-scan these labels to prove every historical release
-# remains discoverable in CI. They are documentation anchors for the runner above, not
-# separate workflow steps and not a reason to re-add duplicate PR checks.
-# Run v3.6 regression suite
-# Run v3.7 regression suite
-# Run v3.8 regression suite
-# Run v3.9 regression suite
-# Run v4.0 regression suite
-# Run v4.1 regression suite
-# Run v4.2 regression suite
-# Run v4.3 regression suite
-# Run v4.4 regression suite
-# Run v4.5 regression suite
-# Run v4.6 regression suite
-# Run v4.7 regression suite
-# Run v4.8 regression suite
-# Run v4.9 regression suite
-# Run v5.0 regression suite
-# Run v5.1 regression suite
-# Run v5.2 regression suite
-# Run v5.3 regression suite
-# Run v5.4 regression suite
-# Run v5.5 regression suite
-# Run v5.6 regression suite
-# Run release preflight
-# node tools/release-smoke.js
-# node tools/release-preflight.js
+# - Obsolete per-release workflow-label assertions belong in historical test migration,
+#   not in fake workflow labels here. See docs/TEST-GOVERNANCE.md.
