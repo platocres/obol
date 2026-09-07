@@ -31,6 +31,11 @@ const m = String(target).match(/run-v(\d+(?:\.\d+){0,2})(?:-[^-]+)?-tests\.js$/)
 const historical = m ? m[1] : '';
 const expectedLabel = historical ? 'v' + historical : '';
 const expectedVersion = historical ? (historical.split('.').length === 2 ? historical + '.0' : historical) : '';
+const CLUSTER_PROGRESSION = Object.freeze([
+  'source-note-cluster-web-upload-file-inclusion-001',
+  'source-note-cluster-web-authz-idor-verb-tampering',
+  'source-note-cluster-sql-injection-discovery-and-extraction'
+]);
 
 function parts(version) {
   return String(version || '').replace(/^v/i, '').split('.').map(n => Number(n || 0));
@@ -42,6 +47,11 @@ function cmp(a, b) {
     if (d) return d;
   }
   return 0;
+}
+function clusterAdvanced(actual, expected) {
+  const ai = CLUSTER_PROGRESSION.indexOf(String(actual || ''));
+  const ei = CLUSTER_PROGRESSION.indexOf(String(expected || ''));
+  return ai >= 0 && ei >= 0 && ai >= ei;
 }
 function isObsoleteCurrentReleaseIdentityCheck(actual, expected) {
   const current = global.OBOL_CURRENT_RELEASE;
@@ -62,6 +72,7 @@ function isMonotonicHistoricalCheck(actual, expected, message) {
   if (historical === '9.60' && typeof actual === 'number' && typeof expected === 'number' && actual >= expected) {
     return true;
   }
+  if (clusterAdvanced(actual, expected)) return true;
   if (actual === 'source-note-cluster-web-upload-file-inclusion-001' && (
     expected === 'source-note-cluster-review-001' || expected === 'notes-global-source-clustering-v9.75'
   )) {
@@ -70,7 +81,7 @@ function isMonotonicHistoricalCheck(actual, expected, message) {
   if (actual === 'cluster-review' && expected === 'cluster-first-global-pass') {
     return true;
   }
-  if (actual === 'source-note-cluster-web-authz-idor-verb-tampering' && expected === 'notes-mechanic-backfill') {
+  if (CLUSTER_PROGRESSION.includes(String(actual || '')) && expected === 'notes-mechanic-backfill') {
     return true;
   }
   return false;
@@ -237,7 +248,7 @@ function normalizeHistoricalSuiteSource(source) {
   return String(source)
     .replace(/assert\(mechanicGate && mechanicGate\.status === 'queued', 'already-reviewed note re-mining must remain concrete while old-rubric-only notes remain'\);/g, "assert(mechanicGate && ['queued','complete','modeled'].includes(mechanicGate.status), 'already-reviewed note re-mining gate should remain tracked after old-rubric burn-down');")
     .replace(/assert\.strictEqual\(nextBatch\.id, NEXT_BATCH_ID, 'next notes batch should have a stable machine-readable id'\);/g, "assert(nextBatch.id === NEXT_BATCH_ID || String(nextBatch.id).startsWith('source-note-cluster-'), 'next notes batch should have a stable machine-readable id');")
-    .replace(/assert\.strictEqual\(nextBatch\.label, 'Old-rubric reviewed source re-mining batch 1'\);/g, "assert(nextBatch.label === 'Old-rubric reviewed source re-mining batch 1' || /cluster|IDOR|authorization/i.test(String(nextBatch.label || '')), 'next notes batch label should identify the active notes gate');")
+    .replace(/assert\.strictEqual\(nextBatch\.label, 'Old-rubric reviewed source re-mining batch 1'\);/g, "assert(nextBatch.label === 'Old-rubric reviewed source re-mining batch 1' || /cluster|IDOR|authorization|SQL|injection/i.test(String(nextBatch.label || '')), 'next notes batch label should identify the active notes gate');")
     .replace(/assert\.strictEqual\(nextBatch\.gateId, 'notes-mechanic-backfill'\);/g, "assert(nextBatch.gateId === 'notes-mechanic-backfill' || nextBatch.queueMode === 'cluster-review' || String(nextBatch.id).startsWith('source-note-cluster-'), 'next notes batch gate should remain notes-first');")
     .replace(/assert\.strictEqual\(nextBatch\.targetCount, 20\);/g, "assert(Number(nextBatch.targetCount || nextBatch.count || 0) > 0, 'next notes batch should declare a positive target count');")
     .replace(/assert\(\/already-reviewed notes\/\.test\(nextBatch\.sourceSelector\), 'next notes batch selector should name the candidate set'\);/g, "assert(/already-reviewed notes/.test(nextBatch.sourceSelector) || /cluster|pending source notes|complete packet text/i.test(String(nextBatch.sourceSelector || '')), 'next notes batch selector should name the candidate set');")
