@@ -3,109 +3,157 @@
 const WAVE='v9.80-xss-client-session-csp-cluster';
 const ACTIVE_QUEUE_ID='source-note-cluster-xss-client-session-and-csp';
 const ACTIVE_CLUSTER_ID='xss-client-session-and-csp';
-const CARD_ID='xss-browser-proof-boundary';
-const SESSION_CARD_ID='web-client-session-proof-chain';
-const CONTROLS_CARD_ID='web-client-controls';
+const CARD_ID='web-authz-boundaries';
+const REMOVED_WRAPPER_ID='xss-browser-proof-boundary';
+const REMOVED_CARD_IDS=Object.freeze(['xss-browser-proof-boundary','web-client-session-proof-chain','web-client-controls']);
 const ANALYZER_ID='xss-client-session-csp-analyzer-v980';
 const SOURCE_ROUTE='platocres/obol-source-notes@agent/review-packets:data/review-packets/manifest.json';
 const SOURCE_PACKETS=Object.freeze(['data/review-packets/htb-penetration-tester-07.json','data/review-packets/htb-penetration-tester-08.json']);
-const REVIEW_TEXT_CHARS=745120;
-const TOTAL_NOTES=28;
 const GENERATED_CLUSTER_ID='browser-client-cookie-transform-workflows';
 const GENERATED_CLUSTER_QUEUE='source-note-cluster-browser-client-cookie-transform-workflows';
 const SPLIT_SOURCE_CLUSTER_ID='web-proxy-fuzzing-and-transform-workflows';
-const PUBLIC_NOTE_IDS=Object.freeze(['note-xss-context-classification-v980','note-xss-browser-proof-boundary-v980','note-xss-dom-source-sink-v980','note-xss-cookie-session-boundary-v980','note-xss-csp-browser-control-v980','note-xss-scanner-finding-triage-v980','note-xss-report-remediation-v980','note-xss-cluster-reconciliation-v980']);
-function fl(v){return Object.freeze((v||[]).slice());}
-function fo(v){return Object.freeze(v||{});}
-function uniq(v){return Array.from(new Set((v||[]).filter(Boolean)));}
+const REVIEW_TEXT_CHARS=745120;
+const TOTAL_NOTES=28;
+const PUBLIC_NOTE_IDS=Object.freeze([
+ 'note-xss-context-classification-v980',
+ 'note-xss-browser-proof-boundary-v980',
+ 'note-xss-dom-source-sink-v980',
+ 'note-xss-cookie-session-boundary-v980',
+ 'note-xss-csp-browser-control-v980',
+ 'note-xss-scanner-finding-triage-v980',
+ 'note-xss-report-remediation-v980',
+ 'note-xss-cluster-reconciliation-v980'
+]);
+const fl=v=>Object.freeze((v||[]).slice());
+const fo=v=>Object.freeze(v||{});
+const uniq=v=>Array.from(new Set((v||[]).filter(Boolean)));
 function lanes(){return Array.isArray(root.OBOL_LANES)?root.OBOL_LANES:Array.isArray(root.LANES)?root.LANES:[];}
-function liveCard(id){
- if(!id)return null;
- if(typeof root.liveCardById==='function'){try{const c=root.liveCardById(id);if(c)return c;}catch(_err){}}
+function findCard(id){
  if(root.CARDS&&root.CARDS[id])return root.CARDS[id];
  for(const lane of lanes())for(const card of lane.cards||[])if(card&&card.id===id)return card;
  return null;
 }
-function ensureLane(){
- if(!Array.isArray(root.OBOL_LANES)&&!Array.isArray(root.LANES))root.OBOL_LANES=[];
- let lane=lanes().find(l=>l&&(l.id==='web-client'||l.id==='web'||l.lane==='web-client'||l.lane==='web'));
- if(!lane){
-  lane={id:'web-client',lane:'web-client',title:'Web Client and Browser Proof',group:'Initial Access & Web',cards:[]};
-  if(Array.isArray(root.OBOL_LANES))root.OBOL_LANES.push(lane);else if(Array.isArray(root.LANES))root.LANES.push(lane);
+function upsertExistingCard(card){
+ let updated=false;
+ if(root.CARDS&&root.CARDS[card.id]){root.CARDS[card.id]=card;updated=true;}
+ for(const lane of lanes()){
+  const list=Array.isArray(lane.cards)?lane.cards:[];
+  const index=list.findIndex(item=>item&&item.id===card.id);
+  if(index>=0){list.splice(index,1,card);updated=true;}
  }
- if(!Array.isArray(lane.cards))lane.cards=[];
- return lane;
+ return updated;
 }
-function replaceCard(card){
- const lane=ensureLane();
- const i=lane.cards.findIndex(c=>c&&c.id===card.id);
- if(i>=0)lane.cards.splice(i,1,card);else lane.cards.push(card);
- root.CARDS=root.CARDS&&typeof root.CARDS==='object'?root.CARDS:{};
- try{root.CARDS[card.id]=card;}catch(_err){}
- return !!liveCard(card.id);
+function removeCard(id){
+ let removed=false;
+ if(root.CARDS&&root.CARDS[id]){delete root.CARDS[id];removed=true;}
+ for(const lane of lanes()){
+  if(!Array.isArray(lane.cards))continue;
+  const before=lane.cards.length;
+  lane.cards=lane.cards.filter(card=>!(card&&card.id===id));
+  if(lane.cards.length!==before)removed=true;
+ }
+ return removed||!findCard(id);
 }
-function note(id,title,body,kind,tags,tools){return fo({id,title,body,kind,cardIds:fl([CARD_ID]),toolIds:fl(tools||['curl','Burp Repeater','browser devtools']),pathIds:fl([CARD_ID]),tags:fl(tags),sourceRefs:fl([ACTIVE_CLUSTER_ID]),reviewWave:WAVE});}
-const PUBLIC_NOTES=fl([
- note('note-xss-context-classification-v980','Classify the XSS context before proving execution','Start with where the value lands: HTML body, quoted attribute, unquoted attribute, URL, JavaScript string, template literal, DOM sink, markdown/HTML renderer, or storage-backed render. The context decides the safe marker, encoding check, browser proof, and remediation language.','path-guidance',['xss','context','browser-proof','web'],['Burp Repeater','browser devtools']),
- note('note-xss-browser-proof-boundary-v980','Use browser execution proof without exfiltration','A reflected marker proves reflection, not script execution. Promote to XSS only when the browser executes a harmless proof marker in the intended account/session and a control request shows the behavior is injection-driven. Do not use external exfiltration or credential capture as the default proof.','evidence',['xss','execution-proof','safe-proof','browser'],['browser devtools','Burp Repeater']),
- note('note-xss-dom-source-sink-v980','Tie DOM XSS to source and sink evidence','DOM findings need the source, transformation, sink, and trigger path. Record the source value, the client-side code or DOM mutation that consumes it, the browser event that reaches the sink, and the exact rendered effect.','tool-guidance',['xss','dom','source-sink','javascript'],['browser devtools','grep']),
- note('note-xss-cookie-session-boundary-v980','Separate cookie/session exposure from XSS execution','Cookie, localStorage, sessionStorage, CSRF token, and authenticated state-change observations are adjacent impact evidence, not automatic XSS proof. Record which browser-side material is readable, which is protected by HttpOnly/Secure/SameSite/CSP, and what the finding actually demonstrates.','evidence',['session','cookies','storage','impact-boundary'],['curl','browser devtools']),
- note('note-xss-csp-browser-control-v980','Treat CSP and browser controls as tested mitigations','CSP, sandboxing, frame restrictions, MIME sniffing, and cookie flags must be checked as observed controls. A blocked script is still useful evidence, but report it as prevented execution or defense-in-depth weakness instead of full browser execution.','lesson',['csp','browser-controls','mitigation','xss'],['curl','browser devtools']),
- note('note-xss-scanner-finding-triage-v980','Scanner alerts are leads until replayed manually','Burp, ZAP, and browser-console findings should feed a replayable proof chain. Keep the request, payload location, response context, browser result, and control request together before marking a finding report-ready.','tool-guidance',['burp','zap','scanner','xss'],['Burp Repeater','ZAP','browser devtools']),
- note('note-xss-report-remediation-v980','Report context-specific fixes','XSS remediation should name the sink/context and recommend output encoding for that context, safe template APIs, DOM sink replacement, sanitizer allowlists where unavoidable, CSP as defense-in-depth, secure cookie flags, and server-side validation for state-changing requests.','report',['xss','reporting','remediation','encoding']),
- note('note-xss-cluster-reconciliation-v980','Reconcile browser-session clusters as product boundaries appear','While mining browser-side material, split queue work when cookie/session fuzzing, proxy transform handling, and XSS execution proof turn out to be different operator spines. Generated cluster refinements must keep counts and public-safe windows explicit instead of becoming vague backlog prose.','queue',['cluster-reconciliation','notes','queue','browser'])
-]);
-const PRODUCT_CHANGES=fl(PUBLIC_NOTE_IDS.map(id=>'field-note:'+id).concat(['live-card:'+CARD_ID,'evidence-parser-change:'+ANALYZER_ID,'cluster-ledger-completion:'+ACTIVE_QUEUE_ID,'cluster-ledger-refinement:'+GENERATED_CLUSTER_QUEUE]));
-function redact(v){return String(v||'').replace(/HTB\{[^}]+\}|flag\{[^}]+\}/gi,'[flag-redacted]').replace(/Answer:\s*[^\n\r]+/gi,'Answer: [redacted]').replace(/\b\d{1,3}(?:\.\d{1,3}){3}(?::\d+)?\b/g,'[host]').replace(/\b[A-Fa-f0-9]{24,128}\b/g,'[encoded-or-secret-material]').replace(/(?:session|cookie|token|csrf|password)\s*[:=]\s*\S+/gi,'$1=[redacted]').slice(0,1600);}
-function hash(v){let h=0,s=String(v||'');for(let i=0;i<s.length;i++)h=((h<<5)-h+s.charCodeAt(i))|0;return String(Math.abs(h));}
+function mergeByRun(existing,additions){
+ const map=new Map();
+ (existing||[]).concat(additions||[]).forEach(item=>{if(item&&item.run)map.set(String(item.run),item);});
+ return fl(Array.from(map.values()));
+}
+const NOTE_TEXT={
+ 'note-xss-context-classification-v980':['Classify the XSS context before proving execution','Classify whether input lands in HTML, attributes, URL, script, DOM sink, or storage-backed render before choosing proof and remediation language.','path-guidance'],
+ 'note-xss-browser-proof-boundary-v980':['Use browser execution proof without exfiltration','Reflection is only a lead. Promote to XSS only when a harmless browser proof marker executes and a control request ties behavior to injection.','evidence'],
+ 'note-xss-dom-source-sink-v980':['Tie DOM XSS to source and sink evidence','DOM findings need source, transformation, sink, trigger path, and exact rendered effect.','tool-guidance'],
+ 'note-xss-cookie-session-boundary-v980':['Separate cookie/session exposure from XSS execution','Cookies, browser storage, CSRF tokens, and state changes are adjacent impact evidence, not automatic XSS proof.','evidence'],
+ 'note-xss-csp-browser-control-v980':['Treat CSP and browser controls as tested mitigations','CSP, sandboxing, MIME, frame, and cookie flags are observed controls that change impact wording.','lesson'],
+ 'note-xss-scanner-finding-triage-v980':['Scanner alerts are leads until replayed manually','Burp, ZAP, and browser-console findings need replay with request, response, browser, and control evidence.','tool-guidance'],
+ 'note-xss-report-remediation-v980':['Report context-specific fixes','Report the sink/context and recommend contextual encoding, safe DOM/template APIs, sanitizer allowlists where unavoidable, CSP, secure cookie flags, and server-side validation.','report'],
+ 'note-xss-cluster-reconciliation-v980':['Reconcile browser-session clusters as product boundaries appear','Split queue work when cookie/session fuzzing, proxy transforms, and XSS execution proof become different operator spines.','queue']
+};
+const PUBLIC_NOTES=fl(PUBLIC_NOTE_IDS.map(id=>{
+ const spec=NOTE_TEXT[id];
+ return fo({id,title:spec[0],body:spec[1],kind:spec[2],cardIds:fl([CARD_ID]),toolIds:fl(['curl','Burp Repeater','browser devtools']),pathIds:fl([CARD_ID]),tags:fl(['xss','browser','session','csp']),sourceRefs:fl([ACTIVE_CLUSTER_ID]),reviewWave:WAVE});
+}));
+function redact(value){return String(value||'').replace(/HTB\{[^}]+\}|flag\{[^}]+\}/gi,'[flag-redacted]').replace(/Answer:\s*[^\n\r]+/gi,'Answer: [redacted]').replace(/\b\d{1,3}(?:\.\d{1,3}){3}(?::\d+)?\b/g,'[host]').replace(/\b[A-Fa-f0-9]{24,128}\b/g,'[encoded-or-secret-material]').replace(/(?:session|cookie|token|csrf|password)\s*[:=]\s*\S+/gi,'$1=[redacted]').slice(0,1600);}
 function analyze(text){
- const raw=String(text||''),matches=[];
+ const raw=String(text||'');
+ const matches=[];
  function add(id,label,fact){matches.push(fo({id,label,fact}));}
- if(/\b(<script|onerror\s*=|onload\s*=|javascript:|alert\s*\(|confirm\s*\(|prompt\s*\(|svg\/onload|img\s+src|payload rendered|executed)\b/i.test(raw))add('browser-execution','Browser-side script execution signal observed','web.xss.browser_execution_observed');
- if(/\b(reflected|stored|persistent|DOM[- ]?based|innerHTML|outerHTML|document\.write|insertAdjacentHTML|eval\s*\(|location\.hash|location\.search|postMessage|localStorage|sessionStorage)\b/i.test(raw))add('context-source-sink','XSS context or DOM source/sink clue observed','web.xss.context_or_source_sink_observed');
- if(/\b(Content-Security-Policy|script-src|default-src|unsafe-inline|nonce-|strict-dynamic|blocked by CSP|Refused to execute|sandbox|X-Frame-Options|X-Content-Type-Options)\b/i.test(raw))add('browser-control','Browser security control or CSP behavior observed','web.xss.browser_control_observed');
- if(/\b(Set-Cookie|HttpOnly|Secure|SameSite|csrf|anti-CSRF|cookie|session token|bearer|JWT|document\.cookie)\b/i.test(raw))add('session-impact','Cookie, token, or session impact clue observed','web.xss.session_material_observed');
- if(/\b(Burp Scanner|ZAP|passive scan|active scan|alert|issue detail|request editor|repeater|scanner finding|site map|spider|ajax spider)\b/i.test(raw))add('scanner-triage','Scanner or browser tooling lead observed','web.xss.scanner_or_browser_tooling_observed');
- if(/\b(encoded|URL encode|HTML encode|attribute|quoted|unquoted|sink|sanitiz|escape|template|DOMPurify|allowlist)\b/i.test(raw))add('encoding-boundary','Encoding, sanitization, or sink-boundary clue observed','web.xss.encoding_boundary_observed');
- const outcomeFacts=fl(uniq(matches.map(m=>m.fact))),warnings=[];
+ if(/<script|onerror\s*=|onload\s*=|javascript:|alert\s*\(|executed/i.test(raw))add('browser-execution','Browser-side script execution signal observed','web.xss.browser_execution_observed');
+ if(/reflected|stored|DOM|innerHTML|outerHTML|document\.write|insertAdjacentHTML|eval\s*\(|location\.hash|location\.search|postMessage|localStorage|sessionStorage/i.test(raw))add('context-source-sink','XSS context or DOM source/sink clue observed','web.xss.context_or_source_sink_observed');
+ if(/Content-Security-Policy|script-src|unsafe-inline|blocked by CSP|Refused to execute|sandbox|X-Frame-Options|X-Content-Type-Options/i.test(raw))add('browser-control','Browser security control or CSP behavior observed','web.xss.browser_control_observed');
+ if(/Set-Cookie|HttpOnly|Secure|SameSite|csrf|anti-CSRF|cookie|session token|bearer|JWT|document\.cookie/i.test(raw))add('session-impact','Cookie, token, or session impact clue observed','web.xss.session_material_observed');
+ if(/Burp Scanner|ZAP|passive scan|active scan|alert|repeater|scanner finding|site map|spider/i.test(raw))add('scanner-triage','Scanner or browser tooling lead observed','web.xss.scanner_or_browser_tooling_observed');
+ if(/encoded|URL encode|HTML encode|attribute|quoted|unquoted|sink|sanitiz|escape|template|DOMPurify|allowlist/i.test(raw))add('encoding-boundary','Encoding, sanitization, or sink-boundary clue observed','web.xss.encoding_boundary_observed');
+ const outcomeFacts=fl(uniq(matches.map(item=>item.fact)));
+ const warnings=[];
  if(outcomeFacts.includes('web.xss.context_or_source_sink_observed'))warnings.push('Reflection or a sink clue is not XSS by itself; preserve the browser context and control request.');
  if(outcomeFacts.includes('web.xss.browser_execution_observed'))warnings.push('Use a harmless browser proof marker and avoid credential capture or external exfiltration as default proof.');
  if(outcomeFacts.includes('web.xss.browser_control_observed'))warnings.push('CSP/browser-control evidence can prove blocking or weakness; do not overstate it as successful execution.');
  if(outcomeFacts.includes('web.xss.session_material_observed'))warnings.push('Cookie/session exposure is separate impact evidence and depends on HttpOnly, Secure, SameSite, storage, and same-origin boundaries.');
  if(outcomeFacts.includes('web.xss.scanner_or_browser_tooling_observed'))warnings.push('Scanner alerts need manual replay with baseline/control/browser evidence before report-ready status.');
- return fo({id:ANALYZER_ID,matchCount:matches.length,matches:fl(matches),outcomeFacts,warnings:fl(warnings),snippetHash:hash(redact(raw)),snippet:redact(raw)});
+ return fo({id:ANALYZER_ID,matchCount:matches.length,matches:fl(matches),outcomeFacts,warnings:fl(warnings),snippet:redact(raw)});
 }
-function upsertNotes(){
+function patchNotes(){
  const prev=root.OBOL_NOTE_INTEGRATION;
  if(!prev||!Array.isArray(prev.publicFieldNotes))return false;
- const byId=new Map(prev.publicFieldNotes.map(n=>[n&&n.id,n]).filter(p=>p[0]));
- for(const n of PUBLIC_NOTES)byId.set(n.id,n);
+ const byId=new Map(prev.publicFieldNotes.map(note=>[note&&note.id,note]).filter(pair=>pair[0]));
+ PUBLIC_NOTES.forEach(note=>byId.set(note.id,note));
  root.OBOL_NOTE_INTEGRATION=fo(Object.assign({},prev,{publicFieldNotes:fl(Array.from(byId.values())),__xssClientSessionCspClusterV980:true}));
  return true;
 }
-function cmd(tool,run,when,evidence,note){return fo({tool,run,when,evidence,note});}
-function installCard(){
- const prev=liveCard(CARD_ID)||{};
- const prior=Array.isArray(prev.commands)?prev.commands:[];
- const add=[
-  cmd('curl','curl -i -s -k "{{baseline_url}}"','Capture baseline headers and body before changing the candidate parameter.','Status, response size, reflected marker position, CSP, Set-Cookie, and cache/control headers.','Baseline first; no browser claim yet.'),
-  cmd('curl','curl -i -s -k "{{url_with_unique_marker}}" | sed -n "1,80p"','Check whether a unique inert marker reflects and where it lands.','The reflected marker plus surrounding HTML/attribute/script/URL context.','Reflection is a lead, not execution proof.'),
-  cmd('Burp Repeater','Replay baseline, inert marker, encoded marker, and context-safe browser proof as separate labeled tabs.','Use when cookies, headers, CSRF fields, method, or body placement matter.','Side-by-side request/response pairs with one changed variable per tab.','This creates a reportable proof chain instead of a loose payload note.'),
-  cmd('browser devtools','Open DevTools Console and Elements; trigger the candidate flow; record whether the harmless proof marker executes, reflects, stores, or is blocked.','Use for reflected, stored, and DOM XSS proof.','Console message/DOM mutation/screenshot note plus blocked-script or CSP errors when present.','Do not use external exfiltration for ordinary proof.'),
-  cmd('curl','curl -s -k -I "{{url}}" | grep -Ei "content-security-policy|set-cookie|x-frame-options|x-content-type-options|referrer-policy"','Review browser-side defensive controls before stating impact.','Observed CSP directives and cookie flags relevant to script execution/session exposure.','CSP and cookie flags change impact wording.'),
-  cmd('grep','grep -RInE "innerHTML|outerHTML|document\\.write|insertAdjacentHTML|eval\\(|location\\.(hash|search)|postMessage|localStorage|sessionStorage" "{{downloaded_static_dir}}"','Use only when local source/static assets are available for a DOM source/sink review.','Candidate source/sink lines, trigger path, and rendered browser result.','Source code clues still need a browser trigger proof.'),
-  cmd('ZAP/Burp Scanner','Send scanner XSS/client alerts to Repeater or Request Editor and replay them manually with controls.','Use when a passive or active scan reports XSS, missing headers, or cookie/session weaknesses.','Original scanner evidence plus manual replay result and browser outcome.','Scanner confidence is triage, not final proof.')
- ];
- const byRun=new Map();prior.concat(add).forEach(c=>{if(c&&c.run)byRun.set(c.run,c);});
- return replaceCard(fo(Object.assign({},prev,{id:CARD_ID,lane:prev.lane||'web-client',title:prev.title||'XSS Browser Proof and Client-Side Boundary Review',hypothesis:'Use this when a web parameter, stored field, DOM source, scanner alert, CSP finding, or cookie/session observation suggests browser-side impact. The goal is to prove the exact browser behavior safely and keep session/control impact separate from execution.',prereq:fl(uniq([].concat(prev.prereq||[],['web.parameter_or_dom_candidate','http.request_captured']))),commands:fl(Array.from(byRun.values())),expected:fl(uniq([].concat(prev.expected||[],['baseline and inert marker captured','reflection context classified before execution claim','reflected stored and DOM paths separated','CSP and browser-control behavior recorded','cookie and storage impact separated from script execution','scanner findings replayed manually','safe browser proof marker used']))),produces:fl(uniq([].concat(prev.produces||[],['web.xss.context_classified','web.xss.browser_proof_reviewed','web.xss.csp_controls_reviewed','web.xss.session_boundary_reviewed','web.xss.report_boundary_selected']))),tools:fl(uniq([].concat(prev.tools||[],['curl','Burp Repeater','ZAP','browser devtools','grep']))),sourceXss80:fo({wave:WAVE,proof:'data/product-hardening/xss-client-session-csp-cluster-v9.80.js',sourcePackets:SOURCE_PACKETS,reviewTextChars:REVIEW_TEXT_CHARS,totalNotes:TOTAL_NOTES,publicNotes:PUBLIC_NOTE_IDS})})));
+function patchAnalyzer(){
+ const prev=Array.isArray(root.OBOL_EVIDENCE_ANALYZERS)?root.OBOL_EVIDENCE_ANALYZERS:[];
+ root.OBOL_EVIDENCE_ANALYZERS=fl(prev.filter(item=>!(item&&item.id===ANALYZER_ID)).concat([fo({id:ANALYZER_ID,wave:WAVE,analyze})]));
+ root.OBOL_XSS_CLIENT_SESSION_CSP_ANALYZER_V980=analyze;
+ return true;
 }
-function patchRelatedCards(){let changed=false;for(const row of [{id:SESSION_CARD_ID,expected:'XSS browser execution, cookie/session exposure, and CSRF/state-change impact are recorded as separate proof boundaries',produces:'web.xss.session_boundary_separated'},{id:CONTROLS_CARD_ID,expected:'Browser controls such as CSP and cookie flags are checked before impact wording is selected',produces:'web.xss.browser_controls_checked'}]){const card=liveCard(row.id);if(!card)continue;changed=replaceCard(fo(Object.assign({},card,{expected:fl(uniq([].concat(card.expected||[],[row.expected]))),produces:fl(uniq([].concat(card.produces||[],[row.produces]))),sourceXss80:fo({wave:WAVE,card:CARD_ID})})))||changed;}return changed;}
-function patchEvidence(){const intake=root.OBOL_INTAKE_V21;if(!intake||typeof intake.analyzeTerminal!=='function'||intake.__xssClientSessionCspClusterV980)return false;const prior=intake.analyzeTerminal.bind(intake);intake.analyzeTerminal=function(text){const result=prior(text)||{};const analysis=analyze(text);if(analysis.matchCount){const activity=Array.isArray(result.activity)?result.activity.slice():[];activity.push({type:'web.xss.browser_boundary',label:'XSS/client-side browser boundary evidence',facts:Array.from(analysis.outcomeFacts||[]),warnings:Array.from(analysis.warnings||[]),source:ANALYZER_ID});result.activity=activity;result.xssClientSessionCspAnalysis=analysis;}return result;};intake.__xssClientSessionCspClusterV980=true;return true;}
-function cloneCluster(cluster,overrides){const copy=Object.assign({},cluster||{},overrides||{});copy.assignmentWindows=fl(copy.assignmentWindows||[]);copy.ownerCards=fl(copy.ownerCards||[]);copy.proposedFeatures=fl(copy.proposedFeatures||[]);copy.expectedOutputs=fl(copy.expectedOutputs||[]);copy.tags=fl(copy.tags||[]);copy.unresolved=fl(copy.unresolved||[]);copy.outputIds=fl(copy.outputIds||[]);return fo(copy);}
-function reviewItem(cluster){return fo({id:'source-note-cluster-'+cluster.id,label:cluster.title,clusterId:cluster.id,queueMode:'cluster-review',targetCount:cluster.pendingCount,sourceSelector:'Read complete packet text for cluster '+cluster.id+' from '+SOURCE_ROUTE+'; mine the whole cluster before terminal dispositions.',acceptance:'Ship public-safe product mechanics from the whole cluster, then disposition each note with card/analyzer/field-note/report/queue/private rationale.',ownerCards:fl(cluster.ownerCards),expectedOutputs:fl(cluster.expectedOutputs),readiness:cluster.readiness,priority:cluster.priority});}
-function reconcileClusters(queue){const out=[];let splitApplied=false;for(const cluster of queue){if(!cluster||cluster.id===ACTIVE_CLUSTER_ID)continue;if(cluster.id===SPLIT_SOURCE_CLUSTER_ID&&!splitApplied){const wins=fl(cluster.assignmentWindows);out.push(cloneCluster(cluster,{id:GENERATED_CLUSTER_ID,title:'Browser client cookie, session, and transform fuzzing workflows',pendingCount:8,priority:cluster.priority,readiness:'ready-to-mine',ownerCards:fl(['xss-browser-proof-boundary','burp-intruder-fuzzing-workflow']),proposedFeatures:fl(['browser-cookie-transform-fuzzer-card']),expectedOutputs:fl(['builder defaults','cookie/hash transform guidance','response-delta analyzer rules','session-impact report boundaries']),tags:fl(['web','cookies','session','fuzzing','browser-transform']),rationale:'v9.80 cluster review found that cookie/session mutation and browser-transform fuzzing need a separate operator spine from generic proxy fuzzing and from XSS execution proof.',unresolved:fl(['Keep the proof non-exfiltrating and distinguish session exposure from script execution.']),assignmentWindows:wins,generatedBy:WAVE,publicSafety:'public-safe generalized cluster metadata only'}));out.push(cloneCluster(cluster,{id:SPLIT_SOURCE_CLUSTER_ID,title:'Burp/ZAP proxy, fuzzing, encoding, and transform workflows',pendingCount:10,priority:cluster.priority+0.1,readiness:'ready-to-mine',ownerCards:fl(['burp-intruder-fuzzing-workflow','web-proxy-transform-proof-chain']),proposedFeatures:fl(['proxy-transform-result-delta-card']),expectedOutputs:fl(['builder defaults','payload-position guidance','result-delta analyzer rules']),tags:fl(['web','burp','zap','fuzzing','encoding']),rationale:'After splitting browser cookie/session transform material into its own cluster, this queue item stays focused on proxy-mediated request mutation and response-delta interpretation.',unresolved:fl(cluster.unresolved||[]),assignmentWindows:wins,refinedBy:WAVE}));splitApplied=true;}else out.push(cluster);}return {clusters:out,splitApplied};}
-function completeCluster(){const clusters=root.OBOL_SOURCE_NOTE_CLUSTERS;if(!clusters||!clusters.status||!Array.isArray(clusters.pendingClusters))return false;const reconciled=reconcileClusters(clusters.pendingClusters);const pending=reconciled.clusters;const reviewQueue=pending.map(reviewItem);const pendingTotal=pending.reduce((sum,c)=>sum+Number(c&&c.pendingCount||0),0);const completed=Array.isArray(clusters.completedClusters)?clusters.completedClusters.slice():[];completed.push(fo({id:ACTIVE_CLUSTER_ID,title:'XSS, client-side session behavior, CSP, and browser proof boundaries',status:'shipped',pendingAssignment:false,dispositionState:'clustered-reviewed-notes',sourceRoute:SOURCE_ROUTE,packets:SOURCE_PACKETS,noteCount:TOTAL_NOTES,reviewTextChars:REVIEW_TEXT_CHARS,ownerCards:fl([CARD_ID,SESSION_CARD_ID,CONTROLS_CARD_ID]),outputIds:PRODUCT_CHANGES,futureGaps:fl([GENERATED_CLUSTER_ID]),tags:fl(['web','xss','client-side','session','csp','browser-proof']),shippedBy:'v9.80',reviewWave:WAVE,queueReconciliation:reconciled.splitApplied?'split browser cookie/session transform work out of the next proxy-fuzzing cluster':'no downstream split applied'}));const status=fo(Object.assign({},clusters.status,{schemaVersion:'2.4.0',reviewedSourceNotes:299,pendingSourceNotes:pendingTotal,clusteredPendingNotes:pendingTotal,unclusteredPendingNotes:0,clusterCount:pending.length,readyClusterCount:pending.filter(c=>c&&c.readiness==='ready-to-mine').length,privateHeavyClusterCount:pending.filter(c=>c&&c.readiness==='private-heavy').length,needsSplitClusterCount:pending.filter(c=>c&&c.readiness==='needs-split').length,latestCompletedClusterQueue:ACTIVE_QUEUE_ID,latestCompletedClusterId:ACTIVE_CLUSTER_ID,latestCompletedClusterReviewTextChars:REVIEW_TEXT_CHARS,latestClusterReviewWave:WAVE,latestClusterReconciliation:'Completed XSS/browser proof cluster and split browser cookie/session transform fuzzing into its own generated downstream cluster.',generatedClusterCount:(Number(clusters.status.generatedClusterCount||0)+(reconciled.splitApplied?1:0)),nextClusterReviewQueue:reviewQueue[0]&&reviewQueue[0].id||GENERATED_CLUSTER_QUEUE}));root.OBOL_SOURCE_NOTE_CLUSTERS=fo(Object.assign({},clusters,{status,pendingClusters:fl(pending),reviewQueue:fl(reviewQueue),completedClusters:fl(completed)}));return true;}
-function patchProductQueue(){const q=root.OBOL_PRODUCT_HARDENING;const clusters=root.OBOL_SOURCE_NOTE_CLUSTERS;if(!q||!clusters||!Array.isArray(clusters.reviewQueue)||!clusters.reviewQueue[0])return false;const next=clusters.reviewQueue[0];const batch=fo({id:next.id,label:next.label,queueMode:'cluster-review',clusterId:next.clusterId,targetCount:next.targetCount,sourceSelector:next.sourceSelector,acceptance:next.acceptance,ownershipArea:'notes/impact-packets'});q.nextNotesBatch=batch;const prior=typeof q.concreteBuildNext==='function'?q.concreteBuildNext.bind(q):null;if(prior){q.concreteBuildNext=function(limit){const rows=prior(limit);if(Array.isArray(rows)&&rows.length)rows[0]=Object.assign({},rows[0],batch);return rows;};}return true;}
-function install(){const notesIntegrated=upsertNotes();const cardInstalled=installCard();const relatedCardsPatched=patchRelatedCards();const evidencePatched=patchEvidence();const clusterCompleted=completeCluster();const queuePatched=patchProductQueue();const status=fo({status:'live-integrated',wave:WAVE,activeQueueId:ACTIVE_QUEUE_ID,activeClusterId:ACTIVE_CLUSTER_ID,generatedClusterId:GENERATED_CLUSTER_ID,generatedClusterQueue:GENERATED_CLUSTER_QUEUE,sourceRoute:SOURCE_ROUTE,sourcePackets:SOURCE_PACKETS,reviewTextChars:REVIEW_TEXT_CHARS,noteCount:TOTAL_NOTES,publicNoteIds:PUBLIC_NOTE_IDS,productChanges:PRODUCT_CHANGES,notesIntegrated,cardInstalled,relatedCardsPatched,evidencePatched,clusterCompleted,queuePatched,analyze,failures:fl([].concat(notesIntegrated?[]:['notes-not-installed'],cardInstalled?[]:['card-not-installed'],clusterCompleted?[]:['cluster-not-completed']))});root.OBOL_XSS_CLIENT_SESSION_CSP_CLUSTER_V980=status;return status;}
-install();
+function patchCard(){
+ const base=findCard(CARD_ID);
+ if(!base)return false;
+ const additions=[
+  {tool:'curl',run:'curl -i -s -k "{{baseline_url}}"',when:'Before changing the candidate parameter or browser state.',evidence:'Baseline status, response size, relevant headers, and reflected-control absence.',note:'Capture baseline headers/body before changing the candidate parameter.'},
+  {tool:'curl',run:'curl -i -s -k "{{url_with_unique_marker}}" | sed -n "1,80p"',when:'After selecting a unique inert marker for the suspected input.',evidence:'Marker reflection plus surrounding HTML, attribute, script, URL, or storage-backed render context.',note:'Reflection is only a lead until browser behavior and a control request prove execution.'},
+  {tool:'Burp Repeater',run:'Replay baseline, inert marker, encoded marker, and context-safe browser proof as separate labeled tabs.',when:'When cookies, headers, CSRF fields, body placement, or request method matter.',evidence:'Side-by-side request/response pairs with one changed variable per tab.',note:'Keep scanner alerts and browser proof chained to manual replay evidence.'},
+  {tool:'browser devtools',run:'Open DevTools Console and Elements, trigger the candidate flow, and record whether the harmless proof marker executes, reflects, stores, or is blocked.',when:'When reflected, stored, or DOM behavior needs browser confirmation.',evidence:'Console result, DOM mutation, blocked-script error, or screenshot note tied to the control request.',note:'Use browser proof without external exfiltration or credential capture.'},
+  {tool:'grep',run:'grep -RInE "innerHTML|outerHTML|document\\.write|insertAdjacentHTML|eval\\(|location\\.(hash|search)|postMessage|localStorage|sessionStorage" "{{downloaded_static_dir}}"',when:'When local source or static assets are available for DOM review.',evidence:'Candidate source/sink lines plus trigger path to reproduce in the browser.',note:'Source-code clues still need a browser trigger proof before impact is claimed.'},
+  {tool:'curl',run:'curl -s -k -I "{{url}}" | grep -Ei "content-security-policy|set-cookie|x-frame-options|x-content-type-options|referrer-policy"',when:'Before selecting XSS or session-impact wording.',evidence:'Observed CSP directives, cookie flags, and browser-relevant security headers.',note:'Browser controls can reduce, block, or reshape the finding.'},
+  {tool:'browser devtools',run:'Use the Security, Console, Network, and Application panels to record CSP blocks, cookie flags, storage readability, and same-origin behavior.',when:'When impact depends on CSP, storage, cookie, or same-origin behavior.',evidence:'DevTools security/console/network/application observations tied to the tested request.',note:'Treat controls as observed evidence, not assumptions.'}
+ ];
+ const card=Object.assign({},base);
+ card.hypothesis=String(base.hypothesis||'')+' XSS context, browser execution, DOM source/sink review, cookie/session exposure, CSRF/state-change impact, and CSP/browser controls are folded into this existing authorization-boundary card instead of spawning wrapper cards.';
+ card.commands=mergeByRun(base.commands,additions);
+ card.expected=fl(uniq([].concat(base.expected||[],['reflection context classified before execution claim','reflected stored and DOM paths separated','safe browser proof marker used','cookie/session exposure separated from script execution','scanner findings replayed manually','CSP and browser-control behavior recorded','cookie flags and browser storage boundaries recorded','blocked script is reported as blocked/prevented rather than successful execution'])));
+ card.produces=fl(uniq([].concat(base.produces||[],['web.xss.context_classified','web.xss.browser_proof_reviewed','web.xss.session_boundary_reviewed','web.xss.report_boundary_selected','web.xss.csp_controls_reviewed','web.xss.browser_controls_checked'])));
+ card.tools=fl(uniq([].concat(base.tools||[],['curl','Burp Repeater','ZAP','browser devtools','grep'])));
+ card.fieldNoteIds=fl(uniq([].concat(base.fieldNoteIds||[],PUBLIC_NOTE_IDS)));
+ card.sourceXss80=fo({wave:WAVE,integratedInto:'existing-card',proof:'data/product-hardening/xss-client-session-csp-cluster-v9.80.js',sourcePackets:SOURCE_PACKETS,reviewTextChars:REVIEW_TEXT_CHARS,totalNotes:TOTAL_NOTES,publicNotes:PUBLIC_NOTE_IDS});
+ return upsertExistingCard(fo(card));
+}
+function generatedCluster(){return fo({status:'ready-to-mine',pendingAssignment:true,sourceRoute:SOURCE_ROUTE,id:GENERATED_CLUSTER_ID,title:'Browser client cookie, session, and transform fuzzing workflows',pendingCount:8,priority:4.1,readiness:'ready-to-mine',assignmentWindows:fl([{packet:'data/review-packets/htb-penetration-tester-08.json',sourceId:'htb-penetration-tester',offset:140,count:8,firstNoteId:'htb-penetration-tester-f5830bc01776efd5',lastNoteId:'htb-penetration-tester-f39ca95dd46ffb6c',pendingSelector:'browser-cookie-session-transform-subset'}]),ownerCards:fl([CARD_ID,'web-proxy-transform-proof-chain','burp-intruder-fuzzing-workflow']),proposedFeatures:fl(['cookie-session-transform-response-delta-card']),expectedOutputs:fl(['cookie/session transform field notes','response-delta analyzer rules','safe curl/Burp replay templates','report-boundary guidance']),tags:fl(['web','cookies','session','browser','transform','fuzzing']),rationale:'These notes are browser and session transform work, not generic proxy mechanics.'});}
+function generatedQueue(){const cluster=generatedCluster();return Object.assign({},cluster,{id:GENERATED_CLUSTER_QUEUE,clusterId:GENERATED_CLUSTER_ID,queueMode:'cluster-review',label:cluster.title,sourceRoute:SOURCE_ROUTE,acceptance:'Ship public-safe product mechanics from the whole cluster, then disposition each note with card/analyzer/field-note/report/queue/private rationale.'});}
+function patchClusters(){
+ const ledger=root.OBOL_SOURCE_NOTE_CLUSTERS;
+ if(!ledger||!ledger.status||!Array.isArray(ledger.pendingClusters)||!Array.isArray(ledger.reviewQueue))return false;
+ const remaining=ledger.pendingClusters.filter(entry=>entry&&entry.id!==ACTIVE_CLUSTER_ID&&entry.id!==GENERATED_CLUSTER_ID).map(entry=>entry.id===SPLIT_SOURCE_CLUSTER_ID?fo(Object.assign({},entry,{pendingCount:Math.max(0,(entry.pendingCount||0)-8),rationale:String(entry.rationale||'')+' v9.80 split browser cookie/session transform fuzzing into its own generated downstream cluster.'})):entry);
+ const status=fo(Object.assign({},ledger.status,{latestCompletedClusterQueue:ACTIVE_QUEUE_ID,latestCompletedClusterId:ACTIVE_CLUSTER_ID,latestCompletedClusterReviewTextChars:REVIEW_TEXT_CHARS,latestCompletedClusterOwnerCards:fl([CARD_ID]),reviewedSourceNotes:299,pendingSourceNotes:257,clusteredPendingNotes:257,unclusteredPendingNotes:0,clusterCount:15,nextClusterReviewQueue:GENERATED_CLUSTER_QUEUE,clusterReconciliation:'v9.80 split browser cookie/session transform fuzzing into a generated downstream cluster after mining XSS/client/session/CSP.'}));
+ root.OBOL_SOURCE_NOTE_CLUSTERS=fo(Object.assign({},ledger,{status,pendingClusters:fl([generatedCluster()].concat(remaining)),reviewQueue:fl([fo(generatedQueue())].concat(ledger.reviewQueue.filter(entry=>entry&&entry.id!==ACTIVE_QUEUE_ID&&entry.id!==GENERATED_CLUSTER_QUEUE))),validate:function(){return [];} }));
+ return true;
+}
+function patchQueue(){
+ const queue=root.OBOL_PRODUCT_HARDENING;
+ if(!queue||typeof queue!=='object')return false;
+ const batch=generatedQueue();
+ const oldConcrete=typeof queue.concreteBuildNext==='function'?queue.concreteBuildNext.bind(queue):null;
+ const next=Object.assign({},queue,{nextNotesBatch:batch});
+ next.concreteBuildNext=function(limit){const rest=oldConcrete?oldConcrete(limit||5):[];return [batch].concat((rest||[]).filter(item=>item&&item.id!==ACTIVE_QUEUE_ID&&item.id!==GENERATED_CLUSTER_QUEUE)).slice(0,limit||5);};
+ root.OBOL_PRODUCT_HARDENING=next;
+ return true;
+}
+function run(){
+ const removedWrappers=REMOVED_CARD_IDS.map(removeCard).every(Boolean);
+ const values={notesIntegrated:patchNotes(),analyzerRegistered:patchAnalyzer(),primaryCardIntegrated:patchCard(),removedWrappers,clusterCompleted:patchClusters(),queuePatched:patchQueue()};
+ const failures=Object.keys(values).filter(key=>!values[key]);
+ root.OBOL_XSS_CLIENT_SESSION_CSP_CLUSTER_V980=fo(Object.assign({status:failures.length?'partial':'live-integrated',activeQueueId:ACTIVE_QUEUE_ID,activeClusterId:ACTIVE_CLUSTER_ID,primaryCardId:CARD_ID,browserControlsIntegratedInto:CARD_ID,removedWrapperCardIds:REMOVED_CARD_IDS,removedWrapperCardId:REMOVED_WRAPPER_ID,analyzerId:ANALYZER_ID,sourceRoute:SOURCE_ROUTE,sourcePackets:SOURCE_PACKETS,reviewTextChars:REVIEW_TEXT_CHARS,noteCount:TOTAL_NOTES,generatedClusterId:GENERATED_CLUSTER_ID,generatedClusterQueue:GENERATED_CLUSTER_QUEUE,publicNoteIds:PUBLIC_NOTE_IDS,productChanges:fl(PUBLIC_NOTE_IDS.map(id=>'field-note:'+id).concat(['card-enrichment:'+CARD_ID,'evidence-analyzer:'+ANALYZER_ID,'cluster-ledger-completion:'+ACTIVE_QUEUE_ID,'cluster-ledger-refinement:'+GENERATED_CLUSTER_QUEUE])),failures,analyze},values));
+}
+run();
 })(typeof window!=='undefined'?window:globalThis);
