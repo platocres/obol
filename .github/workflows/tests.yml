@@ -7,9 +7,6 @@ on:
   push:
     branches:
       - main
-      - 'release/**'
-  pull_request:
-    types: [opened, synchronize, reopened, ready_for_review]
 
 concurrency:
   group: obol-ci-${{ github.workflow }}-${{ github.ref }}
@@ -32,23 +29,14 @@ jobs:
         uses: actions/setup-node@v4
         with:
           node-version: '24'
-      - name: Run lightweight release smoke validation when applicable
+      - name: Main/manual smoke compatibility gate
         run: |
           set -euo pipefail
-          if [[ "${GITHUB_EVENT_NAME}" == "pull_request" ]]; then
-            node tools/release-smoke.js
-          elif [[ "${GITHUB_EVENT_NAME}" == "push" && "${GITHUB_REF}" == refs/heads/release/* ]]; then
-            node tools/release-smoke.js
-          else
-            echo "Smoke validation runs for pull requests and release-branch pushes; no-op for this event."
-          fi
+          echo "Smoke validation is owned by the PR full-regression and browser workflows before merge."
+          echo "On main, the complete historical regression job below is the authoritative preservation proof."
 
   preflight:
     runs-on: ubuntu-latest
-    env:
-      # Historical CI contract marker: contains(github.event.head_commit.message, '[release-final]')
-      # Historical CI contract marker: '[release-final]'
-      SHOULD_PREFLIGHT: ${{ github.event_name == 'push' && startsWith(github.ref, 'refs/heads/release/') && (contains(github.event.head_commit.message, '[preflight]') || contains(github.event.head_commit.message, '[full-regression]')) }}
     steps:
       - name: Checkout
         uses: actions/checkout@v4
@@ -56,19 +44,14 @@ jobs:
         uses: actions/setup-node@v4
         with:
           node-version: '24'
-      - name: Run release preflight when applicable
+      - name: Main/manual preflight compatibility gate
         run: |
           set -euo pipefail
-          if [[ "${SHOULD_PREFLIGHT}" == "true" ]]; then
-            node tools/release-preflight.js
-          else
-            echo "Preflight runs only for release pushes containing [preflight] or [full-regression]; no-op for this event."
-          fi
+          echo "Preflight is folded into the PR full-regression quality-preservation gate before merge."
+          echo "This workflow no longer runs on release branches or pull requests to avoid duplicate PR checks."
 
   test:
     runs-on: ubuntu-latest
-    env:
-      SHOULD_FULL_TEST: ${{ github.ref == 'refs/heads/main' || github.event_name == 'workflow_dispatch' || github.event_name == 'schedule' || (github.event_name == 'push' && startsWith(github.ref, 'refs/heads/release/') && contains(github.event.head_commit.message, '[full-regression]')) }}
     steps:
       - name: Checkout
         uses: actions/checkout@v4
@@ -76,106 +59,18 @@ jobs:
         uses: actions/setup-node@v4
         with:
           node-version: '24'
-      - name: Run complete historical regression chain or targeted PR gate
+      - name: Run complete historical regression chain
         run: |
           set -euo pipefail
-          if [[ "${SHOULD_FULL_TEST}" == "true" ]]; then
-            echo "Running complete historical regression chain."
-            node tools/run-historical-contracts.js
-            exit 0
-          fi
-          echo "Running targeted current-release gate instead of the complete historical chain."
-          node tools/release-smoke.js
-          ref_name="${GITHUB_HEAD_REF:-${GITHUB_REF_NAME:-}}"
-          if [[ "${ref_name}" =~ release/obol-v([0-9]+[.][0-9]+([.][0-9]+)?) ]]; then
-            suite="tests/run-v${BASH_REMATCH[1]}-tests.js"
-            if [[ -f "${suite}" ]]; then
-              node "${suite}"
-            else
-              echo "No release-specific suite found at ${suite}; release smoke already ran."
-            fi
-          else
-            echo "No release branch version detected; release smoke already ran."
-          fi
+          echo "Running complete historical regression chain."
+          node tools/run-historical-contracts.js
 
-# Tiered release validation keeps the legacy check names stable while the separate
-# Obol full historical PR gate requires tools/run-historical-contracts.js before merge.
-# Pull requests also have an explicit full-historical PR workflow gated with:
-# github.event.pull_request.draft == false
-# [release-final] is intentionally not a CI trigger because agents had been using
-# it on routine work-in-progress pushes. Use [full-regression] only for the exact
-# head that needs full preservation proof.
-# Historical tests remain the preservation gate for old release behavior, Evidence
-# conservatism, Next Steps contracts, dashboard ownership, runtime flattening, and
-# no-sediment/no-wrapper guarantees.
-# Job-level conditions are intentionally avoided in this workflow so pull requests do not show noisy skipped
-# check rows; non-applicable stages no-op successfully inside their jobs.
-# Historical CI contract markers retained for release-specific tests.
-# The live workflow above is intentionally generic so future releases do not require CI-step duplication.
-# Run v2 regression suite | node tests/run-tests.js
-# Run v2.1 regression suite | node tests/run-v2.1-tests.js
-# Run v2.2 regression suite | node tests/run-v2.2-tests.js
-# Run v2.3 regression suite | node tests/run-v2.3-tests.js
-# Run v2.4 regression suite | node tests/run-v2.4-tests.js
-# Run v2.5 regression suite | node tests/run-v2.5-tests.js
-# Run v2.6 regression suite | node tests/run-v2.6-tests.js
-# Run v2.7 regression suite | node tests/run-v2.7-tests.js
-# Run v2.7 hardening regression suite | node tests/run-v2.7-hardening-tests.js
-# Validate v2.8 JavaScript syntax | node --check assets/core-v2.8.js && node --check assets/app-v2.8.js && node --check assets/report-v2.8.js
-# Run v2.8 regression suite | node tests/run-v2.8-tests.js
-# Validate v2.9 JavaScript syntax | node --check assets/core-v2.9.js && node --check assets/app-v2.9.js && node --check assets/report-v2.9.js
-# Run v2.9 regression suite | node tests/run-v2.9-tests.js
-# Validate v3.0 JavaScript syntax | node --check assets/core-v3.0.js && node --check assets/app-v3.0.js
-# Run v3.0 regression suite | node tests/run-v3.0-tests.js
-# Validate v3.1 JavaScript syntax | node --check assets/core-v3.1.js && node --check assets/nmap-v3.1.js && node --check assets/app-v3.1.js
-# Run v3.1 regression suite | node tests/run-v3.1-tests.js
-# Validate v3.2 JavaScript syntax | node --check assets/core-v3.2.js && node --check assets/app-v3.2.js
-# Run v3.2 regression suite | node tests/run-v3.2-tests.js
-# Validate v3.3 JavaScript syntax | node --check data/methodology-v3.3.js && node --check assets/core-v3.3.js && node --check assets/app-v3.3.js
-# Run v3.3 regression suite | node tests/run-v3.3-tests.js
-# Validate v3.4 JavaScript syntax | node --check data/methodology-v3.4.js && node --check assets/core-v3.4.js && node --check assets/app-v3.4.js
-# Run v3.4 regression suite | node tests/run-v3.4-tests.js
-# Validate v3.5 JavaScript syntax | node --check assets/core-v3.5.js && node --check assets/intake-v3.5.js && node --check assets/report-v3.5.js && node --check assets/app-v3.5.js && node --check assets/app-v3.5-runtime.js
-# Run v3.5 regression suite | node tests/run-v3.5-tests.js
-# Validate v3.6 JavaScript syntax | node --check data/methodology-v3.6.js && node --check assets/core-v3.6.js && node --check assets/intake-v3.6.js && node --check assets/app-v3.6.js
-# Run v3.6 regression suite | node tests/run-v3.6-tests.js
-# Validate v3.7 JavaScript syntax | node --check assets/core-v3.7.js && node --check assets/app-v3.7.js
-# Run v3.7 regression suite | node tests/run-v3.7-tests.js
-# Validate v3.8 JavaScript syntax | node --check assets/core-v3.8.js && node --check assets/app-v3.8.js
-# Run v3.8 regression suite | node tests/run-v3.8-tests.js
-# Validate v3.9 JavaScript syntax | node --check assets/core-v3.9.js && node --check assets/intake-v3.9.js && node --check assets/app-v3.9.js
-# Run v3.9 regression suite | node tests/run-v3.9-tests.js
-# Validate v4.0 JavaScript syntax | node --check assets/core-v4.0.js && node --check assets/report-v4.0.js && node --check assets/app-v4.0.js
-# Run v4.0 regression suite | node tests/run-v4.0-tests.js
-# Validate v4.1 JavaScript syntax | node --check data/methodology-v4.1.js && node --check assets/core-v4.1.js && node --check assets/app-v4.1.js
-# Run v4.1 regression suite | node tests/run-v4.1-tests.js
-# Validate v4.2 JavaScript syntax | node --check data/orange-ad-2025.03.js && node --check assets/core-v4.2.js && node --check assets/app-v4.2.js
-# Run v4.2 regression suite | node tests/run-v4.2-tests.js
-# Validate v4.3 JavaScript syntax | node --check data/methodology-v4.3.js && node --check assets/core-v4.3.js && node --check assets/app-v4.3.js
-# Run v4.3 regression suite | node tests/run-v4.3-tests.js
-# Validate v4.4 JavaScript syntax | node --check data/methodology-v4.4.js && node --check assets/core-v4.4.js && node --check assets/app-v4.4.js
-# Run v4.4 regression suite | node tests/run-v4.4-tests.js
-# Validate v4.5 JavaScript syntax | node --check data/methodology-v4.5.js && node --check assets/core-v4.5.js && node --check assets/intake-v4.5.js && node --check assets/app-v4.5.js
-# Run v4.5 regression suite | node tests/run-v4.5-tests.js
-# Validate v4.6 JavaScript syntax | node --check data/methodology-v4.6.js && node --check assets/core-v4.6.js && node --check assets/intake-v4.6.js && node --check assets/app-v4.6.js
-# Run v4.6 regression suite | node tests/run-v4.6-tests.js
-# Validate v4.7 JavaScript syntax | node --check data/methodology-v4.7.js && node --check assets/core-v4.7.js && node --check assets/report-v4.7.js && node --check assets/app-v4.7.js
-# Run v4.7 regression suite | node tests/run-v4.7-tests.js
-# Validate v4.8 JavaScript syntax | node --check data/methodology-v4.8.js && node --check assets/core-v4.8.js && node --check assets/intake-v4.8.js && node --check assets/report-v4.8.js && node --check assets/app-v4.8.js
-# Run v4.8 regression suite | node tests/run-v4.8-tests.js
-# Validate v4.9 JavaScript syntax | node --check data/dashboard-v4.9.js && node --check assets/core-v4.9.js && node --check assets/app-v4.9.js
-# Run v4.9 regression suite | node tests/run-v4.9-tests.js
-# Validate v5.0 JavaScript syntax | node --check data/dashboard-v5.0.js && node --check assets/core-v5.0.js && node --check assets/report-v5.0.js && node --check assets/app-v5.0.js
-# Run v5.0 regression suite | node tests/run-v5.0-tests.js
-# Validate v5.1 JavaScript syntax | node --check data/dashboard-v5.1.js && node --check assets/core-v5.1.js && node --check assets/app-v5.1.js
-# Run v5.1 regression suite | node tests/run-v5.1-tests.js
-# Validate v5.2 JavaScript syntax | node --check data/dashboard-v5.2.js && node --check assets/core-v5.2.js && node --check assets/app-v5.2.js
-# Run v5.2 regression suite | node tests/run-v5.2-tests.js
-# Validate v5.3 JavaScript syntax | node --check data/methodology-v5.3.js && node --check data/dashboard-v5.3.js && node --check assets/core-v5.3.js && node --check assets/intake-v5.3.js && node --check assets/app-v5.3.js
-# Run v5.3 regression suite | node tests/run-v5.3-tests.js
-# Validate v5.4 JavaScript syntax | node --check data/methodology-v5.4.js && node --check data/dashboard-v5.4.js && node --check assets/core-v5.4.js && node --check assets/intake-v5.4.js && node --check assets/app-v5.4.js && node --check tools/sync-readme-build-next.js
-# Run v5.4 regression suite | node tests/run-v5.4-tests.js
-# Validate v5.5 JavaScript syntax | node --check data/methodology-v5.5.js && node --check data/dashboard-v5.5.js && node --check assets/core-v5.5.js && node --check assets/intake-v5.5.js && node --check assets/app-v5.5.js && node --check tools/sync-readme-build-next.js
-# Run v5.5 regression suite | node tests/run-v5.5-tests.js
-# Check README Build Next synchronization | node tools/sync-readme-build-next.js --check
-# Check Product Build Next synchronization | node tools/sync-product-build-next.js --check
+# Test governance summary:
+# - Pull requests run .github/workflows/full-regression-pr.yml for the eight visible
+#   preservation/product-hardening/sync gates.
+# - Pull requests run .github/workflows/browser-smoke.yml for route, action-first UI,
+#   full browser smoke, and deep v9.43-v9.47 browser proofs.
+# - This workflow is deliberately limited to main, schedule, and manual dispatch so PRs
+#   do not show duplicate smoke/preflight/test rows on top of the real PR gates.
+# - Obsolete per-release workflow-label assertions belong in historical test migration,
+#   not in fake workflow labels here. See docs/TEST-GOVERNANCE.md.

@@ -4,7 +4,7 @@ Obol is a static, browser-local workspace for OSCP-style labs, Active Directory 
 
 Live site: `https://platocres.github.io/obol/`
 
-Current release: **v9.77**
+Current release: **v9.78**
 
 Open `#/dashboard` for the active Product Hardening Dashboard and Product Build Next queue.
 
@@ -17,7 +17,7 @@ Told to "read the README and keep developing"? This is the single agent quicksta
 Agents may be operating from Kali or from a Windows host. Obol still never executes those commands for the operator; the site builds human-reviewed commands, analyzes pasted output, and moves the Next Steps path from supported Evidence.
 
 1. **Use one active PR.** Keep one open release/product-hardening PR for active product-hardening work. Check for open release/product-hardening PRs first. Continue the active one if it exists; otherwise open one normal non-draft PR for the work.
-2. **Read the canonical docs by ownership.** Use [`docs/AGENT-WORKFLOW.md`](docs/AGENT-WORKFLOW.md) for the full agent loop, [`BUILDING.md`](BUILDING.md) for release/CI rules, [`docs/PRODUCT-HARDENING.md`](docs/PRODUCT-HARDENING.md) for the product-hardening contract, and the notes docs below only when the queued work involves note mining.
+2. **Read the canonical docs by ownership.** Use [`docs/AGENT-WORKFLOW.md`](docs/AGENT-WORKFLOW.md) for the full agent loop, [`BUILDING.md`](BUILDING.md) for release/CI rules, [`docs/TEST-GOVERNANCE.md`](docs/TEST-GOVERNANCE.md) for the required PR checks and how to update tests when a release advances, [`docs/PRODUCT-HARDENING.md`](docs/PRODUCT-HARDENING.md) for the product-hardening contract, and the notes docs below only when the queued work involves note mining.
 3. **Do Product Build Next.** Start with the highest-priority Product Build Next item. Treat it as the entry point into the recommended coherent work package, not as a one-item limit. Use the generated Product Build Next item below unless the user explicitly directs otherwise. The dashboard and README consume the same queue sources, so do not hand-edit the generated block outside the queue owners or their current-release projection.
 4. **Batch carefully.** Use the recommended coherent work package when it keeps one PR inside the same ownership area. Every item advanced or closed still needs its own acceptance criteria and proof.
 5. **For notes work, use the generated Next notes batch or cluster queue.** Re-mine from raw private notes or the complete sequential packet fallback, not old summaries. **Extract the value, not the wording.** Public Obol gets re-authored guidance, synthetic examples, generalized templates, path logic, tool cards, analyzers, lesson boxes, and product mechanics; it must not copy course prose, flags, credentials, targets, screenshots, or exact solution chains. With v9.75, future note builds must use the cluster queue in `data/product-hardening/source-note-clusters-current.js` and mine whole clusters instead of blind 20-note slices. See [`docs/RAW-NOTES-LFS.md`](docs/RAW-NOTES-LFS.md), [`docs/NOTE-DERIVATION-STANDARD.md`](docs/NOTE-DERIVATION-STANDARD.md), [`docs/NOTE-MINING-RUBRIC.md`](docs/NOTE-MINING-RUBRIC.md), [`docs/NOTES-INTEGRATION.md`](docs/NOTES-INTEGRATION.md), [`docs/NOTES-IMPACT.md`](docs/NOTES-IMPACT.md), and [`docs/SOURCE-NOTE-CLUSTERING.md`](docs/SOURCE-NOTE-CLUSTERING.md).
@@ -34,6 +34,7 @@ Obol remains a website the user can visit and use: no backend, account system, t
 
 - [`docs/AGENT-WORKFLOW.md`](docs/AGENT-WORKFLOW.md) - detailed build loop and notes-mining workflow.
 - [`BUILDING.md`](BUILDING.md) - release flow, validation tiers, PR contract, generated sync commands, and merge readiness.
+- [`docs/TEST-GOVERNANCE.md`](docs/TEST-GOVERNANCE.md) - the lean test model: the two required PR checks (`full-historical-regression` aggregate plus `browser-smoke`), the granular phase jobs behind them, and how to update tests when a release advances.
 - [`docs/PRODUCT-HARDENING.md`](docs/PRODUCT-HARDENING.md) - active product-hardening vision, tracks, work-package rules, and Definition of Done.
 - [`docs/RAW-NOTES-LFS.md`](docs/RAW-NOTES-LFS.md) - private source access proof and complete packet fallback.
 - [`docs/NOTE-DERIVATION-STANDARD.md`](docs/NOTE-DERIVATION-STANDARD.md), [`docs/NOTE-MINING-RUBRIC.md`](docs/NOTE-MINING-RUBRIC.md), [`docs/NOTES-INTEGRATION.md`](docs/NOTES-INTEGRATION.md), [`docs/NOTES-IMPACT.md`](docs/NOTES-IMPACT.md), and [`docs/SOURCE-NOTE-CLUSTERING.md`](docs/SOURCE-NOTE-CLUSTERING.md) - notes derivation, extraction, clustering, integration, and product-impact rules.
@@ -54,23 +55,23 @@ Generated from the same queue sources as the Product Hardening Dashboard. Do not
 **Raw source proof:** workflow run 33877189291 verified HTB ENEX 194,191,214 bytes and OffSec PEN-200 ENEX 110,367,324 bytes before packet extraction.
 **Runtime consolidation:** 5 operator startup requests, down from 286 (98% fewer).
 **Runtime consolidation owner:** `data/runtime-consolidation-current.js` feeds this README projection and the Product Hardening Dashboard.
-**Notes review status:** 215/556 reviewed; 341 pending; 133 modeled; 31 private-only.
-**Source re-mining status:** 215/215 full-spectrum re-mined; 0 old-rubric-only notes remain.
-**Source-note cluster status:** 341/341 pending notes clustered into 17 public-safe cluster review items; 0 pending notes remain unclustered.
-**Next notes batch:** **IDOR, HTTP verb tampering, and authorization replay boundaries** (`source-note-cluster-web-authz-idor-verb-tampering`) — 18 notes from `platocres/obol-source-notes@agent/review-packets:data/review-packets/manifest.json`.
-**Queue mode:** `cluster-review` for cluster `web-authz-idor-verb-tampering`.
-**Selector:** Read complete packet text for cluster web-authz-idor-verb-tampering from platocres/obol-source-notes@agent/review-packets:data/review-packets/manifest.json; mine the whole cluster before terminal dispositions.
+**Notes review status:** 233/556 reviewed; 323 pending; 133 modeled; 31 private-only.
+**Source re-mining status:** 233/233 full-spectrum re-mined; 0 old-rubric-only notes remain.
+**Source-note cluster status:** 323/323 pending notes clustered into 16 public-safe cluster review items; 0 pending notes remain unclustered.
+**Next notes batch:** **SQL injection discovery, union/error/blind extraction, and sqlmap handoff** (`source-note-cluster-sql-injection-discovery-and-extraction`) — 38 notes from `platocres/obol-source-notes@agent/review-packets:data/review-packets/manifest.json`.
+**Queue mode:** `cluster-review` for cluster `sql-injection-discovery-and-extraction`.
+**Selector:** Read complete packet text for cluster sql-injection-discovery-and-extraction from platocres/obol-source-notes@agent/review-packets:data/review-packets/manifest.json; mine the whole cluster before terminal dispositions.
 **Acceptance:** Ship public-safe product mechanics from the whole cluster, then disposition each note with card/analyzer/field-note/report/queue/private rationale.
 
 **Recommended work package:** **Notes Impact and Source Re-mining** — 2 concrete live items / 19 tracked.
-**Next concrete entry:** **IDOR, HTTP verb tampering, and authorization replay boundaries**
+**Next concrete entry:** **SQL injection discovery, union/error/blind extraction, and sqlmap handoff**
 **Ownership area:** `notes/impact-packets`
 **Package dependencies:** Notes Integration Foundation.
 **Package detail:** Use the Product Hardening Dashboard for full track ledgers and `data/product-hardening/work-packages.js` for the long-form package guidance.
 
 **Highest-priority concrete live items:**
-1. **IDOR, HTTP verb tampering, and authorization replay boundaries** — Cluster-driven notes gate: 18 pending source notes in `web-authz-idor-verb-tampering` must be mined from complete packet text before terminal dispositions resume.
-2. **Burn down all 556 note dispositions** — Concrete notes-first gate: 341 private source notes remain pending and are now organized into 17 cluster review items; mine the active cluster queue before terminal dispositions continue.
+1. **SQL injection discovery, union/error/blind extraction, and sqlmap handoff** — Cluster-driven notes gate: 38 pending source notes in `sql-injection-discovery-and-extraction` must be mined from complete packet text before terminal dispositions resume.
+2. **Burn down all 556 note dispositions** — Concrete notes-first gate: 323 private source notes remain pending and are now organized into 16 cluster review items; mine the active cluster queue before terminal dispositions continue.
 3. **Quiet service worker caching** — Improve repeat-load and offline behavior without prompting users to install anything.
 4. **IndexedDB workspace storage** — Support durable larger local workspaces, multiple engagements, and cached indexes while remaining browser-local.
 5. **Web Workers for heavy tasks** — Move evidence parsing, search indexing, and report generation off the UI thread.

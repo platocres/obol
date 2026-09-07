@@ -1,3 +1,12 @@
+## v9.78 — Obol v9.78 mines the next source-note cluster, `source-note-cluster-web-authz-idor-verb-tampering`, covering IDOR, HTTP verb tampering, and authorization replay boundaries from the complete private review packet route
+
+- re-reads the assigned complete packet window from `platocres/obol-source-notes@agent/review-packets:data/review-packets/htb-penetration-tester-01.json`;
+- extracts generalized authorization, object-reference, method-replay, and role-differential mechanics without publishing course prose, flags, targets, credentials, screenshots, or exact solution chains;
+- enriches the existing `web-authz-boundaries` card instead of creating duplicate IDOR or verb-tampering cards;
+- adds public field-note guidance for object-reference discovery, authorization-differential proof, method replay, bounded enumeration, and report wording;
+- adds analyzer facts for pasted IDOR, role-comparison, encoded-reference, mass-enumeration, and HTTP-method replay evidence;
+- advances the source-note cluster ledger from 341 pending notes in 17 clusters to 323 pending notes in 16 clusters.
+
 ## v9.77 — Mines the active source-note cluster `source-note-cluster-web-upload-file-inclusion-001` for `web-upload-file-inclusion-expansion` from the complete private review-packet windows. The build keeps the output public-safe, extracts reusable operator mechanics, enriches the existing upload/inclusion proof-chain card, advances the cluster queue instead of resuming blind pending-note batches, and makes the Product Hardening Dashboard show that cluster progress directly
 
 - Adds `data/product-hardening/web-upload-inclusion-cluster-v9.77.js` as the public-safe product integration for this cluster.
