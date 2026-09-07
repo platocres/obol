@@ -60,13 +60,33 @@ async function waitForWhyNow(page) {
     return /Why this step now/i.test(text) && document.querySelectorAll('[data-obol-dynamic-why-now]').length === 1;
   }, null, { timeout: 20000 });
 }
+// Opening a demoted card id makes the router redirect to its canonical card
+// after the first render. Wait until the rendered card has fully settled -
+// same #view text and hash across a stability window - so assertions read the
+// resolved canonical card instead of a mid-redirect frame. This intentionally
+// only waits for stability; a genuinely settled card that still leaks internal
+// copy will still be read and still fail its assertion.
+async function waitForCardSettled(page) {
+  let prev = null;
+  for (let i = 0; i < 40; i++) {
+    const snapshot = await page.evaluate(() => {
+      const view = document.querySelector('#view');
+      const text = view && view.innerText ? view.innerText.trim() : '';
+      return JSON.stringify({ text: text, hash: location.hash });
+    });
+    const text = JSON.parse(snapshot).text;
+    if (text.length > 150 && !/Unknown card/i.test(text) && snapshot === prev) return;
+    prev = snapshot;
+    await page.waitForTimeout(250);
+  }
+}
 async function openCard(context, id) {
   const page = await context.newPage();
   await page.goto(`${baseUrl}#/card/${id}`, { waitUntil: 'domcontentloaded' });
   await waitForViewReady(page);
   await waitForCardText(page);
   await waitForWhyNow(page);
-  await page.waitForTimeout(600);
+  await waitForCardSettled(page);
   return page;
 }
 async function closePage(page) {
