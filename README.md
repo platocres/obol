@@ -4,7 +4,7 @@ Obol is a static, browser-local workspace for OSCP-style labs, Active Directory 
 
 Live site: `https://platocres.github.io/obol/`
 
-Current release: **v9.87**
+Current release: **v9.88**
 
 Open `#/dashboard` for the active Product Hardening Dashboard and Product Build Next queue.
 
@@ -49,31 +49,31 @@ Historical Orange AD mindmap source: `https://orange-cyberdefense.github.io/ocd-
 <!-- OBOL-PRODUCT-BUILD-NEXT:START -->
 Generated from the same queue sources as the Product Hardening Dashboard. Do not edit this block manually.
 
-**Current product-hardening queue:** 227/657 complete (35%), 9 concrete queued, 9 modeled/standing items.
+**Current product-hardening queue:** 228/657 complete (35%), 8 concrete queued, 9 modeled/standing items.
 **Private notes source:** [`https://github.com/platocres/obol-source-notes/tree/main/sources/raw`](https://github.com/platocres/obol-source-notes/tree/main/sources/raw) — 556 notes and 1326 embedded resources accounted.
 **Private review packets:** `platocres/obol-source-notes@agent/review-packets:data/review-packets/manifest.json` — 556/556 notes, 29 packets, 0 truncated.
 **Complete source packet proof:** 556/556 notes in 29 complete-text packets, 0 truncated, 8,725,188 cleaned text chars.
 **Raw source proof:** workflow run 33877189291 verified HTB ENEX 194,191,214 bytes and OffSec PEN-200 ENEX 110,367,324 bytes before packet extraction.
 **Runtime consolidation:** 5 operator startup requests, down from 286 (98% fewer).
 **Runtime consolidation owner:** `data/runtime-consolidation-current.js` feeds this README projection and the Product Hardening Dashboard.
-**Notes review status:** 404/556 reviewed; 152 pending; 133 modeled; 31 private-only.
-**Source re-mining status:** 404/404 full-spectrum re-mined; 0 old-rubric-only notes remain.
-**Source-note cluster status:** 152/152 pending notes clustered into 8 public-safe cluster review items; 0 pending notes remain unclustered.
-**Next notes batch:** **Windows local privilege escalation, services, registry, scheduled tasks, and local admin proof** (`source-note-cluster-windows-privesc-services-and-local-admin`) — 24 notes from `platocres/obol-source-notes@agent/review-packets:data/review-packets/manifest.json`.
-**Queue mode:** `cluster-review` for cluster `windows-privesc-services-and-local-admin`.
-**Selector:** Read complete packet text for cluster windows-privesc-services-and-local-admin from platocres/obol-source-notes@agent/review-packets:data/review-packets/manifest.json; mine the whole cluster before terminal dispositions.
+**Notes review status:** 428/556 reviewed; 128 pending; 133 modeled; 31 private-only.
+**Source re-mining status:** 428/428 full-spectrum re-mined; 0 old-rubric-only notes remain.
+**Source-note cluster status:** 128/128 pending notes clustered into 7 public-safe cluster review items; 0 pending notes remain unclustered.
+**Next notes batch:** **AD enumeration, LDAP/Kerberos discovery, BloodHound, and domain context** (`source-note-cluster-ad-enumeration-ldap-kerberos-bloodhound`) — 30 notes from `platocres/obol-source-notes@agent/review-packets:data/review-packets/manifest.json`.
+**Queue mode:** `cluster-review` for cluster `ad-enumeration-ldap-kerberos-bloodhound`.
+**Selector:** Read complete packet text for cluster ad-enumeration-ldap-kerberos-bloodhound from platocres/obol-source-notes@agent/review-packets:data/review-packets/manifest.json; mine the whole cluster before terminal dispositions.
 **Acceptance:** Ship public-safe product mechanics from the whole cluster, then disposition each note with card/analyzer/field-note/report/queue/private rationale.
 
 **Recommended work package:** **Notes Impact and Source Re-mining** — 2 concrete live items / 19 tracked.
-**Next concrete entry:** **Windows local privilege escalation, services, registry, scheduled tasks, and local admin proof**
+**Next concrete entry:** **AD enumeration, LDAP/Kerberos discovery, BloodHound, and domain context**
 **Ownership area:** `notes/impact-packets`
 **Package dependencies:** Notes Integration Foundation.
 **Package detail:** Use the Product Hardening Dashboard for full track ledgers and `data/product-hardening/work-packages.js` for the long-form package guidance.
 
 **Highest-priority concrete live items:**
-1. **Windows local privilege escalation, services, registry, scheduled tasks, and local admin proof** — Cluster-driven notes gate: 24 pending source notes in `windows-privesc-services-and-local-admin` must be mined from complete packet text before terminal dispositions resume.
-2. **Burn down all 556 note dispositions** — Concrete notes-first gate: 152 private source notes remain pending and are now organized into 8 cluster review items; mine the active cluster queue before terminal dispositions continue.
-3. **Shells, payloads, file transfer, listener, and session stabilization** — Mine shell receipt, payload selection, file transfer, listener, and session stabilization from the next complete source cluster.
+1. **AD enumeration, LDAP/Kerberos discovery, BloodHound, and domain context** — Cluster-driven notes gate: 30 pending source notes in `ad-enumeration-ldap-kerberos-bloodhound` must be mined from complete packet text before terminal dispositions resume.
+2. **Burn down all 556 note dispositions** — Concrete notes-first gate: 128 private source notes remain pending and are now organized into 7 cluster review items; mine the active cluster queue before terminal dispositions continue.
+3. **AD credential attacks, Kerberoasting, AS-REP, spraying, and ticket material** — Mine credential attack, roasting, spraying, ticket material, and account-lockout safety mechanics from the next complete source cluster.
 4. **Quiet service worker caching** — Improve repeat-load and offline behavior without prompting users to install anything.
 5. **IndexedDB workspace storage** — Support durable larger local workspaces, multiple engagements, and cached indexes while remaining browser-local.
 
