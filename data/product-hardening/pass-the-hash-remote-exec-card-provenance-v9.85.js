@@ -5,19 +5,21 @@ const BAD=/fills an unresolved methodology gap|methodology gap|UNKNOWN|source-mi
 const KEY_BAD=/^(source|sourceMined|latestPartialRemine|remine|provenance)/i;
 function lanes(){return Array.isArray(root.OBOL_LANES)?root.OBOL_LANES:Array.isArray(root.LANES)?root.LANES:[];}
 function cardById(id){if(root.CARDS&&root.CARDS[id])return root.CARDS[id];for(const lane of lanes())for(const card of lane.cards||[])if(card&&card.id===id)return card;return null;}
+function dirty(value){return BAD.test(JSON.stringify(value));}
 function cleanValue(value){
- if(Array.isArray(value))return Object.freeze(value.map(cleanValue).filter(item=>!BAD.test(JSON.stringify(item))));
+ if(Array.isArray(value))return Object.freeze(value.map(cleanValue).filter(item=>item!==undefined&&!dirty(item)));
  if(value&&typeof value==='object'){
   const out={};
   for(const [key,inner] of Object.entries(value)){
-   if(KEY_BAD.test(key))continue;
-   if(BAD.test(String(key)))continue;
-   if(BAD.test(JSON.stringify(inner)))continue;
-   out[key]=cleanValue(inner);
+   if(KEY_BAD.test(key)||BAD.test(String(key)))continue;
+   const cleaned=cleanValue(inner);
+   if(cleaned===undefined)continue;
+   if(dirty(cleaned))continue;
+   out[key]=cleaned;
   }
   return Object.freeze(out);
  }
- if(typeof value==='string'&&BAD.test(value))return '';
+ if(typeof value==='string')return BAD.test(value)?undefined:value;
  return value;
 }
 function publish(card){
@@ -29,11 +31,11 @@ function publish(card){
   const idx=lane.cards.findIndex(entry=>entry&&entry.id===card.id);
   if(idx>=0)lane.cards.splice(idx,1,cleaned);
  }
- return true;
+ return !dirty(cleaned);
 }
 function run(){
  const results=IDS.map(id=>publish(cardById(id)));
- root.OBOL_PTH_REMOTE_EXEC_CARD_PROVENANCE_V985=Object.freeze({wave:'v9.85-pass-the-hash-card-provenance',status:results.every(Boolean)?'live-integrated':'partial',cardIds:Object.freeze(IDS.slice()),results:Object.freeze(results)});
+ root.OBOL_PTH_REMOTE_EXEC_CARD_PROVENANCE_V985=Object.freeze({wave:'v9.85-pass-the-hash-card-cleanup',status:results.every(Boolean)?'live-integrated':'partial',cardIds:Object.freeze(IDS.slice()),results:Object.freeze(results)});
  return root.OBOL_PTH_REMOTE_EXEC_CARD_PROVENANCE_V985;
 }
 const first=run();
