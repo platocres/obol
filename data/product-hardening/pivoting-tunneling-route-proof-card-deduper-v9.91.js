@@ -33,6 +33,26 @@ function patchWave(){
  root.OBOL_PIVOTING_TUNNELING_ROUTE_PROOF_CLUSTER_V991=Object.freeze(Object.assign({},wave,{primaryCardIds:Object.freeze([PRIMARY]),contextCardIds:Object.freeze(uniq(arr(wave.contextCardIds).concat(CONTEXT))),dedupedPrimaryOwners:true}));
  return true;
 }
+function patchNotes(){
+ const noteIds=new Set(['note-pivot-route-state-proof-v991','note-ssh-forwarding-mode-boundary-v991','note-windows-and-http-pivoting-v991','note-proxychains-and-cleanup-proof-v991']);
+ const hub=root.OBOL_NOTE_INTEGRATION;
+ if(!hub||!Array.isArray(hub.publicFieldNotes))return false;
+ root.OBOL_NOTE_INTEGRATION=Object.assign({},hub,{publicFieldNotes:hub.publicFieldNotes.map(n=>{
+  if(!n||!noteIds.has(n.id))return n;
+  return Object.assign({},n,{cardIds:[PRIMARY],pathIds:[PRIMARY],relatedCardIds:uniq(arr(n.relatedCardIds).concat(CONTEXT).filter(id=>id!==PRIMARY))});
+ })});
+ return true;
+}
+function patchAnalyzer(){
+ const current=root.OBOL_PIVOTING_TUNNELING_ROUTE_ANALYZER_V991;
+ if(!current||typeof current.analyze!=='function'||current.__dedupedPrimaryCard)return false;
+ const prev=current.analyze.bind(current);
+ root.OBOL_PIVOTING_TUNNELING_ROUTE_ANALYZER_V991=Object.freeze(Object.assign({},current,{__dedupedPrimaryCard:true,analyze(input){
+  const out=prev(input)||{};
+  return Object.assign({},out,{cardIds:[PRIMARY],contextCardIds:uniq(arr(out.contextCardIds).concat(CONTEXT).filter(id=>id!==PRIMARY))});
+ }}));
+ return true;
+}
 function patchClusters(){
  const clusters=root.OBOL_SOURCE_NOTE_CLUSTERS;
  if(!clusters||!clusters.status)return false;
@@ -43,6 +63,8 @@ function run(){
  const contextCard=stripFeature(card(CONTEXT));
  if(contextCard)put(CONTEXT,contextCard);
  patchWave();
+ patchNotes();
+ patchAnalyzer();
  patchClusters();
  root.OBOL_PIVOTING_TUNNELING_ROUTE_PROOF_CARD_DEDUPER_V991=Object.freeze({status:'applied',primaryCardId:PRIMARY,contextCardId:CONTEXT,featureId:FEATURE});
 }
