@@ -65,6 +65,28 @@ function normalizeNotes(){
  }));
  return true;
 }
+function withLocalAuthScope(analysis,text){
+ const facts=list(analysis&&analysis.outcomeFacts,/(^|\s)--local-auth(\s|$)/i.test(String(text||''))?['auth.local_account_scope_observed']:[]);
+ return frozen(Object.assign({},analysis||{},facts.length?{outcomeFacts:facts,matchCount:Math.max(Number((analysis&&analysis.matchCount)||0),facts.length)}:{}));
+}
+function patchAnalyzer(){
+ const packet=root.OBOL_PTH_REMOTE_EXEC_PACKET_V985;
+ if(packet&&typeof packet.analyze==='function'&&!packet.__localAuthScopeV985){
+  const original=packet.analyze.bind(packet);
+  root.OBOL_PTH_REMOTE_EXEC_PACKET_V985=frozen(Object.assign({},packet,{__localAuthScopeV985:true,analyze:function(text){return withLocalAuthScope(original(text),text);}}));
+ }
+ const analyzer=root.OBOL_PTH_REMOTE_EXEC_ANALYZER_V985;
+ if(analyzer&&typeof analyzer.analyze==='function'&&!analyzer.__localAuthScopeV985){
+  const original=analyzer.analyze.bind(analyzer);
+  root.OBOL_PTH_REMOTE_EXEC_ANALYZER_V985=frozen(Object.assign({},analyzer,{__localAuthScopeV985:true,analyze:function(text){return withLocalAuthScope(original(text),text);}}));
+ }
+ if(Array.isArray(root.OBOL_EVIDENCE_ANALYZERS))root.OBOL_EVIDENCE_ANALYZERS=freeze(root.OBOL_EVIDENCE_ANALYZERS.map(item=>{
+  if(!item||item.id!=='pass-the-hash-remote-exec-evidence-analyzer-v985'||typeof item.analyze!=='function'||item.__localAuthScopeV985)return item;
+  const original=item.analyze.bind(item);
+  return frozen(Object.assign({},item,{__localAuthScopeV985:true,analyze:function(text){return withLocalAuthScope(original(text),text);}}));
+ }));
+ return true;
+}
 function patchWave(){
  const prev=root.OBOL_PASS_THE_HASH_REMOTE_EXEC_CLUSTER_V985;
  if(!prev)return false;
@@ -81,9 +103,10 @@ function run(){
  const pthClean=publishPth();
  const aliasesRemoved=removeFoldedAliases();
  const notesNormalized=normalizeNotes();
+ const analyzerPatched=patchAnalyzer();
  const wavePatched=patchWave();
  const clustersPatched=patchClusters();
- root.OBOL_PTH_REMOTE_EXEC_CARD_PROVENANCE_V985=frozen({wave:'v9.85-pass-the-hash-folded-alias-cleanup',status:pthClean&&aliasesRemoved&&notesNormalized&&wavePatched?'live-integrated':'partial',cardIds:freeze([PTH]),foldedAliasIds:freeze(FOLDED),pthClean,aliasesRemoved,notesNormalized,wavePatched,clustersPatched});
+ root.OBOL_PTH_REMOTE_EXEC_CARD_PROVENANCE_V985=frozen({wave:'v9.85-pass-the-hash-folded-alias-cleanup',status:pthClean&&aliasesRemoved&&notesNormalized&&wavePatched&&analyzerPatched?'live-integrated':'partial',cardIds:freeze([PTH]),foldedAliasIds:freeze(FOLDED),pthClean,aliasesRemoved,notesNormalized,analyzerPatched,wavePatched,clustersPatched});
  return root.OBOL_PTH_REMOTE_EXEC_CARD_PROVENANCE_V985;
 }
 const first=run();
