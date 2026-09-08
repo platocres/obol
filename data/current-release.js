@@ -49,7 +49,8 @@ const release=Object.freeze({
   'data/product-hardening/ad-initial-enum-spray-rdp-socks-cluster-v9.82.js',
   'data/product-hardening/web-content-discovery-fingerprinting-cluster-v9.83.js',
   'data/product-hardening/windows-credential-dumping-secrets-cluster-v9.84.js',
-  'data/product-hardening/pass-the-hash-remote-exec-cluster-v9.85.js'
+  'data/product-hardening/pass-the-hash-remote-exec-cluster-v9.85.js',
+  'data/product-hardening/pass-the-hash-remote-exec-card-provenance-v9.85.js'
  ])
 });
 function stampState(target){
