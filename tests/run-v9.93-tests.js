@@ -20,6 +20,7 @@ function versionAtLeast(actual,minimum){
 globalThis.__OBOL_DEFER_PRODUCT_HARDENING_EXTENSIONS__=true;
 globalThis.setTimeout=undefined;
 globalThis.addEventListener=undefined;
+globalThis.window=globalThis;
 
 load('data/current-release.js');
 assert.ok(versionAtLeast(globalThis.OBOL_CURRENT_RELEASE.label,'v9.93'),'current release should be v9.93 or newer');
