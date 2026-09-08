@@ -4,7 +4,7 @@ Obol is a static, browser-local workspace for OSCP-style labs, Active Directory 
 
 Live site: `https://platocres.github.io/obol/`
 
-Current release: **v9.95**
+Current release: **v9.96**
 
 Open `#/dashboard` for the active Product Hardening Dashboard and Product Build Next queue.
 
@@ -17,10 +17,10 @@ Told to "read the README and keep developing"? This is the single agent quicksta
 Agents may be operating from Kali or from a Windows host. Obol still never executes those commands for the operator; the site builds human-reviewed commands, analyzes pasted output, and moves the Next Steps path from supported Evidence.
 
 1. **Use one active PR.** Keep one open release/product-hardening PR for active product-hardening work. Check for open release/product-hardening PRs first. Continue the active one if it exists; otherwise open one normal non-draft PR for the work.
-2. **Read the canonical docs by ownership.** Use [`docs/AGENT-WORKFLOW.md`](docs/AGENT-WORKFLOW.md) for the full agent loop, [`BUILDING.md`](BUILDING.md) for release/CI rules, [`docs/CONNECTOR-FALLBACK.md`](docs/CONNECTOR-FALLBACK.md) when shell GitHub access or DNS fails, [`docs/TEST-GOVERNANCE.md`](docs/TEST-GOVERNANCE.md) for the required PR checks and how to update tests when a release advances, [`docs/PRODUCT-HARDENING.md`](docs/PRODUCT-HARDENING.md) for the product-hardening contract, and the notes docs below only when the queued work involves note mining.
+2. **Read the canonical docs by ownership.** Use [`docs/AGENT-WORKFLOW.md`](docs/AGENT-WORKFLOW.md) for the full agent loop, [`BUILDING.md`](BUILDING.md) for release/CI rules, [`docs/CONNECTOR-FALLBACK.md`](docs/CONNECTOR-FALLBACK.md) when shell GitHub access or DNS fails, [`docs/TEST-GOVERNANCE.md`](docs/TEST-GOVERNANCE.md) for the required PR checks and how to update tests when a release advances, [`docs/PRODUCT-HARDENING.md`](docs/PRODUCT-HARDENING.md) for the product-hardening contract, and the notes docs only when Product Build Next or the user explicitly asks for historical note-derivation work.
 3. **Do Product Build Next.** Start with the highest-priority Product Build Next item. Treat it as the entry point into the recommended coherent work package, not as a one-item limit. Use the generated Product Build Next item below unless the user explicitly directs otherwise. The dashboard and README consume the same queue sources, so do not hand-edit the generated block outside the queue owners or their current-release projection.
 4. **Batch carefully.** Use the recommended coherent work package when it keeps one PR inside the same ownership area. Every item advanced or closed still needs its own acceptance criteria and proof.
-5. **For notes work, use the generated Next notes batch or cluster queue.** Re-mine from raw private notes or the complete sequential packet fallback, not old summaries. **Extract the value, not the wording.** Public Obol gets re-authored guidance, synthetic examples, generalized templates, path logic, tool cards, analyzers, lesson boxes, and product mechanics; it must not copy course prose, flags, credentials, targets, screenshots, or exact solution chains. With v9.75, future note builds must use the cluster queue in `data/product-hardening/source-note-clusters-current.js` and mine whole clusters instead of blind 20-note slices. See [`docs/RAW-NOTES-LFS.md`](docs/RAW-NOTES-LFS.md), [`docs/NOTE-DERIVATION-STANDARD.md`](docs/NOTE-DERIVATION-STANDARD.md), [`docs/NOTE-MINING-RUBRIC.md`](docs/NOTE-MINING-RUBRIC.md), [`docs/NOTES-INTEGRATION.md`](docs/NOTES-INTEGRATION.md), [`docs/NOTES-IMPACT.md`](docs/NOTES-IMPACT.md), and [`docs/SOURCE-NOTE-CLUSTERING.md`](docs/SOURCE-NOTE-CLUSTERING.md).
+5. **Treat note-mining docs as closed-source reference unless reactivated.** Source-note mining completed in v9.95. Do not look for another generated notes batch by default, and do not resurrect old cluster items as public UI filler. Use [`docs/RAW-NOTES-LFS.md`](docs/RAW-NOTES-LFS.md), [`docs/NOTE-DERIVATION-STANDARD.md`](docs/NOTE-DERIVATION-STANDARD.md), [`docs/NOTE-MINING-RUBRIC.md`](docs/NOTE-MINING-RUBRIC.md), [`docs/NOTES-INTEGRATION.md`](docs/NOTES-INTEGRATION.md), [`docs/NOTES-IMPACT.md`](docs/NOTES-IMPACT.md), and [`docs/SOURCE-NOTE-CLUSTERING.md`](docs/SOURCE-NOTE-CLUSTERING.md) as provenance and safety references only unless Product Build Next explicitly reopens note-derived work.
 6. **Use live tracking, not release narrative.** Do not use `CHANGELOG.md` to decide what remains to be re-mined. Current status lives in Product Build Next, the Product Hardening Dashboard, `data/product-hardening/source-note-clusters-current.js`, and `data/product-hardening/note-progress-current.js`.
 7. **Land and prove the work.** Wire new outputs into the actual user-visible Next Steps / Orange path surface where relevant, update stable current owners instead of adding disposable wrappers, sync generated outputs, run the focused validators for the touched ownership area, and keep the exact final head green. If local shell access to GitHub fails, follow [`docs/CONNECTOR-FALLBACK.md`](docs/CONNECTOR-FALLBACK.md) and keep fixing the same PR through the connector until required checks pass.
 
@@ -38,7 +38,7 @@ Obol remains a website the user can visit and use: no backend, account system, t
 - [`docs/TEST-GOVERNANCE.md`](docs/TEST-GOVERNANCE.md) - the lean test model: the two required PR checks (`full-historical-regression` aggregate plus `browser-smoke`), the granular phase jobs behind them, and how to update tests when a release advances.
 - [`docs/PRODUCT-HARDENING.md`](docs/PRODUCT-HARDENING.md) - active product-hardening vision, tracks, work-package rules, and Definition of Done.
 - [`docs/RAW-NOTES-LFS.md`](docs/RAW-NOTES-LFS.md) - private source access proof and complete packet fallback.
-- [`docs/NOTE-DERIVATION-STANDARD.md`](docs/NOTE-DERIVATION-STANDARD.md), [`docs/NOTE-MINING-RUBRIC.md`](docs/NOTE-MINING-RUBRIC.md), [`docs/NOTES-INTEGRATION.md`](docs/NOTES-INTEGRATION.md), [`docs/NOTES-IMPACT.md`](docs/NOTES-IMPACT.md), and [`docs/SOURCE-NOTE-CLUSTERING.md`](docs/SOURCE-NOTE-CLUSTERING.md) - notes derivation, extraction, clustering, integration, and product-impact rules.
+- [`docs/NOTE-DERIVATION-STANDARD.md`](docs/NOTE-DERIVATION-STANDARD.md), [`docs/NOTE-MINING-RUBRIC.md`](docs/NOTE-MINING-RUBRIC.md), [`docs/NOTES-INTEGRATION.md`](docs/NOTES-INTEGRATION.md), [`docs/NOTES-IMPACT.md`](docs/NOTES-IMPACT.md), and [`docs/SOURCE-NOTE-CLUSTERING.md`](docs/SOURCE-NOTE-CLUSTERING.md) - historical notes derivation, extraction, clustering, integration, and product-impact rules; use as reference unless current Product Build Next explicitly reopens note-derived work.
 - [`docs/ACTIONABLE-CARD-CONTRACT.md`](docs/ACTIONABLE-CARD-CONTRACT.md) and [`docs/CARD-UI-STANDARD.md`](docs/CARD-UI-STANDARD.md) - primary card action-spine and operator UI standards.
 - [`docs/ARCHITECTURE.md`](docs/ARCHITECTURE.md), [`docs/RUNTIME-COMPACTION.md`](docs/RUNTIME-COMPACTION.md), [`docs/UX-QUALITY.md`](docs/UX-QUALITY.md), [`docs/NORTH-STAR.md`](docs/NORTH-STAR.md), and [`docs/ORANGE-SOURCE-DEPTH.md`](docs/ORANGE-SOURCE-DEPTH.md) - deeper architecture, runtime, UX, and completed Orange baseline context.
 
@@ -49,7 +49,7 @@ Historical Orange AD mindmap source: `https://orange-cyberdefense.github.io/ocd-
 <!-- OBOL-PRODUCT-BUILD-NEXT:START -->
 Generated from the same queue sources as the Product Hardening Dashboard. Do not edit this block manually.
 
-**Current product-hardening queue:** 227/657 complete (35%), 9 concrete queued, 9 modeled/standing items.
+**Current product-hardening queue:** 228/661 complete (34%), 12 concrete queued, 9 modeled/standing items.
 **Private notes source:** [`https://github.com/platocres/obol-source-notes/tree/main/sources/raw`](https://github.com/platocres/obol-source-notes/tree/main/sources/raw) — 556 notes and 1326 embedded resources accounted.
 **Private review packets:** `platocres/obol-source-notes@agent/review-packets:data/review-packets/manifest.json` — 556/556 notes, 29 packets, 0 truncated.
 **Complete source packet proof:** 556/556 notes in 29 complete-text packets, 0 truncated, 8,725,188 cleaned text chars.
@@ -60,18 +60,18 @@ Generated from the same queue sources as the Product Hardening Dashboard. Do not
 **Source re-mining status:** 556/556 full-spectrum re-mined; 0 old-rubric-only notes remain.
 **Source-note cluster status:** source-note mining complete; no pending cluster review items remain.
 
-**Recommended work package:** **Post-mining Next Steps and tool-card clarity audit** — 1 concrete live item / 1 tracked.
-**Next concrete entry:** **Post-mining Next Steps and tool-card clarity audit**
-**Ownership area:** `ui-ux`
+**Recommended work package:** **Post-notes Operator UI Clarity** — 4 concrete live items / 4 tracked.
+**Next concrete entry:** **Post-mining Path supporting-detail cleanup**
+**Ownership area:** `ui-ux/operator-surfaces`
 **Package dependencies:** none.
 **Package detail:** Use the Product Hardening Dashboard for full track ledgers and `data/product-hardening/work-packages.js` for the long-form package guidance.
 
 **Highest-priority concrete live items:**
-1. **Post-mining Next Steps and tool-card clarity audit** — Now that source-note mining is complete, audit Next Steps, Card, and Tools surfaces for clutter, duplicate builders, stale supporting-detail blocks, and confusing tool presentation.
-2. **Post-mining runtime and old-layer retirement audit** — Use the current-owner/equivalence/fixture lifecycle to identify old note-mining and historical layers that can be retired without changing observable behavior.
-3. **Post-mining regression speed and coverage pass** — With the note queue closed, shorten slow historical/browser checks where proven redundant while keeping exact-head full regression and browser smoke meaningful.
-4. **Quiet service worker caching** — Improve repeat-load and offline behavior without prompting users to install anything.
-5. **IndexedDB workspace storage** — Support durable larger local workspaces, multiple engagements, and cached indexes while remaining browser-local.
+1. **Post-mining Path supporting-detail cleanup** — Tighten Next Steps so the best next move, blockers, unlocks, and evidence needs stay prominent while historical/supporting methodology detail collapses into a targeted drawer.
+2. **Post-mining Card progressive-disclosure cleanup** — Restructure card pages so primary guided action, evidence paste-back, and outcome controls dominate; raw commands, wordlists, refs, failure branches, and history become clear named disclosures.
+3. **Post-mining Tools builder-library cleanup** — Rework Tools from a tab-per-tool matching-card dump into a grouped builder launcher with implemented builders first and legacy matching cards behind deliberate drilldown.
+4. **Post-mining visual density regression pass** — Add browser checks and screenshot targets that prove the Path, Card, and Tools cleanup reduced clutter without weakening action, evidence, or decision guidance.
+5. **Post-mining runtime and old-layer retirement audit** — Use the current-owner/equivalence/fixture lifecycle to identify old note-mining and historical layers that can be retired without changing observable behavior.
 
 **Queue automation:** `data/product-hardening/product-hardening-queue.js`, `data/product-hardening/build-next-queue-hygiene-current.js`, `data/product-hardening/note-progress-current.js`, `data/product-hardening/source-note-clusters-current.js`, and `data/product-hardening/work-packages.js` are the queue owners. The dashboard and this README projection consume those same sources.
 Generated by `node tools/sync-product-build-next.js --write`. Verify with `node tools/sync-product-build-next.js --check`.
