@@ -5,11 +5,11 @@
  *
  * This compares the shipped application owner against a pre-retirement owner that
  * replays the retired application overlays. Later product-hardening extensions may
- * project current field notes, card titles, queue counts, lane ordering, and
- * note-derived card ordering after the application owner has rendered. Those
- * current projections are tested by their own release suites and route smoke
- * tests, so this proof normalizes only those bounded current projections before
- * comparing the retired application owner.
+ * project current field notes, card titles, queue counts, lane ordering, folded
+ * alias accounting, and note-derived card ordering after the application owner has
+ * rendered. Those current projections are tested by their own release suites and
+ * route smoke tests, so this proof normalizes only those bounded current
+ * projections before comparing the retired application owner.
  */
 
 const fs=require('fs');
@@ -48,7 +48,8 @@ function normalizeHtml(html){
   .replace(/data-dashboard-freshness="[^"]*"/g,'data-dashboard-freshness="[nonce]"')
   .replace(/Authorization Boundary Replay|Separate Client Bypass from Server Authorization|AD Password Spray Safety and Result Review|RDP SOCKS Tunnel Workflow/g,'[current-product-card-title]')
   .replace(/data-card-evidence-open="(?:web-authz-boundaries|web-client-session-proof-chain|web-proxy-transform-proof-chain|web-client-controls|encoded-parameter-review|ad-enumeration-bloodhound-collection|ad-password-spray-safety-workflow|rdp-socks-tunnel-workflow)"/g,'data-card-evidence-open="[current-product-card]"')
-  .replace(/\b(\d+\/\d+ units · )\d+( queued)\b/g,'$1[queued]$2');
+  .replace(/\b(\d+\/\d+ units · )\d+( queued)\b/g,'$1[queued]$2')
+  .replace(/(<span><b>)\d+(<\/b> hypotheses<\/span>)/g,'$1[folded-alias-count]$2');
 }
 async function capture(browser,ownerBody){
  const context=await browser.newContext({viewport:{width:1440,height:1000}});

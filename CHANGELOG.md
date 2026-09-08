@@ -1,3 +1,12 @@
+## v9.85 — - Mined `source-note-cluster-pass-the-hash-and-remote-exec-artifacts` from the cluster queue
+
+- Mined `source-note-cluster-pass-the-hash-and-remote-exec-artifacts` from the cluster queue.
+- Enriched existing `pass-the-hash-proof-chain`, `pth-remote-exec-artifacts`, and `pth-token-filtering-check` instead of creating a new wrapper card.
+- Added public-safe field notes for NT hash material scope, channel-scoped validation, Windows process-context PtH, SMB/admin-share/SCM proof separation, remote-exec artifacts, WinRM/RDP boundaries, token filtering, failure disposition, report redaction, and dashboard handoff.
+- Added `pass-the-hash-remote-exec-evidence-analyzer-v985` for pasted PtH, remote execution, token-filtering, and cleanup evidence.
+- Advanced the source-note ledger to 362/556 reviewed, 194 pending notes, and 10 remaining public-safe cluster queue items.
+- Moved Product Build Next to `source-note-cluster-shells-payloads-and-file-transfer-stabilization`.
+
 ## v9.84 — - Mines the queued `source-note-cluster-credential-dumping-lsass-and-windows-secrets` cluster from the complete private review packet route and converts it into public-safe credential dumping, secret-source triage, parser-output classification, validation, cleanup, and dashboard handoff mechanics
 
 - Mines the queued `source-note-cluster-credential-dumping-lsass-and-windows-secrets` cluster from the complete private review packet route and converts it into public-safe credential dumping, secret-source triage, parser-output classification, validation, cleanup, and dashboard handoff mechanics.

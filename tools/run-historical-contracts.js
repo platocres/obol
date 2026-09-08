@@ -61,7 +61,7 @@ const PHASE_TASKS=Object.freeze({
   ['tools/validate-linux-final-remine-v9.72.js']
  ],
  'v9-current-product':[
-  ['tests/run-v9.84-tests.js'],
+  ['tests/run-v9.85-tests.js'],
   ['tests/run-notes-batch-selector-tests.js'],
   ['tools/validate-current-release.js'],
   ['tools/validate-product-hardening-queue.js'],
