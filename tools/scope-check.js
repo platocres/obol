@@ -11,7 +11,7 @@ const checks=[
  ['tools/validate-note-mechanic-backfill.js'],
  ['tests/run-tests.js'],
  ['tests/run-notes-batch-selector-tests.js'],
- ['tests/run-v9.90-tests.js'],
+ ['tests/run-v9.91-tests.js'],
  ['tools/validate-source-note-clusters.js'],
  ['tools/validate-card-action-spine-v9.71.js'],
  ['tools/validate-linux-final-remine-v9.72.js'],
