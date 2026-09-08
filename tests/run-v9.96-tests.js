@@ -77,7 +77,7 @@ assert(!/For notes work, use the generated Next notes batch or cluster queue/.te
 assert(!/Next concrete entry:\*\* \*\*Post-mining Next Steps and tool-card clarity audit\*\*/.test(readme), 'README should not advertise the completed broad audit item as next');
 assert(/Post-mining Path supporting-detail cleanup/.test(readme), 'README should show Path cleanup as the next post-notes item');
 assert(/Post-notes Operator UI Clarity/.test(readme), 'README should show the split post-notes work package');
-assert(!/old-rubric-only notes remain/i.test(readme), 'README should not resurrect old note-review residue');
+assert(!/[1-9]\d* old-rubric-only notes remain/i.test(readme), 'README should not resurrect nonzero old note-review residue');
 
 run(['tools/validate-release-pr.js', '--repo-only', '--release-version=9.96']);
 console.log('v9.96 post-notes clarity audit tests passed: ' + audit.findings.length + ' findings, ' + audit.proposedQueue.length + ' split queue items.');
