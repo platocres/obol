@@ -1,3 +1,11 @@
+## v9.90 — Mines the active Product Build Next cluster, `source-note-cluster-ad-credential-attacks-and-ticket-material`, from the complete private review-packet route into public-safe credential-attack mechanics
+
+- Folded AD credential-attack and ticket-material guidance into the existing `ad-password-spray-safety-workflow` owner card instead of creating duplicate Kerberoast, AS-REP, spray, or ticket wrapper cards.
+- Added a public-safe action spine for password policy proof, target-list provenance, Kerberos user enumeration, AS-REP material capture, Kerberoast ticket capture, offline cracking status, scoped validation, and ticket/cache review.
+- Added field notes for lockout policy, target provenance, hash and ticket classification, cracking versus validation, redaction, and report boundaries.
+- Added an analyzer and intake routing for pasted AD credential-attack evidence while redacting raw hashes, tickets, passwords, flags, lab names, and host IPs.
+- Advanced the source-note cluster queue to pivoting, tunneling, proxying, and route proof with 76 pending notes remaining.
+
 ## v9.89 — - Mined `source-note-cluster-ad-enumeration-ldap-kerberos-bloodhound` into public-safe AD enumeration, LDAP/Kerberos discovery, BloodHound, and domain-context mechanics
 
 - Mined `source-note-cluster-ad-enumeration-ldap-kerberos-bloodhound` into public-safe AD enumeration, LDAP/Kerberos discovery, BloodHound, and domain-context mechanics.
