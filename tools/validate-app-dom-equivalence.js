@@ -6,9 +6,9 @@
  * This compares the shipped application owner against a pre-retirement owner that
  * replays the retired application overlays. Later product-hardening extensions may
  * project current field notes, card titles, queue counts, tool catalogs, lane tab
- * catalogs, folded alias accounting, and note-derived card ordering after the
- * application owner has rendered. Those current projections are tested by their
- * own release suites and route smoke tests, so this proof normalizes only those
+ * catalogs, folded alias accounting, note-derived card ordering, and release chrome
+ * after the application owner has rendered. Those current projections are tested by
+ * their own release suites and route smoke tests, so this proof normalizes only those
  * bounded current projections before comparing the retired application owner.
  */
 
@@ -50,6 +50,12 @@ function normalizeHtml(html){
   .replace(/data-card-evidence-open="(?:web-authz-boundaries|web-client-session-proof-chain|web-proxy-transform-proof-chain|web-client-controls|encoded-parameter-review|ad-enumeration-bloodhound-collection|ad-password-spray-safety-workflow|rdp-socks-tunnel-workflow)"/g,'data-card-evidence-open="[current-product-card]"')
   .replace(/\b(\d+\/\d+ units · )\d+( queued)\b/g,'$1[queued]$2')
   .replace(/(<span><b>)\d+(<\/b> hypotheses<\/span>)/g,'$1[folded-alias-count]$2');
+}
+function normalizeReleaseChrome(text){
+ return String(text||'')
+  .replace(/\bObol v\d+(?:\.\d+){0,2}\b/g,'Obol v[current-release]')
+  .replace(/\bOffensive Box Operations Ledger\s*·\s*v\d+(?:\.\d+){0,2}\b/g,'Offensive Box Operations Ledger · v[current-release]')
+  .replace(/\s+·\s+v\d+(?:\.\d+){0,2}\b/g,' · v[current-release]');
 }
 async function capture(browser,ownerBody){
  const context=await browser.newContext({viewport:{width:1440,height:1000}});
@@ -157,8 +163,10 @@ function firstDifference(a,b){let i=0;while(i<a.length&&i<b.length&&a[i]===b[i])
   const current=await capture(browser,null),historical=await capture(browser,variantOwner());
   for(const route of routes){
    const a=historical[route.id],b=current[route.id];
-   if(a.title!==b.title)failures.push(route.id+': title differs - historical '+JSON.stringify(a.title)+' vs current '+JSON.stringify(b.title));
-   if(a.tagline!==b.tagline)failures.push(route.id+': tagline differs - historical '+JSON.stringify(a.tagline)+' vs current '+JSON.stringify(b.tagline));
+   const historicalTitle=normalizeReleaseChrome(a.title),currentTitle=normalizeReleaseChrome(b.title);
+   const historicalTagline=normalizeReleaseChrome(a.tagline),currentTagline=normalizeReleaseChrome(b.tagline);
+   if(historicalTitle!==currentTitle)failures.push(route.id+': title differs - historical '+JSON.stringify(a.title)+' vs current '+JSON.stringify(b.title));
+   if(historicalTagline!==currentTagline)failures.push(route.id+': tagline differs - historical '+JSON.stringify(a.tagline)+' vs current '+JSON.stringify(b.tagline));
    if(a.html!==b.html)failures.push(route.id+': rendered DOM differs '+firstDifference(a.html,b.html));
    for(const error of b.errors)if(!a.errors.includes(error))failures.push(route.id+': retirement introduced '+error);
   }

@@ -1,3 +1,13 @@
+## v9.89 — - Mined `source-note-cluster-ad-enumeration-ldap-kerberos-bloodhound` into public-safe AD enumeration, LDAP/Kerberos discovery, BloodHound, and domain-context mechanics
+
+- Mined `source-note-cluster-ad-enumeration-ldap-kerberos-bloodhound` into public-safe AD enumeration, LDAP/Kerberos discovery, BloodHound, and domain-context mechanics.
+- Folded the cluster into the existing `ad-enumeration-bloodhound-collection` owner card instead of adding duplicate LDAP, Kerberos, BloodHound, or domain-context wrapper cards.
+- Added action-spine command guidance for DC service fingerprinting, SMB/domain fingerprinting, LDAP naming contexts and scoped queries, Kerberos user enumeration, AS-REP/SPN boundary discovery, BloodHound.py, PowerView, and SharpHound.
+- Added public-safe field notes for domain baselines, DC service surface, LDAP naming-context proof, user/group enumeration provenance, Kerberos identity boundaries, BloodHound collection proof, Windows-side AD context, and report redaction.
+- Added `ad-enumeration-ldap-kerberos-bloodhound-v989` analyzer logic for pasted AD, LDAP, Kerberos, BloodHound, PowerView, SharpHound, SMB/domain fingerprint, and boundary/failure evidence.
+- Advanced the source-note ledger to 458/556 reviewed, 98 pending, and 6 remaining public-safe cluster review items.
+- Generated the next cluster queue so Product Build Next advances to `source-note-cluster-ad-credential-attacks-and-ticket-material`.
+
 ## v9.88 — - Mined `source-note-cluster-windows-privesc-services-and-local-admin` into public-safe Windows local privilege-escalation mechanics
 
 - Mined `source-note-cluster-windows-privesc-services-and-local-admin` into public-safe Windows local privilege-escalation mechanics.
