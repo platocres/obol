@@ -50,7 +50,8 @@ assert.ok(!card.foldedFrom || !card.foldedFrom.includes('listener-and-shell-stab
 assert.ok(/listener|callback|payload|transfer|shell|tunnel|cleanup/i.test(card.operatorGoal+card.hypothesis));
 for(const row of card.commands||[])assert.ok(row.tool&&row.run&&row.when&&row.evidence&&row.note,'new shell card command needs full action-spine fields');
 const runs=(card.commands||[]).map(row=>String(row.run||''));
-for(const expected of [/nc -lvnp/i,/rlwrap/i,/msfvenom/i,/multi\/handler/i,/pty\.spawn/i,/stty raw/i,/python3 -m http\.server/i,/curl .*wget|wget .*curl/i,/iwr/i,/certutil/i,/smbserver\.py/i,/chisel/i,/ptunnel-ng/i,/dnscat2/i,/rpivot/i,/proxychains/i])assert.ok(runs.some(run=>expected.test(run)),'missing shell workflow command pattern '+expected);
+for(const expected of [/nc -lvnp/i,/rlwrap/i,/msfvenom/i,/multi\/handler/i,/pty\.spawn/i,/stty raw/i,/python3 -m http\.server/i,/curl .*wget|wget .*curl/i,/iwr/i,/certutil/i,/smbserver\.py/i,/chisel/i,/ptunnel-ng/i,/dnscat2/i,/python2 server\.py/i,/proxychains/i])assert.ok(runs.some(run=>expected.test(run)),'missing shell workflow command pattern '+expected);
+assert.ok((card.tools||[]).includes('rpivot'),'shell card should retain rpivot as the tool label for the python2 server.py workflow');
 for(const fact of ['shell.listener_ready_reviewed','shell.callback_received_reviewed','shell.payload_handler_match_reviewed','shell.file_transfer_reviewed','shell.pty_stabilization_reviewed','pivot.tunnel_route_reviewed','pivot.proxychains_probe_reviewed','cleanup.payload_shell_artifacts_reviewed','report.shell_boundary_reviewed'])assert.ok((card.produces||[]).includes(fact),'shell card missing produced fact '+fact);
 const text=JSON.stringify(card);
 assert.ok(!/source-mining|source re-mining|release cleanup|patch panel|\bUNKNOWN\b|unknown|methodology gap|stabilizer/i.test(text),'new shell card must not leak implementation slop');
