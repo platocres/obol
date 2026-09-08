@@ -51,7 +51,7 @@ Historical Orange AD mindmap source: `https://orange-cyberdefense.github.io/ocd-
 <!-- OBOL-PRODUCT-BUILD-NEXT:START -->
 Generated from the same queue sources as the Product Hardening Dashboard. Do not edit this block manually.
 
-**Current product-hardening queue:** 228/661 complete (34%), 12 concrete queued, 9 modeled/standing items.
+**Current product-hardening queue:** 227/657 complete (35%), 9 concrete queued, 9 modeled/standing items.
 **Private notes source:** [`https://github.com/platocres/obol-source-notes/tree/main/sources/raw`](https://github.com/platocres/obol-source-notes/tree/main/sources/raw) — 556 notes and 1326 embedded resources accounted.
 **Private review packets:** `platocres/obol-source-notes@agent/review-packets:data/review-packets/manifest.json` — 556/556 notes, 29 packets, 0 truncated.
 **Complete source packet proof:** 556/556 notes in 29 complete-text packets, 0 truncated, 8,725,188 cleaned text chars.
