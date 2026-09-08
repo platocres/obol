@@ -10,9 +10,10 @@ root.document = undefined;
 root.setTimeout = root.setTimeout || function(fn){ if (typeof fn === 'function') fn(); return 0; };
 
 function load(rel) { require(path.join(rootDir, rel)); }
+load('data/current-release.js');
 load('data/product-hardening/product-hardening-queue.js');
 load('data/product-hardening/work-packages.js');
-load('data/current-release.js');
+load('data/product-hardening/post-notes-clarity-audit-v9.96.js');
 
 const release = root.OBOL_CURRENT_RELEASE;
 assert(release, 'current release should be exposed');
@@ -68,6 +69,7 @@ assert(rec.liveItems && rec.liveItems.length === 4, 'recommended package should 
 const readme = fs.readFileSync(path.join(rootDir, 'README.md'), 'utf8');
 assert(/Current release: \*\*v9\.96\*\*/.test(readme), 'README should identify v9.96');
 assert(/Treat note-mining docs as closed-source reference unless reactivated/.test(readme), 'README should demote note-mining docs to reference-only posture');
+assert(/Extract the value, not the wording/.test(readme), 'README should preserve the safe derivation rule as reference guidance');
 assert(!/For notes work, use the generated Next notes batch or cluster queue/.test(readme), 'README should not keep stale active next-notes-batch quickstart wording');
 assert(!/Next concrete entry:\*\* \*\*Post-mining Next Steps and tool-card clarity audit\*\*/.test(readme), 'README should not advertise the completed broad audit item as next');
 assert(/Post-mining Path supporting-detail cleanup/.test(readme), 'README should show Path cleanup as the next post-notes item');
