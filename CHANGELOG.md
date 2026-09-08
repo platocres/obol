@@ -1,3 +1,12 @@
+## v9.91 — - Mines the `source-note-cluster-pivoting-tunneling-and-route-proof` queue item from the complete private review-packet route into public-safe pivoting, tunneling, proxying, and route-proof mechanics
+
+- Mines the `source-note-cluster-pivoting-tunneling-and-route-proof` queue item from the complete private review-packet route into public-safe pivoting, tunneling, proxying, and route-proof mechanics.
+- Folds the cluster into the existing `rdp-socks-tunnel-workflow` primary owner while keeping `metasploit-resource-pivot-workflow` as contextual support instead of a duplicate pivot wrapper card.
+- Adds route-proof guidance for SSH local, remote, and dynamic forwarding; Windows `plink.exe` and OpenSSH tunnel syntax; chisel reverse SOCKS; proxychains service checks; socat relays; Windows `netsh interface portproxy` plus firewall cleanup; sshuttle subnet pivots; DNS tunneling handoff; and teardown proof.
+- Adds an Evidence analyzer for route tables, interface output, forwarding modes, chisel output, Windows portproxy/firewall state, proxied tooling, service connectivity, and cleanup signals while redacting hosts, secrets, flags, and lab-specific names.
+- Adds four public Field Notes covering route-state proof, SSH forwarding mode selection, Windows and HTTP pivot boundaries, proxychains service checks, and cleanup proof.
+- Advances Product Build Next to `source-note-cluster-metasploit-resource-post-exploitation-and-cleanup`, leaving 57 pending notes in four public-safe cluster review items.
+
 ## v9.90 — Mines the active Product Build Next cluster, `source-note-cluster-ad-credential-attacks-and-ticket-material`, from the complete private review-packet route into public-safe credential-attack mechanics
 
 - Folded AD credential-attack and ticket-material guidance into the existing `ad-password-spray-safety-workflow` owner card instead of creating duplicate Kerberoast, AS-REP, spray, or ticket wrapper cards.
