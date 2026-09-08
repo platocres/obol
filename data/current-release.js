@@ -1,8 +1,8 @@
 'use strict';
 (function(root){
 const release=Object.freeze({
- version:'9.95.0',
- label:'v9.95',
+ version:'9.96.0',
+ label:'v9.96',
  phase:'product-hardening',
  phaseLabel:'Product Hardening',
  orangeBaseline:'v8.8',
@@ -62,7 +62,8 @@ const release=Object.freeze({
   'data/product-hardening/metasploit-resource-post-exploitation-cleanup-cluster-v9.92.js',
   'data/product-hardening/reporting-cleanup-remediation-guidance-cluster-v9.93.js',
   'data/product-hardening/exam-skills-assessment-private-boundary-cluster-v9.94.js',
-  'data/product-hardening/reference-index-course-map-private-boundary-cluster-v9.95.js'
+  'data/product-hardening/reference-index-course-map-private-boundary-cluster-v9.95.js',
+  'data/product-hardening/post-notes-clarity-audit-v9.96.js'
  ])
 });
 function stampState(target){
