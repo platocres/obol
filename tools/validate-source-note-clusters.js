@@ -29,7 +29,8 @@ const clusterExtensions=[
  ['v9.81','data/product-hardening/ad-pivot-smb-trust-cluster-v9.81.js'],
  ['v9.82','data/product-hardening/ad-initial-enum-spray-rdp-socks-cluster-v9.82.js'],
  ['v9.83','data/product-hardening/web-content-discovery-fingerprinting-cluster-v9.83.js'],
- ['v9.84','data/product-hardening/windows-credential-dumping-secrets-cluster-v9.84.js']
+ ['v9.84','data/product-hardening/windows-credential-dumping-secrets-cluster-v9.84.js'],
+ ['v9.85','data/product-hardening/pass-the-hash-remote-exec-cluster-v9.85.js']
 ];
 for(const [since,src] of clusterExtensions)if(versionAtLeast(label,since))load(src);
 
@@ -70,7 +71,8 @@ const expectedByRelease={
  'v9.81':{wave:'OBOL_AD_PIVOT_SMB_TRUST_CLUSTER_V981',queue:'source-note-cluster-browser-client-cookie-transform-workflows',cluster:'ad-pivot-smb-trust-kerberos-workflows',original:'browser-client-cookie-transform-workflows',pending:249,count:14,next:/web-proxy-fuzzing-and-transform/i},
  'v9.82':{wave:'OBOL_AD_INITIAL_ENUM_SPRAY_RDP_SOCKS_CLUSTER_V982',queue:'source-note-cluster-web-proxy-fuzzing-and-transform-workflows',cluster:'ad-initial-enum-credential-spray-rdp-socks-workflows',original:'web-proxy-fuzzing-and-transform-workflows',pending:239,count:13,next:/web-content-discovery-and-technology-fingerprinting/i},
  'v9.83':{wave:'OBOL_WEB_CONTENT_DISCOVERY_FINGERPRINTING_CLUSTER_V983',queue:'source-note-cluster-web-content-discovery-and-technology-fingerprinting',cluster:'web-content-discovery-and-technology-fingerprinting',pending:223,count:12,next:/credential-dumping-lsass-and-windows-secrets/i},
- 'v9.84':{wave:'OBOL_WINDOWS_CREDENTIAL_DUMPING_SECRETS_CLUSTER_V984',queue:'source-note-cluster-credential-dumping-lsass-and-windows-secrets',cluster:'credential-dumping-lsass-and-windows-secrets',pending:208,count:11,next:/pass-the-hash-and-remote-exec-artifacts/i}
+ 'v9.84':{wave:'OBOL_WINDOWS_CREDENTIAL_DUMPING_SECRETS_CLUSTER_V984',queue:'source-note-cluster-credential-dumping-lsass-and-windows-secrets',cluster:'credential-dumping-lsass-and-windows-secrets',pending:208,count:11,next:/pass-the-hash-and-remote-exec-artifacts/i},
+ 'v9.85':{wave:'OBOL_PASS_THE_HASH_REMOTE_EXEC_CLUSTER_V985',queue:'source-note-cluster-pass-the-hash-and-remote-exec-artifacts',cluster:'pass-the-hash-and-remote-exec-artifacts',pending:194,count:10,next:/shells-payloads-and-file-transfer-stabilization/i}
 };
 const exact=expectedByRelease[label];
 if(exact){
