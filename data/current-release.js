@@ -51,7 +51,8 @@ const release=Object.freeze({
   'data/product-hardening/windows-credential-dumping-secrets-cluster-v9.84.js',
   'data/product-hardening/pass-the-hash-remote-exec-cluster-v9.85.js',
   'data/product-hardening/pass-the-hash-remote-exec-card-provenance-v9.85.js',
-  'data/product-hardening/shells-payloads-file-transfer-cluster-v9.86.js'
+  'data/product-hardening/shells-payloads-file-transfer-cluster-v9.86.js',
+  'data/product-hardening/shells-payloads-queue-mutable-v9.86.js'
  ])
 });
 function stampState(target){
