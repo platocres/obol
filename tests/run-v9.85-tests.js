@@ -35,11 +35,16 @@ assert.strictEqual(wave.nextQueueId,'source-note-cluster-shells-payloads-and-fil
 assert.strictEqual(wave.primaryCardId,'pass-the-hash-proof-chain');
 assert.deepStrictEqual(wave.enrichedCardIds,['pass-the-hash-proof-chain']);
 assert.deepStrictEqual(wave.foldedAliasIds,['pth-remote-exec-artifacts','pth-token-filtering-check']);
+assert.strictEqual((wave.cardTaxonomy||{}).primary,'pass-the-hash-proof-chain');
+assert.strictEqual((wave.cardTaxonomy||{}).origin,'legacy');
+assert.deepStrictEqual((wave.cardTaxonomy||{}).foldedAliases,['pth-remote-exec-artifacts','pth-token-filtering-check']);
 assert.strictEqual(wave.reviewTextChars,476854);
 assert.strictEqual(wave.noteCount,14);
 assert.deepStrictEqual(wave.failures,[]);
 assert.ok(wave.notesIntegrated&&wave.pthIntegrated&&wave.analyzerIntegrated&&wave.clusterCompleted&&wave.queuePatched&&wave.foldedAliases);
 assert.ok(globalThis.OBOL_PTH_REMOTE_EXEC_CARD_PROVENANCE_V985&&globalThis.OBOL_PTH_REMOTE_EXEC_CARD_PROVENANCE_V985.status==='live-integrated');
+assert.strictEqual((globalThis.OBOL_PTH_REMOTE_EXEC_CARD_PROVENANCE_V985.cardTaxonomy||{}).primaryKind,'primary');
+assert.strictEqual((globalThis.OBOL_PTH_REMOTE_EXEC_CARD_PROVENANCE_V985.cardTaxonomy||{}).primaryOrigin,'legacy');
 
 const notes=globalThis.OBOL_NOTE_INTEGRATION.publicFieldNotes||[];
 const noteIds=new Set(notes.map(note=>note&&note.id).filter(Boolean));
@@ -54,6 +59,12 @@ assert.ok(!(globalThis.CARDS&&globalThis.CARDS['pth-token-filtering-check']),'fo
 
 const pth=globalThis.CARDS&&globalThis.CARDS['pass-the-hash-proof-chain'];
 assert.ok(pth,'PtH proof-chain card should remain addressable');
+assert.strictEqual(pth.cardKind,'primary');
+assert.strictEqual(pth.cardOrigin,'legacy');
+assert.strictEqual(pth.currentOwner,true);
+assert.strictEqual(pth.introducedIn,'pre-v9.85');
+assert.ok((pth.enrichedBy||[]).includes('v9.85'));
+assert.deepStrictEqual((pth.foldedAliases||[]).slice(-2),['pth-remote-exec-artifacts','pth-token-filtering-check']);
 assert.strictEqual((pth.passTheHashRemoteExec85||{}).integratedInto,'existing-card');
 assert.deepStrictEqual(pth.foldedFrom.slice(-2),['pth-remote-exec-artifacts','pth-token-filtering-check']);
 for(const row of pth.commands||[])assert.ok(row.tool&&row.run&&row.when&&row.evidence&&row.note,'PtH command needs full action-spine fields');
@@ -112,4 +123,4 @@ run(['tools/validate-actionable-next-step-cards.js']);
 run(['tools/validate-action-first-card-cleanup.js']);
 run(['tools/validate-path-card-uniqueness-v9.72.js']);
 run(['tools/validate-release-pr.js','--repo-only','--release-version=9.85']);
-console.log('v9.85 mined pass-the-hash, remote execution artifacts, token filtering, folded aliases, and dashboard queue handoff.');
+console.log('v9.85 mined pass-the-hash, remote execution artifacts, token filtering, folded aliases, card taxonomy, and dashboard queue handoff.');
