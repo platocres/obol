@@ -57,7 +57,8 @@ const release=Object.freeze({
   'data/product-hardening/windows-privesc-services-local-admin-cluster-v9.88.js',
   'data/product-hardening/ad-enumeration-ldap-kerberos-bloodhound-cluster-v9.89.js',
   'data/product-hardening/ad-credential-attacks-ticket-material-cluster-v9.90.js',
-  'data/product-hardening/pivoting-tunneling-route-proof-cluster-v9.91.js'
+  'data/product-hardening/pivoting-tunneling-route-proof-cluster-v9.91.js',
+  'data/product-hardening/pivoting-tunneling-route-proof-card-deduper-v9.91.js'
  ])
 });
 function stampState(target){
