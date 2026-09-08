@@ -28,16 +28,17 @@ const outputDir = process.env.OBOL_SMOKE_OUTPUT || path.join(__dirname, '..', 'a
 // service/local-admin extension, the v9.89 AD enumeration owner-registration
 // and LDAP/Kerberos/BloodHound cluster extension, the v9.90 AD credential
 // attack and ticket-material boundary extension, the v9.91 pivoting,
-// tunneling, proxying, route-proof cluster extension, and the v9.92 Metasploit
-// resource/post-exploitation cleanup extension. They still fail loudly if the
-// historical fragment chain leaks back into loading.
+// tunneling, proxying, route-proof cluster extension, the v9.92 Metasploit
+// resource/post-exploitation cleanup extension, and the v9.93 reporting,
+// cleanup, remediation, redaction, and retest guidance extension. They still
+// fail loudly if the historical fragment chain leaks back into loading.
 const routes = [
-  { id: 'home', hash: '#/home', marker: /Home/i, requestBudget: 74 },
-  { id: 'targets', hash: '#/boxes', marker: /target/i, requestBudget: 81 },
-  { id: 'evidence', hash: '#/intake', marker: /evidence/i, requestBudget: 78 },
-  { id: 'next-steps', hash: '#/path', marker: /(next|path|recommend)/i, requestBudget: 79 },
-  { id: 'report', hash: '#/report', marker: /report/i, requestBudget: 76 },
-  { id: 'dashboard', hash: '#/dashboard', marker: /Product Hardening/i, currentDashboard: true, settleMs: 5200, requestBudget: 76 }
+  { id: 'home', hash: '#/home', marker: /Home/i, requestBudget: 76 },
+  { id: 'targets', hash: '#/boxes', marker: /target/i, requestBudget: 82 },
+  { id: 'evidence', hash: '#/intake', marker: /evidence/i, requestBudget: 79 },
+  { id: 'next-steps', hash: '#/path', marker: /(next|path|recommend)/i, requestBudget: 83 },
+  { id: 'report', hash: '#/report', marker: /report/i, requestBudget: 77 },
+  { id: 'dashboard', hash: '#/dashboard', marker: /Product Hardening/i, currentDashboard: true, settleMs: 5200, requestBudget: 77 }
 ];
 const HISTORICAL_FRAGMENT = /\/(?:assets|data)\/(?:core|app|intake|report|nmap|review|methodology|orange-fidelity|project-model|dashboard|source-delivery|obol)-v[\d.]+[^/]*$/;
 const METHODOLOGY_FILLER = /fills an unresolved methodology gap|methodology gap/i;
