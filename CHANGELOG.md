@@ -1,3 +1,12 @@
+## v9.95 — - Completes the final `source-note-cluster-reference-index-and-course-map-private-heavy` queue item as a terminal private-heavy disposition
+
+- Completes the final `source-note-cluster-reference-index-and-course-map-private-heavy` queue item as a terminal private-heavy disposition.
+- Keeps reference indexes, tables of contents, course maps, grading paths, flags, private targets, screenshots, and exact solution chains out of public UI.
+- Folds the public-safe residue into the existing `flag-discipline` owner as source-boundary and queue-handoff guidance instead of creating reference-index or course-map wrapper cards.
+- Advances source-note accounting to 556/556 reviewed and 0 pending.
+- Clears the generated Product Build Next note batch handoff so the README and dashboard no longer imply more source-note review remains.
+- Pivots the visible queue to post-notes product hardening: Next Steps/tool-card clarity, old-layer retirement, regression-speed cleanup, and browser/offline work.
+
 ## v9.94 — - Mines the `source-note-cluster-exam-skills-assessments-private-heavy` queue item as a private-heavy disposition boundary instead of copying walkthrough or assessment material into public UI
 
 - Mines the `source-note-cluster-exam-skills-assessments-private-heavy` queue item as a private-heavy disposition boundary instead of copying walkthrough or assessment material into public UI.
