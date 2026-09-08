@@ -18,8 +18,9 @@ function versionAtLeast(actual,minimum){
 }
 
 globalThis.__OBOL_DEFER_PRODUCT_HARDENING_EXTENSIONS__=true;
-globalThis.setTimeout=undefined;
-globalThis.addEventListener=undefined;
+globalThis.setTimeout=function(fn){if(typeof fn==='function')fn();return 0;};
+globalThis.clearTimeout=function(){};
+globalThis.addEventListener=function(){};
 globalThis.window=globalThis;
 
 load('data/current-release.js');
