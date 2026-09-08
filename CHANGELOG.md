@@ -1,3 +1,12 @@
+## v9.94 — - Mines the `source-note-cluster-exam-skills-assessments-private-heavy` queue item as a private-heavy disposition boundary instead of copying walkthrough or assessment material into public UI
+
+- Mines the `source-note-cluster-exam-skills-assessments-private-heavy` queue item as a private-heavy disposition boundary instead of copying walkthrough or assessment material into public UI.
+- Folds the public-safe residue into the existing `flag-discipline` primary owner so exam flags, solution chains, private targets, and assessment-specific steps remain out of product text.
+- Keeps `report-discipline`, session, route, Metasploit, and AD cards as context only; they receive no duplicate skills-assessment or walkthrough wrapper cards.
+- Adds a private-boundary analyzer that recognizes assessment, walkthrough, exact-solution-chain, grading-objective, flag, credential, host, and screenshot/prose leakage signals while redacting sensitive material.
+- Adds three public Field Notes covering generalized skill extraction, private-only walkthrough disposition, and exam/report redaction gates.
+- Advances Product Build Next to the final private-heavy reference index and course-map cluster, leaving 1 pending note.
+
 ## v9.93 — - Mines the `source-note-cluster-reporting-cleanup-and-remediation-guidance` queue item into public-safe reporting, cleanup, mitigation, redaction, and retest guidance
 
 - Mines the `source-note-cluster-reporting-cleanup-and-remediation-guidance` queue item into public-safe reporting, cleanup, mitigation, redaction, and retest guidance.
