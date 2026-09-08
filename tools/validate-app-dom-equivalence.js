@@ -6,10 +6,11 @@
  * This compares the shipped application owner against a pre-retirement owner that
  * replays the retired application overlays. Later product-hardening extensions may
  * project current field notes, card titles, queue counts, tool catalogs, lane tab
- * catalogs, folded alias accounting, note-derived card ordering, and release chrome
- * after the application owner has rendered. Those current projections are tested by
- * their own release suites and route smoke tests, so this proof normalizes only those
- * bounded current projections before comparing the retired application owner.
+ * catalogs, folded alias accounting, note-derived card ordering, release chrome,
+ * and dashboard queue summary metrics after the application owner has rendered.
+ * Those current projections are tested by their own release suites and route smoke
+ * tests, so this proof normalizes only those bounded current projections before
+ * comparing the retired application owner.
  */
 
 const fs=require('fs');
@@ -115,6 +116,14 @@ async function capture(browser,ownerBody){
      cards.forEach(card=>parent.appendChild(card));
     });
     if(routeId==='dashboard'){
+     clone.querySelectorAll('.ph-metric').forEach(metric=>{
+      const label=metric.querySelector('span');
+      if(label&&/Next cluster/i.test(label.textContent||'')){
+       const title=metric.querySelector('b'),caption=metric.querySelector('small');
+       if(title)title.textContent='[current-product-next-cluster]';
+       if(caption)caption.textContent='[current-product-next-cluster-source]';
+      }
+     });
      const rows=Array.from(clone.querySelectorAll('.ph-queue-row'));
      if(rows.length){
       const parent=rows[0].parentElement;
