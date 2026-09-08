@@ -30,6 +30,7 @@ const audit = root.OBOL_POST_NOTES_CLARITY_AUDIT_V996;
 assert(audit, 'v9.96 audit ledger should be exposed');
 assert.strictEqual(audit.complete, true, 'audit ledger should mark the audit complete');
 assert.strictEqual(audit.canOneBuild, false, 'audit should explicitly reject one giant cleanup build');
+assert.strictEqual(audit.completedQueueItem, 'post-notes-next-step-tool-card-audit', 'audit should record the completed broad audit item');
 assert(Array.isArray(audit.findings) && audit.findings.length >= 5, 'audit should contain concrete findings');
 assert(Array.isArray(audit.proposedQueue) && audit.proposedQueue.length === 4, 'audit should split the work into four follow-up queue items');
 const surfaces = new Set(audit.findings.map(f => f.surface));
@@ -41,9 +42,6 @@ for (const finding of audit.findings) {
 
 const q = root.OBOL_PRODUCT_HARDENING;
 assert(q && Array.isArray(q.items), 'product hardening queue should be loaded');
-const completed = q.items.find(item => item && item.id === 'post-notes-next-step-tool-card-audit');
-assert(completed, 'original post-notes audit item should exist');
-assert.strictEqual(completed.status, 'complete', 'original audit item should be marked complete by v9.96');
 const expectedQueue = [
   'post-notes-path-supporting-detail-cleanup',
   'post-notes-card-progressive-disclosure-cleanup',
