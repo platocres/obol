@@ -1,8 +1,8 @@
 'use strict';
 (function(root){
 const release=Object.freeze({
- version:'9.92.0',
- label:'v9.92',
+ version:'9.93.0',
+ label:'v9.93',
  phase:'product-hardening',
  phaseLabel:'Product Hardening',
  orangeBaseline:'v8.8',
@@ -59,7 +59,8 @@ const release=Object.freeze({
   'data/product-hardening/ad-credential-attacks-ticket-material-cluster-v9.90.js',
   'data/product-hardening/pivoting-tunneling-route-proof-cluster-v9.91.js',
   'data/product-hardening/pivoting-tunneling-route-proof-card-deduper-v9.91.js',
-  'data/product-hardening/metasploit-resource-post-exploitation-cleanup-cluster-v9.92.js'
+  'data/product-hardening/metasploit-resource-post-exploitation-cleanup-cluster-v9.92.js',
+  'data/product-hardening/reporting-cleanup-remediation-guidance-cluster-v9.93.js'
  ])
 });
 function stampState(target){

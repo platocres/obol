@@ -4,7 +4,7 @@ Obol is a static, browser-local workspace for OSCP-style labs, Active Directory 
 
 Live site: `https://platocres.github.io/obol/`
 
-Current release: **v9.92**
+Current release: **v9.93**
 
 Open `#/dashboard` for the active Product Hardening Dashboard and Product Build Next queue.
 
@@ -56,23 +56,23 @@ Generated from the same queue sources as the Product Hardening Dashboard. Do not
 **Raw source proof:** workflow run 33877189291 verified HTB ENEX 194,191,214 bytes and OffSec PEN-200 ENEX 110,367,324 bytes before packet extraction.
 **Runtime consolidation:** 5 operator startup requests, down from 286 (98% fewer).
 **Runtime consolidation owner:** `data/runtime-consolidation-current.js` feeds this README projection and the Product Hardening Dashboard.
-**Notes review status:** 512/556 reviewed; 44 pending; 133 modeled; 31 private-only.
-**Source re-mining status:** 512/512 full-spectrum re-mined; 0 old-rubric-only notes remain.
-**Source-note cluster status:** 44/44 pending notes clustered into 3 public-safe cluster review items; 0 pending notes remain unclustered.
-**Next notes batch:** **Reporting, cleanup, mitigation, and finding narrative guidance** (`source-note-cluster-reporting-cleanup-and-remediation-guidance`) — 10 notes from `platocres/obol-source-notes@agent/review-packets:data/review-packets/manifest.json`.
-**Queue mode:** `cluster-review` for cluster `reporting-cleanup-and-remediation-guidance`.
-**Selector:** Read complete packet text for cluster reporting-cleanup-and-remediation-guidance from platocres/obol-source-notes@agent/review-packets:data/review-packets/manifest.json; mine the whole cluster before terminal dispositions.
-**Acceptance:** Ship public-safe product mechanics from the whole cluster, then disposition each note with card/analyzer/field-note/report/queue/private rationale.
+**Notes review status:** 522/556 reviewed; 34 pending; 133 modeled; 31 private-only.
+**Source re-mining status:** 522/522 full-spectrum re-mined; 0 old-rubric-only notes remain.
+**Source-note cluster status:** 34/34 pending notes clustered into 2 public-safe cluster review items; 0 pending notes remain unclustered.
+**Next notes batch:** **Skills assessments and walkthrough-heavy note boundaries** (`source-note-cluster-exam-skills-assessments-private-heavy`) — 33 notes from `platocres/obol-source-notes@agent/review-packets:data/review-packets/manifest.json`.
+**Queue mode:** `cluster-review` for cluster `exam-skills-assessments-private-heavy`.
+**Selector:** Read complete packet text for cluster exam-skills-assessments-private-heavy from platocres/obol-source-notes@agent/review-packets:data/review-packets/manifest.json; mine the whole cluster for public-safe mechanics first and keep private-heavy walkthrough material out of UI.
+**Acceptance:** Mine the whole cluster from complete packet text first, then disposition every remaining note with public-safe card/analyzer/field-note/report output when appropriate, or private-heavy rationale when the source is walkthrough-specific.
 
 **Recommended work package:** **Notes Impact and Source Re-mining** — 2 concrete live items / 19 tracked.
-**Next concrete entry:** **Reporting, cleanup, mitigation, and finding narrative guidance**
+**Next concrete entry:** **Skills assessments and walkthrough-heavy note boundaries**
 **Ownership area:** `notes/impact-packets`
 **Package dependencies:** Notes Integration Foundation.
 **Package detail:** Use the Product Hardening Dashboard for full track ledgers and `data/product-hardening/work-packages.js` for the long-form package guidance.
 
 **Highest-priority concrete live items:**
-1. **Reporting, cleanup, mitigation, and finding narrative guidance** — Cluster-driven notes gate: 10 pending source notes in `reporting-cleanup-and-remediation-guidance` must be mined from complete packet text before terminal dispositions resume.
-2. **Burn down all 556 note dispositions** — Concrete notes-first gate: 44 private source notes remain pending and are now organized into 3 cluster review items; mine the active cluster queue before terminal dispositions continue.
+1. **Skills assessments and walkthrough-heavy note boundaries** — Cluster-driven notes gate: 33 pending source notes in `exam-skills-assessments-private-heavy` must be mined from complete packet text before terminal dispositions resume.
+2. **Burn down all 556 note dispositions** — Concrete notes-first gate: 34 private source notes remain pending and are now organized into 2 cluster review items; mine the active cluster queue before terminal dispositions continue.
 3. **AD credential attacks, Kerberoasting, AS-REP, spraying, and ticket material** — Next cluster-driven notes gate: mine AD credential attacks, Kerberoasting, AS-REP, spraying, and ticket material from complete packet text.
 4. **Shells, payloads, file transfer, listener, and session stabilization** — Mine shell receipt, payload selection, file transfer, listener, and session stabilization from the next complete source cluster.
 5. **Quiet service worker caching** — Improve repeat-load and offline behavior without prompting users to install anything.
