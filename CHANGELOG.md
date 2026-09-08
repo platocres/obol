@@ -1,3 +1,12 @@
+## v9.92 — - Mines the `source-note-cluster-metasploit-resource-post-exploitation-and-cleanup` queue item from the complete private review-packet route into public-safe Metasploit resource-script, session-state, post-module, loot-triage, and cleanup mechanics
+
+- Mines the `source-note-cluster-metasploit-resource-post-exploitation-and-cleanup` queue item from the complete private review-packet route into public-safe Metasploit resource-script, session-state, post-module, loot-triage, and cleanup mechanics.
+- Folds the cluster into the existing `metasploit-resource-pivot-workflow` primary owner instead of creating duplicate msfconsole, resource-script, Meterpreter, loot, or cleanup wrapper cards.
+- Keeps Metasploit as a reviewable operator aid: resource scripts, global options, jobs, sessions, routes, post modules, loot tables, and cleanup all need visible Evidence before the path advances.
+- Adds an Evidence analyzer for resource scripts, workspace/scope options, jobs, sessions, route state, post-module inventory, artifacts, loot triage, and cleanup while redacting hosts, secrets, flags, hashes, tickets, and token-like values.
+- Adds four public Field Notes covering resource-script review, session-bound post-module evidence, loot/artifact triage, and framework cleanup/report proof.
+- Advances Product Build Next to `source-note-cluster-reporting-cleanup-and-remediation-guidance`, leaving 44 pending notes in three public-safe cluster review items.
+
 ## v9.91 — - Mines the `source-note-cluster-pivoting-tunneling-and-route-proof` queue item from the complete private review-packet route into public-safe pivoting, tunneling, proxying, and route-proof mechanics
 
 - Mines the `source-note-cluster-pivoting-tunneling-and-route-proof` queue item from the complete private review-packet route into public-safe pivoting, tunneling, proxying, and route-proof mechanics.
