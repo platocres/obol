@@ -24,6 +24,8 @@ Agents may be operating from Kali or from a Windows host. Obol still never execu
 6. **Use live tracking, not release narrative.** Do not use `CHANGELOG.md` to decide what remains to be re-mined. Current status lives in Product Build Next, the Product Hardening Dashboard, `data/product-hardening/source-note-clusters-current.js`, and `data/product-hardening/note-progress-current.js`.
 7. **Land and prove the work.** Wire new outputs into the actual user-visible Next Steps / Orange path surface where relevant, update stable current owners instead of adding disposable wrappers, sync generated outputs, run the focused validators for the touched ownership area, and keep the exact final head green. If local shell access to GitHub fails, follow [`docs/CONNECTOR-FALLBACK.md`](docs/CONNECTOR-FALLBACK.md) and keep fixing the same PR through the connector until required checks pass.
 
+The completed broad audit item was **Post-mining Next Steps and tool-card clarity audit**; the active queue below is the split follow-up work.
+
 Product Build Next source note: This block is generated from `data/product-hardening/product-hardening-queue.js`. Do not edit it manually. Recommended work-package metadata comes from `data/product-hardening/work-packages.js`.
 
 ## Product contract
@@ -83,7 +85,7 @@ Open `index.html` in a browser. No server or package install is required. Use `#
 
 ## Validation
 
-Use `node tools/scope-check.js` as the focused inner-loop gate during development. [`BUILDING.md`](BUILDING.md) owns preflight, full-regression, and exact-head merge-readiness rules. CI owns the complete historical regression chain on explicit full-regression heads and `main`.
+Use `node tools/scope-check.js` as the focused inner-loop gate during development. [`BUILDING.md`](docs/BUILDING.md) owns preflight, full-regression, and exact-head merge-readiness rules. CI owns the complete historical regression chain on explicit full-regression heads and `main`.
 
 Historical runtime proof wording remains available for regression ownership checks: semantic flattening plus retirement; v9.44 retirement; Current runtime ownership; CSS/theme semantic ownership; runtime-app-single-paint; **Architecture / runtime:** 19/22 complete; **Runtime consolidation:** 5 operator startup requests, down from 286 (98% fewer); 215 semantically flattened, 57 still exact-owned.
 
