@@ -1,3 +1,16 @@
+## v9.86 — - Mined `source-note-cluster-shells-payloads-and-file-transfer-stabilization` into public-safe product mechanics
+
+- Mined `source-note-cluster-shells-payloads-and-file-transfer-stabilization` into public-safe product mechanics.
+- Added `listener-and-shell-stabilization-card` as a real primary product-hardening card, not a wrapper.
+- Added card taxonomy metadata so the new card is clearly marked as `cardKind: primary`, `cardOrigin: product-hardening`, `introducedIn: v9.86`, and `currentOwner: true`.
+- Enriched `metasploit-resource-pivot-workflow` with tunnel, route, SOCKS, proxychains, and internal-service proof handling.
+- Enriched `web-upload-inclusion-proof-chain` with file-transfer source, destination, integrity, permissions, execution, and cleanup handling.
+- Enriched `ad-enumeration-bloodhound-collection` with SharpHound, share, ACL, and AD collection-output transfer handling from the mixed packet window.
+- Added public-safe field notes for listener receipt, payload/handler matching, PTY stabilization, file transfer, tunnel route proof, AD artifact transfer, and cleanup/report boundaries.
+- Added `shell-payload-transfer-evidence-analyzer-v986` for pasted listener, payload, transfer, tunnel, proxychains, and AD artifact evidence.
+- Advanced the source-note ledger to 386/556 reviewed, 170 pending, and 9 remaining public-safe cluster review items.
+- Advanced Product Build Next to `source-note-cluster-linux-privesc-enumeration-and-proof`.
+
 ## v9.85 — - Mined `source-note-cluster-pass-the-hash-and-remote-exec-artifacts` from the cluster queue
 
 - Mined `source-note-cluster-pass-the-hash-and-remote-exec-artifacts` from the cluster queue.
