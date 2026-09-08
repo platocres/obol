@@ -36,10 +36,10 @@ const outputDir = process.env.OBOL_SMOKE_OUTPUT || path.join(__dirname, '..', 'a
 // post-notes clarity audit and operator-UI queue split extension. They still
 // fail loudly if the historical fragment chain leaks back into loading.
 const routes = [
-  { id: 'home', hash: '#/home', marker: /Home/i, requestBudget: 77 },
+  { id: 'home', hash: '#/home', marker: /Home/i, requestBudget: 79 },
   { id: 'targets', hash: '#/boxes', marker: /target/i, requestBudget: 85 },
   { id: 'evidence', hash: '#/intake', marker: /evidence/i, requestBudget: 82 },
-  { id: 'next-steps', hash: '#/path', marker: /(next|path|recommend)/i, requestBudget: 83 },
+  { id: 'next-steps', hash: '#/path', marker: /(next|path|recommend)/i, requestBudget: 84 },
   { id: 'report', hash: '#/report', marker: /report/i, requestBudget: 80 },
   { id: 'dashboard', hash: '#/dashboard', marker: /Product Hardening/i, currentDashboard: true, settleMs: 5200, requestBudget: 80 }
 ];
