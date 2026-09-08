@@ -14,7 +14,15 @@ function stripFeature(card){
  copy.featureIds=arr(copy.featureIds).filter(id=>id!==FEATURE);
  copy.mechanicIds=arr(copy.mechanicIds).filter(id=>id!==FEATURE);
  copy.relatedPrimaryCardIds=uniq(arr(copy.relatedPrimaryCardIds).concat(PRIMARY));
- copy.whyNow=copy.whyNow||'Use from the primary pivot route-proof workflow when a Meterpreter session, autoroute, or SOCKS pivot is the selected transport.';
+ copy.commands=arr(copy.commands).filter(row=>!(row&&row.note==='Command recognition is not success; durable facts come from pasted Evidence.'));
+ copy.expected=arr(copy.expected).filter(value=>!/Route\/interface proof captured|Listener side, bind address|Connectivity is proven through the tunnel/i.test(String(value)));
+ copy.expectedEvidence=arr(copy.expectedEvidence).filter(value=>!/Route\/interface proof captured|Listener side, bind address|Connectivity is proven through the tunnel/i.test(String(value)));
+ copy.failureModes=arr(copy.failureModes).filter(value=>!/Tunnel command exists|Listener is bound on the wrong side|Firewall or portproxy rule remains/i.test(String(value)));
+ copy.produces=arr(copy.produces).filter(value=>!/^pivot\.(route_state_reviewed|listener_side_selected|tunnel_transport_selected|proxied_connectivity_proven|cleanup_state_reviewed)$/.test(String(value)));
+ copy.tools=arr(copy.tools).filter(value=>!['ssh','plink','ssh.exe','chisel','proxychains','socat','netsh','sshuttle','dnscat2','nmap','ss','netstat'].includes(String(value)));
+ copy.operatorGoal='Use Metasploit pivoting from the primary route-proof workflow when a session-backed route or SOCKS pivot is the selected transport.';
+ copy.hypothesis='Metasploit pivoting stays contextual until route and session evidence show it is the right transport.';
+ copy.whyNow='Use from the primary pivot route-proof workflow when a Meterpreter session, autoroute, or SOCKS pivot is the selected transport.';
  return copy;
 }
 function card(id){
