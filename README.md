@@ -49,7 +49,7 @@ Historical Orange AD mindmap source: `https://orange-cyberdefense.github.io/ocd-
 <!-- OBOL-PRODUCT-BUILD-NEXT:START -->
 Generated from the same queue sources as the Product Hardening Dashboard. Do not edit this block manually.
 
-**Current product-hardening queue:** 228/657 complete (35%), 8 concrete queued, 9 modeled/standing items.
+**Current product-hardening queue:** 227/657 complete (35%), 9 concrete queued, 9 modeled/standing items.
 **Private notes source:** [`https://github.com/platocres/obol-source-notes/tree/main/sources/raw`](https://github.com/platocres/obol-source-notes/tree/main/sources/raw) — 556 notes and 1326 embedded resources accounted.
 **Private review packets:** `platocres/obol-source-notes@agent/review-packets:data/review-packets/manifest.json` — 556/556 notes, 29 packets, 0 truncated.
 **Complete source packet proof:** 556/556 notes in 29 complete-text packets, 0 truncated, 8,725,188 cleaned text chars.
@@ -73,7 +73,7 @@ Generated from the same queue sources as the Product Hardening Dashboard. Do not
 **Highest-priority concrete live items:**
 1. **AD enumeration, LDAP/Kerberos discovery, BloodHound, and domain context** — Cluster-driven notes gate: 30 pending source notes in `ad-enumeration-ldap-kerberos-bloodhound` must be mined from complete packet text before terminal dispositions resume.
 2. **Burn down all 556 note dispositions** — Concrete notes-first gate: 128 private source notes remain pending and are now organized into 7 cluster review items; mine the active cluster queue before terminal dispositions continue.
-3. **AD credential attacks, Kerberoasting, AS-REP, spraying, and ticket material** — Mine credential attack, roasting, spraying, ticket material, and account-lockout safety mechanics from the next complete source cluster.
+3. **Shells, payloads, file transfer, listener, and session stabilization** — Mine shell receipt, payload selection, file transfer, listener, and session stabilization from the next complete source cluster.
 4. **Quiet service worker caching** — Improve repeat-load and offline behavior without prompting users to install anything.
 5. **IndexedDB workspace storage** — Support durable larger local workspaces, multiple engagements, and cached indexes while remaining browser-local.
 

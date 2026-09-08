@@ -11,7 +11,7 @@
  * suppresses historical schedulers and commits current route owners last.
  *
  * Historical fragment order sha256: 40e3006d9423d669acf5869b577ecf56a6ca2ee1629c95fd0fcc5d242d2c5f27
- * Generated body sha256: b934c9f9926c870a11388403e238dd28d138b844f3e6654f2370ce0c145807b1
+ * Generated body sha256: 0403bf8074fc25eb9cfc7fc1eb9b3d4866913b4c85c4e96379e34faf5c336c6f
  * First historical fragment: assets/report-v2.js
  * Last historical fragment:  assets/app-v8.8.js
  */
@@ -1993,8 +1993,8 @@ if(__nativeMutationObserver)root.MutationObserver=__nativeMutationObserver;
 'use strict';
 (function(root){
 const release=Object.freeze({
- version:'9.87.0',
- label:'v9.87',
+ version:'9.88.0',
+ label:'v9.88',
  phase:'product-hardening',
  phaseLabel:'Product Hardening',
  orangeBaseline:'v8.8',
@@ -2045,7 +2045,8 @@ const release=Object.freeze({
   'data/product-hardening/pass-the-hash-remote-exec-card-provenance-v9.85.js',
   'data/product-hardening/shells-payloads-file-transfer-cluster-v9.86.js',
   'data/product-hardening/shells-payloads-queue-mutable-v9.86.js',
-  'data/product-hardening/linux-privesc-enumeration-proof-cluster-v9.87.js'
+  'data/product-hardening/linux-privesc-enumeration-proof-cluster-v9.87.js',
+  'data/product-hardening/windows-privesc-services-local-admin-cluster-v9.88.js'
  ])
 });
 function stampState(target){
