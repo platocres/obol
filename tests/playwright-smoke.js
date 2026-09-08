@@ -22,16 +22,17 @@ const outputDir = process.env.OBOL_SMOKE_OUTPUT || path.join(__dirname, '..', 'a
 // the v9.70 client/session analyzer, the v9.71 action-spine AD/MSF re-mining
 // extension, the v9.71 dynamic why-now decorator, the v9.72 final Linux
 // re-mining route guard, the v9.73-v9.74 pending disposition batches, the v9.74
-// source-note cluster queue ledger, the v9.75 global clustering extension, and
-// the v9.77-v9.86 cluster-mining/provenance/dashboard-mutable extensions. They
-// still fail loudly if the historical fragment chain leaks back into loading.
+// source-note cluster queue ledger, the v9.75 global clustering extension, the
+// v9.77-v9.86 cluster-mining/provenance/dashboard-mutable extensions, and the
+// v9.87 Linux privesc signal-routing extension. They still fail loudly if the
+// historical fragment chain leaks back into loading.
 const routes = [
   { id: 'home', hash: '#/home', marker: /Home/i, requestBudget: 68 },
-  { id: 'targets', hash: '#/boxes', marker: /target/i, requestBudget: 74 },
-  { id: 'evidence', hash: '#/intake', marker: /evidence/i, requestBudget: 71 },
+  { id: 'targets', hash: '#/boxes', marker: /target/i, requestBudget: 75 },
+  { id: 'evidence', hash: '#/intake', marker: /evidence/i, requestBudget: 72 },
   { id: 'next-steps', hash: '#/path', marker: /(next|path|recommend)/i, requestBudget: 75 },
-  { id: 'report', hash: '#/report', marker: /report/i, requestBudget: 69 },
-  { id: 'dashboard', hash: '#/dashboard', marker: /Product Hardening/i, currentDashboard: true, settleMs: 5200, requestBudget: 69 }
+  { id: 'report', hash: '#/report', marker: /report/i, requestBudget: 70 },
+  { id: 'dashboard', hash: '#/dashboard', marker: /Product Hardening/i, currentDashboard: true, settleMs: 5200, requestBudget: 70 }
 ];
 const HISTORICAL_FRAGMENT = /\/(?:assets|data)\/(?:core|app|intake|report|nmap|review|methodology|orange-fidelity|project-model|dashboard|source-delivery|obol)-v[\d.]+[^/]*$/;
 const METHODOLOGY_FILLER = /fills an unresolved methodology gap|methodology gap/i;
