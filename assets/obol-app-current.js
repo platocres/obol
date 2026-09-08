@@ -11,7 +11,7 @@
  * suppresses historical schedulers and commits current route owners last.
  *
  * Historical fragment order sha256: 40e3006d9423d669acf5869b577ecf56a6ca2ee1629c95fd0fcc5d242d2c5f27
- * Generated body sha256: d731c24edc678e42a794207e8b07fb4306bdd20928760cbb17d64841bf643de3
+ * Generated body sha256: 0fbf32d07acf38ec0d806091434094122bed1e66bede9466a39ac7172b60ca08
  * First historical fragment: assets/report-v2.js
  * Last historical fragment:  assets/app-v8.8.js
  */
@@ -2041,7 +2041,8 @@ const release=Object.freeze({
   'data/product-hardening/ad-initial-enum-spray-rdp-socks-cluster-v9.82.js',
   'data/product-hardening/web-content-discovery-fingerprinting-cluster-v9.83.js',
   'data/product-hardening/windows-credential-dumping-secrets-cluster-v9.84.js',
-  'data/product-hardening/pass-the-hash-remote-exec-cluster-v9.85.js'
+  'data/product-hardening/pass-the-hash-remote-exec-cluster-v9.85.js',
+  'data/product-hardening/pass-the-hash-remote-exec-card-provenance-v9.85.js'
  ])
 });
 function stampState(target){
