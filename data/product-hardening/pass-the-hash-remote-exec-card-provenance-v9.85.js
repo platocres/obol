@@ -94,10 +94,10 @@ function removeFoldedAliases(){
 function normalizeNotes(){
  const holder=root.OBOL_NOTE_INTEGRATION;
  if(!holder||!Array.isArray(holder.publicFieldNotes))return false;
- holder.publicFieldNotes=freeze(holder.publicFieldNotes.map(note=>{
+ root.OBOL_NOTE_INTEGRATION=frozen(Object.assign({},holder,{publicFieldNotes:freeze(holder.publicFieldNotes.map(note=>{
   if(!note||!String(note.id||'').includes('-pth-'))return note;
   return frozen(Object.assign({},note,{cardIds:freeze([PTH]),pathIds:freeze([PTH])}));
- }));
+ }))}));
  return true;
 }
 function withLocalAuthScope(analysis,text){
