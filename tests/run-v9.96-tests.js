@@ -2,6 +2,7 @@
 
 const fs = require('fs');
 const path = require('path');
+const cp = require('child_process');
 const assert = require('assert');
 const rootDir = path.join(__dirname, '..');
 const root = globalThis;
@@ -10,12 +11,17 @@ root.document = undefined;
 root.setTimeout = root.setTimeout || function(fn){ if (typeof fn === 'function') fn(); return 0; };
 
 function load(rel) { require(path.join(rootDir, rel)); }
+function run(args) {
+  const result = cp.spawnSync(process.execPath, args.map((part, index) => index === 0 ? path.join(rootDir, part) : part), { cwd: rootDir, encoding: 'utf8' });
+  process.stdout.write(result.stdout || '');
+  process.stderr.write(result.stderr || '');
+  if (result.status !== 0) process.exit(result.status || 1);
+}
 const releaseSource = fs.readFileSync(path.join(rootDir, 'data/current-release.js'), 'utf8');
 assert(/version:'9\.96\.0'/.test(releaseSource), 'current-release source should identify v9.96.0');
 assert(/label:'v9\.96'/.test(releaseSource), 'current-release source should identify v9.96');
 assert(releaseSource.includes('data/product-hardening/post-notes-clarity-audit-v9.96.js'), 'current-release source should load the v9.96 audit extension');
 
-load('data/current-release.js');
 load('data/product-hardening/product-hardening-queue.js');
 load('data/product-hardening/work-packages.js');
 load('data/product-hardening/post-notes-clarity-audit-v9.96.js');
@@ -75,4 +81,5 @@ assert(/Post-mining Path supporting-detail cleanup/.test(readme), 'README should
 assert(/Post-notes Operator UI Clarity/.test(readme), 'README should show the split post-notes work package');
 assert(!/old-rubric-only notes remain/i.test(readme), 'README should not resurrect old note-review residue');
 
+run(['tools/validate-release-pr.js', '--repo-only', '--release-version=9.96']);
 console.log('v9.96 post-notes clarity audit tests passed: ' + audit.findings.length + ' findings, ' + audit.proposedQueue.length + ' split queue items.');
