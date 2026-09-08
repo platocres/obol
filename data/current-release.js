@@ -1,8 +1,8 @@
 'use strict';
 (function(root){
 const release=Object.freeze({
- version:'9.90.0',
- label:'v9.90',
+ version:'9.91.0',
+ label:'v9.91',
  phase:'product-hardening',
  phaseLabel:'Product Hardening',
  orangeBaseline:'v8.8',
@@ -56,7 +56,9 @@ const release=Object.freeze({
   'data/product-hardening/linux-privesc-enumeration-proof-cluster-v9.87.js',
   'data/product-hardening/windows-privesc-services-local-admin-cluster-v9.88.js',
   'data/product-hardening/ad-enumeration-ldap-kerberos-bloodhound-cluster-v9.89.js',
-  'data/product-hardening/ad-credential-attacks-ticket-material-cluster-v9.90.js'
+  'data/product-hardening/ad-credential-attacks-ticket-material-cluster-v9.90.js',
+  'data/product-hardening/pivoting-tunneling-route-proof-cluster-v9.91.js',
+  'data/product-hardening/pivoting-tunneling-route-proof-card-deduper-v9.91.js'
  ])
 });
 function stampState(target){
