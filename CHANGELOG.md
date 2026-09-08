@@ -1,3 +1,12 @@
+## v9.84 — - Mines the queued `source-note-cluster-credential-dumping-lsass-and-windows-secrets` cluster from the complete private review packet route and converts it into public-safe credential dumping, secret-source triage, parser-output classification, validation, cleanup, and dashboard handoff mechanics
+
+- Mines the queued `source-note-cluster-credential-dumping-lsass-and-windows-secrets` cluster from the complete private review packet route and converts it into public-safe credential dumping, secret-source triage, parser-output classification, validation, cleanup, and dashboard handoff mechanics.
+- Adds `windows-secret-source-triage-workflow` as a real action-spine card because selecting among LSASS memory, registry hives, DPAPI/vault material, application configuration, database rows, and copied secret files is its own operator decision point.
+- Enriches `credential-dump-proof-chain` with LSASS PID/dump lineage, registry hive pairing, offline parser output, hash/crack boundaries, scoped validation, and cleanup evidence.
+- Enriches `pass-the-hash-proof-chain` only as a downstream handoff, not as a duplicate credential-dump card.
+- Adds `windows-credential-dumping-secrets-analyzer-v984` for pasted LSASS, hive, parser, DPAPI/vault, app-config, database-hash, cracking, validation, blocked-control, and cleanup evidence.
+- Adds public-safe field notes for secret-source triage, LSASS lineage, hive pairing, parser material classification, DPAPI/vault context, application/database secret provenance, cracking/reuse boundaries, blocked-control evidence, cleanup/redaction, and dashboard handoff.
+
 ## v9.83 — - Mines the queued `source-note-cluster-web-content-discovery-and-technology-fingerprinting` item from the complete private review packet route
 
 - Mines the queued `source-note-cluster-web-content-discovery-and-technology-fingerprinting` item from the complete private review packet route.

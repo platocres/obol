@@ -11,7 +11,7 @@
  * suppresses historical schedulers and commits current route owners last.
  *
  * Historical fragment order sha256: 40e3006d9423d669acf5869b577ecf56a6ca2ee1629c95fd0fcc5d242d2c5f27
- * Generated body sha256: 8c99ff269166344ef93effc9e7bba862b67fa94fb1c27e2a180a2bc0df2322c2
+ * Generated body sha256: 89a59e14816dc125b409a82a72c000649dc048e15076810fc50503ff2ae9efaa
  * First historical fragment: assets/report-v2.js
  * Last historical fragment:  assets/app-v8.8.js
  */
@@ -1993,8 +1993,8 @@ if(__nativeMutationObserver)root.MutationObserver=__nativeMutationObserver;
 'use strict';
 (function(root){
 const release=Object.freeze({
- version:'9.83.0',
- label:'v9.83',
+ version:'9.84.0',
+ label:'v9.84',
  phase:'product-hardening',
  phaseLabel:'Product Hardening',
  orangeBaseline:'v8.8',
@@ -2039,7 +2039,8 @@ const release=Object.freeze({
   'data/product-hardening/xss-client-session-csp-cluster-v9.80.js',
   'data/product-hardening/ad-pivot-smb-trust-cluster-v9.81.js',
   'data/product-hardening/ad-initial-enum-spray-rdp-socks-cluster-v9.82.js',
-  'data/product-hardening/web-content-discovery-fingerprinting-cluster-v9.83.js'
+  'data/product-hardening/web-content-discovery-fingerprinting-cluster-v9.83.js',
+  'data/product-hardening/windows-credential-dumping-secrets-cluster-v9.84.js'
  ])
 });
 function stampState(target){

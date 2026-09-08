@@ -1,8 +1,8 @@
 'use strict';
 (function(root){
 const release=Object.freeze({
- version:'9.83.0',
- label:'v9.83',
+ version:'9.84.0',
+ label:'v9.84',
  phase:'product-hardening',
  phaseLabel:'Product Hardening',
  orangeBaseline:'v8.8',
@@ -47,7 +47,8 @@ const release=Object.freeze({
   'data/product-hardening/xss-client-session-csp-cluster-v9.80.js',
   'data/product-hardening/ad-pivot-smb-trust-cluster-v9.81.js',
   'data/product-hardening/ad-initial-enum-spray-rdp-socks-cluster-v9.82.js',
-  'data/product-hardening/web-content-discovery-fingerprinting-cluster-v9.83.js'
+  'data/product-hardening/web-content-discovery-fingerprinting-cluster-v9.83.js',
+  'data/product-hardening/windows-credential-dumping-secrets-cluster-v9.84.js'
  ])
 });
 function stampState(target){
