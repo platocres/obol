@@ -64,8 +64,9 @@ const pthText=JSON.stringify(pth);
 assert.ok(pthText.includes('SMB authentication admin share write SCM control and shell proof separated'));
 assert.ok(pthText.includes('Token filtering restricted-admin and remote-UAC policy considered'));
 assert.ok(pthText.includes('Remote execution artifacts and cleanup recorded'));
+assert.ok(pthText.includes('Local account domain account and unconfirmed scope separated'));
 for(const expected of ['LocalAccountTokenFilterPolicy','FilterAdministratorToken','DisableRestrictedAdmin','Restricted Admin','cleanup.remote_exec_recorded'])assert.ok(pthText.includes(expected),'canonical PtH card missing folded alias content '+expected);
-assert.ok(!/source-mining|source re-mining|release cleanup|patch panel|\bUNKNOWN\b|methodology gap|stabilizer/i.test(pthText),'PtH card must not leak implementation slop');
+assert.ok(!/source-mining|source re-mining|release cleanup|patch panel|\bUNKNOWN\b|unknown|methodology gap|stabilizer/i.test(pthText),'PtH card must not leak implementation slop');
 
 const sample='nxc smb dc01.lab -u alice -H AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA --local-auth authentication succeeded Pwn3d! Found writable share ADMIN$ Opening SVCManager Creating service TST Starting service TST Microsoft Windows [Version 10.0] C:\\Windows\\system32> impacket-psexec LAB/alice@dc01 -hashes :BBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBB evil-winrm -i dc01 -u alice -H CCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCC xfreerdp /v:dc01 /u:alice /pth:DDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDD /restricted-admin reg query HKLM\\SOFTWARE\\Microsoft\\Windows\\CurrentVersion\\Policies\\System /v LocalAccountTokenFilterPolicy STATUS_ACCESS_DENIED Service TST deleted cleanup complete HTB{secret} OS{secret} Answer: flag';
 const analysis=globalThis.OBOL_PTH_REMOTE_EXEC_PACKET_V985.analyze(sample);
