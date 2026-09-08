@@ -13,9 +13,6 @@ load('data/product-hardening/source-note-clusters-current.js');
 load('data/product-hardening/global-source-note-clustering-v9.75.js');
 const label=globalThis.OBOL_CURRENT_RELEASE&&globalThis.OBOL_CURRENT_RELEASE.label;
 
-// Cluster-mining extensions are cumulative. Load the public-safe integrations that
-// mutate the cluster ledger for the current release, then validate the resulting
-// dashboard/README source of truth rather than a stale seed snapshot.
 if(versionAtLeast(label,'v9.77')){
  load('data/note-integration.js');
  globalThis.OBOL_LANES=[];
@@ -30,7 +27,9 @@ const clusterExtensions=[
  ['v9.82','data/product-hardening/ad-initial-enum-spray-rdp-socks-cluster-v9.82.js'],
  ['v9.83','data/product-hardening/web-content-discovery-fingerprinting-cluster-v9.83.js'],
  ['v9.84','data/product-hardening/windows-credential-dumping-secrets-cluster-v9.84.js'],
- ['v9.85','data/product-hardening/pass-the-hash-remote-exec-cluster-v9.85.js']
+ ['v9.85','data/product-hardening/pass-the-hash-remote-exec-cluster-v9.85.js'],
+ ['v9.85','data/product-hardening/pass-the-hash-remote-exec-card-provenance-v9.85.js'],
+ ['v9.86','data/product-hardening/shells-payloads-file-transfer-cluster-v9.86.js']
 ];
 for(const [since,src] of clusterExtensions)if(versionAtLeast(label,since))load(src);
 
@@ -72,7 +71,8 @@ const expectedByRelease={
  'v9.82':{wave:'OBOL_AD_INITIAL_ENUM_SPRAY_RDP_SOCKS_CLUSTER_V982',queue:'source-note-cluster-web-proxy-fuzzing-and-transform-workflows',cluster:'ad-initial-enum-credential-spray-rdp-socks-workflows',original:'web-proxy-fuzzing-and-transform-workflows',pending:239,count:13,next:/web-content-discovery-and-technology-fingerprinting/i},
  'v9.83':{wave:'OBOL_WEB_CONTENT_DISCOVERY_FINGERPRINTING_CLUSTER_V983',queue:'source-note-cluster-web-content-discovery-and-technology-fingerprinting',cluster:'web-content-discovery-and-technology-fingerprinting',pending:223,count:12,next:/credential-dumping-lsass-and-windows-secrets/i},
  'v9.84':{wave:'OBOL_WINDOWS_CREDENTIAL_DUMPING_SECRETS_CLUSTER_V984',queue:'source-note-cluster-credential-dumping-lsass-and-windows-secrets',cluster:'credential-dumping-lsass-and-windows-secrets',pending:208,count:11,next:/pass-the-hash-and-remote-exec-artifacts/i},
- 'v9.85':{wave:'OBOL_PASS_THE_HASH_REMOTE_EXEC_CLUSTER_V985',queue:'source-note-cluster-pass-the-hash-and-remote-exec-artifacts',cluster:'pass-the-hash-and-remote-exec-artifacts',pending:194,count:10,next:/shells-payloads-and-file-transfer-stabilization/i}
+ 'v9.85':{wave:'OBOL_PASS_THE_HASH_REMOTE_EXEC_CLUSTER_V985',queue:'source-note-cluster-pass-the-hash-and-remote-exec-artifacts',cluster:'pass-the-hash-and-remote-exec-artifacts',pending:194,count:10,next:/shells-payloads-and-file-transfer-stabilization/i},
+ 'v9.86':{wave:'OBOL_SHELL_PAYLOAD_TRANSFER_CLUSTER_V986',queue:'source-note-cluster-shells-payloads-and-file-transfer-stabilization',cluster:'shells-payloads-and-file-transfer-stabilization',pending:170,count:9,next:/linux-privesc-enumeration-and-proof/i}
 };
 const exact=expectedByRelease[label];
 if(exact){

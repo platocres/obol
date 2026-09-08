@@ -1,8 +1,8 @@
 'use strict';
 (function(root){
 const release=Object.freeze({
- version:'9.85.0',
- label:'v9.85',
+ version:'9.86.0',
+ label:'v9.86',
  phase:'product-hardening',
  phaseLabel:'Product Hardening',
  orangeBaseline:'v8.8',
@@ -50,7 +50,9 @@ const release=Object.freeze({
   'data/product-hardening/web-content-discovery-fingerprinting-cluster-v9.83.js',
   'data/product-hardening/windows-credential-dumping-secrets-cluster-v9.84.js',
   'data/product-hardening/pass-the-hash-remote-exec-cluster-v9.85.js',
-  'data/product-hardening/pass-the-hash-remote-exec-card-provenance-v9.85.js'
+  'data/product-hardening/pass-the-hash-remote-exec-card-provenance-v9.85.js',
+  'data/product-hardening/shells-payloads-file-transfer-cluster-v9.86.js',
+  'data/product-hardening/shells-payloads-queue-mutable-v9.86.js'
  ])
 });
 function stampState(target){

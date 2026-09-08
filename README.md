@@ -4,7 +4,7 @@ Obol is a static, browser-local workspace for OSCP-style labs, Active Directory 
 
 Live site: `https://platocres.github.io/obol/`
 
-Current release: **v9.85**
+Current release: **v9.86**
 
 Open `#/dashboard` for the active Product Hardening Dashboard and Product Build Next queue.
 
@@ -56,26 +56,26 @@ Generated from the same queue sources as the Product Hardening Dashboard. Do not
 **Raw source proof:** workflow run 33877189291 verified HTB ENEX 194,191,214 bytes and OffSec PEN-200 ENEX 110,367,324 bytes before packet extraction.
 **Runtime consolidation:** 5 operator startup requests, down from 286 (98% fewer).
 **Runtime consolidation owner:** `data/runtime-consolidation-current.js` feeds this README projection and the Product Hardening Dashboard.
-**Notes review status:** 362/556 reviewed; 194 pending; 133 modeled; 31 private-only.
-**Source re-mining status:** 362/362 full-spectrum re-mined; 0 old-rubric-only notes remain.
-**Source-note cluster status:** 194/194 pending notes clustered into 10 public-safe cluster review items; 0 pending notes remain unclustered.
-**Next notes batch:** **Shells, payloads, file transfer, listener, and session stabilization** (`source-note-cluster-shells-payloads-and-file-transfer-stabilization`) — 24 notes from `platocres/obol-source-notes@agent/review-packets:data/review-packets/manifest.json`.
-**Queue mode:** `cluster-review` for cluster `shells-payloads-and-file-transfer-stabilization`.
-**Selector:** Read complete packet text for cluster shells-payloads-and-file-transfer-stabilization from platocres/obol-source-notes@agent/review-packets:data/review-packets/manifest.json; mine the whole cluster before terminal dispositions.
+**Notes review status:** 386/556 reviewed; 170 pending; 133 modeled; 31 private-only.
+**Source re-mining status:** 386/386 full-spectrum re-mined; 0 old-rubric-only notes remain.
+**Source-note cluster status:** 170/170 pending notes clustered into 9 public-safe cluster review items; 0 pending notes remain unclustered.
+**Next notes batch:** **Linux privilege escalation enumeration, service, sudo, SUID, and kernel proof** (`source-note-cluster-linux-privesc-enumeration-and-proof`) — 18 notes from `platocres/obol-source-notes@agent/review-packets:data/review-packets/manifest.json`.
+**Queue mode:** `cluster-review` for cluster `linux-privesc-enumeration-and-proof`.
+**Selector:** Read complete packet text for cluster linux-privesc-enumeration-and-proof from platocres/obol-source-notes@agent/review-packets:data/review-packets/manifest.json; mine the whole cluster before terminal dispositions.
 **Acceptance:** Ship public-safe product mechanics from the whole cluster, then disposition each note with card/analyzer/field-note/report/queue/private rationale.
 
 **Recommended work package:** **Notes Impact and Source Re-mining** — 2 concrete live items / 19 tracked.
-**Next concrete entry:** **Shells, payloads, file transfer, listener, and session stabilization**
+**Next concrete entry:** **Linux privilege escalation enumeration, service, sudo, SUID, and kernel proof**
 **Ownership area:** `notes/impact-packets`
 **Package dependencies:** Notes Integration Foundation.
 **Package detail:** Use the Product Hardening Dashboard for full track ledgers and `data/product-hardening/work-packages.js` for the long-form package guidance.
 
 **Highest-priority concrete live items:**
-1. **Shells, payloads, file transfer, listener, and session stabilization** — Cluster-driven notes gate: 24 pending source notes in `shells-payloads-and-file-transfer-stabilization` must be mined from complete packet text before terminal dispositions resume.
-2. **Burn down all 556 note dispositions** — Concrete notes-first gate: 194 private source notes remain pending and are now organized into 10 cluster review items; mine the active cluster queue before terminal dispositions continue.
-3. **Quiet service worker caching** — Improve repeat-load and offline behavior without prompting users to install anything.
-4. **IndexedDB workspace storage** — Support durable larger local workspaces, multiple engagements, and cached indexes while remaining browser-local.
-5. **Web Workers for heavy tasks** — Move evidence parsing, search indexing, and report generation off the UI thread.
+1. **Linux privilege escalation enumeration, service, sudo, SUID, and kernel proof** — Cluster-driven notes gate: 18 pending source notes in `linux-privesc-enumeration-and-proof` must be mined from complete packet text before terminal dispositions resume.
+2. **Burn down all 556 note dispositions** — Concrete notes-first gate: 170 private source notes remain pending and are now organized into 9 cluster review items; mine the active cluster queue before terminal dispositions continue.
+3. **Shells, payloads, file transfer, listener, and session stabilization** — Mine shell receipt, payload selection, file transfer, listener, and session stabilization from the next complete source cluster.
+4. **Quiet service worker caching** — Improve repeat-load and offline behavior without prompting users to install anything.
+5. **IndexedDB workspace storage** — Support durable larger local workspaces, multiple engagements, and cached indexes while remaining browser-local.
 
 **Queue automation:** `data/product-hardening/product-hardening-queue.js`, `data/product-hardening/build-next-queue-hygiene-current.js`, `data/product-hardening/note-progress-current.js`, `data/product-hardening/source-note-clusters-current.js`, and `data/product-hardening/work-packages.js` are the queue owners. The dashboard and this README projection consume those same sources.
 Generated by `node tools/sync-product-build-next.js --write`. Verify with `node tools/sync-product-build-next.js --check`.
