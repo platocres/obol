@@ -1,5 +1,5 @@
 'use strict';
-// Human-authored CI nudge after generated release artifacts synced v9.94.
+// Human-authored CI nudge after v9.94 PR body governance was refreshed.
 const assert=require('assert');
 const cp=require('child_process');
 const path=require('path');
