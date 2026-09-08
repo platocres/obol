@@ -1,3 +1,13 @@
+## v9.88 — - Mined `source-note-cluster-windows-privesc-services-and-local-admin` into public-safe Windows local privilege-escalation mechanics
+
+- Mined `source-note-cluster-windows-privesc-services-and-local-admin` into public-safe Windows local privilege-escalation mechanics.
+- Enriched the existing Windows privesc owner cards rather than creating duplicate wrapper cards.
+- Added service-control, unquoted-path, scheduled-task, registry-policy, credential-trail, token/local-admin, cleanup, and report-boundary guidance.
+- Added public-safe field notes for Windows identity baselines, service boundaries, unquoted path proof, scheduled task chains, registry policy checks, credential trails, token capability review, and cleanup/reporting.
+- Added `windows-privesc-services-local-admin-v988` analyzer logic for pasted Windows service, task, registry, token, local-admin, credential-candidate, elevated-effect, and cleanup evidence.
+- Advanced the source-note ledger to 428/556 reviewed, 128 pending, and 7 remaining public-safe cluster review items.
+- Generated the next cluster queue so Product Build Next advances to `source-note-cluster-ad-enumeration-ldap-kerberos-bloodhound`.
+
 ## v9.87 — - Mined `source-note-cluster-linux-privesc-enumeration-and-proof` into public-safe product mechanics
 
 - Mined `source-note-cluster-linux-privesc-enumeration-and-proof` into public-safe product mechanics.
