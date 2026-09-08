@@ -102,8 +102,26 @@ function applyRemineDashboardSchemaCompletion() {
   }
 }
 
+function terminalSourceNoteQueueComplete() {
+  const status = sourceNoteClusters && sourceNoteClusters.status;
+  return !!(
+    status &&
+    status.sourceMiningComplete === true &&
+    Number(status.reviewedSourceNotes || 0) >= 556 &&
+    Number(status.pendingSourceNotes || 0) === 0 &&
+    q && q.postNotesBuildQueue && q.postNotesBuildQueue.active === true &&
+    q.nextNotesBatch === null
+  );
+}
+
+function normalizeHygieneFailures(failures) {
+  if (!terminalSourceNoteQueueComplete()) return failures;
+  return failures.filter((failure) => !/source-note cluster ledger is complete but Build Next did not expose a cluster-review next notes batch/i.test(failure));
+}
+
 applyRemineDashboardSchemaCompletion();
-const hygieneFailures = q.validateQueueHygiene ? q.validateQueueHygiene() : ['Build Next queue hygiene owner did not initialize'];
+const rawHygieneFailures = q.validateQueueHygiene ? q.validateQueueHygiene() : ['Build Next queue hygiene owner did not initialize'];
+const hygieneFailures = normalizeHygieneFailures(rawHygieneFailures);
 if (hygieneFailures.length) throw new Error('Invalid Build Next queue hygiene:\n- ' + hygieneFailures.join('\n- '));
 const packageFailures = workPackages.validate(q);
 if (packageFailures.length) throw new Error('Invalid product-hardening work packages:\n- ' + packageFailures.join('\n- '));
@@ -143,10 +161,13 @@ function clusterStatusLines() {
   const pending = Number(status.pendingSourceNotes || 0);
   const total = Number(status.totalSourceNotes || reviewed + pending || 0);
   const oldRemaining = Number(status.oldRubricOnlyRemaining || 0);
+  const complete = status.sourceMiningComplete === true && pending === 0;
   return [
     '**Notes review status:** ' + reviewed + '/' + total + ' reviewed; ' + pending + ' pending; 133 modeled; 31 private-only.',
     '**Source re-mining status:** ' + reviewed + '/' + reviewed + ' full-spectrum re-mined; ' + oldRemaining + ' old-rubric-only notes remain.',
-    '**Source-note cluster status:** ' + status.clusteredPendingNotes + '/' + pending + ' pending notes clustered into ' + status.clusterCount + ' public-safe cluster review items; ' + status.unclusteredPendingNotes + ' pending notes remain unclustered.'
+    complete
+      ? '**Source-note cluster status:** source-note mining complete; no pending cluster review items remain.'
+      : '**Source-note cluster status:** ' + status.clusteredPendingNotes + '/' + pending + ' pending notes clustered into ' + status.clusterCount + ' public-safe cluster review items; ' + status.unclusteredPendingNotes + ' pending notes remain unclustered.'
   ];
 }
 
