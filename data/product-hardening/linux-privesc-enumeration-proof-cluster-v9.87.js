@@ -209,7 +209,7 @@ function analyze(text){
  if(/-perm\s+-4000|-rws|setuid|SUID/i.test(raw))add('linux.suid_candidate_observed');
  if(/getcap|cap_setuid|cap_dac|cap_net|=ep\b/i.test(raw))add('linux.capability_candidate_observed');
  if(/systemctl|ExecStart=|OnCalendar=|cron|timer|run-parts|\.service/i.test(raw))add('linux.service_schedule_candidate_observed');
- if(/writable|-writable|world-writable|perm -002|drwxrwx|^-..w/im.test(raw))add('linux.writable_path_observed');
+ if(/writable|-writable|world-writable|perm -002|rwxrwxrwx|drwxrwx|^-..w/im.test(raw))add('linux.writable_path_observed');
  if(/uname\s+-a|Linux .*x86_64|PRETTY_NAME|VERSION_ID|lsb_release|kernel/i.test(raw))add('linux.kernel_context_observed');
  if(/searchsploit|exploit-db|CVE-\d{4}-\d+/i.test(raw))add('linux.local_exploit_research_observed');
  if(/\buid=0\b|euid=0|root\b.*whoami|whoami\s*\nroot/i.test(raw))add('linux.privileged_identity_observed');
