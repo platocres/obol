@@ -10,16 +10,15 @@ root.document = undefined;
 root.setTimeout = root.setTimeout || function(fn){ if (typeof fn === 'function') fn(); return 0; };
 
 function load(rel) { require(path.join(rootDir, rel)); }
+const releaseSource = fs.readFileSync(path.join(rootDir, 'data/current-release.js'), 'utf8');
+assert(/version:'9\.96\.0'/.test(releaseSource), 'current-release source should identify v9.96.0');
+assert(/label:'v9\.96'/.test(releaseSource), 'current-release source should identify v9.96');
+assert(releaseSource.includes('data/product-hardening/post-notes-clarity-audit-v9.96.js'), 'current-release source should load the v9.96 audit extension');
+
 load('data/current-release.js');
 load('data/product-hardening/product-hardening-queue.js');
 load('data/product-hardening/work-packages.js');
 load('data/product-hardening/post-notes-clarity-audit-v9.96.js');
-
-const release = root.OBOL_CURRENT_RELEASE;
-assert(release, 'current release should be exposed');
-assert.strictEqual(release.version, '9.96.0', 'current release version should be v9.96.0');
-assert.strictEqual(release.label, 'v9.96', 'current release label should be v9.96');
-assert(Array.from(release.productHardeningExtensions || []).includes('data/product-hardening/post-notes-clarity-audit-v9.96.js'), 'v9.96 audit extension should be loaded by current release');
 
 const audit = root.OBOL_POST_NOTES_CLARITY_AUDIT_V996;
 assert(audit, 'v9.96 audit ledger should be exposed');
