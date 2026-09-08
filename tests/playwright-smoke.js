@@ -31,16 +31,17 @@ const outputDir = process.env.OBOL_SMOKE_OUTPUT || path.join(__dirname, '..', 'a
 // tunneling, proxying, route-proof cluster extension, the v9.92 Metasploit
 // resource/post-exploitation cleanup extension, the v9.93 reporting,
 // cleanup, remediation, redaction, and retest guidance extension, the v9.94
-// exam skills assessment private-boundary disposition extension, and the
-// v9.95 final source-note completion and post-notes queue extension. They still
+// exam skills assessment private-boundary disposition extension, the v9.95
+// final source-note completion and post-notes queue extension, and the v9.96
+// post-notes clarity audit and operator-UI queue split extension. They still
 // fail loudly if the historical fragment chain leaks back into loading.
 const routes = [
-  { id: 'home', hash: '#/home', marker: /Home/i, requestBudget: 77 },
-  { id: 'targets', hash: '#/boxes', marker: /target/i, requestBudget: 84 },
-  { id: 'evidence', hash: '#/intake', marker: /evidence/i, requestBudget: 81 },
-  { id: 'next-steps', hash: '#/path', marker: /(next|path|recommend)/i, requestBudget: 83 },
-  { id: 'report', hash: '#/report', marker: /report/i, requestBudget: 79 },
-  { id: 'dashboard', hash: '#/dashboard', marker: /Product Hardening/i, currentDashboard: true, settleMs: 5200, requestBudget: 79 }
+  { id: 'home', hash: '#/home', marker: /Home/i, requestBudget: 79 },
+  { id: 'targets', hash: '#/boxes', marker: /target/i, requestBudget: 85 },
+  { id: 'evidence', hash: '#/intake', marker: /evidence/i, requestBudget: 82 },
+  { id: 'next-steps', hash: '#/path', marker: /(next|path|recommend)/i, requestBudget: 84 },
+  { id: 'report', hash: '#/report', marker: /report/i, requestBudget: 80 },
+  { id: 'dashboard', hash: '#/dashboard', marker: /Product Hardening/i, currentDashboard: true, settleMs: 5200, requestBudget: 80 }
 ];
 const HISTORICAL_FRAGMENT = /\/(?:assets|data)\/(?:core|app|intake|report|nmap|review|methodology|orange-fidelity|project-model|dashboard|source-delivery|obol)-v[\d.]+[^/]*$/;
 const METHODOLOGY_FILLER = /fills an unresolved methodology gap|methodology gap/i;

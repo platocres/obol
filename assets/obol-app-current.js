@@ -11,7 +11,7 @@
  * suppresses historical schedulers and commits current route owners last.
  *
  * Historical fragment order sha256: 40e3006d9423d669acf5869b577ecf56a6ca2ee1629c95fd0fcc5d242d2c5f27
- * Generated body sha256: c8f4349712f83ef40e92f0df084c80200587a4bb903f30365881bcaa9f6b9114
+ * Generated body sha256: 595169ae2c94af5b067a12b6859319a3d14491dbcc1067bbf34c9ecadb8808d4
  * First historical fragment: assets/report-v2.js
  * Last historical fragment:  assets/app-v8.8.js
  */
@@ -1993,8 +1993,8 @@ if(__nativeMutationObserver)root.MutationObserver=__nativeMutationObserver;
 'use strict';
 (function(root){
 const release=Object.freeze({
- version:'9.95.0',
- label:'v9.95',
+ version:'9.96.0',
+ label:'v9.96',
  phase:'product-hardening',
  phaseLabel:'Product Hardening',
  orangeBaseline:'v8.8',
@@ -2054,7 +2054,8 @@ const release=Object.freeze({
   'data/product-hardening/metasploit-resource-post-exploitation-cleanup-cluster-v9.92.js',
   'data/product-hardening/reporting-cleanup-remediation-guidance-cluster-v9.93.js',
   'data/product-hardening/exam-skills-assessment-private-boundary-cluster-v9.94.js',
-  'data/product-hardening/reference-index-course-map-private-boundary-cluster-v9.95.js'
+  'data/product-hardening/reference-index-course-map-private-boundary-cluster-v9.95.js',
+  'data/product-hardening/post-notes-clarity-audit-v9.96.js'
  ])
 });
 function stampState(target){

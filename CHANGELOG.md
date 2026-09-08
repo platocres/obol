@@ -1,3 +1,12 @@
+## v9.96 — Starts the post-notes hardening phase with an audit-first build for Next Steps, Card, and Tools clarity
+
+- Added a post-notes clarity audit ledger that records concrete findings for README handoff posture, Path supporting-detail clutter, dense Card pages, the old Tools inventory model, and missing visual-density regression coverage.
+- Marked the broad post-notes Next Steps/tool-card clarity audit item complete only after attaching findings, severity, evidence, and proposed solutions.
+- Split the follow-up work into focused queued builds for Path supporting-detail cleanup, Card progressive-disclosure cleanup, Tools builder-library cleanup, and visual-density regression proof.
+- Cleaned the README quickstart so source-note mining docs are reference-only after v9.95 unless Product Build Next or the user explicitly reopens note-derived work.
+- Added the `Post-notes Operator UI Clarity` work package so future agents see the split plan instead of trying to land every cleanup in one vague UI patch.
+- Added a v9.96 current-product test that checks release identity, audit findings, queue split, package recommendation, and README post-notes handoff wording.
+
 ## v9.95 — - Completes the final `source-note-cluster-reference-index-and-course-map-private-heavy` queue item as a terminal private-heavy disposition
 
 - Completes the final `source-note-cluster-reference-index-and-course-map-private-heavy` queue item as a terminal private-heavy disposition.

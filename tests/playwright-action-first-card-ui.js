@@ -28,7 +28,7 @@ const demotedCards = {
   'fuzzer-payload-position-review': 'burp-intruder-fuzzing-workflow',
   'fuzzer-result-delta-review': 'burp-intruder-fuzzing-workflow',
 };
-const INTERNAL_CARD_SLOP = /v9\.67 action-first cleanup|Field notes below are supporting context|fills an unresolved methodology gap|methodology gap|source-mining|source re-mining|release cleanup|patch panel|stabilizer|\bUNKNOWN\b/i;
+const INTERNAL_CARD_SLOP = /v9\.67 action-first cleanup|Field notes below are supporting context|fills an unresolved methodology gap|methodology gap|source-mining|source re-mining|release cleanup|patch panel|stabilizer|\bUNKNOWN\s+(?:tool|row|builder|implementation|command)|(?:tool|row|builder|implementation|command)\s+UNKNOWN\b/i;
 fs.mkdirSync(outputDir, { recursive: true });
 
 function hasActionSpine(text) {
