@@ -61,7 +61,7 @@ assert.ok((card.commands||[]).length>=5,'folded owner needs private-boundary com
 for(const row of card.commands||[])assert.ok(row.tool&&row.run&&row.when&&row.evidence&&row.note,'command row needs full action-spine fields');
 assert.ok(/assessment|walkthrough|private|flag|credential|solution/i.test(card.operatorGoal+card.hypothesis+card.whyNow));
 assert.ok(!/\bUNKNOWN\b|methodology gap|wrapper/i.test(JSON.stringify(card)));
-assert.ok(!/HTB\{|OS\{|flag\{/.test(JSON.stringify(card))),'card must not leak flags');
+assert.ok(!/HTB\{|OS\{|flag\{/.test(JSON.stringify(card)),'card must not leak flags');
 
 for(const bad of ['skills-assessment-wrapper-card','walkthrough-heavy-wrapper-card','exam-walkthrough-wrapper-card','private-heavy-skills-wrapper-card','course-walkthrough-wrapper-card','assessment-solution-chain-wrapper-card','note-disposition-wrapper-card'])assert.ok(!globalThis.CARDS[bad],'must not create duplicate wrapper card '+bad);
 const allRuns=(card.commands||[]).map(row=>String(row.run||'')).join('\n');
