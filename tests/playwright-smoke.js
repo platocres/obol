@@ -29,16 +29,17 @@ const outputDir = process.env.OBOL_SMOKE_OUTPUT || path.join(__dirname, '..', 'a
 // and LDAP/Kerberos/BloodHound cluster extension, the v9.90 AD credential
 // attack and ticket-material boundary extension, the v9.91 pivoting,
 // tunneling, proxying, route-proof cluster extension, the v9.92 Metasploit
-// resource/post-exploitation cleanup extension, and the v9.93 reporting,
-// cleanup, remediation, redaction, and retest guidance extension. They still
-// fail loudly if the historical fragment chain leaks back into loading.
+// resource/post-exploitation cleanup extension, the v9.93 reporting,
+// cleanup, remediation, redaction, and retest guidance extension, and the
+// v9.94 exam skills assessment private-boundary disposition extension. They
+// still fail loudly if the historical fragment chain leaks back into loading.
 const routes = [
-  { id: 'home', hash: '#/home', marker: /Home/i, requestBudget: 76 },
-  { id: 'targets', hash: '#/boxes', marker: /target/i, requestBudget: 82 },
-  { id: 'evidence', hash: '#/intake', marker: /evidence/i, requestBudget: 79 },
+  { id: 'home', hash: '#/home', marker: /Home/i, requestBudget: 77 },
+  { id: 'targets', hash: '#/boxes', marker: /target/i, requestBudget: 83 },
+  { id: 'evidence', hash: '#/intake', marker: /evidence/i, requestBudget: 80 },
   { id: 'next-steps', hash: '#/path', marker: /(next|path|recommend)/i, requestBudget: 83 },
-  { id: 'report', hash: '#/report', marker: /report/i, requestBudget: 77 },
-  { id: 'dashboard', hash: '#/dashboard', marker: /Product Hardening/i, currentDashboard: true, settleMs: 5200, requestBudget: 77 }
+  { id: 'report', hash: '#/report', marker: /report/i, requestBudget: 78 },
+  { id: 'dashboard', hash: '#/dashboard', marker: /Product Hardening/i, currentDashboard: true, settleMs: 5200, requestBudget: 78 }
 ];
 const HISTORICAL_FRAGMENT = /\/(?:assets|data)\/(?:core|app|intake|report|nmap|review|methodology|orange-fidelity|project-model|dashboard|source-delivery|obol)-v[\d.]+[^/]*$/;
 const METHODOLOGY_FILLER = /fills an unresolved methodology gap|methodology gap/i;
