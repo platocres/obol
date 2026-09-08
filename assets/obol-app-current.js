@@ -11,7 +11,7 @@
  * suppresses historical schedulers and commits current route owners last.
  *
  * Historical fragment order sha256: 40e3006d9423d669acf5869b577ecf56a6ca2ee1629c95fd0fcc5d242d2c5f27
- * Generated body sha256: 823a2f95002edcfcfe48782c5f59cd98f787570befa0a4f09d2370a5798ec2e3
+ * Generated body sha256: 31e7c6162ad48761990ad3a231d441f5ffa4733abce05ecb760704ffbc49fbc8
  * First historical fragment: assets/report-v2.js
  * Last historical fragment:  assets/app-v8.8.js
  */
@@ -1993,8 +1993,8 @@ if(__nativeMutationObserver)root.MutationObserver=__nativeMutationObserver;
 'use strict';
 (function(root){
 const release=Object.freeze({
- version:'9.91.0',
- label:'v9.91',
+ version:'9.92.0',
+ label:'v9.92',
  phase:'product-hardening',
  phaseLabel:'Product Hardening',
  orangeBaseline:'v8.8',
@@ -2050,7 +2050,8 @@ const release=Object.freeze({
   'data/product-hardening/ad-enumeration-ldap-kerberos-bloodhound-cluster-v9.89.js',
   'data/product-hardening/ad-credential-attacks-ticket-material-cluster-v9.90.js',
   'data/product-hardening/pivoting-tunneling-route-proof-cluster-v9.91.js',
-  'data/product-hardening/pivoting-tunneling-route-proof-card-deduper-v9.91.js'
+  'data/product-hardening/pivoting-tunneling-route-proof-card-deduper-v9.91.js',
+  'data/product-hardening/metasploit-resource-post-exploitation-cleanup-cluster-v9.92.js'
  ])
 });
 function stampState(target){
