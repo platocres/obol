@@ -1,3 +1,13 @@
+## v9.87 — - Mined `source-note-cluster-linux-privesc-enumeration-and-proof` into public-safe product mechanics
+
+- Mined `source-note-cluster-linux-privesc-enumeration-and-proof` into public-safe product mechanics.
+- Added `linux-privesc-signal-router` as a real primary product-hardening card, not a wrapper.
+- Enriched `linux-privesc-boundary-sweep` so Linux service, sudo, SUID, capability, scheduled-execution, and kernel-risk lessons stay inside the canonical privilege-escalation boundary instead of becoming duplicate cards.
+- Added public-safe field notes for signal routing, sudo rule proof, SUID/capability candidate handling, service/scheduled execution proof, kernel/local-exploit risk, and cleanup/report boundaries.
+- Added `linux-privesc-signal-router-v987` analyzer logic for pasted sudo, SUID, capability, systemd/cron, kernel, enum-script, cleanup, and identity evidence.
+- Added a downstream cluster queue refinement so the next Product Build Next item advances to `source-note-cluster-windows-privesc-services-and-local-admin` and the remaining eight cluster items stay explicit.
+- Advanced the source-note ledger to 404/556 reviewed, 152 pending, and 8 remaining public-safe cluster review items.
+
 ## v9.86 — - Mined `source-note-cluster-shells-payloads-and-file-transfer-stabilization` into public-safe product mechanics
 
 - Mined `source-note-cluster-shells-payloads-and-file-transfer-stabilization` into public-safe product mechanics.
