@@ -34,11 +34,11 @@ assert.strictEqual(wave.nextQueueId,'source-note-cluster-metasploit-resource-pos
 assert.strictEqual(wave.nextClusterId,'metasploit-resource-post-exploitation-and-cleanup');
 assert.strictEqual(wave.noteCount,19);
 assert.ok(wave.reviewTextChars>300000);
-assert.deepStrictEqual(wave.primaryCardIds,['rdp-socks-tunnel-workflow','metasploit-resource-pivot-workflow']);
+assert.deepStrictEqual(wave.primaryCardIds,['rdp-socks-tunnel-workflow']);
 assert.deepStrictEqual(wave.failures,[]);
 assert.ok(wave.notesIntegrated&&wave.cardsIntegrated&&wave.analyzerIntegrated&&wave.clusterCompleted&&wave.queuePatched);
 
-const ownerCards=['rdp-socks-tunnel-workflow','metasploit-resource-pivot-workflow'];
+const ownerCards=['rdp-socks-tunnel-workflow'];
 for(const id of ownerCards){
  const card=globalThis.CARDS&&globalThis.CARDS[id];
  assert.ok(card,'missing folded pivot owner card '+id);
@@ -77,6 +77,7 @@ assert.ok(clusters&&clusters.status);
 assert.strictEqual(clusters.status.latestCompletedClusterQueue,'source-note-cluster-pivoting-tunneling-and-route-proof');
 assert.strictEqual(clusters.status.latestCompletedClusterId,'pivoting-tunneling-and-route-proof');
 assert.deepStrictEqual(clusters.status.latestCompletedClusterOwnerCards,ownerCards);
+assert.ok((clusters.status.latestCompletedClusterContextCards||[]).includes('metasploit-resource-pivot-workflow'));
 assert.strictEqual(clusters.status.reviewedSourceNotes,499);
 assert.strictEqual(clusters.status.pendingSourceNotes,57);
 assert.strictEqual(clusters.status.clusteredPendingNotes,57);
