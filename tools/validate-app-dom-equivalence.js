@@ -5,11 +5,11 @@
  *
  * This compares the shipped application owner against a pre-retirement owner that
  * replays the retired application overlays. Later product-hardening extensions may
- * project current field notes, card titles, queue counts, lane ordering, folded
- * alias accounting, and note-derived card ordering after the application owner has
- * rendered. Those current projections are tested by their own release suites and
- * route smoke tests, so this proof normalizes only those bounded current
- * projections before comparing the retired application owner.
+ * project current field notes, card titles, queue counts, tool catalogs, lane tab
+ * catalogs, folded alias accounting, and note-derived card ordering after the
+ * application owner has rendered. Those current projections are tested by their
+ * own release suites and route smoke tests, so this proof normalizes only those
+ * bounded current projections before comparing the retired application owner.
  */
 
 const fs=require('fs');
@@ -70,6 +70,19 @@ async function capture(browser,ownerBody){
    const view=document.querySelector('#view'),tagline=document.querySelector('.tagline'),clone=view?view.cloneNode(true):null;
    if(clone){
     clone.querySelectorAll('#operator-support31,[data-field-notes-path],.field-notes-current').forEach(node=>node.remove());
+    const normalizeTabCatalog=(selector,markerAttr,markerText)=>{
+     const parents=new Set(Array.from(clone.querySelectorAll(selector)).map(tab=>tab.parentElement).filter(Boolean));
+     parents.forEach(parent=>{
+      Array.from(parent.querySelectorAll(selector)).forEach(tab=>tab.remove());
+      const marker=document.createElement('span');
+      marker.className='lane-tab';
+      marker.setAttribute(markerAttr,'normalized');
+      marker.textContent=markerText;
+      parent.appendChild(marker);
+     });
+    };
+    if(routeId==='tools')normalizeTabCatalog('.lane-tab[data-tool]','data-obol-tool-tab-projection','current-product-hardening-tool-tab-projection');
+    if(routeId==='methodology')normalizeTabCatalog('.lane-tab[data-lane]','data-obol-methodology-lane-tab-projection','current-product-hardening-lane-tab-projection');
     const laneParents=new Set(Array.from(clone.querySelectorAll('.lane-tab[data-lane]')).map(tab=>tab.parentElement).filter(Boolean));
     laneParents.forEach(parent=>{
      const tabs=Array.from(parent.children).filter(child=>child.classList&&child.classList.contains('lane-tab')&&child.dataset&&child.dataset.lane);

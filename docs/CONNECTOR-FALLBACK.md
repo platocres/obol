@@ -18,6 +18,20 @@ Use the connector to:
 
 A local DNS failure does not weaken the merge-ready rule. The build is not done until the required PR checks pass on the exact head that will be merged.
 
+## Observed DNS failure pattern
+
+If one direct shell diagnostic such as `git ls-remote https://github.com/platocres/obol.git HEAD` returns `Could not resolve host: github.com`, stop retrying local shell GitHub access for that build. Treat the runtime as connector-only until the environment changes.
+
+The next steps are:
+
+- keep the current release branch or PR as the unit of work;
+- fetch source, docs, queue owners, and test files through the GitHub connector;
+- create or update files through connector writes with full replacement content;
+- inspect workflow runs and job logs through the connector;
+- fix the same PR until the exact head is green.
+
+Do not downgrade the work to a narrative answer because DNS failed. Do not tell Brandon the build is complete until the PR checks pass.
+
 ## File update pattern
 
 `update_file` replaces the entire file. Fetch a narrow range first when the file is large and you only need the current blob SHA:

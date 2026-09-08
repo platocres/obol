@@ -1,8 +1,8 @@
 'use strict';
 (function(root){
 const release=Object.freeze({
- version:'9.86.0',
- label:'v9.86',
+ version:'9.87.0',
+ label:'v9.87',
  phase:'product-hardening',
  phaseLabel:'Product Hardening',
  orangeBaseline:'v8.8',
@@ -52,7 +52,8 @@ const release=Object.freeze({
   'data/product-hardening/pass-the-hash-remote-exec-cluster-v9.85.js',
   'data/product-hardening/pass-the-hash-remote-exec-card-provenance-v9.85.js',
   'data/product-hardening/shells-payloads-file-transfer-cluster-v9.86.js',
-  'data/product-hardening/shells-payloads-queue-mutable-v9.86.js'
+  'data/product-hardening/shells-payloads-queue-mutable-v9.86.js',
+  'data/product-hardening/linux-privesc-enumeration-proof-cluster-v9.87.js'
  ])
 });
 function stampState(target){
