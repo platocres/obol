@@ -4,7 +4,7 @@ Obol is a static, browser-local workspace for OSCP-style labs, Active Directory 
 
 Live site: `https://platocres.github.io/obol/`
 
-Current release: **v9.94**
+Current release: **v9.95**
 
 Open `#/dashboard` for the active Product Hardening Dashboard and Product Build Next queue.
 
@@ -56,26 +56,22 @@ Generated from the same queue sources as the Product Hardening Dashboard. Do not
 **Raw source proof:** workflow run 33877189291 verified HTB ENEX 194,191,214 bytes and OffSec PEN-200 ENEX 110,367,324 bytes before packet extraction.
 **Runtime consolidation:** 5 operator startup requests, down from 286 (98% fewer).
 **Runtime consolidation owner:** `data/runtime-consolidation-current.js` feeds this README projection and the Product Hardening Dashboard.
-**Notes review status:** 555/556 reviewed; 1 pending; 133 modeled; 31 private-only.
-**Source re-mining status:** 555/555 full-spectrum re-mined; 0 old-rubric-only notes remain.
-**Source-note cluster status:** 1/1 pending notes clustered into 1 public-safe cluster review items; 0 pending notes remain unclustered.
-**Next notes batch:** **Reference indexes, tables of contents, and course map material** (`source-note-cluster-reference-index-and-course-map-private-heavy`) — 1 notes from `platocres/obol-source-notes@agent/review-packets:data/review-packets/manifest.json`.
-**Queue mode:** `cluster-review` for cluster `reference-index-and-course-map-private-heavy`.
-**Selector:** Read complete packet text for cluster reference-index-and-course-map-private-heavy from platocres/obol-source-notes@agent/review-packets:data/review-packets/manifest.json; mine only public-safe abstractions and keep walkthrough, assessment, flag, credential, target, screenshot, course-prose, and exact-solution material private-only.
-**Acceptance:** Disposition the whole cluster as private-heavy: extract only reusable public-safe skill abstractions, record private-only rationale for walkthrough/source-specific material, and keep exact solution chains out of public UI.
+**Notes review status:** 556/556 reviewed; 0 pending; 133 modeled; 31 private-only.
+**Source re-mining status:** 556/556 full-spectrum re-mined; 0 old-rubric-only notes remain.
+**Source-note cluster status:** source-note mining complete; no pending cluster review items remain.
 
-**Recommended work package:** **Notes Impact and Source Re-mining** — 2 concrete live items / 19 tracked.
-**Next concrete entry:** **Reference indexes, tables of contents, and course map material**
-**Ownership area:** `notes/impact-packets`
-**Package dependencies:** Notes Integration Foundation.
+**Recommended work package:** **Post-mining Next Steps and tool-card clarity audit** — 1 concrete live item / 1 tracked.
+**Next concrete entry:** **Post-mining Next Steps and tool-card clarity audit**
+**Ownership area:** `ui-ux`
+**Package dependencies:** none.
 **Package detail:** Use the Product Hardening Dashboard for full track ledgers and `data/product-hardening/work-packages.js` for the long-form package guidance.
 
 **Highest-priority concrete live items:**
-1. **Reference indexes, tables of contents, and course map material** — Cluster-driven notes gate: 1 pending source notes in `reference-index-and-course-map-private-heavy` must be mined from complete packet text before terminal dispositions resume.
-2. **Burn down all 556 note dispositions** — Concrete notes-first gate: 1 private source notes remain pending and are now organized into 1 cluster review items; mine the active cluster queue before terminal dispositions continue.
-3. **AD credential attacks, Kerberoasting, AS-REP, spraying, and ticket material** — Next cluster-driven notes gate: mine AD credential attacks, Kerberoasting, AS-REP, spraying, and ticket material from complete packet text.
-4. **Shells, payloads, file transfer, listener, and session stabilization** — Mine shell receipt, payload selection, file transfer, listener, and session stabilization from the next complete source cluster.
-5. **Quiet service worker caching** — Improve repeat-load and offline behavior without prompting users to install anything.
+1. **Post-mining Next Steps and tool-card clarity audit** — Now that source-note mining is complete, audit Next Steps, Card, and Tools surfaces for clutter, duplicate builders, stale supporting-detail blocks, and confusing tool presentation.
+2. **Post-mining runtime and old-layer retirement audit** — Use the current-owner/equivalence/fixture lifecycle to identify old note-mining and historical layers that can be retired without changing observable behavior.
+3. **Post-mining regression speed and coverage pass** — With the note queue closed, shorten slow historical/browser checks where proven redundant while keeping exact-head full regression and browser smoke meaningful.
+4. **Quiet service worker caching** — Improve repeat-load and offline behavior without prompting users to install anything.
+5. **IndexedDB workspace storage** — Support durable larger local workspaces, multiple engagements, and cached indexes while remaining browser-local.
 
 **Queue automation:** `data/product-hardening/product-hardening-queue.js`, `data/product-hardening/build-next-queue-hygiene-current.js`, `data/product-hardening/note-progress-current.js`, `data/product-hardening/source-note-clusters-current.js`, and `data/product-hardening/work-packages.js` are the queue owners. The dashboard and this README projection consume those same sources.
 Generated by `node tools/sync-product-build-next.js --write`. Verify with `node tools/sync-product-build-next.js --check`.

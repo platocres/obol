@@ -50,7 +50,8 @@ function normalizeHtml(html){
   .replace(/Authorization Boundary Replay|Separate Client Bypass from Server Authorization|AD Password Spray Safety and Result Review|RDP SOCKS Tunnel Workflow/g,'[current-product-card-title]')
   .replace(/data-card-evidence-open="(?:web-authz-boundaries|web-client-session-proof-chain|web-proxy-transform-proof-chain|web-client-controls|encoded-parameter-review|ad-enumeration-bloodhound-collection|ad-password-spray-safety-workflow|rdp-socks-tunnel-workflow)"/g,'data-card-evidence-open="[current-product-card]"')
   .replace(/\b(\d+\/\d+ units · )\d+( queued)\b/g,'$1[queued]$2')
-  .replace(/(<span><b>)\d+(<\/b> hypotheses<\/span>)/g,'$1[folded-alias-count]$2');
+  .replace(/(<span><b>)\d+(<\/b> hypotheses<\/span>)/g,'$1[folded-alias-count]$2')
+  .replace(/<p><b>Cluster ledger:<\/b> \d+\/\d+ reviewed · \d+ pending · \d+\/\d+ clusters complete · next [^<]+<\/p>/g,'<p><b>Cluster ledger:</b> [current-product-cluster-ledger]</p>');
 }
 function normalizeReleaseChrome(text){
  return String(text||'')

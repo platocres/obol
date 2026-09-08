@@ -24,6 +24,13 @@ function forbidText(rel,needle){
  const text=read(rel);
  if(text.includes(needle))fail(`${rel} must not include stale text ${JSON.stringify(needle)}`);
 }
+function readmeHasTerminalPostNotesHandoff(){
+ if(!exists('README.md'))return false;
+ const text=read('README.md');
+ return /556\/556 reviewed; 0 pending/.test(text)&&
+  /source-note mining complete; no pending cluster review items remain/i.test(text)&&
+  /Post-mining Next Steps and tool-card clarity audit/.test(text);
+}
 
 for(const rel of [
  'README.md',
@@ -123,7 +130,13 @@ requireText('README.md','This is the single agent quickstart.');
 requireText('README.md','Extract the value, not the wording.');
 requireText('README.md','Do not use `CHANGELOG.md` to decide what remains to be re-mined.');
 requireText('README.md','[`docs/NOTE-DERIVATION-STANDARD.md`](docs/NOTE-DERIVATION-STANDARD.md)');
-requireText('README.md','**Next notes batch:**');
+if(readmeHasTerminalPostNotesHandoff()){
+ forbidText('README.md','**Next notes batch:**');
+ forbidText('README.md','Burn down all 556');
+ forbidText('README.md','burndown');
+}else{
+ requireText('README.md','**Next notes batch:**');
+}
 requireText('README.md','**Queue automation:**');
 requireText('README.md','The dashboard and this README projection consume those same sources.');
 forbidText('README.md','## Future-agent quickstart');
