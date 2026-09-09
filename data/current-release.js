@@ -40,7 +40,6 @@ const release=Object.freeze({
   'data/product-hardening/source-note-clusters-current.js',
   'data/product-hardening/global-source-note-clustering-v9.75.js',
   'data/product-hardening/web-upload-inclusion-cluster-v9.77.js',
-  'data/product-hardening/dynamic-why-now-route-stabilizer-v9.77.js',
   'data/product-hardening/v9.77-release-stability-repair.js',
   'data/product-hardening/web-authz-idor-verb-cluster-v9.78.js',
   'data/product-hardening/sql-injection-cluster-v9.79.js',
