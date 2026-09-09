@@ -93,13 +93,15 @@ async function fillIfPresent(page, selector, value) {
     await expectText(page, /Hash mode/, 'Hashcat mode picker');
     await expectText(page, /Kerberos TGS/, 'Hashcat Kerberos TGS mode');
     await expectText(page, /Mask attack/, 'Hashcat mask mode');
-    await fillIfPresent(page, '[data-tool-builder="tb-hashcat"] [name="hashOrFile"]', 'hashes.txt');
+    state = await readState(page);
+    if (!/Complete required fields to generate a command/i.test(state.generatedCommand)) failures.push('hashcat should ask for real hash material before generating a command');
+    await fillIfPresent(page, '[data-tool-builder="tb-hashcat"] [name="hashOrFile"]', 'ntlm.txt');
     state = await readState(page);
     if (state.builderCount < 1) failures.push('hashcat route did not mount the implemented builder first');
     if (state.accessoryCount < 1) failures.push('hashcat route did not expose accessories');
     if (state.modeCount < 1) failures.push('hashcat route did not expose pickable modes');
     if (state.expandedCardDumpCount !== 0) failures.push('hashcat route rendered expanded card dump count ' + state.expandedCardDumpCount);
-    if (!/hashcat -m 1000 .*rockyou\.txt/i.test(state.generatedCommand)) failures.push('hashcat generated command does not default to mode plus rockyou');
+    if (!/hashcat -m 1000 .*ntlm\.txt.*rockyou\.txt/i.test(state.generatedCommand)) failures.push('hashcat generated command does not use mode plus real hash material plus rockyou');
     await page.screenshot({ path: path.join(outputDir, 'tools-library-hashcat.png'), fullPage: true });
 
     await page.goto(baseUrl + '#/tools/nmap', { waitUntil: 'domcontentloaded', timeout: 30000 });
