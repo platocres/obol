@@ -1,3 +1,13 @@
+## v10.01 — Product-hardening release v10.01 completes the Post-mining Tools builder-library cleanup
+
+- Restored the historical `assets/app-v2-tools.js` fragment so the generated current application bundle stays stable, then moved the new Tools experience into a lazy current Tools owner.
+- Replaced the tab-per-tool expanded matching-card dump with a grouped Tool Builder Library where direct `#/tools/<tool>` selection remains first-class.
+- Promoted implemented schema-driven builders, generated command previews, pickable modes, and tool-specific accessories before related cards or legacy examples.
+- Made ffuf-style fuzzing accessories explicit: web-content, vhost, and parameter wordlists plus filters, headers, cookies, recursion, threads, and output controls.
+- Made cracking accessories explicit for Hashcat and John: rockyou.txt, hash modes, rules, masks, workload/output controls, and `--show` behavior.
+- Kept related card commands available behind deliberate drilldown instead of deleting them or letting them dominate the selected tool route.
+- Added focused Node and browser validation for direct tool selection, implemented-builder-first rendering, first-class accessories, hashcat/ffuf behavior, and matching-card-dump retirement.
+
 ## v10.0 — Card wrapper/decorator retirement for the post-notes product-hardening phase
 
 - Completed the **Post-mining Card wrapper and decorator retirement audit** queue item without flattening the card system into one brittle blob.

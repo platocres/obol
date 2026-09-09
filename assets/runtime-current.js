@@ -147,7 +147,12 @@ function writeScripts(){
  return appendScripts(list);
 }
 function lazyGroup(name){return manifest.lazy&&Array.isArray(manifest.lazy[name])?manifest.lazy[name]:[];}
-function lazyOwnerList(name){const owner=manifest.lazyBundles&&manifest.lazyBundles[name];return owner?[owner]:lazyGroup(name);}
+function lazyOwnerList(name){
+ const owner=manifest.lazyBundles&&manifest.lazyBundles[name];
+ const list=owner?[owner]:lazyGroup(name);
+ if(name==='toolReferenceData'&&!list.includes('assets/tools-library-current.js'))return list.concat(['assets/tools-library-current.js']);
+ return list;
+}
 function loadGroup(name){
  if(groupLoads.has(name))return groupLoads.get(name);
  const list=lazyOwnerList(name);
