@@ -33,7 +33,6 @@ function shellQuote(v){
 }
 function truthy(v){return v===true||v===1||v==='1'||v==='true'||v==='on'||v==='yes';}
 function same(a,b){return String(a)==String(b);}
-function hasOwn(obj,key){return Object.prototype.hasOwnProperty.call(obj||{},key);}
 function conditionMatches(condition,values){
  if(condition==null)return true;
  if(Array.isArray(condition))return condition.every(entry=>conditionMatches(entry,values));
@@ -47,7 +46,7 @@ function conditionMatches(condition,values){
 }
 function scrubGeneratedPlaceholders(builder,values){
  const out={...(values||{})};
- const placeholderSecrets=new Set(['Password123!','password','Password1!','P@ssw0rd!','8846f7eaee8fb117ad06bdd830b7586c',':8846f7eaee8fb117ad06bdd830b7586c']);
+ const placeholderSecrets=new Set(['Password123!','8846f7eaee8fb117ad06bdd830b7586c',':8846f7eaee8fb117ad06bdd830b7586c']);
  for(const key of ['password','authPassword','proxyPassword','hash','bearerToken','cookie']){
   if(placeholderSecrets.has(String(out[key]||'')))delete out[key];
  }
@@ -200,7 +199,7 @@ function html(builder,context,values){
  return '<section class="card tool-builder-current" data-tool-builder="'+esc(builder.id)+'" data-tool="'+esc(builder.tool)+'"><div class="card-body">'+
   '<div class="tool-builder-head"><div><span class="eyebrow30">Tool Builder</span><h3>'+esc(builder.title)+'</h3><p class="hint">'+esc(builder.summary)+'</p></div><span class="badge">'+esc(builder.executionContext||'any')+'</span></div>'+creds+
   '<form class="tool-builder-form" novalidate>'+fields+'</form>'+ 
-  '<div class="cmd-block tool-builder-preview" aria-live="polite"><span class="tool">Generated command</span><code>'+esc(preview)+'</code><button type="button" class="copy-btn tool-builder-copy">Copy</button><p class="note">Obol starts from the minimal valid command for the selected tool/mode and only adds flags through collected parameters or explicit GUI controls. It generates the command for you to review and run yourself; it does not execute commands.</p></div>'+ 
+  '<div class="cmd-block tool-builder-preview" aria-live="polite"><span class="tool">Generated command</span><code>'+esc(preview)+'</code><button type="button" class="copy-btn tool-builder-copy">Copy</button><p class="note">Obol starts from the minimal valid command for the selected tool/mode and only adds flags through collected parameters or explicit GUI controls. Obol generates this command for you to review and run yourself; it does not execute commands.</p></div>'+ 
   '<details class="tool-builder-proof"><summary>Evidence and report boundary</summary><p class="hint"><b>Expected Evidence:</b> '+esc(builder.evidence.expectation)+'</p><p class="hint"><b>Proof boundary:</b> '+esc(builder.evidence.proofBoundary)+'</p><p class="hint"><b>Manual outcome:</b> '+esc(builder.manualOutcome.boundary)+'</p></details>'+ 
   '</div></section>';
 }
