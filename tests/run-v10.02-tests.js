@@ -115,8 +115,8 @@ assert(qaTrack && qaTrack.complete >= 9, 'testing/QA track completion should inc
 const packages = qroot.OBOL_PRODUCT_HARDENING_WORK_PACKAGES;
 const recommendation = packages && packages.recommend(queue);
 assert(recommendation && recommendation.entryItem.id === 'post-notes-tool-builder-implementation-backlog', 'recommended work package should now enter the modeled-tool backlog');
-assert(recommendation.title === 'Post-notes Operator UI Clarity', 'post-notes clarity package should remain the handoff package title');
-assert(recommendation.liveItems.length === 1, 'post-notes clarity package should have one concrete live item left after visual proof');
+assert(Array.isArray(recommendation.liveItems) && recommendation.liveItems.length === 1, 'recommended package should have one concrete live item left after visual proof');
+assert(recommendation.liveItems[0].id === 'post-notes-tool-builder-implementation-backlog', 'the remaining live post-notes item should be the modeled-tool backlog');
 assert(/visual density regression proof have landed/i.test(String(recommendation.guidance || '')), 'work-package guidance must record visual density closeout');
 
 const readme = read('README.md');
