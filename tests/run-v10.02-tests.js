@@ -82,7 +82,8 @@ assert(historical.includes("['tests/run-v10.02-tests.js']"), 'historical regress
 const qroot = runInBrowserish([
   'data/product-hardening/product-hardening-queue.js',
   'data/product-hardening/work-packages.js',
-  'data/product-hardening/card-wrapper-retirement-queue-v9.98.js'
+  'data/product-hardening/card-wrapper-retirement-queue-v9.98.js',
+  'data/product-hardening/build-next-queue-hygiene-current.js'
 ]);
 const queue = qroot.OBOL_PRODUCT_HARDENING;
 const visual = qroot.OBOL_VISUAL_DENSITY_REGRESSION_V1002;
@@ -112,8 +113,11 @@ assert(!next.includes('post-notes-visual-density-regression-pass'), 'visual dens
 const qaTrack = queue.tracks.find((track) => track.id === 'testing-qa');
 assert(qaTrack && qaTrack.complete >= 9, 'testing/QA track completion should include visual density proof');
 const packages = qroot.OBOL_PRODUCT_HARDENING_WORK_PACKAGES;
-assert(packages && packages.recommend(queue).entryItem.id === 'post-notes-tool-builder-implementation-backlog', 'recommended work package should now enter the modeled-tool backlog');
-assert(/visual density regression proof have landed/i.test(packages.packages.find((p) => p.id === 'post-notes-operator-ui-clarity').guidance), 'work-package guidance must record visual density closeout');
+const recommendation = packages && packages.recommend(queue);
+assert(recommendation && recommendation.entryItem.id === 'post-notes-tool-builder-implementation-backlog', 'recommended work package should now enter the modeled-tool backlog');
+assert(recommendation.title === 'Post-notes Operator UI Clarity', 'post-notes clarity package should remain the handoff package title');
+assert(recommendation.liveItems.length === 1, 'post-notes clarity package should have one concrete live item left after visual proof');
+assert(/visual density regression proof have landed/i.test(String(recommendation.guidance || '')), 'work-package guidance must record visual density closeout');
 
 const readme = read('README.md');
 assert(readme.includes('Current release: **v10.02**'), 'README must sync current release to v10.02');
