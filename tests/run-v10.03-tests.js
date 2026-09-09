@@ -102,8 +102,8 @@ assert.strictEqual(
 );
 assert.strictEqual(
   compile('tb-hashcat', { hashOrFile: 'ntlm.txt', mode: '1000', attack: 'straight', wordlist: '/usr/share/wordlists/rockyou.txt', rule: '/usr/share/hashcat/rules/best64.rule', optimized: true, output: 'cracked.txt', workload: '3' }),
-  'hashcat -m 1000 ntlm.txt /usr/share/wordlists/rockyou.txt -r /usr/share/hashcat/rules/best64.rule -w 3 -O -o cracked.txt',
-  'Hashcat rule/workload/output switches must be additive GUI controls'
+  'hashcat -m 1000 -w 3 -O -o cracked.txt ntlm.txt /usr/share/wordlists/rockyou.txt -r /usr/share/hashcat/rules/best64.rule',
+  'Hashcat rule/workload/output switches must be additive GUI controls without changing the minimal no-toggle preview'
 );
 
 fails('tb-secretsdump', { authMode: 'password', target: '10.10.10.10', domain: 'domain.local', username: 'user', password: 'Password123!' }, /Missing required fields/);
