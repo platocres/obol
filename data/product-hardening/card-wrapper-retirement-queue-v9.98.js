@@ -22,11 +22,14 @@ const RETIRE_ENTRY=Object.freeze({
 });
 function arr(v){return Array.isArray(v)?v:[];}
 function unique(list){return Array.from(new Set(arr(list).filter(Boolean)));}
+function mutable(entry){return Object.assign({},entry);}
+function setValue(target,key,value){try{target[key]=value;return true;}catch(_err){return false;}}
 function upsert(items,entry){
  const hit=arr(items).find(item=>item&&item.id===entry.id);
  if(hit){Object.assign(hit,entry);return hit;}
- items.push(Object.assign({},entry));
- return entry;
+ const copy=mutable(entry);
+ items.push(copy);
+ return copy;
 }
 function after(list,anchor,value){
  const next=arr(list).filter(id=>id!==value);
@@ -40,13 +43,13 @@ function patchQueue(){
  if(!q||!Array.isArray(q.items))return false;
  const card=q.items.find(item=>item&&item.id===CARD_ITEM);
  if(card){
-  card.detail='Restructure card pages so primary guided action, evidence paste-back, and outcome controls dominate, while folding raw commands, wordlists, refs, failure branches, history, and educational notes into clear named disclosures. This build must also consolidate card ownership enough that dynamic why-now, demoted-card canonicalization, and action-spine data flow through the normal shared card structure instead of another visible wrapper above legacy cardHTML.';
-  card.acceptance='Representative primary, recurring, and demoted card routes render one integrated action-first card surface: why-now, primary action, card-scoped evidence paste-back, and outcome controls appear before secondary detail; supporting detail is grouped into named disclosures; no v9.67 patch panel, duplicate why-now repair artifact, source-mining/provenance copy, methodology-gap filler, UNKNOWN implementation row, or release-bookkeeping label appears in operator Card UI. The build records the remaining wrapper/decorator owners in the follow-up retirement ledger instead of hand-waving deletion as later work.';
-  card.technicalDebtFollowUp=RETIRE_ITEM;
-  card.scope='card-progressive-disclosure-plus-current-owner-consolidation';
+  setValue(card,'detail','Restructure card pages so primary guided action, evidence paste-back, and outcome controls dominate, while folding raw commands, wordlists, refs, failure branches, history, and educational notes into clear named disclosures. This build must also consolidate card ownership enough that dynamic why-now, demoted-card canonicalization, and action-spine data flow through the normal shared card structure instead of another visible wrapper above legacy cardHTML.');
+  setValue(card,'acceptance','Representative primary, recurring, and demoted card routes render one integrated action-first card surface: why-now, primary action, card-scoped evidence paste-back, and outcome controls appear before secondary detail; supporting detail is grouped into named disclosures; no v9.67 patch panel, duplicate why-now repair artifact, source-mining/provenance copy, methodology-gap filler, UNKNOWN implementation row, or release-bookkeeping label appears in operator Card UI. The build records the remaining wrapper/decorator owners in the follow-up retirement ledger instead of hand-waving deletion as later work.');
+  setValue(card,'technicalDebtFollowUp',RETIRE_ITEM);
+  setValue(card,'scope','card-progressive-disclosure-plus-current-owner-consolidation');
  }
  const retire=upsert(q.items,RETIRE_ENTRY);
- retire.wrapperLedger=WRAPPER_LEDGER;
+ setValue(retire,'wrapperLedger',WRAPPER_LEDGER);
  const oldBuildNext=typeof q.buildNext==='function'?q.buildNext.bind(q):null;
  if(oldBuildNext&&!q.buildNext.__cardWrapperRetirementV998){
   q.buildNext=function(limit){
@@ -62,9 +65,9 @@ function patchPackages(){
  if(!pk||!Array.isArray(pk.packages))return false;
  const pkg=pk.packages.find(p=>p&&p.id==='post-notes-operator-ui-clarity');
  if(!pkg)return false;
- pkg.itemIds=after(pkg.itemIds,CARD_ITEM,RETIRE_ITEM);
- pkg.relatedItems=unique(arr(pkg.relatedItems).concat(['runtime-app-semantic-retirement','runtime-test-retirement-policy']));
- pkg.guidance='Use the v9.96 audit ledger and v9.97 Path cleanup as the split plan. For Card cleanup, do not add a second corrective wrapper above the old card body: move why-now, demoted-route canonicalization, action-spine metadata, evidence paste-back, and outcome controls into the normal shared card structure. Queue and preserve the explicit wrapper/decorator retirement pass so deletion is proven later rather than forgotten.';
+ setValue(pkg,'itemIds',after(pkg.itemIds,CARD_ITEM,RETIRE_ITEM));
+ setValue(pkg,'relatedItems',unique(arr(pkg.relatedItems).concat(['runtime-app-semantic-retirement','runtime-test-retirement-policy'])));
+ setValue(pkg,'guidance','Use the v9.96 audit ledger and v9.97 Path cleanup as the split plan. For Card cleanup, do not add a second corrective wrapper above the old card body: move why-now, demoted-route canonicalization, action-spine metadata, evidence paste-back, and outcome controls into the normal shared card structure. Queue and preserve the explicit wrapper/decorator retirement pass so deletion is proven later rather than forgotten.');
  return true;
 }
 const applied=patchQueue();
