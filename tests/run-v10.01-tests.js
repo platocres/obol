@@ -42,13 +42,18 @@ for (const token of [
   'Pickable modes and presets',
   'Related cards and legacy examples',
   'data-tool-related-cards',
-  '#/tools/'
+  '#/tools/',
+  'post-notes-tool-builder-implementation-backlog'
 ]) assert(toolSource.includes(token), 'Tools current owner missing ' + token);
 assert(!/cardHTML\(e\.card,\s*fs,\s*true\)/.test(toolSource), 'Tools selected route must not render a tab-per-tool expanded matching-card dump');
 assert(!/filtered\.map\(e=>cardHTML/.test(toolSource), 'Tools selected route must not use the old filtered cardHTML dump');
+assert(!/tools:\['nxc','netexec'/.test(toolSource), 'NetExec alias must not render as a duplicate nxc/netexec launcher');
 for (const token of [
   "ffuf:['web-dirs','vhosts','params']",
   "hashcat:['hash-cracking','kali-builtin']",
+  "nxc:['usernames','passwords','hash-cracking']",
+  "'ligolo-ng':['kali-builtin']",
+  "nmap:['kali-builtin']",
   'rockyou.txt is the default first offline run',
   'Hash mode is a first-class picker',
   'Rules, masks, workload profile'
@@ -59,14 +64,25 @@ const tools = runInBrowserish([
   'data/tool-builder-inventory.js',
   'assets/tool-builder-current.js',
   'data/tool-builders.js',
-  'data/wordlists.js'
+  'data/wordlists.js',
+  'assets/tools-library-current.js'
 ]);
 const schema = tools.OBOL_TOOL_BUILDER_SCHEMA;
 const inventory = tools.OBOL_TOOL_BUILDER_INVENTORY;
 const renderer = tools.OBOL_TOOL_BUILDER;
 const builders = tools.OBOL_TOOL_BUILDERS;
 const wordlists = tools.OBOL_WORDLISTS;
-assert(schema && inventory && renderer && builders && wordlists, 'tool builder owners and wordlists must initialize');
+const toolLibrary = tools.OBOL_TOOLS_LIBRARY_CURRENT;
+assert(schema && inventory && renderer && builders && wordlists && toolLibrary, 'tool builder owners, wordlists, and Tools current owner must initialize');
+assert.strictEqual(toolLibrary.canonicalTool('netexec'), 'nxc', 'NetExec route aliases must resolve to canonical nxc');
+assert.strictEqual(toolLibrary.canonicalTool('crackmapexec'), 'nxc', 'CrackMapExec compatibility aliases must resolve to canonical nxc');
+const adGroup = toolLibrary.groupTools().find((group) => group.id === 'ad');
+assert(adGroup, 'AD tools group missing');
+assert.strictEqual(adGroup.tools.filter((tool) => tool === 'nxc' || tool === 'netexec').join(','), 'nxc', 'AD tool launcher must show canonical nxc once, not duplicate netexec');
+assert.strictEqual(inventory.get('nxc').tool, 'netexec', 'nxc should remain an inventory alias for the NetExec builder record');
+assert.strictEqual(inventory.get('netexec').queueItem, 'tb-nxc', 'netexec compatibility route must still point at the nxc builder');
+assert.strictEqual(inventory.get('ligolo-ng').status, 'modeled', 'Ligolo-ng should stay visible as modeled until an implemented builder lands');
+assert.strictEqual(inventory.get('nmap').status, 'implemented', 'Nmap should be explicit and implemented');
 
 const ffuf = schema.get('tb-ffuf');
 assert(ffuf, 'ffuf builder must register');
@@ -89,6 +105,15 @@ assert(hashcat.fields.some((field) => field.id === 'rule' && /best64/.test(field
 assert.strictEqual(renderer.compile(hashcat, builders.defaultsFor('tb-hashcat', { hashOrFile: 'hashes.txt', mode: '13100', attack: 'straight', wordlist: '/usr/share/wordlists/rockyou.txt', rule: '/usr/share/hashcat/rules/best64.rule' }), {}), 'hashcat -m 13100 hashes.txt /usr/share/wordlists/rockyou.txt -r /usr/share/hashcat/rules/best64.rule', 'Hashcat wordlist+rule command must compile deterministically');
 assert.strictEqual(renderer.compile(hashcat, builders.defaultsFor('tb-hashcat', { hashOrFile: 'hashes.txt', mode: '1000', attack: 'mask', mask: '?u?l?l?l?d' }), {}), "hashcat -m 1000 -a 3 hashes.txt '?u?l?l?l?d'", 'Hashcat mask command must compile deterministically');
 
+const nxc = schema.get('tb-nxc');
+assert(nxc, 'NetExec / nxc builder must register');
+assert.strictEqual(inventory.get('nxc').status, 'implemented', 'nxc alias must expose implemented NetExec builder status');
+assert(nxc.fields.some((field) => field.id === 'protocol'), 'nxc builder must expose protocol selection');
+assert(nxc.fields.some((field) => /user|username/i.test(field.id)), 'nxc builder must expose username input');
+const nmap = schema.get('tb-nmap');
+assert(nmap, 'Nmap builder must register');
+assert(nmap.fields.some((field) => /target|host|rhost/i.test(field.id)), 'Nmap builder must expose target scope');
+
 const cracking = wordlists.categories.find((category) => category.id === 'hash-cracking');
 assert(cracking, 'hash-cracking wordlist category must exist');
 assert(JSON.stringify(cracking).includes('/usr/share/wordlists/rockyou.txt'), 'hash-cracking category must recommend rockyou.txt');
@@ -102,7 +127,8 @@ const qroot = runInBrowserish([
 ]);
 const queue = qroot.OBOL_PRODUCT_HARDENING;
 const closeout = qroot.OBOL_TOOLS_BUILDER_LIBRARY_CLEANUP_V1001;
-assert(queue && closeout, 'v10.01 queue closeout must initialize');
+const backlog = qroot.OBOL_TOOL_BUILDER_IMPLEMENTATION_BACKLOG_V1001;
+assert(queue && closeout && backlog, 'v10.01 queue closeout and tool backlog marker must initialize');
 const toolsItem = queue.items.find((item) => item.id === 'post-notes-tools-builder-library-cleanup');
 assert(toolsItem, 'Tools cleanup queue item missing');
 assert.strictEqual(toolsItem.status, 'complete', 'Tools cleanup queue item must be complete');
@@ -110,13 +136,23 @@ assert.strictEqual(toolsItem.completedBy, 'v10.01', 'Tools cleanup must close in
 assert.strictEqual(toolsItem.preservesDirectToolSelection, true, 'Tools cleanup must preserve direct tool selection');
 assert.strictEqual(toolsItem.accessoriesFirstClass, true, 'Tools cleanup must mark accessories as first-class');
 assert.strictEqual(toolsItem.legacyMatchingCards, 'collapsed-drilldown-only', 'Legacy matching cards must be collapsed drilldown only');
+assert.strictEqual(toolsItem.followUpItem, 'post-notes-tool-builder-implementation-backlog', 'Tools cleanup must hand modeled tools to the implementation backlog');
+const backlogItem = queue.items.find((item) => item.id === 'post-notes-tool-builder-implementation-backlog');
+assert(backlogItem, 'Modeled tool builder backlog queue item missing');
+assert.strictEqual(backlogItem.status, 'queued', 'Modeled tool builder backlog must be queued, not buried under completed cleanup');
+assert.strictEqual(backlogItem.sourceInventory, 'data/tool-builder-inventory.js', 'Backlog must point at the explicit tool inventory');
+assert.strictEqual(backlog.status, 'queued', 'Backlog marker must report queued');
+assert.strictEqual(backlog.sharesEvidenceContract, true, 'Backlog builders must share the Evidence paste-back contract');
+assert.strictEqual(backlog.sharesAccessoryContract, true, 'Backlog builders must share the accessory contract');
+assert.strictEqual(backlog.sharesCommandRenderer, true, 'Backlog builders must share the schema command renderer');
 assert.strictEqual(closeout.directToolSelection, true);
 assert.strictEqual(closeout.implementedBuildersFirst, true);
 assert.strictEqual(closeout.accessoriesFirstClass, true);
 assert.strictEqual(closeout.legacyMatchingCardsCollapsed, true);
+assert.strictEqual(closeout.toolBacklogQueued, true, 'closeout must expose the modeled-tool implementation backlog');
 assert.strictEqual(closeout.requestBudgetNeutral, true, 'v10.01 closeout should not add a product-hardening browser request');
-const next = queue.buildNext(3).map((item) => item.id);
-assert(next.includes('post-notes-visual-density-regression-pass'), 'Build Next must advance to visual density regression pass');
+const next = queue.buildNext(5).map((item) => item.id);
+assert(next.includes('post-notes-visual-density-regression-pass'), 'Build Next must still advance first to visual density regression pass');
 
 const release = cp.spawnSync(process.execPath, ['tools/validate-release-pr.js', '--repo-only', '--release-version=10.01'], { cwd: root, encoding: 'utf8' });
 if (release.status !== 0) {
@@ -126,4 +162,4 @@ if (release.status !== 0) {
 }
 process.stdout.write(release.stdout || '');
 
-console.log('v10.01 Tools builder-library cleanup validation passed.');
+console.log('v10.01 Tools builder-library cleanup validation passed with modeled tool backlog queued.');

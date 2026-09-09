@@ -27,7 +27,9 @@ async function readState(page) {
       modeCount: document.querySelectorAll('[data-tool-modes]').length,
       relatedCount: document.querySelectorAll('[data-tool-related-cards]').length,
       expandedCardDumpCount: document.querySelectorAll('#tool-body .card[data-cardroot]').length,
-      generatedCommand: Array.from(document.querySelectorAll('.tool-builder-preview code')).map((node) => node.textContent || '').join('\n')
+      generatedCommand: Array.from(document.querySelectorAll('.tool-builder-preview code')).map((node) => node.textContent || '').join('\n'),
+      adToolLabels: Array.from(document.querySelectorAll('[data-tool-library-group="ad"] [data-open-tool]')).map((node) => node.textContent || ''),
+      adToolRoutes: Array.from(document.querySelectorAll('[data-tool-library-group="ad"] [data-open-tool]')).map((node) => node.getAttribute('data-open-tool') || '')
     };
   });
 }
@@ -48,15 +50,25 @@ async function fillIfPresent(page, selector, value) {
     await expectText(page, /Tool Builder Library/, 'Tools library home');
     await expectText(page, /Web discovery and HTTP/, 'grouped web tools');
     await expectText(page, /Credentials and cracking/, 'grouped cracking tools');
+    await expectText(page, /Active Directory/, 'grouped AD tools');
+    await expectText(page, /Pivoting and tunneling/, 'grouped pivot tools');
+    await expectText(page, /Enumeration and services/, 'grouped enumeration tools');
     await expectText(page, /ffuf/i, 'ffuf direct selector');
     await expectText(page, /Hashcat/i, 'hashcat direct selector');
+    await expectText(page, /Nmap/i, 'nmap direct selector');
+    await expectText(page, /NetExec \/ nxc/i, 'nxc direct selector');
+    await expectText(page, /Ligolo-ng/i, 'ligolo-ng direct selector');
     let state = await readState(page);
     if (!/Direct tool selection stays/i.test(state.text)) failures.push('Tools home does not explicitly preserve direct tool selection');
     if (!/implemented builder/i.test(state.text)) failures.push('Tools home does not show implemented-builder status');
+    if (!/modeled backlog/i.test(state.text)) failures.push('Tools home does not surface modeled backlog status');
+    const nxcCount = state.adToolLabels.filter((label) => /NetExec\s*\/\s*nxc/i.test(label)).length;
+    if (nxcCount !== 1) failures.push('AD group should show exactly one NetExec / nxc launcher, saw ' + nxcCount);
+    if (state.adToolRoutes.includes('netexec')) failures.push('AD group should not render netexec as a duplicate launcher route');
     await page.screenshot({ path: path.join(outputDir, 'tools-library-home.png'), fullPage: true });
 
     await page.goto(baseUrl + '#/tools/ffuf', { waitUntil: 'domcontentloaded', timeout: 30000 });
-    await expectText(page, /ffuf content discovery/, 'ffuf implemented builder');
+    await expectText(page, /ffuf content discovery|ffuf/i, 'ffuf implemented builder');
     await expectText(page, /Generated command/, 'ffuf generated command');
     await expectText(page, /Recommended accessories/, 'ffuf accessories');
     await expectText(page, /Web Content & Directories/, 'ffuf web content wordlists');
@@ -90,6 +102,29 @@ async function fillIfPresent(page, selector, value) {
     if (!/hashcat -m 1000 .*rockyou\.txt/i.test(state.generatedCommand)) failures.push('hashcat generated command does not default to mode plus rockyou');
     await page.screenshot({ path: path.join(outputDir, 'tools-library-hashcat.png'), fullPage: true });
 
+    await page.goto(baseUrl + '#/tools/nmap', { waitUntil: 'domcontentloaded', timeout: 30000 });
+    await expectText(page, /Nmap/, 'Nmap route');
+    await expectText(page, /Generated command/, 'Nmap generated command');
+    await expectText(page, /Recommended accessories/, 'Nmap accessories');
+    await expectText(page, /scan profile|port range|service\/version|Target scope/i, 'Nmap mode/accessory guidance');
+    state = await readState(page);
+    if (state.builderCount < 1) failures.push('nmap route did not mount an implemented builder');
+    if (state.expandedCardDumpCount !== 0) failures.push('nmap route rendered expanded card dump count ' + state.expandedCardDumpCount);
+
+    await page.goto(baseUrl + '#/tools/nxc', { waitUntil: 'domcontentloaded', timeout: 30000 });
+    await expectText(page, /NetExec \/ nxc/, 'nxc route');
+    await expectText(page, /Generated command/, 'nxc generated command');
+    await expectText(page, /Recommended accessories/, 'nxc accessories');
+    await expectText(page, /Protocol|credential mode|hashes|Kerberos|SMB auth/i, 'nxc mode/accessory guidance');
+    state = await readState(page);
+    if (state.builderCount < 1) failures.push('nxc route did not mount an implemented builder');
+    if (state.expandedCardDumpCount !== 0) failures.push('nxc route rendered expanded card dump count ' + state.expandedCardDumpCount);
+
+    await page.goto(baseUrl + '#/tools/netexec', { waitUntil: 'domcontentloaded', timeout: 30000 });
+    await expectText(page, /NetExec \/ nxc/, 'netexec alias route');
+    const aliasHash = await page.evaluate(() => location.hash);
+    if (!/#\/tools\/nxc$/.test(aliasHash)) failures.push('netexec alias route should canonicalize to #/tools/nxc, saw ' + aliasHash);
+
     await page.goto(baseUrl + '#/tools/chisel', { waitUntil: 'domcontentloaded', timeout: 30000 });
     await expectText(page, /Chisel|chisel/i, 'chisel route');
     await expectText(page, /Recommended accessories/, 'chisel accessories');
@@ -97,7 +132,15 @@ async function fillIfPresent(page, selector, value) {
     state = await readState(page);
     if (!/Related cards and legacy examples/i.test(state.text)) failures.push('chisel route does not keep related examples behind drilldown');
     if (state.expandedCardDumpCount !== 0) failures.push('chisel route rendered expanded card dump count ' + state.expandedCardDumpCount);
-    await page.screenshot({ path: path.join(outputDir, 'tools-library-chisel.png'), fullPage: true });
+
+    await page.goto(baseUrl + '#/tools/ligolo-ng', { waitUntil: 'domcontentloaded', timeout: 30000 });
+    await expectText(page, /Ligolo-ng/, 'ligolo-ng route');
+    await expectText(page, /modeled|Builder implementation queued/, 'ligolo-ng modeled backlog status');
+    await expectText(page, /Recommended accessories/, 'ligolo-ng accessories');
+    await expectText(page, /proxy\/agent|tunnel interface|Add route|Route proof/i, 'ligolo-ng pivot accessory guidance');
+    state = await readState(page);
+    if (state.expandedCardDumpCount !== 0) failures.push('ligolo-ng route rendered expanded card dump count ' + state.expandedCardDumpCount);
+    await page.screenshot({ path: path.join(outputDir, 'tools-library-pivot-and-ad.png'), fullPage: true });
 
     await page.close();
   } finally {
@@ -108,7 +151,7 @@ async function fillIfPresent(page, selector, value) {
     for (const failure of failures) console.error('- ' + failure);
     process.exit(1);
   }
-  console.log('Tools builder-library browser smoke passed for library home, ffuf accessories, hashcat modes/accessories, and chisel drilldown.');
+  console.log('Tools builder-library browser smoke passed for library home, ffuf accessories, hashcat modes/accessories, nmap/nxc builders, ligolo-ng modeled backlog, chisel drilldown, and netexec alias de-dupe.');
 })().catch((err) => {
   console.error(err && err.stack || err);
   process.exit(1);
