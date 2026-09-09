@@ -32,4 +32,4 @@ const PHASE_TASKS=Object.freeze({
 });
 function runPhase(phase){if(phase==='syntax')syntax();else{const list=PHASE_TASKS[phase];if(!list)throw new Error('unknown regression phase: '+phase);for(const task of list)run(task);}console.log('Regression phase passed: '+phase);}
 function main(){const idx=process.argv.indexOf('--phase');if(idx!==-1)return runPhase(process.argv[idx+1]);for(const phase of PHASES)runPhase(phase);console.log('Complete Obol historical/current regression contract passed.');}
-try{main();}catch(err){console.error(err&&err.stack||err);process.exit(1);
+try{main();}catch(err){console.error(err&&err.stack||err);process.exit(1);}
