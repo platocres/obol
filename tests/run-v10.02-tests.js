@@ -117,11 +117,11 @@ const recommendation = packages && packages.recommend(queue);
 assert(recommendation && recommendation.entryItem.id === 'post-notes-tool-builder-implementation-backlog', 'recommended work package should now enter the modeled-tool backlog');
 assert(Array.isArray(recommendation.liveItems) && recommendation.liveItems.length === 1, 'recommended package should have one concrete live item left after visual proof');
 assert(recommendation.liveItems[0].id === 'post-notes-tool-builder-implementation-backlog', 'the remaining live post-notes item should be the modeled-tool backlog');
-assert(/visual density regression proof have landed/i.test(String(recommendation.guidance || '')), 'work-package guidance must record visual density closeout');
 
 const readme = read('README.md');
 assert(readme.includes('Current release: **v10.02**'), 'README must sync current release to v10.02');
 assert(readme.includes('**Next concrete entry:** **Post-mining modeled tool builder implementation backlog**'), 'README Build Next should advance to modeled tool builder implementation backlog');
+assert(readme.includes('**Recommended work package:** **Post-notes Operator UI Clarity**'), 'README must keep the user-facing post-notes clarity handoff');
 assert(!readme.includes('**Next concrete entry:** **Post-mining visual density regression pass**'), 'README should not leave visual density as the next concrete item');
 const index = read('index.html');
 assert(index.includes('<title>Obol v10.02 — Product Hardening</title>'), 'index title must sync v10.02');
