@@ -28,21 +28,33 @@ async function waitForView(page, check = null) {
       const view = document.querySelector('#view');
       const text = view && view.innerText ? view.innerText : '';
       const homeReady = /Tool Builder Library: pick a tool directly/i.test(text);
-      const detailReady = /Generated command|Recommended accessories|Builder implementation queued/i.test(text)
-        || document.querySelector('[data-current-tool-builder88],[data-tool-builder]');
+      const body = document.querySelector('#tool-body');
+      const detailReady = body
+        && body.querySelector('[data-tool-detail]')
+        && body.querySelector('[data-tool-accessories]')
+        && body.querySelector('[data-tool-modes]')
+        && body.querySelector('[data-tool-related-cards]')
+        && body.querySelector('[data-current-tool-builder88],[data-tool-builder],[data-tool-modeled]')
+        && !body.querySelector('.card[data-cardroot]');
       return window.__OBOL_TOOLS_LIBRARY_CURRENT_RENDERED__ === 'v10.01'
         && (home ? homeReady : detailReady);
-    }, isToolsHome, { timeout: 20000 });
+    }, isToolsHome, { timeout: 25000 });
     await page.waitForTimeout(600);
     await page.waitForFunction((home) => {
       const view = document.querySelector('#view');
       const text = view && view.innerText ? view.innerText : '';
       const homeReady = /Tool Builder Library: pick a tool directly/i.test(text);
-      const detailReady = /Generated command|Recommended accessories|Builder implementation queued/i.test(text)
-        || document.querySelector('[data-current-tool-builder88],[data-tool-builder]');
+      const body = document.querySelector('#tool-body');
+      const detailReady = body
+        && body.querySelector('[data-tool-detail]')
+        && body.querySelector('[data-tool-accessories]')
+        && body.querySelector('[data-tool-modes]')
+        && body.querySelector('[data-tool-related-cards]')
+        && body.querySelector('[data-current-tool-builder88],[data-tool-builder],[data-tool-modeled]')
+        && !body.querySelector('.card[data-cardroot]');
       return window.__OBOL_TOOLS_LIBRARY_CURRENT_RENDERED__ === 'v10.01'
         && (home ? homeReady : detailReady);
-    }, isToolsHome, { timeout: 20000 });
+    }, isToolsHome, { timeout: 25000 });
     return;
   }
 
