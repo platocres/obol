@@ -94,7 +94,8 @@ async function fillIfPresent(page, selector, value) {
     await expectText(page, /Kerberos TGS/, 'Hashcat Kerberos TGS mode');
     await expectText(page, /Mask attack/, 'Hashcat mask mode');
     state = await readState(page);
-    if (!/Complete required fields to generate a command/i.test(state.generatedCommand)) failures.push('hashcat should ask for real hash material before generating a command');
+    if (!/(Complete required fields to generate a command|Missing required fields: Hash or hash file)/i.test(state.generatedCommand)) failures.push('hashcat should ask for real hash material before generating a command, saw: ' + state.generatedCommand);
+    if (/^hashcat\s+-m\b/i.test(state.generatedCommand)) failures.push('hashcat generated command appeared before real hash material was entered: ' + state.generatedCommand);
     await fillIfPresent(page, '[data-tool-builder="tb-hashcat"] [name="hashOrFile"]', 'ntlm.txt');
     state = await readState(page);
     if (state.builderCount < 1) failures.push('hashcat route did not mount the implemented builder first');
