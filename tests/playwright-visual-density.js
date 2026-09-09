@@ -88,7 +88,8 @@ async function pageMetrics(page) {
       sectionCount: visible('#view section,#view article,#view details.card,#view .card').length,
       cardRootDumps: document.querySelectorAll('#tool-body .card[data-cardroot]').length,
       wrapperPanels: document.querySelectorAll('.obol-action-first-v967,[data-obol-action-first-v967]').length,
-      whyNowCount: document.querySelectorAll('[data-obol-dynamic-why-now]').length,
+      whyNowCount: document.querySelectorAll('[data-card-primary-action="true"]').length,
+      retiredWhyNowFallbackCount: document.querySelectorAll('[data-obol-dynamic-why-now]').length,
       pathPrimaryMoves: document.querySelectorAll('.operator-primary-move31').length,
       pathPrimaryMoveInFirstViewport,
       pathSupportDrawers: document.querySelectorAll('details.operator-support31').length,
@@ -126,7 +127,8 @@ function assertPath(id, metrics, failures) {
 
 function assertCard(id, metrics, failures) {
   commonAssertions(id, metrics, failures);
-  if (metrics.whyNowCount !== 1) failures.push(`${id}: Card should render exactly one why-now section, saw ${metrics.whyNowCount}`);
+  if (metrics.whyNowCount !== 1) failures.push(`${id}: Card should render exactly one current-card why-now section, saw ${metrics.whyNowCount}`);
+  if (metrics.retiredWhyNowFallbackCount !== 0) failures.push(`${id}: Card rendered retired dynamic why-now fallback (${metrics.retiredWhyNowFallbackCount})`);
   if (metrics.cardPrimaryActions < 1) failures.push(`${id}: Card hides the primary action`);
   if (metrics.cardPrimaryCommands < 1) failures.push(`${id}: Card hides the primary command/GUI action`);
   if (metrics.cardEvidenceLoops < 1) failures.push(`${id}: Card lost Evidence paste-back loop`);
@@ -162,7 +164,7 @@ const checks = [
   { id: 'tools-home', hash: '#/tools', viewport: 'desktop', size: { width: 1440, height: 1100 }, assert: assertToolsHome },
   { id: 'tools-ffuf', hash: '#/tools/ffuf', viewport: 'desktop', size: { width: 1440, height: 1200 }, assert: (id, m, f) => assertToolDetail(id, m, f, { implemented: true, modes: true, text: /Web Content & Directories|Parameters & Hidden Inputs|Generated command/i }) },
   { id: 'tools-hashcat', hash: '#/tools/hashcat', viewport: 'desktop', size: { width: 1440, height: 1200 }, assert: (id, m, f) => assertToolDetail(id, m, f, { implemented: true, modes: true, text: /rockyou|Hash mode|Mask attack|Generated command/i }) },
-  { id: 'tools-ligolo', hash: '#/tools/ligolo-ng', viewport: 'desktop', size: { width: 1440, height: 1200 }, assert: (id, m, f) => assertToolDetail(id, m, f, { implemented: false, modes: true, text: /Builder implementation queued|Proxy\/agent|Route proof/i }) },
+  { id: 'tools-ligolo', hash: '#/tools/ligolo-ng', viewport: 'desktop', size: { width: 1440, height: 1200 }, assert: (id, m, f) => assertToolDetail(id, m, f, { implemented: true, modes: true, text: /Generated command|Proxy\/agent|Route proof/i }) },
 ];
 
 (async () => {
