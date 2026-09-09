@@ -1,3 +1,14 @@
+## v10.0 — Card wrapper/decorator retirement for the post-notes product-hardening phase
+
+- Completed the **Post-mining Card wrapper and decorator retirement audit** queue item without flattening the card system into one brittle blob.
+- Retired the v9.67 visible action-first stabilizer as a no-op compatibility ledger. The card route no longer needs a corrective panel because the v9.99 integrated card owner renders why-now, primary action, and evidence loop natively.
+- Converted the v9.68 note-card disposition layer from runtime route surgery into a data/canonicalizer seam. Demoted cards are preserved through merged parent guidance and card-index aliases instead of patching `viewCard`, `liveCardById`, or the URL hash.
+- Kept dynamic why-now as a useful render-time compute helper while retiring the v9.71 post-render DOM injector behavior.
+- Retired the v9.77 dynamic why-now route stabilizer as a no-op compatibility shim. Duplicate why-now boxes should now be structurally impossible because the card renderer owns the single visible why-now region.
+- Preserved the dogfooding seams Brandon needs for lab testing: card data, action-first plan data, why-now computation, canonicalizer maps, merged supporting guidance, card-index aliases, and progressive-disclosure renderer helpers.
+- Kept the build request-budget neutral by storing the v10.0 proof ledger in the repo without loading it as another browser runtime extension.
+- Advanced Product Build Next to **Post-mining Tools builder-library cleanup**.
+
 ## v9.99 — Completes the **Post-mining Card progressive-disclosure cleanup** queue item. It makes the card route action-first without adding another corrective wrapper over the old card body
 
 - The shared card renderer now emits a current card UI owner marker and renders cards in the intended operator order: why-now, primary action, evidence paste-back, outcome controls, then secondary detail.
