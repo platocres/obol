@@ -11,7 +11,7 @@
  * suppresses historical schedulers and commits current route owners last.
  *
  * Historical fragment order sha256: 40e3006d9423d669acf5869b577ecf56a6ca2ee1629c95fd0fcc5d242d2c5f27
- * Generated body sha256: d5c622702b493bb8f9bd4821d0e0ac23ffdd6d6c43410a5512de5484db962fda
+ * Generated body sha256: 67d4e75457e2fdfbf859f683848fe2c909534d5383c414a31ac376793e463bf9
  * First historical fragment: assets/report-v2.js
  * Last historical fragment:  assets/app-v8.8.js
  */
@@ -1993,8 +1993,8 @@ if(__nativeMutationObserver)root.MutationObserver=__nativeMutationObserver;
 'use strict';
 (function(root){
 const release=Object.freeze({
- version:'9.97.0',
- label:'v9.97',
+ version:'9.99.0',
+ label:'v9.99',
  phase:'product-hardening',
  phaseLabel:'Product Hardening',
  orangeBaseline:'v8.8',
@@ -2057,7 +2057,8 @@ const release=Object.freeze({
   'data/product-hardening/reference-index-course-map-private-boundary-cluster-v9.95.js',
   'data/product-hardening/post-notes-clarity-audit-v9.96.js',
   'data/product-hardening/network-position-recurrence-v9.97.js',
-  'data/product-hardening/card-wrapper-retirement-queue-v9.98.js'
+  'data/product-hardening/card-wrapper-retirement-queue-v9.98.js',
+  'data/product-hardening/card-progressive-disclosure-cleanup-v9.99.js'
  ])
 });
 function stampState(target){

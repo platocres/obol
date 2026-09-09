@@ -1,3 +1,13 @@
+## v9.99 — Completes the **Post-mining Card progressive-disclosure cleanup** queue item. It makes the card route action-first without adding another corrective wrapper over the old card body
+
+- The shared card renderer now emits a current card UI owner marker and renders cards in the intended operator order: why-now, primary action, evidence paste-back, outcome controls, then secondary detail.
+- Dynamic why-now is consumed inside the normal card render path instead of relying on a post-render box as the source of truth.
+- The old dynamic why-now injector and stabilizer now honor the integrated card owner guard, so they stop inserting or repairing duplicate visible why-now boxes when the current card UI has already rendered one.
+- Raw secondary material is grouped into named disclosures: Commands and checks, Success and failure routing, Wordlists, Supporting guidance, Defender/references/reporting notes, and Recent activity.
+- Recurring cards expose their recurrence scope near the top of the card so per-host and per-subnet actions make sense from the card page itself, not only from Path.
+- Card-scoped Evidence remains first-class: Analyze pasted evidence, Mark tried, Mark succeeded, reset controls, and the evidence textarea stay above lower-priority references/history.
+- The Product Build Next queue now advances to **Post-mining Card wrapper and decorator retirement audit**, keeping the proof-delete cleanup ahead of Tools cleanup.
+
 ## v9.97 — Continues the post-notes product-hardening phase. It completes the **Post-mining Path supporting-detail cleanup** queue item and, in the same coherent Next Steps ownership area, introduces **recurring operator capabilities** so repeatable actions like pivoting stop behaving like one-and-done checklist steps
 
 - Audited the Next Steps / Path route (the stated intent of this build) and recorded the findings in `data/product-hardening/network-position-recurrence-v9.97.js`: the best next move now lives in its own dominant panel, the raw supporting-methodology DOM carryover is gone, and the fixes are proven rather than parked.
