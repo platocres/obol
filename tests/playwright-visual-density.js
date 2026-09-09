@@ -23,19 +23,26 @@ async function waitForView(page, check = null) {
   }, null, { timeout: 20000 });
 
   if (check && /^#\/tools/.test(check.hash || '')) {
-    await page.waitForFunction(() => {
+    const isToolsHome = check.hash === '#/tools';
+    await page.waitForFunction((home) => {
       const view = document.querySelector('#view');
       const text = view && view.innerText ? view.innerText : '';
+      const homeReady = /Tool Builder Library: pick a tool directly/i.test(text);
+      const detailReady = /Generated command|Recommended accessories|Builder implementation queued/i.test(text)
+        || document.querySelector('[data-current-tool-builder88],[data-tool-builder]');
       return window.__OBOL_TOOLS_LIBRARY_CURRENT_RENDERED__ === 'v10.01'
-        && /Tool Builder Library: pick a tool directly/i.test(text);
-    }, null, { timeout: 20000 });
+        && (home ? homeReady : detailReady);
+    }, isToolsHome, { timeout: 20000 });
     await page.waitForTimeout(600);
-    await page.waitForFunction(() => {
+    await page.waitForFunction((home) => {
       const view = document.querySelector('#view');
       const text = view && view.innerText ? view.innerText : '';
+      const homeReady = /Tool Builder Library: pick a tool directly/i.test(text);
+      const detailReady = /Generated command|Recommended accessories|Builder implementation queued/i.test(text)
+        || document.querySelector('[data-current-tool-builder88],[data-tool-builder]');
       return window.__OBOL_TOOLS_LIBRARY_CURRENT_RENDERED__ === 'v10.01'
-        && /Tool Builder Library: pick a tool directly/i.test(text);
-    }, null, { timeout: 20000 });
+        && (home ? homeReady : detailReady);
+    }, isToolsHome, { timeout: 20000 });
     return;
   }
 
