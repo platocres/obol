@@ -32,6 +32,11 @@ async function readState(page) {
   });
 }
 
+async function fillIfPresent(page, selector, value) {
+  const locator = page.locator(selector).first();
+  if (await locator.count()) await locator.fill(value);
+}
+
 (async () => {
   const browser = await chromium.launch({ headless: true, executablePath: process.env.OBOL_SMOKE_BROWSER_PATH || undefined });
   const context = await browser.newContext({ viewport: { width: 1440, height: 1100 } });
@@ -57,6 +62,8 @@ async function readState(page) {
     await expectText(page, /Web Content & Directories/, 'ffuf web content wordlists');
     await expectText(page, /Subdomains & Virtual Hosts/, 'ffuf vhost wordlists');
     await expectText(page, /Parameters & Hidden Inputs/, 'ffuf parameter wordlists');
+    await fillIfPresent(page, '[data-tool-builder="tb-ffuf"] [name="url"]', 'http://10.10.10.10/FUZZ');
+    await fillIfPresent(page, '[data-tool-builder="tb-ffuf"] [name="wordlist"]', '/usr/share/seclists/Discovery/Web-Content/raft-medium-directories.txt');
     state = await readState(page);
     if (state.builderCount < 1) failures.push('ffuf route did not mount the implemented builder first');
     if (state.accessoryCount < 1) failures.push('ffuf route did not expose accessories');
@@ -74,6 +81,7 @@ async function readState(page) {
     await expectText(page, /Hash mode/, 'Hashcat mode picker');
     await expectText(page, /Kerberos TGS/, 'Hashcat Kerberos TGS mode');
     await expectText(page, /Mask attack/, 'Hashcat mask mode');
+    await fillIfPresent(page, '[data-tool-builder="tb-hashcat"] [name="hashOrFile"]', 'hashes.txt');
     state = await readState(page);
     if (state.builderCount < 1) failures.push('hashcat route did not mount the implemented builder first');
     if (state.accessoryCount < 1) failures.push('hashcat route did not expose accessories');
