@@ -1,3 +1,13 @@
+## v10.02 — Product-hardening release v10.02 completes the Post-mining visual density regression pass
+
+- Added a dedicated Playwright visual-density smoke for Path, Card, and Tools routes.
+- Captured visual-density screenshots for Path on desktop and narrow layouts, representative Card routes, Tools home, ffuf, Hashcat, and Ligolo-ng.
+- Failed the browser proof on reintroduced matching-card dumps, wrapper panels, internal cleanup/filler copy, hidden primary actions, missing Evidence loops, missing tool accessories, or obvious narrow-layout overflow.
+- Closed the Post-mining visual density regression pass through the existing post-notes queue owner without adding another product-hardening browser runtime extension.
+- Kept the modeled tool builder implementation backlog as the next concrete Build Next item after visual proof lands.
+- Wired the visual-density smoke into the required browser gate so future UI cleanup regressions are caught on the same exact-head check as the normal browser smoke.
+- Added focused v10.02 regression coverage for the proof ledger, queue handoff, browser smoke wiring, screenshot targets, and Path/Card/Tools density assertions.
+
 ## v10.01 — Product-hardening release v10.01 completes the Post-mining Tools builder-library cleanup
 
 - Restored the historical `assets/app-v2-tools.js` fragment so the generated current application bundle stays stable, then moved the new Tools experience into a lazy current Tools owner.
