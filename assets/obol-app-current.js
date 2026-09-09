@@ -11,7 +11,7 @@
  * suppresses historical schedulers and commits current route owners last.
  *
  * Historical fragment order sha256: 40e3006d9423d669acf5869b577ecf56a6ca2ee1629c95fd0fcc5d242d2c5f27
- * Generated body sha256: 9451b520aa335972cc49dc5473e0669464177308cbac2e25a8925a458a62c82d
+ * Generated body sha256: 6eeeedde913cc05c7f47affe10d84ec79f89630b3d60195e06cfa030ef1a5d41
  * First historical fragment: assets/report-v2.js
  * Last historical fragment:  assets/app-v8.8.js
  */
@@ -455,11 +455,20 @@ function viewTools(tool){const entries=[];for(const l of LANES)for(const c of l.
 // ---------- Map / Lanes / Path ----------
 const PHASE_ORDER=['Recon & Scanning','Initial Access & Web','Credential Attacks','Active Directory','Privesc & Post-Exploitation','Lateral Movement & Pivoting','Shells & Tooling','Data Services','Objectives & Reporting'];
 function lanePhases(){const p=[...new Set(LANES.map(l=>l.phase))];return PHASE_ORDER.filter(x=>p.includes(x)).concat(p.filter(x=>!PHASE_ORDER.includes(x)));}
+function canonicalCardId(id){
+  const c=window.OBOL_CARD_CANONICALIZER_CURRENT;
+  if(c&&typeof c.canonicalCardId==='function'){
+    const next=c.canonicalCardId(id);
+    if(next&&next!==id)return next;
+  }
+  return id;
+}
 function liveCardById(id){
   if(!id)return null;
-  if(CARDS[id])return CARDS[id];
+  const originalId=id,canonicalId=canonicalCardId(id);
+  if(CARDS[canonicalId]){if(originalId!==canonicalId)CARDS[originalId]=CARDS[canonicalId];return CARDS[canonicalId];}
   for(const lane of LANES||[])for(const card of lane.cards||[]){
-    if(card&&card.id===id){card.lane=card.lane||lane.lane;CARDS[id]=card;return card;}
+    if(card&&card.id===canonicalId){card.lane=card.lane||lane.lane;CARDS[canonicalId]=card;if(originalId!==canonicalId)CARDS[originalId]=card;return card;}
   }
   return null;
 }
@@ -519,7 +528,8 @@ function viewMap(){ const fs=facts();let h='<h2>Methodology Map</h2><p class="su
 function viewLanes(laneId){ const fs=facts();let tabs='<span class="lane-tab'+(!laneId?' active':'')+'" data-lane="">All</span>';for(const ph of lanePhases()){tabs+='<span class="phase-label">'+esc(ph)+'</span>';for(const l of LANES.filter(x=>x.phase===ph))tabs+='<span class="lane-tab'+(l.lane===laneId?' active':'')+'" data-lane="'+esc(l.lane)+'">'+esc(l.title)+'</span>';}
   $('#view').innerHTML='<h2>Lanes</h2><p class="subtitle">The complete technique catalog. Path is the recommended working queue.</p><input class="search" id="lane-search" placeholder="Search cards, tools, concepts…"><label class="opt"><input type="checkbox" id="rel-toggle"> <span class="opt-tip">Only relevant to current evidence</span></label><div class="lane-tabs">'+tabs+'</div><div id="lane-cards" class="cards-grid"></div>';
   const draw=()=>{let cards=LANES.flatMap(l=>l.cards);if(laneId)cards=cards.filter(c=>c.lane===laneId);const q=$('#lane-search').value.toLowerCase();if(q)cards=cards.filter(c=>(c.title+' '+c.hypothesis+' '+(c.tools||[]).join(' ')+' '+(c.commands||[]).map(x=>x.run).join(' ')).toLowerCase().includes(q));if($('#rel-toggle').checked)cards=cards.filter(c=>C.grounded(c,fs)&&osAllowed(c,fs));$('#lane-cards').innerHTML=cards.map(c=>cardHTML(c,fs,false)).join('')||'<p class="empty">No matching cards.</p>';bindCards($('#lane-cards'));};$('#lane-search').oninput=draw;$('#rel-toggle').onchange=draw;$('#view').querySelectorAll('[data-lane]').forEach(x=>x.onclick=()=>location.hash='#/lanes'+(x.dataset.lane?'/'+x.dataset.lane:''));draw(); }
-function viewCard(id){const c=liveCardById(id);if(!c){$('#view').innerHTML='<p class="empty">Unknown card.</p>';return;}const ranked=C.rankedApplicable(state,LANES,ctx(),{showAll:true}).find(x=>x.card.id===id);$('#view').innerHTML='<p><a href="#/lanes/'+esc(c.lane)+'" style="color:var(--info)">← '+esc(c.lane)+' lane</a></p><br>'+cardHTML(c,facts(),true,ranked);bindCards($('#view'));}
+function canonicalizeCardRoute(id){const canonical=canonicalCardId(id);if(canonical&&canonical!==id&&typeof history!=='undefined'&&location&&/^#\/card\//.test(location.hash)){try{history.replaceState(null,'','#/card/'+encodeURIComponent(canonical));}catch(_err){}}return canonical||id;}
+function viewCard(id){const requestedId=id,canonicalId=canonicalizeCardRoute(id),c=liveCardById(canonicalId);if(!c){$('#view').innerHTML='<p class="empty">Unknown card.</p>';return;}const ranked=C.rankedApplicable(state,LANES,ctx(),{showAll:true}).find(x=>x.card.id===c.id||x.card.id===requestedId);$('#view').innerHTML='<p><a href="#/lanes/'+esc(c.lane)+'" style="color:var(--info)">← '+esc(c.lane)+' lane</a></p><br>'+cardHTML(c,facts(),true,ranked);bindCards($('#view'));}
 function viewPath(){ const showAll=!!state.ui.pathShowAll,fs=facts(),ranked=osFilterRanked(C.rankedApplicable(state,LANES,ctx(),{showAll}),fs),li=state.ui.lastEvidenceUpdate,ownLi=li&&li.contextKey===C.contextKey(ctx());let h='<h2>Path</h2><p class="subtitle">Evidence-ranked next steps for <b>'+esc(C.contextLabel(state,ctx()))+'</b>. Ranking is based on relevance and information value, not finding severity.</p>';
   if(ownLi&&(li.facts.length||li.newly.length)){const newly=li.newly.filter(id=>{const c=liveCardById(id);return c&&osAllowed(c,fs);});h+='<div class="path-delta"><h3>From your latest '+esc(li.source)+' evidence</h3>'+(li.facts.length?'<p class="hint">Facts gained: '+li.facts.map(f=>'<code>'+esc(f)+'</code>').join(' ')+'</p>':'')+(newly.length?'<div class="cards-grid">'+newly.slice(0,8).map(id=>liveCardById(id)?cardHTML(liveCardById(id),facts(),false,{score:999,why:'newly unlocked by your latest evidence'}):'').join('')+'</div>':'')+'</div>';}
   h+='<div class="path-toolbar"><span>'+ranked.length+' applicable '+(showAll?'total':'evidence-grounded')+'</span> <button class="btn" id="path-toggle">'+(showAll?'Show evidence-grounded only':'Show all applicable')+'</button></div><div class="path-list">';
