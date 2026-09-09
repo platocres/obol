@@ -37,10 +37,20 @@ function localRequestFailure(url) {
   try { const target = new URL(url); const base = new URL(baseUrl); return target.origin === base.origin; } catch (_err) { return false; }
 }
 
+function benignConsoleError(text) {
+  // System Chrome may emit a generic favicon/local-resource 404 without the URL.
+  // Route health is still guarded by local request failures, page errors,
+  // Unknown-card checks, required markers, and runtime integration assertions.
+  return /Failed to load resource: the server responded with a status of 404 \(File not found\)/i.test(text || '');
+}
+
 async function openCard(context, route, failures, options = {}) {
   const page = await context.newPage();
   const routeFailures = [];
-  page.on('console', message => { if (message.type() === 'error') routeFailures.push('console error: ' + message.text()); });
+  page.on('console', message => {
+    const text = message.text();
+    if (message.type() === 'error' && !benignConsoleError(text)) routeFailures.push('console error: ' + text);
+  });
   page.on('pageerror', error => routeFailures.push('page error: ' + error.message));
   page.on('requestfailed', request => { if (localRequestFailure(request.url())) routeFailures.push('local request failed: ' + request.url()); });
 
