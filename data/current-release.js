@@ -1,8 +1,8 @@
 'use strict';
 (function(root){
 const release=Object.freeze({
- version:'9.97.0',
- label:'v9.97',
+ version:'9.99.0',
+ label:'v9.99',
  phase:'product-hardening',
  phaseLabel:'Product Hardening',
  orangeBaseline:'v8.8',
@@ -65,7 +65,8 @@ const release=Object.freeze({
   'data/product-hardening/reference-index-course-map-private-boundary-cluster-v9.95.js',
   'data/product-hardening/post-notes-clarity-audit-v9.96.js',
   'data/product-hardening/network-position-recurrence-v9.97.js',
-  'data/product-hardening/card-wrapper-retirement-queue-v9.98.js'
+  'data/product-hardening/card-wrapper-retirement-queue-v9.98.js',
+  'data/product-hardening/card-progressive-disclosure-cleanup-v9.99.js'
  ])
 });
 function stampState(target){
