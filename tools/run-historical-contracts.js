@@ -21,7 +21,7 @@ const PHASE_TASKS=Object.freeze({
   ['tools/validate-note-integration.js'],['tools/validate-source-note-clusters.js'],['tools/validate-notes-impact.js'],['tools/validate-note-card-disposition-reconciliation.js'],['tools/validate-note-card-path-placement.js'],['tools/validate-note-derivation-docs.js'],['tools/validate-note-mechanic-backfill.js'],['tools/validate-note-remining-audits.js'],['tools/validate-linux-final-remine-v9.72.js']
  ],
  'v9-current-product':[
-  ['tests/run-v10.02-tests.js'],['tests/run-v10.03-tests.js'],['tests/run-v10.04-tests.js'],['tests/run-notes-batch-selector-tests.js'],['tools/validate-current-release.js'],['tools/validate-product-hardening-queue.js'],['tools/validate-version-identity.js'],['tools/validate-live-integration-done-gate.js']
+  ['tests/run-v10.02-tests.js'],['tests/run-v10.03-tests.js'],['tests/run-v10.04-tests.js'],['tests/run-v10.05-tests.js'],['tests/run-notes-batch-selector-tests.js'],['tools/validate-current-release.js'],['tools/validate-product-hardening-queue.js'],['tools/validate-version-identity.js'],['tools/validate-live-integration-done-gate.js']
  ],
  'quality-preservation':[
   ['tools/validate-pr-test-governance.js'],['tools/validate-release-pr.js'],['tools/validate-release-quality.js'],['tools/validate-readme-history-ownership.js'],['tools/validate-open-pr-uniqueness.js']
@@ -32,4 +32,4 @@ const PHASE_TASKS=Object.freeze({
 });
 function runPhase(phase){if(phase==='syntax')syntax();else{const list=PHASE_TASKS[phase];if(!list)throw new Error('unknown regression phase: '+phase);for(const task of list)run(task);}console.log('Regression phase passed: '+phase);}
 function main(){const idx=process.argv.indexOf('--phase');if(idx!==-1)return runPhase(process.argv[idx+1]);for(const phase of PHASES)runPhase(phase);console.log('Complete Obol historical/current regression contract passed.');}
-try{main();}catch(err){console.error(err&&err.stack||err);process.exit(1);}
+try{main();}catch(err){console.error(err&&err.stack||err);process.exit(1);
