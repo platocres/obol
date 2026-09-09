@@ -50,9 +50,19 @@ jobs:
           echo "No system Chrome or Chromium binary found for fast browser smoke." >&2
           exit 1
 
-      - name: Install Playwright Chromium for full browser proof
+      - name: Resolve browser for full browser proof
         if: env.SHOULD_FULL_BROWSER == 'true'
-        run: npx playwright install --with-deps chromium
+        run: |
+          set -euo pipefail
+          for browser in /usr/bin/google-chrome-stable /usr/bin/google-chrome /usr/bin/chromium-browser /usr/bin/chromium; do
+            if [[ -x "${browser}" ]]; then
+              echo "OBOL_SMOKE_BROWSER_PATH=${browser}" >> "${GITHUB_ENV}"
+              echo "Using system browser for full browser proof: ${browser}"
+              exit 0
+            fi
+          done
+          echo "No system Chrome or Chromium binary found; installing Playwright Chromium."
+          npx playwright install --with-deps chromium
 
       - name: Serve Obol
         run: |
