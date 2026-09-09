@@ -137,11 +137,16 @@ async function fillIfPresent(page, selector, value) {
     if (state.expandedCardDumpCount !== 0) failures.push('chisel route rendered expanded card dump count ' + state.expandedCardDumpCount);
 
     await page.goto(baseUrl + '#/tools/ligolo-ng', { waitUntil: 'domcontentloaded', timeout: 30000 });
-    await expectText(page, /Ligolo-ng/, 'ligolo-ng route');
-    await expectText(page, /modeled|Builder implementation queued/, 'ligolo-ng modeled backlog status');
+    await expectText(page, /Ligolo-ng pivot builder|Ligolo-ng/i, 'ligolo-ng implemented route');
+    await expectText(page, /implemented builder/i, 'ligolo-ng implemented status');
+    await expectText(page, /Generated command/, 'ligolo-ng generated command');
+    await expectText(page, /Evidence and report boundary/, 'ligolo-ng Evidence boundary');
     await expectText(page, /Recommended accessories/, 'ligolo-ng accessories');
     await expectText(page, /proxy\/agent|tunnel interface|Add route|Route proof/i, 'ligolo-ng pivot accessory guidance');
     state = await readState(page);
+    if (state.builderCount < 1) failures.push('ligolo-ng route did not mount the implemented builder first');
+    if (state.modeCount < 1) failures.push('ligolo-ng route did not expose pickable modes');
+    if (!/^proxy -selfcert$/im.test(state.generatedCommand.trim())) failures.push('ligolo-ng default preview is not the minimal proxy self-cert command: ' + state.generatedCommand);
     if (state.expandedCardDumpCount !== 0) failures.push('ligolo-ng route rendered expanded card dump count ' + state.expandedCardDumpCount);
     await page.screenshot({ path: path.join(outputDir, 'tools-library-pivot-and-ad.png'), fullPage: true });
 
@@ -154,7 +159,7 @@ async function fillIfPresent(page, selector, value) {
     for (const failure of failures) console.error('- ' + failure);
     process.exit(1);
   }
-  console.log('Tools builder-library browser smoke passed for library home, ffuf accessories, hashcat modes/accessories, nmap/nxc builders, ligolo-ng modeled backlog, chisel drilldown, and netexec alias de-dupe.');
+  console.log('Tools builder-library browser smoke passed for library home, ffuf accessories, hashcat modes/accessories, nmap/nxc builders, implemented Ligolo-ng, chisel drilldown, and netexec alias de-dupe.');
 })().catch((err) => {
   console.error(err && err.stack || err);
   process.exit(1);
