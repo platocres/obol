@@ -14,13 +14,31 @@ function screenshotName(id, viewport) {
   return `visual-density-${id}-${viewport}.png`;
 }
 
-async function waitForView(page) {
+async function waitForView(page, check = null) {
   await page.waitForSelector('#view', { state: 'visible', timeout: 20000 });
   await page.waitForFunction(() => {
     const view = document.querySelector('#view');
     const text = view && view.innerText ? view.innerText.trim() : '';
     return text.length > 120 && !/Unknown card/i.test(text);
   }, null, { timeout: 20000 });
+
+  if (check && /^#\/tools/.test(check.hash || '')) {
+    await page.waitForFunction(() => {
+      const view = document.querySelector('#view');
+      const text = view && view.innerText ? view.innerText : '';
+      return window.__OBOL_TOOLS_LIBRARY_CURRENT_RENDERED__ === 'v10.01'
+        && /Tool Builder Library: pick a tool directly/i.test(text);
+    }, null, { timeout: 20000 });
+    await page.waitForTimeout(600);
+    await page.waitForFunction(() => {
+      const view = document.querySelector('#view');
+      const text = view && view.innerText ? view.innerText : '';
+      return window.__OBOL_TOOLS_LIBRARY_CURRENT_RENDERED__ === 'v10.01'
+        && /Tool Builder Library: pick a tool directly/i.test(text);
+    }, null, { timeout: 20000 });
+    return;
+  }
+
   await page.waitForTimeout(900);
 }
 
@@ -132,7 +150,7 @@ const checks = [
       try {
         await page.setViewportSize(check.size);
         await page.goto(baseUrl + check.hash, { waitUntil: 'domcontentloaded', timeout: 30000 });
-        await waitForView(page);
+        await waitForView(page, check);
         const metrics = await pageMetrics(page);
         check.assert(`${check.id}-${check.viewport}`, metrics, failures);
         await page.screenshot({ path: path.join(outputDir, screenshotName(check.id, check.viewport)), fullPage: true });
