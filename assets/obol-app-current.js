@@ -11,7 +11,7 @@
  * suppresses historical schedulers and commits current route owners last.
  *
  * Historical fragment order sha256: 40e3006d9423d669acf5869b577ecf56a6ca2ee1629c95fd0fcc5d242d2c5f27
- * Generated body sha256: 8d249dda7d38e7511917d2ad865661daa379d08652d8d8d9e11f0587fcd02861
+ * Generated body sha256: ac9c7fcc1490613f3c81a0bef5c01fb904b1d11194d4df0deba451b34c2b8e1b
  * First historical fragment: assets/report-v2.js
  * Last historical fragment:  assets/app-v8.8.js
  */
@@ -2155,8 +2155,7 @@ const release=Object.freeze({
   'data/product-hardening/reference-index-course-map-private-boundary-cluster-v9.95.js',
   'data/product-hardening/post-notes-clarity-audit-v9.96.js',
   'data/product-hardening/network-position-recurrence-v9.97.js',
-  'data/product-hardening/card-wrapper-retirement-queue-v9.98.js',
-  'data/product-hardening/card-progressive-disclosure-cleanup-v9.99.js'
+  'data/product-hardening/card-wrapper-retirement-queue-v9.98.js'
  ])
 });
 function stampState(target){
