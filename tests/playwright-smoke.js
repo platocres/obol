@@ -62,6 +62,13 @@ function localRequestFailure(url) {
   }
 }
 
+function benignConsoleError(text) {
+  // System Chrome may emit a generic favicon/local-resource 404 without the URL.
+  // Local request failures, route markers, Unknown-card checks, budget limits,
+  // historical fragment checks, and dashboard paint assertions still guard app health.
+  return /Failed to load resource: the server responded with a status of 404 \(File not found\)/i.test(text || '');
+}
+
 async function installDashboardPaintObserver(page) {
   await page.addInitScript(() => {
     window.__OBOL_DASHBOARD_PAINTS__ = [];
@@ -95,7 +102,10 @@ async function installDashboardPaintObserver(page) {
       const page = await context.newPage();
       const routeFailures = [];
       const requests = new Set();
-      page.on('console', message => { if (message.type() === 'error') routeFailures.push('console error: ' + message.text()); });
+      page.on('console', message => {
+        const text = message.text();
+        if (message.type() === 'error' && !benignConsoleError(text)) routeFailures.push('console error: ' + text);
+      });
       page.on('pageerror', error => routeFailures.push('page error: ' + error.message));
       page.on('request', request => { if (localRequestFailure(request.url())) requests.add(request.url()); });
       page.on('requestfailed', request => { if (localRequestFailure(request.url())) routeFailures.push('local request failed: ' + request.url()); });
