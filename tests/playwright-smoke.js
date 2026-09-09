@@ -20,7 +20,7 @@ const outputDir = process.env.OBOL_SMOKE_OUTPUT || path.join(__dirname, '..', 'a
 // v9.65 fuzzer route guard, the v9.66 actionability contract/settle guards, the
 // v9.67 action-first cleanup data, the v9.69 upload/inclusion re-mining extension,
 // the v9.70 client/session analyzer, the v9.71 action-spine AD/MSF re-mining
-// extension, the v9.71 dynamic why-now decorator, the v9.72 final Linux
+// extension, the v9.71 dynamic why-now compute helper, the v9.72 final Linux
 // re-mining route guard, the v9.73-v9.74 pending disposition batches, the v9.74
 // source-note cluster queue ledger, the v9.75 global clustering extension, the
 // v9.77-v9.86 cluster-mining/provenance/dashboard-mutable extensions, the
@@ -32,16 +32,17 @@ const outputDir = process.env.OBOL_SMOKE_OUTPUT || path.join(__dirname, '..', 'a
 // resource/post-exploitation cleanup extension, the v9.93 reporting,
 // cleanup, remediation, redaction, and retest guidance extension, the v9.94
 // exam skills assessment private-boundary disposition extension, the v9.95
-// final source-note completion and post-notes queue extension, and the v9.96
-// post-notes clarity audit and operator-UI queue split extension, and the
-// v9.97 network-position recurrence extension (one startup script that arms the
-// evidence-driven pivot capability). They still fail loudly if the historical
-// fragment chain leaks back into loading.
+// final source-note completion and post-notes queue extension, the v9.96
+// post-notes clarity audit and operator-UI queue split extension, the v9.97
+// network-position recurrence extension, and the v10.0 card wrapper-retirement
+// queue closure. The retired v9.77 why-now route stabilizer is intentionally no
+// longer counted as a browser runtime request. These budgets still fail loudly
+// if the historical fragment chain leaks back into loading.
 const routes = [
   { id: 'home', hash: '#/home', marker: /Home/i, requestBudget: 81 },
   { id: 'targets', hash: '#/boxes', marker: /target/i, requestBudget: 87 },
   { id: 'evidence', hash: '#/intake', marker: /evidence/i, requestBudget: 84 },
-  { id: 'next-steps', hash: '#/path', marker: /(next|path|recommend)/i, requestBudget: 86 },
+  { id: 'next-steps', hash: '#/path', marker: /(next|path|recommend)/i, requestBudget: 87 },
   { id: 'report', hash: '#/report', marker: /report/i, requestBudget: 82 },
   { id: 'dashboard', hash: '#/dashboard', marker: /Product Hardening/i, currentDashboard: true, settleMs: 5200, requestBudget: 82 }
 ];

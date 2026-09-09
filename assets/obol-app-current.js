@@ -11,7 +11,7 @@
  * suppresses historical schedulers and commits current route owners last.
  *
  * Historical fragment order sha256: 40e3006d9423d669acf5869b577ecf56a6ca2ee1629c95fd0fcc5d242d2c5f27
- * Generated body sha256: ac9c7fcc1490613f3c81a0bef5c01fb904b1d11194d4df0deba451b34c2b8e1b
+ * Generated body sha256: cda61a6225bb31a831cf538a89ed754df1cf6979abc3a51de508458c01f793fe
  * First historical fragment: assets/report-v2.js
  * Last historical fragment:  assets/app-v8.8.js
  */
@@ -455,11 +455,20 @@ function viewTools(tool){const entries=[];for(const l of LANES)for(const c of l.
 // ---------- Map / Lanes / Path ----------
 const PHASE_ORDER=['Recon & Scanning','Initial Access & Web','Credential Attacks','Active Directory','Privesc & Post-Exploitation','Lateral Movement & Pivoting','Shells & Tooling','Data Services','Objectives & Reporting'];
 function lanePhases(){const p=[...new Set(LANES.map(l=>l.phase))];return PHASE_ORDER.filter(x=>p.includes(x)).concat(p.filter(x=>!PHASE_ORDER.includes(x)));}
+function canonicalCardId(id){
+  const c=window.OBOL_CARD_CANONICALIZER_CURRENT;
+  if(c&&typeof c.canonicalCardId==='function'){
+    const next=c.canonicalCardId(id);
+    if(next&&next!==id)return next;
+  }
+  return id;
+}
 function liveCardById(id){
   if(!id)return null;
-  if(CARDS[id])return CARDS[id];
+  const originalId=id,canonicalId=canonicalCardId(id);
+  if(CARDS[canonicalId]){if(originalId!==canonicalId)CARDS[originalId]=CARDS[canonicalId];return CARDS[canonicalId];}
   for(const lane of LANES||[])for(const card of lane.cards||[]){
-    if(card&&card.id===id){card.lane=card.lane||lane.lane;CARDS[id]=card;return card;}
+    if(card&&card.id===canonicalId){card.lane=card.lane||lane.lane;CARDS[canonicalId]=card;if(originalId!==canonicalId)CARDS[originalId]=card;return card;}
   }
   return null;
 }
@@ -519,7 +528,8 @@ function viewMap(){ const fs=facts();let h='<h2>Methodology Map</h2><p class="su
 function viewLanes(laneId){ const fs=facts();let tabs='<span class="lane-tab'+(!laneId?' active':'')+'" data-lane="">All</span>';for(const ph of lanePhases()){tabs+='<span class="phase-label">'+esc(ph)+'</span>';for(const l of LANES.filter(x=>x.phase===ph))tabs+='<span class="lane-tab'+(l.lane===laneId?' active':'')+'" data-lane="'+esc(l.lane)+'">'+esc(l.title)+'</span>';}
   $('#view').innerHTML='<h2>Lanes</h2><p class="subtitle">The complete technique catalog. Path is the recommended working queue.</p><input class="search" id="lane-search" placeholder="Search cards, tools, concepts…"><label class="opt"><input type="checkbox" id="rel-toggle"> <span class="opt-tip">Only relevant to current evidence</span></label><div class="lane-tabs">'+tabs+'</div><div id="lane-cards" class="cards-grid"></div>';
   const draw=()=>{let cards=LANES.flatMap(l=>l.cards);if(laneId)cards=cards.filter(c=>c.lane===laneId);const q=$('#lane-search').value.toLowerCase();if(q)cards=cards.filter(c=>(c.title+' '+c.hypothesis+' '+(c.tools||[]).join(' ')+' '+(c.commands||[]).map(x=>x.run).join(' ')).toLowerCase().includes(q));if($('#rel-toggle').checked)cards=cards.filter(c=>C.grounded(c,fs)&&osAllowed(c,fs));$('#lane-cards').innerHTML=cards.map(c=>cardHTML(c,fs,false)).join('')||'<p class="empty">No matching cards.</p>';bindCards($('#lane-cards'));};$('#lane-search').oninput=draw;$('#rel-toggle').onchange=draw;$('#view').querySelectorAll('[data-lane]').forEach(x=>x.onclick=()=>location.hash='#/lanes'+(x.dataset.lane?'/'+x.dataset.lane:''));draw(); }
-function viewCard(id){const c=liveCardById(id);if(!c){$('#view').innerHTML='<p class="empty">Unknown card.</p>';return;}const ranked=C.rankedApplicable(state,LANES,ctx(),{showAll:true}).find(x=>x.card.id===id);$('#view').innerHTML='<p><a href="#/lanes/'+esc(c.lane)+'" style="color:var(--info)">← '+esc(c.lane)+' lane</a></p><br>'+cardHTML(c,facts(),true,ranked);bindCards($('#view'));}
+function canonicalizeCardRoute(id){const canonical=canonicalCardId(id);if(canonical&&canonical!==id&&typeof history!=='undefined'&&location&&/^#\/card\//.test(location.hash)){try{history.replaceState(null,'','#/card/'+encodeURIComponent(canonical));}catch(_err){}}return canonical||id;}
+function viewCard(id){const requestedId=id,canonicalId=canonicalizeCardRoute(id),c=liveCardById(canonicalId);if(!c){$('#view').innerHTML='<p class="empty">Unknown card.</p>';return;}const ranked=C.rankedApplicable(state,LANES,ctx(),{showAll:true}).find(x=>x.card.id===c.id||x.card.id===requestedId);$('#view').innerHTML='<p><a href="#/lanes/'+esc(c.lane)+'" style="color:var(--info)">← '+esc(c.lane)+' lane</a></p><br>'+cardHTML(c,facts(),true,ranked);bindCards($('#view'));}
 function viewPath(){ const showAll=!!state.ui.pathShowAll,fs=facts(),ranked=osFilterRanked(C.rankedApplicable(state,LANES,ctx(),{showAll}),fs),li=state.ui.lastEvidenceUpdate,ownLi=li&&li.contextKey===C.contextKey(ctx());let h='<h2>Path</h2><p class="subtitle">Evidence-ranked next steps for <b>'+esc(C.contextLabel(state,ctx()))+'</b>. Ranking is based on relevance and information value, not finding severity.</p>';
   if(ownLi&&(li.facts.length||li.newly.length)){const newly=li.newly.filter(id=>{const c=liveCardById(id);return c&&osAllowed(c,fs);});h+='<div class="path-delta"><h3>From your latest '+esc(li.source)+' evidence</h3>'+(li.facts.length?'<p class="hint">Facts gained: '+li.facts.map(f=>'<code>'+esc(f)+'</code>').join(' ')+'</p>':'')+(newly.length?'<div class="cards-grid">'+newly.slice(0,8).map(id=>liveCardById(id)?cardHTML(liveCardById(id),facts(),false,{score:999,why:'newly unlocked by your latest evidence'}):'').join('')+'</div>':'')+'</div>';}
   h+='<div class="path-toolbar"><span>'+ranked.length+' applicable '+(showAll?'total':'evidence-grounded')+'</span> <button class="btn" id="path-toggle">'+(showAll?'Show evidence-grounded only':'Show all applicable')+'</button></div><div class="path-list">';
@@ -2091,8 +2101,8 @@ if(__nativeMutationObserver)root.MutationObserver=__nativeMutationObserver;
 'use strict';
 (function(root){
 const release=Object.freeze({
- version:'9.99.0',
- label:'v9.99',
+ version:'10.0.0',
+ label:'v10.0',
  phase:'product-hardening',
  phaseLabel:'Product Hardening',
  orangeBaseline:'v8.8',
@@ -2130,7 +2140,6 @@ const release=Object.freeze({
   'data/product-hardening/source-note-clusters-current.js',
   'data/product-hardening/global-source-note-clustering-v9.75.js',
   'data/product-hardening/web-upload-inclusion-cluster-v9.77.js',
-  'data/product-hardening/dynamic-why-now-route-stabilizer-v9.77.js',
   'data/product-hardening/v9.77-release-stability-repair.js',
   'data/product-hardening/web-authz-idor-verb-cluster-v9.78.js',
   'data/product-hardening/sql-injection-cluster-v9.79.js',
@@ -2184,6 +2193,12 @@ function normalizeReportMarkdown(markdown){
  }
  return lines.join('\n');
 }
+function finalizeProductHardeningExtensions(){
+ const api=root.OBOL_NOTE_CARD_DISPOSITION_RECONCILIATION_API_V968;
+ if(api&&typeof api.install==='function'){
+  try{api.install();root.__OBOL_PRODUCT_HARDENING_FINAL_CARD_DISPOSITION__='v10.0';}catch(_err){root.__OBOL_PRODUCT_HARDENING_FINAL_CARD_DISPOSITION_ERROR__=String(_err&&_err.message||_err);}
+ }
+}
 function loadProductHardeningExtensions(){
  const sources=Array.from(release.productHardeningExtensions||[]);
  if(root.__OBOL_DEFER_PRODUCT_HARDENING_EXTENSIONS__){
@@ -2191,12 +2206,17 @@ function loadProductHardeningExtensions(){
   return;
  }
  if(typeof document!=='undefined'){
+  let pending=sources.length;
+  const done=()=>{pending-=1;if(pending<=0)finalizeProductHardeningExtensions();};
+  if(!pending){finalizeProductHardeningExtensions();return;}
   sources.forEach(src=>{
-   if(document.querySelector('script[data-obol-extension="'+src+'"],script[data-obol-dashboard-src="'+src+'"]'))return;
+   if(document.querySelector('script[data-obol-extension="'+src+'"],script[data-obol-dashboard-src="'+src+'"]')){done();return;}
    const script=document.createElement('script');
    script.src=src;
    script.async=false;
    script.dataset.obolExtension=src;
+   script.onload=done;
+   script.onerror=done;
    document.head.appendChild(script);
   });
  }
@@ -2204,9 +2224,10 @@ function loadProductHardeningExtensions(){
   sources.forEach(src=>{
    try{require('./'+src.replace(/^data\//,''));}catch(_err){}
   });
+  finalizeProductHardeningExtensions();
  }
 }
-const identity=Object.freeze({release,stampState,normalizeReportMarkdown,loadProductHardeningExtensions});
+const identity=Object.freeze({release,stampState,normalizeReportMarkdown,loadProductHardeningExtensions,finalizeProductHardeningExtensions});
 root.OBOL_CURRENT_RELEASE=release;
 root.OBOL_RELEASE_IDENTITY=identity;
 loadProductHardeningExtensions();

@@ -1,8 +1,8 @@
 'use strict';
 (function(root){
 const release=Object.freeze({
- version:'9.99.0',
- label:'v9.99',
+ version:'10.0.0',
+ label:'v10.0',
  phase:'product-hardening',
  phaseLabel:'Product Hardening',
  orangeBaseline:'v8.8',
@@ -40,7 +40,6 @@ const release=Object.freeze({
   'data/product-hardening/source-note-clusters-current.js',
   'data/product-hardening/global-source-note-clustering-v9.75.js',
   'data/product-hardening/web-upload-inclusion-cluster-v9.77.js',
-  'data/product-hardening/dynamic-why-now-route-stabilizer-v9.77.js',
   'data/product-hardening/v9.77-release-stability-repair.js',
   'data/product-hardening/web-authz-idor-verb-cluster-v9.78.js',
   'data/product-hardening/sql-injection-cluster-v9.79.js',
@@ -94,6 +93,12 @@ function normalizeReportMarkdown(markdown){
  }
  return lines.join('\n');
 }
+function finalizeProductHardeningExtensions(){
+ const api=root.OBOL_NOTE_CARD_DISPOSITION_RECONCILIATION_API_V968;
+ if(api&&typeof api.install==='function'){
+  try{api.install();root.__OBOL_PRODUCT_HARDENING_FINAL_CARD_DISPOSITION__='v10.0';}catch(_err){root.__OBOL_PRODUCT_HARDENING_FINAL_CARD_DISPOSITION_ERROR__=String(_err&&_err.message||_err);}
+ }
+}
 function loadProductHardeningExtensions(){
  const sources=Array.from(release.productHardeningExtensions||[]);
  if(root.__OBOL_DEFER_PRODUCT_HARDENING_EXTENSIONS__){
@@ -101,12 +106,17 @@ function loadProductHardeningExtensions(){
   return;
  }
  if(typeof document!=='undefined'){
+  let pending=sources.length;
+  const done=()=>{pending-=1;if(pending<=0)finalizeProductHardeningExtensions();};
+  if(!pending){finalizeProductHardeningExtensions();return;}
   sources.forEach(src=>{
-   if(document.querySelector('script[data-obol-extension="'+src+'"],script[data-obol-dashboard-src="'+src+'"]'))return;
+   if(document.querySelector('script[data-obol-extension="'+src+'"],script[data-obol-dashboard-src="'+src+'"]')){done();return;}
    const script=document.createElement('script');
    script.src=src;
    script.async=false;
    script.dataset.obolExtension=src;
+   script.onload=done;
+   script.onerror=done;
    document.head.appendChild(script);
   });
  }
@@ -114,9 +124,10 @@ function loadProductHardeningExtensions(){
   sources.forEach(src=>{
    try{require('./'+src.replace(/^data\//,''));}catch(_err){}
   });
+  finalizeProductHardeningExtensions();
  }
 }
-const identity=Object.freeze({release,stampState,normalizeReportMarkdown,loadProductHardeningExtensions});
+const identity=Object.freeze({release,stampState,normalizeReportMarkdown,loadProductHardeningExtensions,finalizeProductHardeningExtensions});
 root.OBOL_CURRENT_RELEASE=release;
 root.OBOL_RELEASE_IDENTITY=identity;
 loadProductHardeningExtensions();

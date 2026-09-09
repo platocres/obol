@@ -67,6 +67,7 @@ function cardText(card) {
 function canonicalCardIds(sandbox) {
   const cards = Object.values(sandbox.CARDS || {}).filter((card) => card && card.id);
   return cards
+    .filter((card, index, arr) => arr.findIndex((other) => other === card) === index)
     .filter((card) => !card.referenceOnly && !card.hiddenFromNextSteps)
     .filter((card) => !(card.id in KNOWN_FOLDED_ALIASES))
     .filter((card) => Array.isArray(card.commands) || Array.isArray(card.guiSteps) || Array.isArray(card.produces));
@@ -132,6 +133,20 @@ function fixtureCheck(failures) {
   const clone = Object.assign({}, base, { id: 'fixture-linux-privesc-b', title: 'Linux privilege boundary check' });
   if (!findDuplicateRisks([base, clone]).length) failures.push('duplicate-card fixture did not trigger the uniqueness detector');
 }
+function finalizeCardDisposition(sandbox) {
+  const api = sandbox.OBOL_NOTE_CARD_DISPOSITION_RECONCILIATION_API_V968;
+  if (api && typeof api.install === 'function') api.install();
+}
+function validateFoldedAlias(sandbox, folded, canonical, failures) {
+  const foldedResolution = sandbox.CARDS[folded];
+  const canonicalCard = sandbox.CARDS[canonical];
+  if (!foldedResolution) return;
+  if (!canonicalCard) {
+    failures.push(`${folded} aliases ${canonical}, but canonical card is missing`);
+    return;
+  }
+  if (foldedResolution !== canonicalCard) failures.push(`${folded} still exists as a distinct primary card instead of a canonical alias to ${canonical}`);
+}
 function validate() {
   const failures = [];
   const extensions = currentReleaseExtensions();
@@ -141,10 +156,9 @@ function validate() {
     if (!fs.existsSync(path.join(root, rel))) { failures.push('Missing extension ' + rel); continue; }
     try { vm.runInContext(read(rel), sandbox, { filename: rel }); } catch (err) { failures.push(rel + ' failed in uniqueness sandbox: ' + err.message); }
   }
+  finalizeCardDisposition(sandbox);
   fixtureCheck(failures);
-  for (const [folded, canonical] of Object.entries(KNOWN_FOLDED_ALIASES)) {
-    if (sandbox.CARDS[folded]) failures.push(`${folded} still exists as a primary card instead of folded into ${canonical}`);
-  }
+  for (const [folded, canonical] of Object.entries(KNOWN_FOLDED_ALIASES)) validateFoldedAlias(sandbox, folded, canonical, failures);
   const canonical = canonicalCardIds(sandbox);
   const risks = findDuplicateRisks(canonical);
   for (const risk of risks) failures.push(`${risk.a} overlaps ${risk.b} too strongly for both to remain primary cards (lane=${risk.reason.lane}, tools=${risk.reason.toolOverlap.toFixed(2)}, facts=${risk.reason.factOverlap.toFixed(2)}, text=${risk.reason.textOverlap.toFixed(2)})`);
@@ -161,4 +175,4 @@ if (require.main === module) {
   }
   console.log(`v9.72 path-card uniqueness validation passed (${result.checkedCards} primary cards, ${Object.keys(KNOWN_FOLDED_ALIASES).length} folded aliases guarded).`);
 }
-module.exports = { validate, findDuplicateRisks, overlapReason, KNOWN_FOLDED_ALIASES };
+module.exports = { validate, findDuplicateRisks, overlapReason, KNOWN_FOLDED_ALIASES, finalizeCardDisposition };

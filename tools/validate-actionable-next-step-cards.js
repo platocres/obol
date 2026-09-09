@@ -77,13 +77,18 @@ function validateCard(card, id, failures) {
 }
 function validateDemotionRuntime(sandbox, failures) {
   const status = sandbox.OBOL_NOTE_CARD_DISPOSITION_RECONCILIATION_V968;
+  const canonicalizer = sandbox.OBOL_CARD_CANONICALIZER_CURRENT;
   if (!status) { failures.push('v9.68 reconciliation did not publish runtime status'); return; }
   for (const [id, parent] of Object.entries(DEMOTED)) {
     if (!Array.isArray(status.demotedCardIds) || !status.demotedCardIds.includes(id)) failures.push(`${id} is not listed as demoted by v9.68`);
-    if (sandbox.CARDS[id]) failures.push(`${id} still resolves as a primary card after reconciliation`);
     const parentCard = sandbox.CARDS[parent];
+    const demotedResolution = sandbox.CARDS[id];
     if (!parentCard) failures.push(`${id} parent ${parent} is missing`);
-    else if (!Array.isArray(parentCard.mergedNoteCardIds) || !parentCard.mergedNoteCardIds.includes(id)) failures.push(`${id} was not merged into parent card ${parent}`);
+    else {
+      if (demotedResolution && demotedResolution !== parentCard) failures.push(`${id} resolves as a distinct primary card after reconciliation`);
+      if (canonicalizer && typeof canonicalizer.canonicalCardId === 'function' && canonicalizer.canonicalCardId(id) !== parent) failures.push(`${id} does not canonicalize to parent card ${parent}`);
+      if (!Array.isArray(parentCard.mergedNoteCardIds) || !parentCard.mergedNoteCardIds.includes(id)) failures.push(`${id} was not merged into parent card ${parent}`);
+    }
   }
 }
 function validateActionableNextStepCards() {
