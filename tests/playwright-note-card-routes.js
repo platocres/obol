@@ -65,7 +65,9 @@ async function openCard(context, route, failures, options = {}) {
   await page.waitForFunction(() => {
     const view = document.querySelector('#view');
     const text = view && view.innerText ? view.innerText : '';
-    return /Why this step now/i.test(text) && document.querySelectorAll('[data-obol-dynamic-why-now]').length === 1;
+    return /Why this step now/i.test(text) &&
+      document.querySelectorAll('[data-card-primary-action="true"]').length === 1 &&
+      document.querySelectorAll('[data-obol-dynamic-why-now]').length === 0;
   }, null, { timeout: 20000 });
   await page.waitForTimeout(600);
 
@@ -80,7 +82,8 @@ async function openCard(context, route, failures, options = {}) {
       text,
       hash: window.location.hash,
       patchPanelCount: document.querySelectorAll('.obol-action-first-v967,[data-obol-action-first-v967]').length,
-      whyNowCount: document.querySelectorAll('[data-obol-dynamic-why-now]').length,
+      whyNowCount: document.querySelectorAll('[data-card-primary-action="true"]').length,
+      retiredWhyNowFallbackCount: document.querySelectorAll('[data-obol-dynamic-why-now]').length,
       dynamicWhyBody: why && why.body || '',
       demotedCardIds: disposition && disposition.demotedCardIds || [],
       v971,
@@ -92,7 +95,8 @@ async function openCard(context, route, failures, options = {}) {
   if (!route.marker.test(state.text)) routeFailures.push('route marker did not match rendered content: ' + JSON.stringify((state.text || '').slice(0, 240)));
   if (state.patchPanelCount) routeFailures.push('route rendered a v9.67 action-first patch panel');
   if (INTERNAL_CARD_SLOP.test(state.text)) routeFailures.push('route leaks internal filler or UNKNOWN implementation copy');
-  if (state.whyNowCount !== 1 || !/Why this step now/i.test(state.text)) routeFailures.push('route does not render exactly one dynamic why-now section');
+  if (state.whyNowCount !== 1 || !/Why this step now/i.test(state.text)) routeFailures.push('route does not render exactly one current-card why-now section');
+  if (state.retiredWhyNowFallbackCount !== 0) routeFailures.push('route rendered retired v9.71 why-now fallback');
   if (!/current path|You have|This card is relevant|missing proof|paste the result back/i.test(state.dynamicWhyBody)) routeFailures.push('dynamic why-now body is not grounded in path/evidence language');
   if (route.id.startsWith('linux-') && !(state.v972 && state.v972.cardsIntegrated)) routeFailures.push('v9.72 Linux final re-mining integration did not report folded card integration');
   if (options.demoted) {
@@ -122,5 +126,5 @@ async function openCard(context, route, failures, options = {}) {
     for (const failure of failures) console.error('- ' + failure);
     process.exit(1);
   }
-  console.log('Note-derived card browser route smoke passed for ' + primaryRoutes.length + ' primary cards and ' + demotedRoutes.length + ' demoted/folded route aliases with dynamic why-now guidance.');
+  console.log('Note-derived card browser route smoke passed for ' + primaryRoutes.length + ' primary cards and ' + demotedRoutes.length + ' demoted/folded route aliases with the single current-card dynamic why-now owner.');
 })();

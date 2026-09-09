@@ -7,8 +7,8 @@ const chisel=schema.register({
  id:'tb-chisel',tool:'chisel',title:'chisel tunnel builder',summary:'Build a chisel server or client command with explicit reverse, SOCKS, remote, authentication, transport, and listener controls. Run it externally and return connection/listener evidence to Obol.',executionContext:'any',credentialModes:['password'],
  fields:[
   {id:'role',label:'Role',type:'select',default:'client',options:[{value:'client',label:'Client / connect to chisel server'},{value:'server',label:'Server / listen for clients'}]},
-  {id:'serverHost',label:'Server listen host',type:'text',default:'0.0.0.0',placeholder:'0.0.0.0',visibleWhen:{field:'role',equals:'server'}},
-  {id:'serverPort',label:'Server listen port',type:'number',default:'8080',placeholder:'8080',visibleWhen:{field:'role',equals:'server'}},
+  {id:'serverHost',label:'Server listen host',type:'text',placeholder:'0.0.0.0',visibleWhen:{field:'role',equals:'server'}},
+  {id:'serverPort',label:'Server listen port',type:'number',placeholder:'8080',visibleWhen:{field:'role',equals:'server'}},
   {id:'allowReverse',label:'Allow reverse remotes (--reverse)',type:'checkbox',visibleWhen:{field:'role',equals:'server'},help:'Required on the server before clients can request R: reverse forwards or reverse SOCKS.'},
   {id:'allowSocks',label:'Enable server SOCKS5 (--socks5)',type:'checkbox',visibleWhen:{field:'role',equals:'server'},help:'Required on the server before clients can request a normal socks remote.'},
   {id:'serverAuthMode',label:'Server authentication',type:'select',default:'none',options:[{value:'none',label:'No chisel authentication'},{value:'single',label:'Single user/password (--auth)'},{value:'file',label:'Auth file (--authfile)'}],visibleWhen:{field:'role',equals:'server'}},
@@ -82,12 +82,12 @@ const sshPlink=schema.register({
   {id:'listenPort',label:'Forward listen port',type:'number',required:true,placeholder:'1080'},
   {id:'destinationHost',label:'Forward destination host',type:'text',placeholder:'127.0.0.1',requiredWhen:{field:'forwardMode',in:['local','remote']},visibleWhen:{field:'forwardMode',in:['local','remote']}},
   {id:'destinationPort',label:'Forward destination port',type:'number',placeholder:'3389',requiredWhen:{field:'forwardMode',in:['local','remote']},visibleWhen:{field:'forwardMode',in:['local','remote']}},
-  {id:'noShell',label:'Forward only / no remote shell (-N)',type:'checkbox',default:true},
+  {id:'noShell',label:'Forward only / no remote shell (-N)',type:'checkbox'},
   {id:'compression',label:'Enable SSH compression (-C)',type:'checkbox'},
-  {id:'exitOnForwardFailure',label:'OpenSSH: exit if requested listener setup fails',type:'checkbox',default:true,visibleWhen:{field:'client',equals:'ssh'}},
+  {id:'exitOnForwardFailure',label:'OpenSSH: exit if requested listener setup fails',type:'checkbox',visibleWhen:{field:'client',equals:'ssh'}},
   {id:'strictHostKey',label:'OpenSSH host-key policy',type:'select',default:'default',options:[{value:'default',label:'System/user default'},{value:'accept-new',label:'Accept new keys, reject changed keys'},{value:'strict',label:'Require already trusted key'}],visibleWhen:{field:'client',equals:'ssh'}},
   {id:'knownHostsFile',label:'OpenSSH known_hosts file',type:'path',placeholder:'~/.ssh/known_hosts',visibleWhen:{field:'client',equals:'ssh'}},
-  {id:'plinkBatch',label:'Plink batch mode / no prompts (-batch)',type:'checkbox',default:true,visibleWhen:{field:'client',equals:'plink'}},
+  {id:'plinkBatch',label:'Plink batch mode / no prompts (-batch)',type:'checkbox',visibleWhen:{field:'client',equals:'plink'}},
   {id:'plinkHostKey',label:'Plink pinned host key',type:'text',placeholder:'ssh-ed25519 255 SHA256:...',visibleWhen:{field:'client',equals:'plink'},help:'Use a verified host key so batch mode fails closed instead of prompting.'}
  ],
  command:{executable:{field:'client',choices:[{value:'ssh',command:'ssh'},{value:'plink',command:'plink'}]},tokens:[
@@ -114,12 +114,13 @@ function installInventoryProjection(){
  const overrides={
   chisel:Object.freeze({tool:'chisel',status:'implemented',queueItem:'tb-chisel',rationale:'chisel is implemented through the canonical schema-driven client/server tunnel builder with reverse, SOCKS, remote, transport, authentication, retry, and cleanup guidance.'}),
   ssh:Object.freeze({tool:'ssh',status:'implemented',queueItem:'tb-ssh-plink',rationale:'OpenSSH forwarding is implemented through the shared SSH / plink tunnel builder with local, remote, dynamic, authentication, host-key, bind, and cleanup controls.'}),
-  plink:Object.freeze({tool:'plink',status:'implemented',queueItem:'tb-ssh-plink',rationale:'PuTTY Plink forwarding is implemented through the shared SSH / plink tunnel builder with local, remote, dynamic, password/key, host-key, batch, bind, and cleanup controls.'})
+  plink:Object.freeze({tool:'plink',status:'implemented',queueItem:'tb-ssh-plink',rationale:'PuTTY Plink forwarding is implemented through the shared SSH / plink tunnel builder with local, remote, dynamic, password/key, host-key, batch, bind, and cleanup controls.'}),
+  proxychains:Object.freeze({tool:'proxychains',status:'superseded',queueItem:'tb-chisel',rationale:'Proxychains remains a companion to SOCKS-producing chisel/SSH workflows rather than a standalone command builder. Its service-specific proof comes from the underlying tool output plus the existing pivot/route Evidence owner.'})
  };
  const dispositions=Object.freeze({...base.dispositions,...overrides});
  const get=tool=>dispositions[base.key(tool)]||null;
  const all=()=>Object.values(dispositions);
- const validate=()=>{const failures=Array.from(base.validate?base.validate():[]);for(const record of Object.values(overrides)){if(record.status!=='implemented'||!record.queueItem||!record.rationale)failures.push('invalid tunnel inventory projection for '+record.tool);}return failures;};
+ const validate=()=>{const failures=Array.from(base.validate?base.validate():[]);for(const record of Object.values(overrides)){if(!['implemented','superseded'].includes(record.status)||!record.rationale||(record.status==='implemented'&&!record.queueItem))failures.push('invalid tunnel inventory projection for '+record.tool);}return failures;};
  const projected=Object.freeze({...base,dispositions,get,all,validate});
  root.OBOL_TOOL_BUILDER_INVENTORY=projected;
  return projected;
@@ -139,7 +140,7 @@ function installBuilderProjection(){
   if(id==='tb-ssh-plink'){
    const route=activeToolRoute();
    const client=route==='plink'?'plink':'ssh';
-   return{client,forwardMode:'local',authMode:'agent',customBind:false,noShell:true,exitOnForwardFailure:true,strictHostKey:'default',plinkBatch:true,...(values||{})};
+   return{client,forwardMode:'local',authMode:'agent',customBind:false,strictHostKey:'default',...(values||{})};
   }
   return oldDefaults(id,values,context);
  };
@@ -151,5 +152,5 @@ function installBuilderProjection(){
 
 installInventoryProjection();
 installBuilderProjection();
-root.OBOL_TUNNEL_TOOL_BUILDERS=Object.freeze({version:'1.0.0',chisel,sshPlink,installInventoryProjection,installBuilderProjection});
+root.OBOL_TUNNEL_TOOL_BUILDERS=Object.freeze({version:'1.1.0',chisel,sshPlink,installInventoryProjection,installBuilderProjection});
 })(typeof window!=='undefined'?window:globalThis);

@@ -1,3 +1,10 @@
+## v10.04 — - Promotes Ligolo-ng into the schema-driven Tool Builder platform for proxy, agent, interface/route, tunnel, listener, and proof/cleanup workflows
+
+- Promotes Ligolo-ng into the schema-driven Tool Builder platform for proxy, agent, interface/route, tunnel, listener, and proof/cleanup workflows.
+- Audits the existing chisel and SSH/plink tunnel builders against the v10.03 minimal-command contract so default previews stay small and optional behavior remains additive.
+- Keeps tunnel creation as operator-reviewed command generation only. Route, listener, connectivity, and cleanup facts still require reviewed Evidence.
+- Repairs the release handoff after the merged v10.03 command-hygiene work left the public release authority on v10.02.
+
 ## v10.02 — Product-hardening release v10.02 completes the Post-mining visual density regression pass
 
 - Added a dedicated Playwright visual-density smoke for Path, Card, and Tools routes.

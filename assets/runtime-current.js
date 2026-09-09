@@ -149,8 +149,9 @@ function writeScripts(){
 function lazyGroup(name){return manifest.lazy&&Array.isArray(manifest.lazy[name])?manifest.lazy[name]:[];}
 function lazyOwnerList(name){
  const owner=manifest.lazyBundles&&manifest.lazyBundles[name];
- const list=owner?[owner]:lazyGroup(name);
- if(name==='toolReferenceData'&&!list.includes('assets/tools-library-current.js'))return list.concat(['assets/tools-library-current.js']);
+ let list=owner?[owner]:lazyGroup(name);
+ if(name==='toolReferenceData'&&!list.includes('assets/tools-library-current.js'))list=list.concat(['assets/tools-library-current.js']);
+ if(name==='evidenceParsing'&&!list.includes('assets/tool-builder-evidence-current.js'))list=list.concat(['assets/tool-builder-evidence-current.js']);
  return list;
 }
 function loadGroup(name){
@@ -204,14 +205,15 @@ function loadManualOutcomes(attempt){
  return manualOutcomeLoad;
 }
 function loadTunnelBuilders(attempt){
- if(root.OBOL_TUNNEL_TOOL_BUILDERS)return Promise.resolve(['data/tool-builders-tunnels.js']);
+ const sources=['data/tool-builders-tunnels.js','data/tool-builder-ligolo-current.js'];
+ if(root.OBOL_TUNNEL_TOOL_BUILDERS&&root.OBOL_LIGOLO_TOOL_BUILDER)return Promise.resolve(sources.slice());
  if(tunnelBuilderLoad)return tunnelBuilderLoad;
  const n=Number(attempt||0);
  if(!toolBuilderBaseReady()){
   if(n>=100)return Promise.resolve([]);
   return new Promise(resolve=>setTimeout(resolve,20)).then(()=>loadTunnelBuilders(n+1));
  }
- tunnelBuilderLoad=appendScripts(['data/tool-builders-tunnels.js']).then(()=>root.OBOL_TUNNEL_TOOL_BUILDERS?['data/tool-builders-tunnels.js']:[]).finally(()=>{if(!root.OBOL_TUNNEL_TOOL_BUILDERS)tunnelBuilderLoad=null;});
+ tunnelBuilderLoad=appendScripts(sources).then(()=>root.OBOL_TUNNEL_TOOL_BUILDERS&&root.OBOL_LIGOLO_TOOL_BUILDER?sources.slice():[]).finally(()=>{if(!root.OBOL_TUNNEL_TOOL_BUILDERS||!root.OBOL_LIGOLO_TOOL_BUILDER)tunnelBuilderLoad=null;});
  return tunnelBuilderLoad;
 }
 function hydrateDashboard(){
