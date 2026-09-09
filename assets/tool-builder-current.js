@@ -44,11 +44,50 @@ function conditionMatches(condition,values){
  if(Object.prototype.hasOwnProperty.call(condition,'truthy'))return truthy(value)===condition.truthy;
  return false;
 }
+function scrubGeneratedPlaceholders(builder,values){
+ const out={...(values||{})};
+ const placeholderSecrets=new Set(['Password123!','8846f7eaee8fb117ad06bdd830b7586c',':8846f7eaee8fb117ad06bdd830b7586c']);
+ for(const key of ['password','authPassword','proxyPassword','hash','bearerToken','cookie']){
+  if(placeholderSecrets.has(String(out[key]||'')))delete out[key];
+ }
+ if(out.domain==='domain.local')delete out.domain;
+ if(out.username==='user')delete out.username;
+ if(out.hashOrFile==='hashes.txt')delete out.hashOrFile;
+ if(builder&&builder.id==='tb-nxc'&&out.authMode==='password'&&!out.username&&!out.password)out.authMode='anonymous';
+ return out;
+}
+function minimalDefaultToken(builder,token,values){
+ const id=builder&&builder.id;
+ if(!id||!token)return false;
+ if(id==='tb-nmap'){
+  if(token.field==='resolveDns'&&values.resolveDns===false)return true;
+  if(token.field==='timing'&&String(values.timing||'')==='T4')return true;
+  if(token.field==='output'&&/^scans\/(discovery|quick|full-tcp|services|udp)$/.test(String(values.output||'')))return true;
+  if(token.field==='minRate'&&String(values.minRate||'')==='1000')return true;
+ }
+ if(id==='tb-gobuster-ferox'){
+  if(token.field==='statusCodes'&&values.statusMode==='filter'&&String(values.statusCodes||'')==='404')return true;
+ }
+ if(id==='tb-sqlmap'){
+  if(token.field==='level'&&String(values.level||'')==='1')return true;
+  if(token.field==='risk'&&String(values.risk||'')==='1')return true;
+  if(token.field==='batch'&&truthy(values.batch))return true;
+  if(token.field==='dbms'&&values.dbms==='auto')return true;
+  if(token.field==='technique'&&values.technique==='auto')return true;
+  if(token.field==='action'&&values.action==='detect')return true;
+ }
+ if(id==='tb-certipy'){
+  if(token.field==='findOutputMode'&&values.findOutputMode==='stdout')return true;
+  if(token.field==='findVulnerable'&&truthy(values.findVulnerable))return true;
+ }
+ return false;
+}
 function normalizeValues(builder,values,context){
  builder=effectiveBuilder(builder);
  const s=schema();
  if(!s)throw new Error('Tool Builder schema is not loaded');
- return s.autofill(builder,context||{},values||{});
+ const scrubbed=scrubGeneratedPlaceholders(builder,values||{});
+ return s.autofill(builder,context||{},scrubbed);
 }
 function validateRequired(builder,values){
  const missing=[];
@@ -104,6 +143,7 @@ function compile(builder,values,context){
  const parts=[shellQuote(commandExecutable(builder,resolved))];
  for(const token of builder.command.tokens||[]){
   if(!conditionMatches(token.when,resolved))continue;
+  if(minimalDefaultToken(builder,token,resolved))continue;
   if(token.kind==='literal'){parts.push(String(token.value));continue;}
   const value=resolved[token.field];
   if(token.kind==='toggle'){
@@ -159,7 +199,7 @@ function html(builder,context,values){
  return '<section class="card tool-builder-current" data-tool-builder="'+esc(builder.id)+'" data-tool="'+esc(builder.tool)+'"><div class="card-body">'+
   '<div class="tool-builder-head"><div><span class="eyebrow30">Tool Builder</span><h3>'+esc(builder.title)+'</h3><p class="hint">'+esc(builder.summary)+'</p></div><span class="badge">'+esc(builder.executionContext||'any')+'</span></div>'+creds+
   '<form class="tool-builder-form" novalidate>'+fields+'</form>'+ 
-  '<div class="cmd-block tool-builder-preview" aria-live="polite"><span class="tool">Generated command</span><code>'+esc(preview)+'</code><button type="button" class="copy-btn tool-builder-copy">Copy</button><p class="note">Obol generates this command for you to review and run yourself. It does not execute commands.</p></div>'+ 
+  '<div class="cmd-block tool-builder-preview" aria-live="polite"><span class="tool">Generated command</span><code>'+esc(preview)+'</code><button type="button" class="copy-btn tool-builder-copy">Copy</button><p class="note">Obol starts from the minimal valid command for the selected tool/mode and only adds flags through collected parameters or explicit GUI controls. Obol generates this command for you to review and run yourself; it does not execute commands.</p></div>'+ 
   '<details class="tool-builder-proof"><summary>Evidence and report boundary</summary><p class="hint"><b>Expected Evidence:</b> '+esc(builder.evidence.expectation)+'</p><p class="hint"><b>Proof boundary:</b> '+esc(builder.evidence.proofBoundary)+'</p><p class="hint"><b>Manual outcome:</b> '+esc(builder.manualOutcome.boundary)+'</p></details>'+ 
   '</div></section>';
 }
@@ -203,5 +243,5 @@ function mount(container,builder,context,values){
  refresh();
  return{shell,form,refresh,get command(){return code?code.textContent:'';},get values(){return collect(form,builder);}};
 }
-root.OBOL_TOOL_BUILDER=Object.freeze({version:'1.2.0',effectiveBuilder,shellQuote,truthy,conditionMatches,commandExecutable,compile,html,mount,collect,normalizeValues});
+root.OBOL_TOOL_BUILDER=Object.freeze({version:'1.3.0',effectiveBuilder,shellQuote,truthy,conditionMatches,commandExecutable,compile,html,mount,collect,normalizeValues,scrubGeneratedPlaceholders,minimalDefaultToken});
 })(typeof window!=='undefined'?window:globalThis);

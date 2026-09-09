@@ -8,7 +8,7 @@ Current release: **v10.02**
 
 Open `#/dashboard` for the active Product Hardening Dashboard and Product Build Next queue.
 
-The README is the entrypoint and current handoff. The README is not a changelog. Detailed build mechanics live in [`docs/AGENT-WORKFLOW.md`](docs/AGENT-WORKFLOW.md), release mechanics live in [`BUILDING.md`](BUILDING.md), connector-only fallback workflow lives in [`docs/CONNECTOR-FALLBACK.md`](docs/CONNECTOR-FALLBACK.md), and release history lives in [`CHANGELOG.md`](CHANGELOG.md).
+The README is the entrypoint and current handoff. The README is not a changelog. Detailed build mechanics live in [`docs/AGENT-WORKFLOW.md`](docs/AGENT-WORKFLOW.md), release mechanics live in [`BUILDING.md`](BUILDING.md), connector-only fallback workflow lives in [`docs/CONNECTOR-FALLBACK.md`](docs/CONNECTOR-FALLBACK.md), the tool-builder backlog sequence lives in [`docs/TOOL-BUILDER-BUILD-QUEUE.md`](docs/TOOL-BUILDER-BUILD-QUEUE.md), and release history lives in [`CHANGELOG.md`](CHANGELOG.md).
 
 ## Continue developing (start here)
 
@@ -17,7 +17,7 @@ Told to "read the README and keep developing"? This is the single agent quicksta
 Agents may be operating from Kali or from a Windows host. Obol still never executes those commands for the operator; the site builds human-reviewed commands, analyzes pasted output, and moves the Next Steps path from supported Evidence.
 
 1. **Use one active PR.** Keep one open release/product-hardening PR for active product-hardening work. Check for open release/product-hardening PRs first. Continue the active one if it exists; otherwise open one normal non-draft PR for the work.
-2. **Read the canonical docs by ownership.** Use [`docs/AGENT-WORKFLOW.md`](docs/AGENT-WORKFLOW.md) for the full agent loop, [`BUILDING.md`](BUILDING.md) for release/CI rules, [`docs/CONNECTOR-FALLBACK.md`](docs/CONNECTOR-FALLBACK.md) when shell GitHub access or DNS fails, [`docs/TEST-GOVERNANCE.md`](docs/TEST-GOVERNANCE.md) for the required PR checks and how to update tests when a release advances, [`docs/PRODUCT-HARDENING.md`](docs/PRODUCT-HARDENING.md) for the product-hardening contract, and the notes docs only when Product Build Next or the user explicitly asks for historical note-derivation work.
+2. **Read the canonical docs by ownership.** Use [`docs/AGENT-WORKFLOW.md`](docs/AGENT-WORKFLOW.md) for the full agent loop, [`BUILDING.md`](BUILDING.md) for release/CI rules, [`docs/CONNECTOR-FALLBACK.md`](docs/CONNECTOR-FALLBACK.md) when shell GitHub access or DNS fails, [`docs/TEST-GOVERNANCE.md`](docs/TEST-GOVERNANCE.md) for the required PR checks and how to update tests when a release advances, [`docs/PRODUCT-HARDENING.md`](docs/PRODUCT-HARDENING.md) for the product-hardening contract, [`docs/TOOL-BUILDER-BUILD-QUEUE.md`](docs/TOOL-BUILDER-BUILD-QUEUE.md) for the modeled-tool implementation sequence and minimal-command rule, and the notes docs only when Product Build Next or the user explicitly asks for historical note-derivation work.
 3. **Do Product Build Next.** Start with the highest-priority Product Build Next item. Treat it as the entry point into the recommended coherent work package, not as a one-item limit. Use the generated Product Build Next item below unless the user explicitly directs otherwise. The dashboard and README consume the same queue sources, so do not hand-edit the generated block outside the queue owners or their current-release projection.
 4. **Batch carefully.** Use the recommended coherent work package when it keeps one PR inside the same ownership area. Every item advanced or closed still needs its own acceptance criteria and proof.
 5. **Treat note-mining docs as closed-source reference unless reactivated.** Source-note mining completed in v9.95. Do not look for another generated notes batch by default, and do not resurrect old cluster items as public UI filler. Historical note-derived work still uses the rule: **Extract the value, not the wording.** Use [`docs/RAW-NOTES-LFS.md`](docs/RAW-NOTES-LFS.md), [`docs/NOTE-DERIVATION-STANDARD.md`](docs/NOTE-DERIVATION-STANDARD.md), [`docs/NOTE-MINING-RUBRIC.md`](docs/NOTE-MINING-RUBRIC.md), [`docs/NOTES-INTEGRATION.md`](docs/NOTES-INTEGRATION.md), [`docs/NOTES-IMPACT.md`](docs/NOTES-IMPACT.md), and [`docs/SOURCE-NOTE-CLUSTERING.md`](docs/SOURCE-NOTE-CLUSTERING.md) as provenance and safety references only unless Product Build Next explicitly reopens note-derived work.
@@ -39,6 +39,7 @@ Obol remains a website the user can visit and use: no backend, account system, t
 - [`docs/CONNECTOR-FALLBACK.md`](docs/CONNECTOR-FALLBACK.md) - connector-only workflow for runtimes that cannot resolve GitHub from the shell; failed local DNS does not weaken the exact-head green-check rule.
 - [`docs/TEST-GOVERNANCE.md`](docs/TEST-GOVERNANCE.md) - the lean test model: the two required PR checks (`full-historical-regression` aggregate plus `browser-smoke`), the granular phase jobs behind them, and how to update tests when a release advances.
 - [`docs/PRODUCT-HARDENING.md`](docs/PRODUCT-HARDENING.md) - active product-hardening vision, tracks, work-package rules, and Definition of Done.
+- [`docs/TOOL-BUILDER-BUILD-QUEUE.md`](docs/TOOL-BUILDER-BUILD-QUEUE.md) - exact next-build sequence for modeled-to-implemented builders and the minimal-command/additive-toggle contract.
 - [`docs/RAW-NOTES-LFS.md`](docs/RAW-NOTES-LFS.md) - private source access proof and complete packet fallback.
 - [`docs/NOTE-DERIVATION-STANDARD.md`](docs/NOTE-DERIVATION-STANDARD.md), [`docs/NOTE-MINING-RUBRIC.md`](docs/NOTE-MINING-RUBRIC.md), [`docs/NOTES-INTEGRATION.md`](docs/NOTES-INTEGRATION.md), [`docs/NOTES-IMPACT.md`](docs/NOTES-IMPACT.md), and [`docs/SOURCE-NOTE-CLUSTERING.md`](docs/SOURCE-NOTE-CLUSTERING.md) - historical notes derivation, extraction, clustering, integration, and product-impact rules; use as reference unless current Product Build Next explicitly reopens note-derived work.
 - [`docs/ACTIONABLE-CARD-CONTRACT.md`](docs/ACTIONABLE-CARD-CONTRACT.md) and [`docs/CARD-UI-STANDARD.md`](docs/CARD-UI-STANDARD.md) - primary card action-spine and operator UI standards.
@@ -78,6 +79,18 @@ Generated from the same queue sources as the Product Hardening Dashboard. Do not
 **Queue automation:** `data/product-hardening/product-hardening-queue.js`, `data/product-hardening/build-next-queue-hygiene-current.js`, `data/product-hardening/note-progress-current.js`, `data/product-hardening/source-note-clusters-current.js`, and `data/product-hardening/work-packages.js` are the queue owners. The dashboard and this README projection consume those same sources.
 Generated by `node tools/sync-product-build-next.js --write`. Verify with `node tools/sync-product-build-next.js --check`.
 <!-- OBOL-PRODUCT-BUILD-NEXT:END -->
+
+## Tool Builder implementation queue
+
+The modeled-tool backlog is not a vague "add more tools" bucket. The next builds are intentionally narrow and must follow the minimal-command rule in [`docs/TOOL-BUILDER-BUILD-QUEUE.md`](docs/TOOL-BUILDER-BUILD-QUEUE.md): start with the minimal valid command for the selected tool/mode, fill only real collected target/material parameters or safe defaults, and add every extra flag through explicit GUI controls.
+
+1. **v10.03 — Minimal-command hygiene and implemented-builder audit.** Scrub fake fallback values, stop placeholder credentials/hashes from producing runnable-looking commands, and audit current implemented builders so Nmap, curl, sqlmap, Gobuster/Ferox, Hashcat, nxc, secretsdump, GetUserSPNs, and Evil-WinRM start cleanly or demand missing required material.
+2. **v10.04 — Pivot and remote-access first batch.** Promote Ligolo-ng to an implemented builder and audit chisel, SSH/plink, and proxychains companion behavior around listener/proxy/route proof and cleanup.
+3. **v10.05 — Authentication and enumeration batch.** Implement or harden Hydra, Kerbrute, smbclient/smbmap, enum4linux-ng, ldapsearch, and Responder so credential/list/rate/output options are additive, not default garbage.
+4. **v10.06 — Shell, payload, privesc, and transfer helper batch.** Implement linpeas/winpeas launchers, msfvenom/msfconsole helpers, nc/Penelope listener helpers, and common file-transfer builders with explicit LHOST/LPORT/output/proof fields.
+5. **v10.07 — Path/Card/Evidence handoff pass.** Make Path and Card consume the same builder schema and Evidence output expectations so direct Tools browsing, recommended next moves, and technique cards do not diverge into separate command models.
+
+For every batch, modeled tools remain modeled until a real schema-driven builder exists with fields, modes, generated command preview, additive toggles, Evidence paste-back guidance, collapsed legacy examples, and regression proof.
 
 ## Run locally
 
