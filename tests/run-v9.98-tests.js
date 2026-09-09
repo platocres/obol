@@ -2,8 +2,16 @@
 
 const fs = require('fs');
 const path = require('path');
+const cp = require('child_process');
 const assert = require('assert');
 const rootDir = path.join(__dirname, '..');
+
+function run(args) {
+  const result = cp.spawnSync(process.execPath, args.map((p, i) => i === 0 ? path.join(rootDir, p) : p), { cwd: rootDir, encoding: 'utf8' });
+  process.stdout.write(result.stdout || '');
+  process.stderr.write(result.stderr || '');
+  if (result.status !== 0) process.exit(result.status || 1);
+}
 
 const root = globalThis;
 root.window = root;
@@ -48,5 +56,7 @@ assert(/do not add a second corrective wrapper|deletion is proven later rather t
 
 const currentRelease = fs.readFileSync(path.join(rootDir, 'data/current-release.js'), 'utf8');
 assert(currentRelease.includes('data/product-hardening/card-wrapper-retirement-queue-v9.98.js'), 'current-release should load the v9.98 queue extension');
+
+run(['tools/validate-release-pr.js', '--repo-only', '--release-version=9.98']);
 
 console.log('v9.98 tests passed: Card cleanup now carries owner-consolidation acceptance and explicit wrapper/decorator retirement follow-up.');
