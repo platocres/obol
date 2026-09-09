@@ -58,6 +58,11 @@ async function pageMetrics(page) {
       })
       .map((el) => el.textContent || '')
       .join('\n');
+    const pathPrimaryMoveInFirstViewport = Array.from(document.querySelectorAll('.operator-primary-move31')).some((el) => {
+      const rect = el.getBoundingClientRect();
+      const style = getComputedStyle(el);
+      return rect.top >= 0 && rect.top < window.innerHeight && rect.width > 0 && rect.height > 0 && style.display !== 'none' && style.visibility !== 'hidden';
+    });
     return {
       text,
       firstViewportText,
@@ -66,6 +71,7 @@ async function pageMetrics(page) {
       wrapperPanels: document.querySelectorAll('.obol-action-first-v967,[data-obol-action-first-v967]').length,
       whyNowCount: document.querySelectorAll('[data-obol-dynamic-why-now]').length,
       pathPrimaryMoves: document.querySelectorAll('.operator-primary-move31').length,
+      pathPrimaryMoveInFirstViewport,
       pathSupportDrawers: document.querySelectorAll('details.operator-support31').length,
       cardPrimaryActions: document.querySelectorAll('[data-card-primary-action]').length,
       cardPrimaryCommands: document.querySelectorAll('[data-card-primary-command]').length,
@@ -94,7 +100,7 @@ function assertPath(id, metrics, failures) {
   commonAssertions(id, metrics, failures);
   if (metrics.pathPrimaryMoves !== 1) failures.push(`${id}: Path should expose exactly one dominant best-next-move panel, saw ${metrics.pathPrimaryMoves}`);
   if (metrics.pathSupportDrawers < 1) failures.push(`${id}: Path should keep evidence needs in a compact support drawer`);
-  if (!/Best next move/i.test(metrics.firstViewportText)) failures.push(`${id}: first viewport hides the best next move`);
+  if (!metrics.pathPrimaryMoveInFirstViewport) failures.push(`${id}: first viewport hides the best next move`);
   if (!/Evidence needs|Review Evidence|Paste back/i.test(metrics.text)) failures.push(`${id}: Path lost evidence guidance`);
   if (metrics.sectionCount > 24) failures.push(`${id}: Path section/card count looks cluttered (${metrics.sectionCount})`);
 }
