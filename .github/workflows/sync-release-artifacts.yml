@@ -16,6 +16,8 @@ on:
       - 'tools/sync-release-docs.js'
       - 'tools/sync-app-current.js'
       - 'tools/sync-product-build-next.js'
+      - 'assets/app-v*.js'
+      - 'assets/report-v*.js'
       - 'assets/workflow-current.js'
       - 'assets/operator-route-current.js'
 
