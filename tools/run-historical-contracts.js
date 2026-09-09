@@ -21,7 +21,7 @@ const PHASE_TASKS=Object.freeze({
   ['tools/validate-note-integration.js'],['tools/validate-source-note-clusters.js'],['tools/validate-notes-impact.js'],['tools/validate-note-card-disposition-reconciliation.js'],['tools/validate-note-card-path-placement.js'],['tools/validate-note-derivation-docs.js'],['tools/validate-note-mechanic-backfill.js'],['tools/validate-note-remining-audits.js'],['tools/validate-linux-final-remine-v9.72.js']
  ],
  'v9-current-product':[
-  ['tests/run-v9.97-tests.js'],['tests/run-notes-batch-selector-tests.js'],['tools/validate-current-release.js'],['tools/validate-product-hardening-queue.js'],['tools/validate-version-identity.js'],['tools/validate-live-integration-done-gate.js']
+  ['tests/run-v9.99-tests.js'],['tests/run-notes-batch-selector-tests.js'],['tools/validate-current-release.js'],['tools/validate-product-hardening-queue.js'],['tools/validate-version-identity.js'],['tools/validate-live-integration-done-gate.js']
  ],
  'quality-preservation':[
   ['tools/validate-pr-test-governance.js'],['tools/validate-release-pr.js'],['tools/validate-release-quality.js'],['tools/validate-readme-history-ownership.js'],['tools/validate-open-pr-uniqueness.js']

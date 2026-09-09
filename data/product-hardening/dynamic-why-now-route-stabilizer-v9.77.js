@@ -2,6 +2,7 @@
 (function(root){
 const WAVE='v9.77-dynamic-why-now-route-stability';
 let baseApi=null;
+function integratedCardOwner(){return !!(root.__OBOL_CARD_WHY_NOW_INTEGRATED__||root.OBOL_CARD_UI_CURRENT&&root.OBOL_CARD_UI_CURRENT.integratesDynamicWhyNow);}
 function str(v){return String(v==null?'':v);}
 function esc(v){return str(v).replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));}
 function routeId(){try{const m=str(root.location&&root.location.hash||'').match(/^#\/?card\/([^/?#]+)/);return m?decodeURIComponent(m[1]):'';}catch(_){return'';}}
@@ -81,6 +82,7 @@ function replaceOrInsert(cardRoot,view,why){
  return true;
 }
 function stabilize(){
+ if(integratedCardOwner())return null;
  if(typeof document==='undefined'||!isCardRoute())return null;
  const view=document.getElementById('view');
  if(!view)return null;
@@ -97,6 +99,7 @@ function stabilize(){
 }
 let scheduled=false;
 function schedule(){
+ if(integratedCardOwner())return;
  if(scheduled)return;
  scheduled=true;
  const run=()=>{scheduled=false;try{stabilize();}catch(_){}};
@@ -105,6 +108,7 @@ function schedule(){
  else run();
 }
 function scheduleBurst(){
+ if(integratedCardOwner())return;
  schedule();
  if(typeof root.setTimeout==='function'){
   [75,150,300,600,1200].forEach(delay=>root.setTimeout(schedule,delay));
@@ -123,7 +127,7 @@ function patchFunction(name){
 function install(){
  const previous=root.OBOL_DYNAMIC_WHY_NOW||{};
  baseApi=previous;
- root.OBOL_DYNAMIC_WHY_NOW=Object.freeze(Object.assign({},previous,{wave:WAVE,stabilize,decorate:function(){try{if(typeof previous.decorate==='function')previous.decorate();}catch(_){}return stabilize();}}));
+ root.OBOL_DYNAMIC_WHY_NOW=Object.freeze(Object.assign({},previous,{wave:WAVE,stabilize,decorate:function(){try{if(!integratedCardOwner()&&typeof previous.decorate==='function')previous.decorate();}catch(_){}return stabilize();},integratedCardOwner}));
  patchFunction('route');
  patchFunction('viewCard');
  if(typeof root.addEventListener==='function'){
@@ -133,7 +137,7 @@ function install(){
  }
  scheduleBurst();
 }
-const api=Object.freeze({wave:WAVE,install,stabilize,buildWhy,currentCardRoot,boxAlreadyCurrent});
+const api=Object.freeze({wave:WAVE,install,stabilize,buildWhy,currentCardRoot,boxAlreadyCurrent,integratedCardOwner});
 root.OBOL_DYNAMIC_WHY_NOW_ROUTE_STABILITY_V977=api;
 install();
 if(typeof module!=='undefined'&&module.exports)module.exports=api;
