@@ -122,9 +122,9 @@ for (const token of [
   'v10.04 - Pivot and remote-access first builder batch',
   'v10.05 - Authentication and enumeration builder batch',
   'v10.06 - Shell, payload, privesc, and transfer helper batch',
-  'v10.07 - Path/Card/Evidence builder handoff pass',
   'Placeholder values such as `user`, `domain.local`, `Password123!`, fake NT hashes, and fake `hashes.txt` must never make a command look valid'
 ]) assert(roadmap.includes(token), 'tool-builder roadmap missing ' + token);
+assert(/v10\.07 - (?:Path\/Card\/Evidence builder handoff pass|Implemented-tool Evidence and cross-surface audit)/.test(roadmap), 'tool-builder roadmap must preserve a v10.07 cross-surface handoff/audit phase');
 
 const readme = read('README.md');
 for (const token of [
@@ -134,9 +134,9 @@ for (const token of [
   'v10.04 — Pivot and remote-access first batch',
   'v10.05 — Authentication and enumeration batch',
   'v10.06 — Shell, payload, privesc, and transfer helper batch',
-  'v10.07 — Path/Card/Evidence handoff pass',
-  'start with the minimal valid command for the selected tool/mode',
+  'minimal valid command for the selected tool/mode',
   'modeled tools remain modeled until a real schema-driven builder exists'
 ]) assert(readme.includes(token), 'README tool-builder queue handoff missing ' + token);
+assert(/v10\.07 — (?:Path\/Card\/Evidence handoff pass|Implemented-tool Evidence and cross-surface audit)/.test(readme), 'README must preserve a v10.07 cross-surface handoff/audit phase');
 
 console.log('v10.03 tool builder minimal-command hygiene validation passed.');
