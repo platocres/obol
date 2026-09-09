@@ -11,7 +11,7 @@
  * suppresses historical schedulers and commits current route owners last.
  *
  * Historical fragment order sha256: 40e3006d9423d669acf5869b577ecf56a6ca2ee1629c95fd0fcc5d242d2c5f27
- * Generated body sha256: 595169ae2c94af5b067a12b6859319a3d14491dbcc1067bbf34c9ecadb8808d4
+ * Generated body sha256: cf942b18be46ccaaf59eeda0749b36483b797d360ca87ebd6dd17f0f078f1906
  * First historical fragment: assets/report-v2.js
  * Last historical fragment:  assets/app-v8.8.js
  */
@@ -1993,8 +1993,8 @@ if(__nativeMutationObserver)root.MutationObserver=__nativeMutationObserver;
 'use strict';
 (function(root){
 const release=Object.freeze({
- version:'9.96.0',
- label:'v9.96',
+ version:'9.97.0',
+ label:'v9.97',
  phase:'product-hardening',
  phaseLabel:'Product Hardening',
  orangeBaseline:'v8.8',
@@ -2055,7 +2055,8 @@ const release=Object.freeze({
   'data/product-hardening/reporting-cleanup-remediation-guidance-cluster-v9.93.js',
   'data/product-hardening/exam-skills-assessment-private-boundary-cluster-v9.94.js',
   'data/product-hardening/reference-index-course-map-private-boundary-cluster-v9.95.js',
-  'data/product-hardening/post-notes-clarity-audit-v9.96.js'
+  'data/product-hardening/post-notes-clarity-audit-v9.96.js',
+  'data/product-hardening/network-position-recurrence-v9.97.js'
  ])
 });
 function stampState(target){
@@ -2359,6 +2360,64 @@ function rowUnlocks(row){
  const unlocks=Array.isArray(row&&row.unlocks)?row.unlocks:[];
  return [...new Set(unlocks.map(x=>typeof x==='string'?x:x&&x.id).filter(Boolean))];
 }
+function labelFact(f){try{return typeof C!=='undefined'&&C.labelFact?C.labelFact(f):String(f||'');}catch(err){return String(f||'');}}
+/* Recurring operator capabilities (v9.97). A card with a `recurrence`/`scopeKey`
+   is not one-and-done: a per-subnet capability (the pivot workflow) re-arms for
+   each internal network the operator has only observed, never reached. The Path
+   is the recommender surface, so per-scope expansion lives here and stays a no-op
+   for ordinary cards and for any consumer whose overview carries no network model. */
+function recurrenceMeta(cardId){
+ try{const c=cardLookup()[cardId];if(c&&c.recurrence)return{recurrence:String(c.recurrence),scopeKey:String(c.scopeKey||'scope')};}catch(err){}
+ return null;
+}
+function subnetParam(){try{return(typeof state!=='undefined'&&state&&state.params&&state.params.pivot_subnet)||'';}catch(err){return'';}}
+function observedScopes(n){
+ const out=[];
+ try{
+  const vis=n&&n.network&&Array.isArray(n.network.visibility)?n.network.visibility:[];
+  for(const v of vis)if(v&&v.state==='observed'&&v.address&&!out.includes(v.address))out.push(v.address);
+ }catch(err){}
+ return out;
+}
+function expandRecurring(actions,n){
+ if(!Array.isArray(actions)||!actions.length)return actions;
+ const out=actions.slice(0,0);/* preserve the caller's array realm */
+ let changed=false;
+ for(const action of actions){
+  const meta=recurrenceMeta(action.id);
+  if(!meta){out.push(action);continue;}
+  changed=true;
+  if(/subnet/.test(meta.scopeKey||meta.recurrence)){
+   const scopes=observedScopes(n);
+   if(scopes.length>=2){
+    scopes.slice(0,4).forEach((scope,k)=>out.push(Object.assign({},action,{recurring:true,scope,scopeKey:meta.scopeKey,primary:action.primary&&k===0,title:action.title+' — reach '+scope,why:'Reach '+scope+' through this foothold, then prove the route. '+(action.why||'')})));
+    continue;
+   }
+   const one=scopes[0]||subnetParam();
+   out.push(Object.assign({},action,{recurring:true,scope:one||'',scopeKey:meta.scopeKey,why:one?('Reach '+one+' through this foothold, then prove the route. '+(action.why||'')):action.why}));
+   continue;
+  }
+  out.push(Object.assign({},action,{recurring:true,scopeKey:meta.scopeKey}));
+ }
+ return changed?out:actions;
+}
+function primaryMovePanel(top,title,why){
+ const badge=top&&top.recurring?'<span class="operator-recurring-badge31">recurring'+(top.scope?': '+e(top.scope):'')+'</span>':'';
+ const actions=top?'<div class="operator-primary-move-actions31"><a class="btn primary30" href="'+e(top.href)+'">Open</a>'+(top.id?'<button type="button" data-operator-plan31="'+e(top.id)+'">Add to Planned Work</button>':'')+'</div>':'';
+ return '<section class="operator-primary-move31"><div class="operator-primary-move-head31"><span class="operator-rank31">Best next move</span>'+badge+'</div><h3>'+e(title)+'</h3><p>'+e(why)+'</p>'+actions+'</section>';
+}
+function evidenceNeedsDrawer(top,card){
+ const c=card||{};
+ const needs=(Array.isArray(c.expectedEvidence)&&c.expectedEvidence.length?c.expectedEvidence:Array.isArray(c.expected)?c.expected:[]).slice(0,5);
+ const produces=(Array.isArray(c.produces)?c.produces:[]).slice(0,6).map(labelFact);
+ const failures=(Array.isArray(c.failureModes)?c.failureModes:[]).slice(0,3);
+ const title=top?('Evidence needs — '+top.title):'Evidence needs for the best next move';
+ const group=(label,items)=>items.length?'<div class="operator-need-group31"><span class="operator-rank31">'+e(label)+'</span><ul class="operator-need-list31">'+items.map(x=>'<li>'+e(x)+'</li>').join('')+'</ul></div>':'';
+ const body=(needs.length||produces.length||failures.length)
+  ? group('Paste back',needs)+group('Produces facts',produces)+group('If it fails',failures)
+  : '<p class="hint">Open the best next move for its full command spine and evidence controls.</p>';
+ return '<details class="operator-support31"><summary>'+e(title)+'</summary><div id="operator-support31">'+body+'</div></details>';
+}
 function buildPathModel(n){
  const cards=cardLookup(),graph=graphLookup(),rows=Array.isArray(n&&n.rows)?n.rows:[],blockers=blockerSummary(n);
  const actions=rows.map((row,i)=>{
@@ -2396,7 +2455,8 @@ function buildPathModel(n){
    if(nodeMap[action.id]&&nodeMap[id])edges.push({from:action.id,to:id});
   });
  });
- return{source:'nextStepsOverview34',contextLabel:contextLabel(n),plannedCount:n&&n.plannedCount||0,lanesAvailable:n&&n.lanesAvailable||0,blockers,actions,primary:actions[0]||null,nodes,edges,totalRows:rows.length};
+ const expanded=expandRecurring(actions,n);
+ return{source:'nextStepsOverview34',contextLabel:contextLabel(n),plannedCount:n&&n.plannedCount||0,lanesAvailable:n&&n.lanesAvailable||0,blockers,actions:expanded,primary:expanded[0]||null,nodes,edges,totalRows:rows.length};
 }
 function recRow(action,i){
  const unlocks=Array.isArray(action.unlocks)?action.unlocks.length:0,primary=i===0;
@@ -2501,32 +2561,24 @@ function wirePathControls(view,ui){
   saveState();setMapStage(view,ui);
  },{passive:false});
 }
-function supportingNodes(view){
- const support=[],seen=new Set();
- const current=view.querySelector&&view.querySelector('#operator-support31');
- if(current)Array.from(current.children).forEach(node=>{if(node.nodeType===1&&!seen.has(node)){seen.add(node);support.push(node);}});
- Array.from(view.children).filter(node=>!(node.matches&&node.matches('[data-operator-route-owner="path-current"]'))).forEach(node=>{if(node.nodeType===1&&!seen.has(node)){seen.add(node);support.push(node);}});
- return support.slice(0,8);
-}
 function renderCurrentPath(){
  if(page()!=='path'||typeof document==='undefined'||typeof C==='undefined')return false;
  const view=document.getElementById('view'),n=overview();
  if(!view||!n)return false;
- const ui=ensureUi(),model=buildPathModel(n),top=model.primary,blockers=model.blockers,support=supportingNodes(view);
+ const ui=ensureUi(),model=buildPathModel(n),top=model.primary,blockers=model.blockers;
  const topTitle=top?top.title:'No evidence-grounded move yet';
  const topWhy=top?top.why:'Paste or review Evidence to give the path engine more signal.';
+ const topCard=top?cardLookup()[top.id]:null;
  view.innerHTML='<main class="operator-path31" data-operator-route-owner="path-current" data-path-model-source="nextStepsOverview34">'+
   '<section class="operator-path-hero31"><div><div class="eyebrow30">Current operator route</div><h2>Next Steps</h2><p>'+e(topWhy)+'</p></div><div class="operator-context31"><span>Active context</span><b>'+e(model.contextLabel)+'</b></div></section>'+
+  primaryMovePanel(top,topTitle,topWhy)+
   '<section class="operator-metrics31">'+
-   '<div><span>Best next move</span><b>'+e(topTitle)+'</b><small>Current highest-signal recommendation</small></div>'+
    '<div><span>Unlocks</span><b>'+e(top&&Array.isArray(top.unlocks)?top.unlocks.length:0)+'</b><small>Potential follow-on actions</small></div>'+
    '<div><span>Queued intent</span><b>'+e(model.plannedCount||0)+'</b><small>Operator-selected work remains stable</small></div>'+
    '<div><span>Blockers</span><b>'+e(blockers.count)+'</b><small>'+e(blockers.detail)+'</small></div>'+
   '</section>'+renderModeSwitch(ui)+renderSelectedPathView(model,ui)+
-  '<details class="operator-support31"><summary>Supporting methodology detail</summary><div id="operator-support31"></div></details>'+
+  evidenceNeedsDrawer(top,topCard)+
  '</main>';
- const supportBox=view.querySelector('#operator-support31');
- if(supportBox&&support.length)support.forEach(node=>supportBox.appendChild(node));
  wirePathControls(view,ui);
  root.__OBOL_CURRENT_OPERATOR_ROUTE_OWNER__='path-current';
  return true;
@@ -2617,7 +2669,7 @@ function decorateRoute(){
  if(page()==='path')renderCurrentPath();
  if(page()==='tools')compactToolPanels();
 }
-root.OBOL_OPERATOR_ROUTES=Object.freeze({version:'1.1.1',MAX_PRIMARY_BUILDERS,buildPathModel,renderSimplified,renderChecklist,renderLiveMap,renderCurrentPath,compactToolPanels,ensureOperatorStyle,decorateRoute});
+root.OBOL_OPERATOR_ROUTES=Object.freeze({version:'1.2.0',MAX_PRIMARY_BUILDERS,buildPathModel,renderSimplified,renderChecklist,renderLiveMap,renderCurrentPath,compactToolPanels,ensureOperatorStyle,decorateRoute,expandRecurring,evidenceNeedsDrawer,primaryMovePanel,recurrenceMeta});
 ensureOperatorStyle();
 for(const t of [0,80,260,900,1800])root.setTimeout&&root.setTimeout(decorateRoute,t);
 })(typeof window!=='undefined'?window:globalThis);
