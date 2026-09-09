@@ -128,23 +128,7 @@ function loadProductHardeningExtensions(){
  }
 }
 const identity=Object.freeze({release,stampState,normalizeReportMarkdown,loadProductHardeningExtensions,finalizeProductHardeningExtensions});
-function ignoredOverrideRecord(value){
- const next=value&&typeof value==='object'?String(value.label||value.version||'unknown'):String(value);
- return Object.freeze({owner:'data/current-release.js',kept:release.label,ignored:next,at:Date.now()});
-}
-function publishReleaseAuthority(){
- root.__OBOL_CANONICAL_CURRENT_RELEASE__=release;
- root.__OBOL_CANONICAL_RELEASE_IDENTITY__=identity;
- root.OBOL_CURRENT_RELEASE=release;
- root.OBOL_RELEASE_IDENTITY=identity;
- try{
-  Object.defineProperty(root,'OBOL_CURRENT_RELEASE',{configurable:true,enumerable:true,get:function(){return release;},set:function(value){if(value!==release)root.__OBOL_IGNORED_RELEASE_OVERRIDE__=ignoredOverrideRecord(value);}});
-  Object.defineProperty(root,'OBOL_RELEASE_IDENTITY',{configurable:true,enumerable:true,get:function(){return identity;},set:function(value){if(value!==identity)root.__OBOL_IGNORED_RELEASE_IDENTITY_OVERRIDE__=ignoredOverrideRecord(value&&value.release||value);}});
- }catch(_err){
-  root.OBOL_CURRENT_RELEASE=release;
-  root.OBOL_RELEASE_IDENTITY=identity;
- }
-}
-publishReleaseAuthority();
+root.OBOL_CURRENT_RELEASE=release;
+root.OBOL_RELEASE_IDENTITY=identity;
 loadProductHardeningExtensions();
 })(typeof window!=='undefined'?window:globalThis);
