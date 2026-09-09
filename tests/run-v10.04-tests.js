@@ -125,6 +125,22 @@ for(const token of [
  'v10.07 - Implemented-tool Evidence and cross-surface audit'
 ])assert(roadmap.includes(token),'Tool Builder Evidence contract missing '+token);
 
+const queueOwner=read('data/product-hardening/card-wrapper-retirement-queue-v9.98.js');
+for(const token of [
+ "evidenceDefinitionOfDone','same-build",
+ "evidenceContract','executable-ingestion-required",
+ "nextStepsContract','move-or-block-from-supported-evidence",
+ 'v10.07-final-cross-surface-audit-not-deferred-implementation'
+])assert(queueOwner.includes(token),'live Tool Builder queue missing '+token);
+const readme=read('README.md');
+assert(readme.includes('Every tool batch must ship command generation and decision-relevant Evidence behavior together'),'generated README Build Next must expose the same-build Evidence queue requirement');
+const routeGuard=read('data/product-hardening/ad-metasploit-route-guard-v9.71.js');
+assert(routeGuard.includes('function integratedWhyNow()'),'historical AD/MSF route guard must recognize the integrated current card owner');
+assert(routeGuard.includes('[data-card-primary-action=\"true\"]'),'historical AD/MSF route guard must key current why-now ownership to the integrated card action');
+const noteCardSmoke=read('tests/playwright-note-card-routes.js');
+assert(noteCardSmoke.includes('retiredWhyNowFallbackCount'),'browser smoke must fail if the retired v9.71 why-now fallback returns');
+assert(noteCardSmoke.includes('[data-card-primary-action=\"true\"]'),'browser smoke must assert the current card why-now owner');
+
 const release=cp.spawnSync(process.execPath,['tools/validate-release-pr.js','--repo-only'],{cwd:root,encoding:'utf8'});
 if(release.status!==0){process.stdout.write(release.stdout||'');process.stderr.write(release.stderr||'');process.exit(release.status||1);}
 process.stdout.write(release.stdout||'');
