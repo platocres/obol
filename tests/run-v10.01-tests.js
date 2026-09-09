@@ -22,7 +22,17 @@ assert(currentRelease.includes("version:'10.0.1'"), 'current release must use se
 assert(currentRelease.includes("label:'v10.01'"), 'current release label must be v10.01');
 assert(!currentRelease.includes('tools-builder-library-cleanup-v10.01.js\''), 'v10.01 proof must not be added as a browser-loaded product-hardening extension');
 
-const toolSource = read('assets/app-v2-tools.js');
+const legacyToolsSource = read('assets/app-v2-tools.js');
+assert(legacyToolsSource.includes('Command armory and offline references'), 'historical app-v2-tools fragment should remain the stable legacy Tools owner input');
+assert(legacyToolsSource.includes('filtered.map(e=>cardHTML'), 'legacy matching-card dump remains only in the historical app fragment ledger');
+assert(!legacyToolsSource.includes('Tool Builder Library: pick a tool directly'), 'historical app fragment must not be rewritten into the v10.01 current owner');
+assert(!legacyToolsSource.includes('TOOL_GROUPS'), 'historical app fragment must not own v10.01 grouping data');
+
+const runtimeSource = read('assets/runtime-current.js');
+assert(runtimeSource.includes("name==='toolReferenceData'"), 'runtime loader must treat Tools library as a route-lazy owner');
+assert(runtimeSource.includes('assets/tools-library-current.js'), 'runtime loader must lazy-load the current Tools library owner on Tools routes');
+
+const toolSource = read('assets/tools-library-current.js');
 for (const token of [
   'Tool Builder Library',
   'TOOL_BUILDER_ASSETS',
@@ -31,8 +41,9 @@ for (const token of [
   'Recommended accessories',
   'Pickable modes and presets',
   'Related cards and legacy examples',
+  'data-tool-related-cards',
   '#/tools/'
-]) assert(toolSource.includes(token), 'Tools source missing ' + token);
+]) assert(toolSource.includes(token), 'Tools current owner missing ' + token);
 assert(!/cardHTML\(e\.card,\s*fs,\s*true\)/.test(toolSource), 'Tools selected route must not render a tab-per-tool expanded matching-card dump');
 assert(!/filtered\.map\(e=>cardHTML/.test(toolSource), 'Tools selected route must not use the old filtered cardHTML dump');
 for (const token of [
