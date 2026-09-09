@@ -10,7 +10,7 @@ function patch(){
  setValue(item,'completedThrough','v10.05');
  setValue(item,'nextBatch','v10.06');
  setValue(item,'finalAudit','v10.07');
- setValue(item,'detail','Continue only the remaining Tool Builder work. v10.03-v10.05 are complete release history and are not active queue scope. Next is v10.06: linpeas/winpeas, msfvenom/msfconsole, nc/Penelope, and common file-transfer helpers, with command generation and executable Evidence behavior landing together. After v10.06, v10.07 performs the final implemented-tool Evidence and cross-surface audit, including older implemented builders.');
+ setValue(item,'detail','Continue only the remaining Tool Builder work. v10.03-v10.05 are complete release history and are not active queue scope. Every tool batch must ship command generation and decision-relevant Evidence behavior together. Next is v10.06: linpeas/winpeas, msfvenom/msfconsole, nc/Penelope, and common file-transfer helpers. After v10.06, v10.07 performs the final implemented-tool Evidence and cross-surface audit, including older implemented builders.');
  setValue(item,'acceptance','The active queue must contain only unfinished Tool Builder batches. v10.06 builders remain modeled until minimal command generation, live Tools rendering, executable Evidence ingestion, conservative positive/negative/blocked/partial handling, relevant Next Steps handoff, cleanup/proof boundaries where applicable, and regression fixtures land together. v10.07 audits the completed set and may not be used to defer Evidence behavior. Completed release headings must not reappear in the README or canonical Tool Builder build queue.');
  setValue(item,'activeBatches',['v10.06','v10.07']);
  setValue(item,'evidenceDefinitionOfDone','same-build');
