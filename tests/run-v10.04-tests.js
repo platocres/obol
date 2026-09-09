@@ -1,6 +1,7 @@
 'use strict';
 
 const assert=require('assert');
+const cp=require('child_process');
 const fs=require('fs');
 const path=require('path');
 const vm=require('vm');
@@ -123,5 +124,9 @@ for(const token of [
  'An inventory record must not be promoted to `implemented` until command generation, live Tools rendering, Evidence ingestion, Next Steps handoff where applicable',
  'v10.07 - Implemented-tool Evidence and cross-surface audit'
 ])assert(roadmap.includes(token),'Tool Builder Evidence contract missing '+token);
+
+const release=cp.spawnSync(process.execPath,['tools/validate-release-pr.js','--repo-only'],{cwd:root,encoding:'utf8'});
+if(release.status!==0){process.stdout.write(release.stdout||'');process.stderr.write(release.stderr||'');process.exit(release.status||1);}
+process.stdout.write(release.stdout||'');
 
 console.log('v10.04 pivot builder and Evidence ingestion validation passed.');
