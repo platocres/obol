@@ -29,9 +29,11 @@ const schema=w.OBOL_TOOL_BUILDER_SCHEMA;
 const inventory=w.OBOL_TOOL_BUILDER_INVENTORY;
 const renderer=w.OBOL_TOOL_BUILDER;
 const builders=w.OBOL_TOOL_BUILDERS;
+const tunnelPack=w.OBOL_TUNNEL_TOOL_BUILDERS;
 const ligoloPack=w.OBOL_LIGOLO_TOOL_BUILDER;
 const evidence=w.OBOL_TOOL_BUILDER_EVIDENCE_CURRENT;
-assert(schema&&inventory&&renderer&&builders&&ligoloPack&&evidence,'v10.04 Tool Builder owners must initialize');
+assert(schema&&inventory&&renderer&&builders&&tunnelPack&&ligoloPack&&evidence,'v10.04 Tool Builder owners must initialize');
+assert.strictEqual(tunnelPack.version,'1.1.0','v10.04 must advance the existing chisel/SSH tunnel owner for minimal-command hygiene');
 assert.deepStrictEqual(Array.from(evidence.validateProfiles()),[],'pivot Tool Builder Evidence profiles must be internally valid');
 
 const ligolo=schema.get('tb-ligolo-ng');
@@ -42,9 +44,12 @@ for(const tool of ['ligolo-ng','ligolo-agent','ligolo-proxy']){
  assert(rec&&rec.status==='implemented','Ligolo inventory projection must implement '+tool);
  assert.strictEqual(rec.queueItem,'tb-ligolo-ng',tool+' must resolve to the Ligolo builder');
 }
+const proxychains=inventory.get('proxychains');
+assert(proxychains&&proxychains.status==='superseded','proxychains must be explicitly dispositioned as a SOCKS companion rather than remain a fake standalone-builder debt item');
 assert(builders.byId['tb-ligolo-ng']===ligolo,'current concrete builder projection must expose Ligolo-ng');
 
 function compile(values){return renderer.compile(ligolo,builders.defaultsFor('tb-ligolo-ng',values||{}),{});}
+function compilePivot(id,values){const builder=builders.byId[id];assert(builder,'missing pivot builder '+id);return renderer.compile(builder,builders.defaultsFor(id,values||{},{}),{});}
 assert.strictEqual(compile({mode:'proxy'}),'proxy -selfcert','Ligolo proxy starts from the minimal self-cert command');
 assert.strictEqual(compile({mode:'proxy',listenAddress:'0.0.0.0:11601'}),'proxy -selfcert -laddr 0.0.0.0:11601','proxy listen address is additive');
 assert.strictEqual(compile({mode:'agent',connectAddress:'10.10.14.5:11601'}),'agent -connect 10.10.14.5:11601','Ligolo agent starts from connect address only');
@@ -61,6 +66,13 @@ assert.strictEqual(compile({mode:'listener-stop',listenerId:'0'}),'listener_stop
 assert.strictEqual(compile({mode:'certificate-fingerprint'}),'certificate_fingerprint','fingerprint action is a bare console command');
 assert.throws(()=>compile({mode:'agent'}),/Proxy address the agent can reach/,'agent mode refuses a fake/default proxy address');
 assert.throws(()=>compile({mode:'route-add',interfaceName:'ligolo'}),/Internal route \/ CIDR/,'route mode requires a real CIDR');
+
+assert.strictEqual(compilePivot('tb-chisel',{role:'server'}),'chisel server','chisel server mode must omit redundant default host and port flags');
+assert.strictEqual(compilePivot('tb-chisel',{role:'server',serverPort:'9090',allowReverse:true}),'chisel server --port 9090 --reverse','chisel listener and reverse controls must remain additive');
+assert.strictEqual(compilePivot('tb-chisel',{role:'client',serverUrl:'http://10.10.10.10:8080',remoteMode:'socks'}),'chisel client http://10.10.10.10:8080 socks','chisel client must start from only the selected server and remote mode');
+assert.strictEqual(compilePivot('tb-ssh-plink',{client:'ssh',forwardMode:'local',target:'10.10.10.10',username:'alice',listenPort:'8080',destinationHost:'127.0.0.1',destinationPort:'80'}),'ssh -L 8080:127.0.0.1:80 alice@10.10.10.10','OpenSSH local forwarding must omit unselected -N and failure-policy flags');
+assert.strictEqual(compilePivot('tb-ssh-plink',{client:'ssh',forwardMode:'dynamic',target:'10.10.10.10',username:'alice',listenPort:'1080',noShell:true,exitOnForwardFailure:true}),'ssh -N -o ExitOnForwardFailure=yes -D 1080 alice@10.10.10.10','OpenSSH safety and forward-only switches must be additive controls');
+assert.strictEqual(compilePivot('tb-ssh-plink',{client:'plink',forwardMode:'remote',target:'10.10.10.10',username:'alice',listenPort:'4444',destinationHost:'127.0.0.1',destinationPort:'3389'}),'plink -R 4444:127.0.0.1:3389 -l alice 10.10.10.10','Plink forwarding must omit unselected batch/password/host-key clutter');
 
 const a=evidence.analyzeLigolo('Agent joined. name=WEB01 remote=10.10.10.20:49822');
 assert(a.outcomeFacts.includes('pivot.ligolo_agent_connected'),'Agent joined is recognized as connection state');
