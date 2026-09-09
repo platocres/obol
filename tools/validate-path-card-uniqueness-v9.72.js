@@ -133,6 +133,10 @@ function fixtureCheck(failures) {
   const clone = Object.assign({}, base, { id: 'fixture-linux-privesc-b', title: 'Linux privilege boundary check' });
   if (!findDuplicateRisks([base, clone]).length) failures.push('duplicate-card fixture did not trigger the uniqueness detector');
 }
+function finalizeCardDisposition(sandbox) {
+  const api = sandbox.OBOL_NOTE_CARD_DISPOSITION_RECONCILIATION_API_V968;
+  if (api && typeof api.install === 'function') api.install();
+}
 function validateFoldedAlias(sandbox, folded, canonical, failures) {
   const foldedResolution = sandbox.CARDS[folded];
   const canonicalCard = sandbox.CARDS[canonical];
@@ -152,6 +156,7 @@ function validate() {
     if (!fs.existsSync(path.join(root, rel))) { failures.push('Missing extension ' + rel); continue; }
     try { vm.runInContext(read(rel), sandbox, { filename: rel }); } catch (err) { failures.push(rel + ' failed in uniqueness sandbox: ' + err.message); }
   }
+  finalizeCardDisposition(sandbox);
   fixtureCheck(failures);
   for (const [folded, canonical] of Object.entries(KNOWN_FOLDED_ALIASES)) validateFoldedAlias(sandbox, folded, canonical, failures);
   const canonical = canonicalCardIds(sandbox);
@@ -170,4 +175,4 @@ if (require.main === module) {
   }
   console.log(`v9.72 path-card uniqueness validation passed (${result.checkedCards} primary cards, ${Object.keys(KNOWN_FOLDED_ALIASES).length} folded aliases guarded).`);
 }
-module.exports = { validate, findDuplicateRisks, overlapReason, KNOWN_FOLDED_ALIASES };
+module.exports = { validate, findDuplicateRisks, overlapReason, KNOWN_FOLDED_ALIASES, finalizeCardDisposition };
