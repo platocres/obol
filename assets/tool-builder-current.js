@@ -50,7 +50,7 @@ function scrubGeneratedPlaceholders(builder,values){
  for(const key of ['password','authPassword','proxyPassword','hash','bearerToken','cookie']){
   if(placeholderSecrets.has(String(out[key]||'')))delete out[key];
  }
- if(out.domain==='domain.local'||out.domain==='corp.local')delete out.domain;
+ if(out.domain==='domain.local')delete out.domain;
  if(out.username==='user')delete out.username;
  if(out.hashOrFile==='hashes.txt')delete out.hashOrFile;
  if(builder&&builder.id==='tb-nxc'&&out.authMode==='password'&&!out.username&&!out.password)out.authMode='anonymous';
