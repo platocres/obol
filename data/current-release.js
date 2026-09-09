@@ -64,7 +64,8 @@ const release=Object.freeze({
   'data/product-hardening/exam-skills-assessment-private-boundary-cluster-v9.94.js',
   'data/product-hardening/reference-index-course-map-private-boundary-cluster-v9.95.js',
   'data/product-hardening/post-notes-clarity-audit-v9.96.js',
-  'data/product-hardening/network-position-recurrence-v9.97.js'
+  'data/product-hardening/network-position-recurrence-v9.97.js',
+  'data/product-hardening/card-wrapper-retirement-queue-v9.98.js'
  ])
 });
 function stampState(target){
