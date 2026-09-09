@@ -1,13 +1,14 @@
 'use strict';
 
-(function initNoteCardDispositionReconciliationV968(root) {
+(function installNoteCardDispositionResolverV968(root) {
   const WAVE = 'v9.68-note-card-disposition-reconciliation';
   const PROOF_FILE = 'data/product-hardening/note-card-disposition-reconciliation-v9.68.js';
+  const RETIRED_BY = 'v10.0';
   const KEEP_AS_CARDS = Object.freeze([
     'credential-dump-proof-chain',
     'web-authz-boundaries',
     'pass-the-hash-proof-chain',
-    'burp-intruder-fuzzing-workflow',
+    'burp-intruder-fuzzing-workflow'
   ]);
   const MERGE_INTO_EXISTING_CARD = Object.freeze({
     'web-proxy-transform-proof-chain': Object.freeze({ into: 'web-authz-boundaries', reason: 'Request mutation and transform-order guidance is supporting proof context for the authorization-boundary card, not its own primary Next Steps stop.' }),
@@ -17,38 +18,25 @@
     'pth-remote-exec-artifacts': Object.freeze({ into: 'pass-the-hash-proof-chain', reason: 'Remote execution artifacts are the later proof stage of Pass-the-Hash validation, not a separate primary card.' }),
     'pth-token-filtering-check': Object.freeze({ into: 'pass-the-hash-proof-chain', reason: 'Token filtering and local/domain scope checks are troubleshooting branches under Pass-the-Hash validation.' }),
     'fuzzer-payload-position-review': Object.freeze({ into: 'burp-intruder-fuzzing-workflow', reason: 'Payload position review is a setup check inside the fuzzer workflow.' }),
-    'fuzzer-result-delta-review': Object.freeze({ into: 'burp-intruder-fuzzing-workflow', reason: 'Response-delta review is the interpretation step of the fuzzer workflow.' }),
+    'fuzzer-result-delta-review': Object.freeze({ into: 'burp-intruder-fuzzing-workflow', reason: 'Response-delta review is the interpretation step of the fuzzer workflow.' })
   });
   const DEMOTED_IDS = Object.freeze(Object.keys(MERGE_INTO_EXISTING_CARD));
   const ALL_IDS = Object.freeze(KEEP_AS_CARDS.concat(DEMOTED_IDS));
-
   function freezeList(list) { return Object.freeze((list || []).slice()); }
   function freezeObject(value) { return Object.freeze(value || {}); }
   function uniq(list) { return Array.from(new Set((list || []).filter(Boolean))); }
   function lanes() { return Array.isArray(root.OBOL_LANES) ? root.OBOL_LANES : Array.isArray(root.LANES) ? root.LANES : []; }
-  function liveCard(id) {
+  function cards() { return root.CARDS && typeof root.CARDS === 'object' ? root.CARDS : null; }
+  function rawCard(id) {
     if (!id) return null;
-    if (root.CARDS && root.CARDS[id]) return root.CARDS[id];
+    const index = cards();
+    if (index && index[id]) return index[id];
     for (const lane of lanes()) for (const card of lane.cards || []) if (card && card.id === id) return card;
-    if (typeof root.liveCardById === 'function') { try { const found = root.liveCardById(id); if (found) return found; } catch (_err) {} }
     return null;
   }
-  function replaceCard(original, updated) {
-    if (!original || !updated) return updated || original;
-    let replaced = false;
-    for (const lane of lanes()) {
-      if (!Array.isArray(lane.cards)) continue;
-      const index = lane.cards.findIndex((entry) => entry === original || entry && entry.id === original.id);
-      if (index >= 0) { try { lane.cards[index] = updated; replaced = true; } catch (_err) {} }
-    }
-    if (root.CARDS && original.id) { try { root.CARDS[original.id] = updated; replaced = true; } catch (_err) {} }
-    return replaced ? updated : original;
-  }
-  function mutableCard(card) {
-    if (!card) return card;
-    try { if (Object.isExtensible(card)) return card; } catch (_err) { return card; }
-    return replaceCard(card, Object.assign({}, card));
-  }
+  function canonicalCardId(id) { return MERGE_INTO_EXISTING_CARD[id] ? MERGE_INTO_EXISTING_CARD[id].into : id; }
+  function resolveCard(id) { return rawCard(canonicalCardId(id)); }
+  function mutableCard(card) { return card && Object.isExtensible(card) ? card : Object.assign({}, card || {}); }
   function safeAssign(card, key, value) { try { card[key] = value; return true; } catch (_err) { return false; } }
   function commandTools(commands) { return (commands || []).map((entry) => entry && entry.tool).filter(Boolean); }
   function planFor(id) {
@@ -62,13 +50,22 @@
         guiSteps: plan.guiSteps || [],
         expectedEvidence: plan.evidenceToPaste || [],
         failureModes: plan.decide || [],
-        nextSteps: plan.next || [],
+        nextSteps: plan.next || []
       };
     }
     const packet66 = root.OBOL_ACTIONABLE_CARD_CONTRACT_PACKET_V966;
     const plans66 = packet66 && packet66.OVERLAYS || {};
-    if (plans66[id]) return plans66[id];
-    return null;
+    return plans66[id] || null;
+  }
+  function replaceIndexedCard(id, card) {
+    const index = cards();
+    if (index && id) try { index[id] = card; } catch (_err) {}
+    for (const lane of lanes()) {
+      if (!Array.isArray(lane.cards)) continue;
+      const i = lane.cards.findIndex((entry) => entry && entry.id === id);
+      if (i >= 0) try { lane.cards[i] = card; } catch (_err) {}
+    }
+    return card;
   }
   function applyPrimaryActionData(id, card) {
     const plan = planFor(id);
@@ -83,8 +80,7 @@
     safeAssign(target, 'expected', freezeList(uniq((Array.isArray(target.expected) ? target.expected : []).concat(plan.expectedEvidence || []))));
     safeAssign(target, 'tools', freezeList(uniq((Array.isArray(target.tools) ? target.tools : []).concat(commandTools(plan.commands)))));
     safeAssign(target, 'actionabilityV968', freezeObject({ wave: WAVE, proof: PROOF_FILE, status: 'normal-card-integrated' }));
-    if (target !== card) replaceCard(card, target);
-    return target;
+    return replaceIndexedCard(id, target);
   }
   function appendUniqueObject(target, prop, values, key) {
     if (!target || !values || !values.length) return false;
@@ -99,17 +95,17 @@
       if (id) seen.add(id);
       changed = true;
     }
-    if (changed) { try { target[prop] = freezeList(current); } catch (_err) {} }
+    if (changed) safeAssign(target, prop, freezeList(current));
     return changed;
   }
   function appendUniqueStrings(target, prop, values) {
     if (!target || !values || !values.length) return false;
     const next = uniq((Array.isArray(target[prop]) ? target[prop] : []).concat(values));
     if (next.length === (Array.isArray(target[prop]) ? target[prop].length : 0)) return false;
-    try { target[prop] = freezeList(next); return true; } catch (_err) { return false; }
+    return safeAssign(target, prop, freezeList(next));
   }
   function childSummary(child, id, rule) {
-    return freezeObject({ id: 'merged-note-card-' + id, sourceCardId: id, title: child && child.title ? child.title : id, body: (child && child.hypothesis ? child.hypothesis : rule.reason), disposition: 'merged-into-existing-card', reason: rule.reason, proof: PROOF_FILE });
+    return freezeObject({ id: 'merged-note-card-' + id, sourceCardId: id, title: child && child.title ? child.title : id, body: child && child.hypothesis ? child.hypothesis : rule.reason, disposition: 'merged-into-existing-card', reason: rule.reason, proof: PROOF_FILE });
   }
   function mergeIntoParent(id, child, parent, rule) {
     if (!parent || !rule) return false;
@@ -119,7 +115,7 @@
     appendUniqueStrings(target, 'tools', child && child.tools || []);
     appendUniqueObject(target, 'mergedSupportingGuidance', [childSummary(child, id, rule)], 'id');
     safeAssign(target, 'noteCardDispositionV968', freezeObject({ wave: WAVE, proof: PROOF_FILE, disposition: 'keep-as-card-with-merged-guidance', absorbedCardIds: freezeList(target.mergedNoteCardIds || []) }));
-    if (target !== parent) replaceCard(parent, target);
+    replaceIndexedCard(rule.into, target);
     return true;
   }
   function removeFromLaneCards(id) {
@@ -132,14 +128,15 @@
     }
     return removed;
   }
-  function removeFromCardIndex(id) {
-    if (!root.CARDS || !Object.prototype.hasOwnProperty.call(root.CARDS, id)) return false;
-    try { delete root.CARDS[id]; return true; } catch (_err) { try { root.CARDS[id].hiddenFromNextSteps = true; root.CARDS[id].referenceOnly = true; } catch (_err2) {} return false; }
+  function aliasCardIndex(id, parent) {
+    const index = cards();
+    if (!index || !parent) return false;
+    try { index[id] = parent; return true; } catch (_err) { return false; }
   }
   function markKeptCards() {
     const kept = [];
     for (const id of KEEP_AS_CARDS) {
-      let card = liveCard(id);
+      let card = rawCard(id);
       if (!card) continue;
       card = applyPrimaryActionData(id, card) || card;
       safeAssign(card, 'referenceOnly', false);
@@ -148,6 +145,26 @@
       kept.push(id);
     }
     return kept;
+  }
+  function demoteCards() {
+    const demoted = [];
+    const aliases = [];
+    const snapshots = [];
+    for (const id of DEMOTED_IDS) {
+      const rule = MERGE_INTO_EXISTING_CARD[id];
+      const child = rawCard(id);
+      const parent = rawCard(rule.into);
+      if (child) snapshots.push(freezeObject({ id, title: child.title || id, mergedInto: rule.into, reason: rule.reason }));
+      if (parent) {
+        mergeIntoParent(id, child, parent, rule);
+        removeFromLaneCards(id);
+        if (aliasCardIndex(id, rawCard(rule.into) || parent)) aliases.push(id);
+      }
+      demoted.push(id);
+    }
+    root.OBOL_NOTE_CARD_DISPOSITION_DEMOTED_SNAPSHOTS_V968 = freezeList(snapshots);
+    root.OBOL_NOTE_CARD_DISPOSITION_CARD_INDEX_ALIASES_V100 = freezeList(aliases);
+    return demoted;
   }
   function reconcileFieldNoteBindings() {
     const integration = root.OBOL_NOTE_INTEGRATION;
@@ -169,93 +186,33 @@
       changed += 1;
       return freezeObject(Object.assign({}, note, { cardIds: freezeList(ids), mergedFromCardIds: freezeList(uniq((note.mergedFromCardIds || []).concat(note.cardIds.filter((id) => DEMOTED_IDS.includes(id))))) }));
     });
-    if (changed) { try { integration.publicFieldNotes = freezeList(rewritten); } catch (_err) {} }
+    if (changed) try { integration.publicFieldNotes = freezeList(rewritten); } catch (_err) {}
     return changed;
   }
-  function demoteCards() {
-    const demoted = [];
-    const snapshots = [];
-    for (const id of DEMOTED_IDS) {
-      const rule = MERGE_INTO_EXISTING_CARD[id];
-      const child = liveCard(id);
-      const parent = liveCard(rule.into);
-      if (child) {
-        snapshots.push(freezeObject({ id, title: child.title || id, mergedInto: rule.into, reason: rule.reason }));
-        safeAssign(child, 'referenceOnly', true);
-        safeAssign(child, 'hiddenFromNextSteps', true);
-        safeAssign(child, 'mergedInto', rule.into);
-        safeAssign(child, 'noteCardDispositionV968', freezeObject({ wave: WAVE, proof: PROOF_FILE, disposition: 'merged-into-existing-card', mergedInto: rule.into, reason: rule.reason }));
-      }
-      mergeIntoParent(id, child, parent, rule);
-      removeFromLaneCards(id);
-      removeFromCardIndex(id);
-      demoted.push(id);
-    }
-    root.OBOL_NOTE_CARD_DISPOSITION_DEMOTED_SNAPSHOTS_V968 = freezeList(snapshots);
-    return demoted;
-  }
-  function removeVisiblePatchPanels() {
-    if (typeof document === 'undefined') return 0;
-    let removed = 0;
-    const doomed = document.querySelectorAll('.obol-action-first-v967,[data-obol-action-first-v967]');
-    doomed.forEach((el) => { try { el.remove(); removed += 1; } catch (_err) {} });
-    const style = document.getElementById('obol-action-first-v967-style');
-    if (style) { try { style.remove(); removed += 1; } catch (_err) {} }
-    return removed;
-  }
-  function routeCardId() {
-    const hash = String(root.location && root.location.hash || '');
-    const match = hash.match(/^#\/?card\/([^/?#]+)/);
-    if (!match) return '';
-    try { return decodeURIComponent(match[1]); } catch (_err) { return match[1]; }
-  }
-  function canonicalCardId(id) { return MERGE_INTO_EXISTING_CARD[id] ? MERGE_INTO_EXISTING_CARD[id].into : id; }
-  function redirectDemotedRoute() {
-    if (typeof root.location === 'undefined') return false;
-    const current = routeCardId();
-    const canonical = canonicalCardId(current);
-    if (!current || canonical === current) return false;
-    const nextHash = '#/card/' + encodeURIComponent(canonical);
-    try { if (root.history && typeof root.history.replaceState === 'function') root.history.replaceState(null, '', nextHash); else root.location.hash = nextHash; return true; }
-    catch (_err) { try { root.location.hash = nextHash; return true; } catch (_err2) { return false; } }
-  }
-  function patchLiveCardById() {
-    if (typeof root.liveCardById !== 'function' || root.liveCardById.__noteCardDispositionV968) return false;
-    const original = root.liveCardById;
-    root.liveCardById = function noteCardDispositionLiveCardByIdV968(id) {
-      const canonical = canonicalCardId(id);
-      if (root.CARDS && root.CARDS[canonical]) return root.CARDS[canonical];
-      for (const lane of lanes()) for (const card of lane.cards || []) if (card && card.id === canonical) return card;
-      return original.apply(this, [canonical].concat(Array.prototype.slice.call(arguments, 1)));
-    };
-    root.liveCardById.__noteCardDispositionV968 = true;
-    return true;
-  }
-  function patchViewCard() {
-    if (typeof root.viewCard !== 'function' || root.viewCard.__noteCardDispositionV968) return false;
-    const original = root.viewCard;
-    root.viewCard = function noteCardDispositionViewCardV968(id) {
-      const canonical = canonicalCardId(id);
-      if (canonical !== id) redirectDemotedRoute();
-      removeVisiblePatchPanels();
-      markKeptCards();
-      demoteCards();
-      return original.apply(this, [canonical].concat(Array.prototype.slice.call(arguments, 1)));
-    };
-    root.viewCard.__noteCardDispositionV968 = true;
-    return true;
-  }
   function install() {
-    const panelsRemoved = removeVisiblePatchPanels();
-    patchLiveCardById();
     const kept = markKeptCards();
     const demoted = demoteCards();
     const reboundFieldNotes = reconcileFieldNoteBindings();
-    patchViewCard();
-    const redirected = redirectDemotedRoute();
     const failures = [];
-    for (const id of KEEP_AS_CARDS) if (!liveCard(id)) failures.push('kept card missing: ' + id);
-    const status = freezeObject({ wave: WAVE, proof: PROOF_FILE, status: failures.length ? 'partial' : 'live-integrated', keepAsCards: KEEP_AS_CARDS, demotedCardIds: DEMOTED_IDS, mergeMap: MERGE_INTO_EXISTING_CARD, kept: freezeList(kept), demoted: freezeList(demoted), reboundFieldNotes, panelsRemoved, redirected, failures: freezeList(failures) });
+    for (const id of KEEP_AS_CARDS) if (!rawCard(id)) failures.push('kept card missing: ' + id);
+    const status = freezeObject({
+      wave: WAVE,
+      proof: PROOF_FILE,
+      status: failures.length ? 'partial' : 'current-resolver-owned',
+      retiredBy: RETIRED_BY,
+      keepAsCards: KEEP_AS_CARDS,
+      demotedCardIds: DEMOTED_IDS,
+      mergeMap: MERGE_INTO_EXISTING_CARD,
+      kept: freezeList(kept),
+      demoted: freezeList(demoted),
+      reboundFieldNotes,
+      panelsRemoved: 0,
+      redirected: false,
+      patches: freezeObject({ liveCardById: false, viewCard: false, route: false }),
+      retiredRouteSurgery: true,
+      cardIndexAliases: root.OBOL_NOTE_CARD_DISPOSITION_CARD_INDEX_ALIASES_V100 || freezeList([]),
+      failures: freezeList(failures)
+    });
     root.OBOL_NOTE_CARD_DISPOSITION_RECONCILIATION_V968 = status;
     return status;
   }
@@ -264,23 +221,14 @@
     for (const id of KEEP_AS_CARDS) if (!ALL_IDS.includes(id)) failures.push('kept card is not tracked: ' + id);
     for (const id of DEMOTED_IDS) {
       const rule = MERGE_INTO_EXISTING_CARD[id];
-      if (!rule || !rule.into || !KEEP_AS_CARDS.includes(rule.into)) failures.push(id + ' does not merge into a kept card');
-      if (!rule.reason || rule.reason.length < 40) failures.push(id + ' needs a specific public-safe demotion reason');
+      if (!rule || !rule.into) failures.push('demoted card lacks merge parent: ' + id);
+      if (!KEEP_AS_CARDS.includes(rule.into)) failures.push(id + ' merges into a non-primary card: ' + rule.into);
     }
-    return freezeObject({ failures: freezeList(failures), checked: ALL_IDS.length, kept: KEEP_AS_CARDS.length, demoted: DEMOTED_IDS.length });
+    return freezeObject({ wave: WAVE, status: failures.length ? 'failed' : 'valid', failures: freezeList(failures), keepAsCards: KEEP_AS_CARDS, demotedCardIds: DEMOTED_IDS, mergeMap: MERGE_INTO_EXISTING_CARD, retiredRouteSurgery: true });
   }
-  const packet = freezeObject({ WAVE, PROOF_FILE, KEEP_AS_CARDS, MERGE_INTO_EXISTING_CARD, DEMOTED_IDS, ALL_IDS, install, validate, canonicalCardId });
-  root.OBOL_NOTE_CARD_DISPOSITION_RECONCILIATION_PACKET_V968 = packet;
+  const canonicalizer = Object.freeze({ wave: WAVE, retiredBy: RETIRED_BY, canonicalCardId, resolveCard, mergeMap: MERGE_INTO_EXISTING_CARD, demotedCardIds: DEMOTED_IDS });
+  root.OBOL_CARD_CANONICALIZER_CURRENT = canonicalizer;
+  root.OBOL_NOTE_CARD_DISPOSITION_RECONCILIATION_API_V968 = Object.freeze({ WAVE, PROOF_FILE, KEEP_AS_CARDS, DEMOTED_IDS, MERGE_INTO_EXISTING_CARD, canonicalCardId, resolveCard, install, validate });
   install();
-  if (typeof root.setTimeout === 'function') {
-    let tries = 0;
-    const loop = function loop() { install(); tries += 1; if (tries < 80) root.setTimeout(loop, tries < 20 ? 50 : 250); };
-    root.setTimeout(loop, 0);
-  }
-  if (typeof root.addEventListener === 'function') {
-    root.addEventListener('hashchange', install);
-    root.addEventListener('DOMContentLoaded', install);
-    root.addEventListener('focus', install);
-  }
-  if (typeof module !== 'undefined' && module.exports) module.exports = packet;
+  if (typeof module !== 'undefined' && module.exports) module.exports = root.OBOL_NOTE_CARD_DISPOSITION_RECONCILIATION_API_V968;
 })(typeof window !== 'undefined' ? window : globalThis);
