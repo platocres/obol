@@ -139,7 +139,7 @@ if (!readme.includes('This block is generated from `data/product-hardening/produ
 if (!readme.includes('Recommended work-package metadata comes from `data/product-hardening/work-packages.js`.')) fail('README generated block omits work-package source');
 if (!readme.includes('**Recommended work package:**')) fail('README generated block omits recommended work package');
 const currentRelease = readme.match(/Current release:\s*\*\*v(\d+\.\d+(?:\.\d+)?)\*\*/);
-if (!currentRelease || !/^9\./.test(currentRelease[1])) fail('README must expose the current v9 product-hardening release without calling v8.8 current');
+if (!currentRelease || currentRelease[1] === '8.8') fail('README must expose the current product-hardening release without calling v8.8 current');
 if (readme.includes('Current release: **v8.8**')) fail('README must not call v8.8 the current release');
 if (!readme.includes('[`docs/NORTH-STAR.md`](docs/NORTH-STAR.md)')) fail('README does not point completed Orange accounting to the North Star doc');
 if (!northStar.includes('## Current v8.8 baseline') || !northStar.includes('canonical: 127 / 127 implemented')) fail('North Star doc must preserve v8.8 as the completed Orange baseline');
