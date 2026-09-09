@@ -161,7 +161,11 @@ function syncVisibleReleaseIdentity(){
  const tag=document.querySelector('.tagline');if(tag){const text='Offensive Box Operations Ledger · '+r.label;if(tag.textContent!==text)tag.textContent=text;}
  return true;
 }
-function announceCurrentPaint(){syncVisibleReleaseIdentity();const loader=root.OBOL_RUNTIME_LOADER;if(loader&&typeof loader.commitCurrentPaint==='function')loader.commitCurrentPaint(page());}
+function scheduleVisibleReleaseIdentitySync(){
+ if(typeof setTimeout!=='function')return;
+ [0,40,120,240,360,560,760].forEach(t=>setTimeout(syncVisibleReleaseIdentity,t));
+}
+function announceCurrentPaint(){syncVisibleReleaseIdentity();const loader=root.OBOL_RUNTIME_LOADER;if(loader&&typeof loader.commitCurrentPaint==='function')loader.commitCurrentPaint(page());scheduleVisibleReleaseIdentitySync();}
 function stripBuildMetrics(){
  if(page()==='dashboard')return;
  document.querySelectorAll('.northstar-home50,.northstar-home66,.product-home88,.app-phase-badge88').forEach(x=>x.remove());
