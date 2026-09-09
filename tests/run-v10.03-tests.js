@@ -115,4 +115,28 @@ assert(rendererSource.includes('scrubGeneratedPlaceholders'), 'renderer must exp
 assert(rendererSource.includes('minimalDefaultToken'), 'renderer must expose minimal-default token filtering');
 assert(rendererSource.includes('minimal valid command'), 'preview copy must explain minimal valid command behavior');
 
+const roadmap = read('docs/TOOL-BUILDER-BUILD-QUEUE.md');
+for (const token of [
+  'Every implemented builder starts from the minimal valid command',
+  'v10.03 - Minimal-command hygiene and implemented-builder audit',
+  'v10.04 - Pivot and remote-access first builder batch',
+  'v10.05 - Authentication and enumeration builder batch',
+  'v10.06 - Shell, payload, privesc, and transfer helper batch',
+  'v10.07 - Path/Card/Evidence builder handoff pass',
+  'Placeholder values such as `user`, `domain.local`, `Password123!`, fake NT hashes, and fake `hashes.txt` must never make a command look valid'
+]) assert(roadmap.includes(token), 'tool-builder roadmap missing ' + token);
+
+const readme = read('README.md');
+for (const token of [
+  'docs/TOOL-BUILDER-BUILD-QUEUE.md',
+  '## Tool Builder implementation queue',
+  'v10.03 — Minimal-command hygiene and implemented-builder audit',
+  'v10.04 — Pivot and remote-access first batch',
+  'v10.05 — Authentication and enumeration batch',
+  'v10.06 — Shell, payload, privesc, and transfer helper batch',
+  'v10.07 — Path/Card/Evidence handoff pass',
+  'start with the minimal valid command for the selected tool/mode',
+  'modeled tools remain modeled until a real schema-driven builder exists'
+]) assert(readme.includes(token), 'README tool-builder queue handoff missing ' + token);
+
 console.log('v10.03 tool builder minimal-command hygiene validation passed.');
