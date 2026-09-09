@@ -126,6 +126,12 @@ function assertNoPattern(source, pattern, label) {
   assert.strictEqual(status.toolsNext, true, 'v10.0 status should prove Tools is next');
 })();
 
+(function testGeneratedSyncCoversCurrentAppSourceFragments() {
+  const sync = read('.github/workflows/sync-release-artifacts.yml');
+  assert(sync.includes("'assets/app-v*.js'"), 'generated-sync workflow must run when versioned app source fragments change');
+  assert(sync.includes("'assets/report-v*.js'"), 'generated-sync workflow must run when versioned report source fragments change');
+})();
+
 run(['tools/validate-release-pr.js', '--repo-only', '--release-version=10.0']);
 
-console.log('v10.0 tests passed: card wrappers/decorators retired through helper/data seams, queue closed, and Build Next advanced to Tools cleanup without adding a browser runtime request.');
+console.log('v10.0 tests passed: card wrappers/decorators retired through helper/data seams, app-source sync is covered, queue closed, and Build Next advanced to Tools cleanup without adding a browser runtime request.');
