@@ -4,7 +4,7 @@ Obol is a static, browser-local workspace for OSCP-style labs, Active Directory 
 
 Live site: `https://platocres.github.io/obol/`
 
-Current release: **v10.04**
+Current release: **v10.05**
 
 Open `#/dashboard` for the active Product Hardening Dashboard and Product Build Next queue.
 
@@ -70,7 +70,7 @@ Generated from the same queue sources as the Product Hardening Dashboard. Do not
 **Package detail:** Use the Product Hardening Dashboard for full track ledgers and `data/product-hardening/work-packages.js` for the long-form package guidance.
 
 **Highest-priority concrete live items:**
-1. **Post-mining modeled tool builder implementation backlog** — Convert the explicit modeled-tool inventory into implemented, schema-driven builders in priority batches. Every tool batch must ship command generation and decision-relevant Evidence behavior together: exact paste-back expectations, executable analyzer/parser coverage or a proven shared analyzer, conservative positive/negative/blocked/partial handling, cleanup boundaries, and Next Steps movement or blocking where supported Evidence changes the path. The backlog starts with high-value operator tools that must remain visible in the library and in Path/Card command guidance: nmap, NetExec / nxc, Ligolo-ng, chisel, SSH/plink, proxychains, hydra, kerbrute, BloodHound collection, smbclient/smbmap, enum4linux-ng, ldapsearch, responder, linpeas/winpeas, msfvenom/msfconsole, nc, Penelope, and common file-transfer helpers.
+1. **Post-mining modeled tool builder implementation backlog** — Continue only the remaining Tool Builder work. v10.03-v10.05 are complete release history and are not active queue scope. Next is v10.06: linpeas/winpeas, msfvenom/msfconsole, nc/Penelope, and common file-transfer helpers, with command generation and executable Evidence behavior landing together. After v10.06, v10.07 performs the final implemented-tool Evidence and cross-surface audit, including older implemented builders.
 2. **Post-mining runtime and old-layer retirement audit** — Use the current-owner/equivalence/fixture lifecycle to identify old note-mining and historical layers that can be retired without changing observable behavior.
 3. **Post-mining regression speed and coverage pass** — With the note queue closed, shorten slow historical/browser checks where proven redundant while keeping exact-head full regression and browser smoke meaningful.
 4. **Quiet service worker caching** — Improve repeat-load and offline behavior without prompting users to install anything.
