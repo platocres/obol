@@ -136,7 +136,7 @@ function assertBefore(html, left, right) { assert(position(html, left) < positio
   const next = q.buildNext(5).map(item => item && item.id);
   assert(card && card.status === 'complete', 'Card progressive-disclosure cleanup should be complete');
   assert.strictEqual(card.completedBy, 'v9.99', 'Card cleanup should be marked complete by v9.99');
-  assert(/primary guided action|evidence paste-back|outcome controls/i.test(card.detail), 'card cleanup closeout should preserve the user-visible outcome');
+  assert(/primary command or GUI action|evidence paste-back|outcome controls/i.test(card.detail), 'card cleanup closeout should preserve the user-visible outcome');
   assert(retire && retire.status === 'queued', 'wrapper/decorator retirement audit should remain queued after card cleanup');
   assert.strictEqual(next[0], 'post-notes-card-wrapper-decorator-retirement-audit', 'Build Next should move to the card-wrapper retirement audit');
   assert(next.includes('post-notes-tools-builder-library-cleanup'), 'Tools cleanup should remain queued after the card retirement audit');
@@ -148,11 +148,13 @@ function assertBefore(html, left, right) { assert(position(html, left) < positio
 
   const release = fs.readFileSync(path.join(rootDir, 'data/current-release.js'), 'utf8');
   assert(release.includes("version:'9.99.0'"), 'current release should be v9.99');
-  assert(release.includes('data/product-hardening/card-progressive-disclosure-cleanup-v9.99.js'), 'current-release should load the v9.99 card cleanup extension');
+  assert(!release.includes('data/product-hardening/card-progressive-disclosure-cleanup-v9.99.js'), 'v9.99 queue closeout should not add another browser-loaded runtime request');
+  assert(fs.existsSync(path.join(rootDir, 'data/product-hardening/card-progressive-disclosure-cleanup-v9.99.js')), 'v9.99 proof ledger should remain in the repo even though it is request-budget neutral');
+  assert(fs.readFileSync(path.join(rootDir, 'data/product-hardening/card-wrapper-retirement-queue-v9.98.js'), 'utf8').includes('requestBudgetNeutral'), 'existing card queue owner should expose the v9.99 request-budget-neutral closeout');
   assert(fs.readFileSync(path.join(rootDir, 'data/product-hardening/dynamic-why-now-v9.71.js'), 'utf8').includes('integratedCardOwner'), 'dynamic why-now injector should honor the integrated card owner');
   assert(fs.readFileSync(path.join(rootDir, 'data/product-hardening/dynamic-why-now-route-stabilizer-v9.77.js'), 'utf8').includes('integratedCardOwner'), 'dynamic why-now stabilizer should honor the integrated card owner');
 })();
 
 run(['tools/validate-release-pr.js', '--repo-only', '--release-version=9.99']);
 
-console.log('v9.99 tests passed: Card progressive disclosure is integrated into the shared card renderer and Build Next advances to card wrapper/decorator retirement.');
+console.log('v9.99 tests passed: Card progressive disclosure is integrated into the shared card renderer and Build Next advances to card wrapper/decorator retirement without adding a browser runtime request.');
