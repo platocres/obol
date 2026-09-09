@@ -1,6 +1,14 @@
 # Tool Builder Build Queue
 
-This queue exists so the modeled-tool backlog does not turn into vague "add more tools" work. Completed release batches must be removed from this queue as they land. Release history belongs in `CHANGELOG.md`, not in the active build queue.
+This file is the active Tool Builder build queue, not release history. Completed release batches must be removed as they land. Release history belongs in `CHANGELOG.md` and the matching `docs/vX.Y.md` release document.
+
+## Queue lifecycle rule
+
+- The first version heading in this file must always be the next unfinished Tool Builder batch.
+- A batch that satisfies its acceptance proof is removed from this file and from the README active queue in the same PR that completes it.
+- Do not retain completed version headings as context, milestones, or historical reference. Use `CHANGELOG.md` and release docs for that purpose.
+- Focused release regression must fail when the just-completed batch or any older completed Tool Builder batch remains in the active queue.
+- The Product Build Next/dashboard projection must describe only remaining Tool Builder work. Completed tool families may be mentioned only as completed-through metadata, never as pending scope.
 
 The implementation rule is strict:
 
@@ -23,31 +31,8 @@ For every implemented builder:
 - Parsed output may advance, block, re-arm, or deprioritize Next Steps only from supported Evidence. Merely recognizing a command line, banner, listener startup, or tool invocation must not manufacture access, compromise, reachability, credential validity, or privilege.
 - When a tool is primarily a launcher, listener, transfer helper, or transport, its Evidence contract must still recognize the useful state it owns, such as listener bound, client connected, file transferred, route/interface created, cleanup completed, or failure reason. Any deeper downstream fact must remain gated on the appropriate independent Evidence.
 - An inventory record must not be promoted to `implemented` until command generation, live Tools rendering, Evidence ingestion, Next Steps handoff where applicable, cleanup/proof boundaries, and regression fixtures all exist.
-- When a release batch satisfies its acceptance proof, remove that completed batch from this active queue in the same PR. Do not leave historical completed versions above the next unfinished item.
 
 This is the permanent Definition of Done for the modeled-tool backlog. The historical note-mining rubric already required terminal-output analyzers, Evidence expectations, and Path movement; these builds are completing the implementation work that remained modeled or queued after note mining ended.
-
-## v10.05 - Authentication and enumeration builder batch
-
-Purpose: implement tools that commonly decide whether credentials or low-noise service probes are usable.
-
-Concrete work:
-
-- Promote Hydra to implemented with SSH, FTP, SMB, RDP, HTTP GET, HTTP POST form, and basic-auth modes.
-- Promote Kerbrute to implemented with user enumeration, password spray, and password brute-force modes.
-- Promote smbclient and smbmap as distinct builders so client/share interaction and permission mapping do not collapse into one confusing command model.
-- Promote enum4linux-ng and ldapsearch as enumeration builders with minimal target/domain/base-DN commands first.
-- Promote Responder as an explicit capture/analyze listener builder with clear poisoning/capture proof boundaries.
-- For every promoted tool, implement or prove Evidence ingestion for each decision-relevant mode in the same build. Credential validity, enumeration discoveries, lockout/error conditions, share access, LDAP findings, captured authentication, and negative results must remain distinct facts.
-
-Acceptance proof:
-
-- Each builder starts with a minimal valid selected-mode command.
-- Username/password/list parameters are required only when that mode actually needs them.
-- Rate, thread, timeout, output, and module/escalation options are additive toggles.
-- Evidence paste-back guidance names the exact output needed for Path/Card decisions.
-- Representative positive, negative, blocked, partial, and ambiguous transcripts are analyzed conservatively and produce the expected Next Steps movement or non-movement.
-- Once this acceptance proof is green, remove v10.05 from this active queue in the same PR so v10.06 becomes the first visible unfinished batch.
 
 ## v10.06 - Shell, payload, privesc, and transfer helper batch
 
@@ -69,7 +54,7 @@ Acceptance proof:
 - Output/handler/proof expectations are explicit and backed by executable Evidence ingestion.
 - Representative transcripts exercise positive, negative, partial, and cleanup states and the appropriate Next Steps routing.
 - Commands remain copy/review only.
-- Once this acceptance proof is green, remove v10.06 from this active queue in the same PR.
+- Once this acceptance proof is green, remove v10.06 from this active queue and the README active queue in the same PR.
 
 ## v10.07 - Implemented-tool Evidence and cross-surface audit
 
@@ -77,7 +62,7 @@ Purpose: prove the completed builder batches are actually one operator system ac
 
 Concrete work:
 
-- Audit every inventory item marked `implemented`, including the builders that predate v10.04, and require executable Evidence-ingestion coverage or a specifically proven shared analyzer mapping.
+- Audit every inventory item marked `implemented`, including builders completed before v10.06, and require executable Evidence-ingestion coverage or a specifically proven shared analyzer mapping.
 - Ensure Path recommendations point to the correct builder route/mode when Evidence supports that next step.
 - Ensure Cards use the same builder schema and do not duplicate a separate command model.
 - Ensure every implemented tool exposes paste-back guidance that matches the parser/analyzer behavior actually shipped.
