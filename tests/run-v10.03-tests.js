@@ -63,12 +63,12 @@ assert.strictEqual(
 );
 assert.strictEqual(
   compile('tb-sqlmap', { inputMode: 'url', url: 'http://10.10.10.10/item.php?id=1', level: '1', risk: '1', dbms: 'auto', technique: 'auto', action: 'detect', batch: true }),
-  'sqlmap -u http://10.10.10.10/item.php?id=1',
+  "sqlmap -u 'http://10.10.10.10/item.php?id=1'",
   'sqlmap detection should not start with redundant risk/level/batch/action clutter'
 );
 assert.strictEqual(
   compile('tb-sqlmap', { inputMode: 'url', url: 'http://10.10.10.10/item.php?id=1', level: '3', risk: '2', dbms: 'MySQL', technique: 'U', action: 'dbs', batch: false }),
-  'sqlmap -u http://10.10.10.10/item.php?id=1 --level 3 --risk 2 --dbms MySQL --technique U --dbs',
+  "sqlmap -u 'http://10.10.10.10/item.php?id=1' --level 3 --risk 2 --dbms MySQL --technique U --dbs",
   'sqlmap GUI selections should add only the chosen escalation flags'
 );
 
