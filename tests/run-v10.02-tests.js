@@ -17,9 +17,13 @@ function runInBrowserish(files) {
   return sandbox.window;
 }
 
+const releaseRoot = runInBrowserish(['data/current-release.js']);
+const currentAuthority = releaseRoot.OBOL_CURRENT_RELEASE;
+assert(currentAuthority && /^\d+\.\d+\.\d+$/.test(currentAuthority.version), 'current release must retain a semver payload');
+assert(currentAuthority && /^v\d+\.\d+(?:\.\d+)?$/.test(currentAuthority.label), 'current release must retain a version label');
+const authorityParts = currentAuthority.version.split('.').map(Number);
+assert(authorityParts[0] > 10 || (authorityParts[0] === 10 && (authorityParts[1] > 0 || (authorityParts[1] === 0 && authorityParts[2] >= 2))), 'current release must not regress behind the v10.02 visual-density milestone');
 const currentRelease = read('data/current-release.js');
-assert(currentRelease.includes("version:'10.0.2'"), 'current release must use semver payload 10.0.2');
-assert(currentRelease.includes("label:'v10.02'"), 'current release label must be v10.02');
 assert(!currentRelease.includes('visual-density-regression-v10.02.js\''), 'v10.02 proof must not be added as a browser-loaded product-hardening extension');
 
 const releaseDoc = read('docs/v10.02.md');
@@ -119,17 +123,17 @@ assert(Array.isArray(recommendation.liveItems) && recommendation.liveItems.lengt
 assert(recommendation.liveItems[0].id === 'post-notes-tool-builder-implementation-backlog', 'the remaining live post-notes item should be the modeled-tool backlog');
 
 const readme = read('README.md');
-assert(readme.includes('Current release: **v10.02**'), 'README must sync current release to v10.02');
+assert(readme.includes('Current release: **' + currentAuthority.label + '**'), 'README must sync to the current release authority');
 assert(readme.includes('**Next concrete entry:** **Post-mining modeled tool builder implementation backlog**'), 'README Build Next should advance to modeled tool builder implementation backlog');
 assert(readme.includes('**Recommended work package:** **Post-notes Operator UI Clarity**'), 'README must keep the user-facing post-notes clarity handoff');
 assert(!readme.includes('**Next concrete entry:** **Post-mining visual density regression pass**'), 'README should not leave visual density as the next concrete item');
 const index = read('index.html');
-assert(index.includes('<title>Obol v10.02 — Product Hardening</title>'), 'index title must sync v10.02');
-assert(index.includes('Offensive Box Operations Ledger · v10.02'), 'index tagline must sync v10.02');
+assert(index.includes('<title>Obol ' + currentAuthority.label + ' — Product Hardening</title>'), 'index title must sync to current release');
+assert(index.includes('Offensive Box Operations Ledger · ' + currentAuthority.label), 'index tagline must sync to current release');
 const changelog = read('CHANGELOG.md');
-assert(changelog.includes('## v10.02'), 'CHANGELOG must include v10.02 heading');
+assert(changelog.includes('## v10.02'), 'CHANGELOG must preserve v10.02 heading');
 
-const release = cp.spawnSync(process.execPath, ['tools/validate-release-pr.js', '--repo-only', '--release-version=10.02'], { cwd: root, encoding: 'utf8' });
+const release = cp.spawnSync(process.execPath, ['tools/validate-release-pr.js', '--repo-only'], { cwd: root, encoding: 'utf8' });
 if (release.status !== 0) {
   process.stdout.write(release.stdout || '');
   process.stderr.write(release.stderr || '');
