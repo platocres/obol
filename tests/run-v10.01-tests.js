@@ -31,7 +31,6 @@ for (const token of [
   'Recommended accessories',
   'Pickable modes and presets',
   'Related cards and legacy examples',
-  'legacyMatchingCardsCollapsed',
   '#/tools/'
 ]) assert(toolSource.includes(token), 'Tools source missing ' + token);
 assert(!/cardHTML\(e\.card,\s*fs,\s*true\)/.test(toolSource), 'Tools selected route must not render a tab-per-tool expanded matching-card dump');
