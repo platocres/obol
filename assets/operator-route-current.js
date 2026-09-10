@@ -184,10 +184,13 @@ function scriptProposals(n){
  }
  return{moves,offers};
 }
+/* Uses operator-panel31 (not operator-primary-move31): the Path must expose exactly one
+   dominant best-next-move panel, so the substitute offer is a supporting panel, not a second
+   primary. */
 function substitutionPanel(offers){
  if(!asArr(offers).length)return'';
- return'<section class="operator-primary-move31" data-operator-substitutes31="1"><div class="operator-primary-move-head31"><span class="operator-rank31">Exam-safe / LOTL alternative</span></div><div class="operator-recs31">'+offers.map(o=>
-  '<article class="operator-rec31"><div><span class="operator-rank31">substitutes '+e(o.tool)+'</span><h3>'+e(o.script.name)+'</h3><p>The ranked move <b>'+e(o.cardTitle)+'</b> recommends <code>'+e(o.tool)+'</code> — prohibited for automated exploitation under OSCP exam rules. Run this hand-driven substitute instead. '+e(o.script.examSafeReason||o.script.desc||'')+'</p></div><div class="operator-rec-actions31"><a class="btn primary30" href="'+e(scriptRoute(o.script.id))+'">Open exam-safe script</a></div></article>'
+ return'<section class="operator-panel31" data-operator-substitutes31="1"><div class="section-head30"><div><h3>Exam-safe / LOTL alternative</h3><p class="hint">A ranked move recommends a tool OSCP exam rules prohibit for automated exploitation — run the hand-driven substitute instead.</p></div><a href="#/tools/__scripts">Open Scripts</a></div><div class="operator-recs31">'+offers.map(o=>
+  '<article class="operator-rec31"><div><span class="operator-rank31">substitutes '+e(o.tool)+'</span><h3>'+e(o.script.name)+'</h3><p>The ranked move <b>'+e(o.cardTitle)+'</b> recommends <code>'+e(o.tool)+'</code>. '+e(o.script.examSafeReason||o.script.desc||'')+'</p></div><div class="operator-rec-actions31"><a class="btn primary30" href="'+e(scriptRoute(o.script.id))+'">Open exam-safe script</a></div></article>'
  ).join('')+'</div></section>';
 }
 function scriptMovesPanel(moves,examOn){
