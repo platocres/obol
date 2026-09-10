@@ -120,6 +120,84 @@ function evidenceNeedsDrawer(top,card){
   : '<p class="hint">Open the best next move for its full command spine and evidence controls.</p>';
  return '<details class="operator-support31"><summary>'+e(title)+'</summary><div id="operator-support31">'+body+'</div></details>';
 }
+/* Scripts on the Next Steps path (v10.12). Path-relevant snippets in OBOL_SCRIPTS carry
+   prereq/produces/lane + a pathProposable flag (see data/scripts.js). This owner is the
+   recommender surface, so script proposal lives here: we propose a snippet ADDITIVELY when
+   the current Evidence already meets its prereq (never replacing an Orange card), and we offer
+   an exam-safe / LOTL substitute beside a ranked card that would recommend a rule-breaking
+   tool (sqlmap and the like). Everything degrades to a no-op when no scripts, core, or state
+   are present, so ordinary consumers are untouched. */
+const RESTRICTED_TOOLS=new Set(['sqlmap']);
+const SCRIPT_DATA_BUNDLE='assets/obol-tool-reference-current.js';
+function asArr(v){return Array.isArray(v)?v:[];}
+function scriptList(){try{return asArr(root.OBOL_SCRIPTS);}catch(err){return[];}}
+/* Script metadata lives in the route-lazy tool-reference bundle (OBOL_SCRIPTS is not part of
+   the eager startup payload), so it is absent when the operator opens Next Steps directly.
+   Fetch that bundle on demand, once, and let the caller re-render when it arrives. Degrades to
+   a synchronous no-op when the data is already present or there is no document (tests/Node). */
+function ensureScriptData(done){
+ if(scriptList().length){if(done)done();return;}
+ if(typeof document==='undefined'){if(done)done();return;}
+ root.__OBOL_OPERATOR_SCRIPTDATA_CBS__=(root.__OBOL_OPERATOR_SCRIPTDATA_CBS__||[]).concat(done||[]);
+ if(root.__OBOL_OPERATOR_SCRIPTDATA_LOADING__)return;
+ root.__OBOL_OPERATOR_SCRIPTDATA_LOADING__=true;
+ const finish=()=>{const cbs=root.__OBOL_OPERATOR_SCRIPTDATA_CBS__||[];root.__OBOL_OPERATOR_SCRIPTDATA_LOADING__=false;root.__OBOL_OPERATOR_SCRIPTDATA_CBS__=[];cbs.forEach(cb=>{try{cb&&cb();}catch(err){}});};
+ const existing=document.querySelector('script[data-obol-operator-scriptdata],script[data-obol-tool-library-asset="'+SCRIPT_DATA_BUNDLE+'"],script[src="'+SCRIPT_DATA_BUNDLE+'"]');
+ if(existing&&scriptList().length){finish();return;}
+ const script=document.createElement('script');
+ script.src=SCRIPT_DATA_BUNDLE;script.async=false;script.dataset.obolOperatorScriptdata='1';
+ script.onload=finish;script.onerror=finish;
+ (document.head||document.documentElement||document).appendChild(script);
+}
+function pathScripts(){return scriptList().filter(s=>s&&s.pathProposable&&s.prereq);}
+function examSafeSubstitute(tool){const t=String(tool||'').toLowerCase();if(!t)return null;return scriptList().find(s=>s&&s.examSafe&&asArr(s.substitutesFor).some(x=>String(x).toLowerCase()===t))||null;}
+function scriptRoute(id){return'#/tools/__scripts/'+encodeURIComponent(String(id||''));}
+function examSafeOn(){try{return!!(typeof state!=='undefined'&&state&&state.ui&&state.ui.examSafe);}catch(err){return false;}}
+function pathFactSet(n){
+ try{const c=(n&&n.context)||activeContext();if(typeof C!=='undefined'&&C.effectiveFacts){const s=C.effectiveFacts(state,c);if(s&&typeof s.has==='function')return s;}}catch(err){}
+ return new Set();
+}
+function scriptPrereqMet(script,facts){
+ const p=script&&script.prereq;if(!p||!facts||typeof facts.has!=='function')return false;
+ const all=asArr(p.all),any=asArr(p.any),none=asArr(p.none);
+ if(all.length&&!all.every(f=>facts.has(f)))return false;
+ if(any.length&&!any.some(f=>facts.has(f)))return false;
+ if(none.length&&none.some(f=>facts.has(f)))return false;
+ return true;
+}
+/* Build the additive script layer from an overview: `moves` = pathProposable snippets whose
+   prereq the Evidence meets; `offers` = exam-safe substitutes for restricted tools named by the
+   ranked cards. Pure over its inputs so it is directly unit-testable. */
+function scriptProposals(n){
+ const facts=pathFactSet(n),cards=cardLookup(),moves=[],offers=[],seenMove=new Set(),seenTool=new Set();
+ for(const s of pathScripts()){if(seenMove.has(s.id))continue;if(scriptPrereqMet(s,facts)){seenMove.add(s.id);moves.push(s);}}
+ const rows=asArr(n&&n.rows);
+ for(const row of rows.slice(0,12)){
+  const id=row&&row.card&&row.card.id||row&&row.cardId||row&&row.id;if(!id)continue;
+  const card=cards[id]||row&&row.card||{};
+  for(const cmd of asArr(card.commands)){
+   const tool=String(cmd&&cmd.tool||'').toLowerCase();
+   if(!tool||!RESTRICTED_TOOLS.has(tool)||seenTool.has(tool))continue;
+   const sub=examSafeSubstitute(tool);if(!sub)continue;seenTool.add(tool);
+   offers.push({tool,cardId:id,cardTitle:card.title||row&&row.card&&row.card.title||titleFromId(id),script:sub});
+  }
+ }
+ return{moves,offers};
+}
+function substitutionPanel(offers){
+ if(!asArr(offers).length)return'';
+ return'<section class="operator-primary-move31" data-operator-substitutes31="1"><div class="operator-primary-move-head31"><span class="operator-rank31">Exam-safe / LOTL alternative</span></div><div class="operator-recs31">'+offers.map(o=>
+  '<article class="operator-rec31"><div><span class="operator-rank31">substitutes '+e(o.tool)+'</span><h3>'+e(o.script.name)+'</h3><p>The ranked move <b>'+e(o.cardTitle)+'</b> recommends <code>'+e(o.tool)+'</code> — prohibited for automated exploitation under OSCP exam rules. Run this hand-driven substitute instead. '+e(o.script.examSafeReason||o.script.desc||'')+'</p></div><div class="operator-rec-actions31"><a class="btn primary30" href="'+e(scriptRoute(o.script.id))+'">Open exam-safe script</a></div></article>'
+ ).join('')+'</div></section>';
+}
+function scriptMovesPanel(moves,examOn){
+ const rows=examOn?asArr(moves).filter(s=>s&&s.examSafe):asArr(moves);
+ if(!rows.length)return'';
+ return'<section class="operator-panel31" data-operator-script-moves31="1"><div class="section-head30"><div><h3>Exam-safe / LOTL script moves</h3><p class="hint">Operator-run snippets whose prerequisites the current Evidence already meets — additive to the Orange methodology cards above.</p></div><a href="#/tools/__scripts">Open Scripts</a></div><div class="operator-recs31">'+rows.map(s=>{
+  const subs=asArr(s.substitutesFor);
+  return'<article class="operator-rec31"><div><span class="operator-rank31">'+e(s.lane||'script')+(s.examSafe?' · exam-safe':'')+'</span><h3>'+e(s.name||s.id)+'</h3><p>'+e(s.desc||s.examSafeReason||'')+'</p>'+(subs.length?'<small>substitutes '+e(subs.join(', '))+'</small>':'')+'</div><div class="operator-rec-actions31"><a class="btn primary30" href="'+e(scriptRoute(s.id))+'">Open script</a></div></article>';
+ }).join('')+'</div></section>';
+}
 function buildPathModel(n){
  const cards=cardLookup(),graph=graphLookup(),rows=Array.isArray(n&&n.rows)?n.rows:[],blockers=blockerSummary(n);
  const actions=rows.map((row,i)=>{
@@ -271,18 +349,26 @@ function renderCurrentPath(){
  const topTitle=top?top.title:'No evidence-grounded move yet';
  const topWhy=top?top.why:'Paste or review Evidence to give the path engine more signal.';
  const topCard=top?cardLookup()[top.id]:null;
+ const proposals=scriptProposals(n),examOn=examSafeOn();
  view.innerHTML='<main class="operator-path31" data-operator-route-owner="path-current" data-path-model-source="nextStepsOverview34">'+
   '<section class="operator-path-hero31"><div><div class="eyebrow30">Current operator route</div><h2>Next Steps</h2><p>'+e(topWhy)+'</p></div><div class="operator-context31"><span>Active context</span><b>'+e(model.contextLabel)+'</b></div></section>'+
   primaryMovePanel(top,topTitle,topWhy)+
+  substitutionPanel(proposals.offers)+
   '<section class="operator-metrics31">'+
    '<div><span>Unlocks</span><b>'+e(top&&Array.isArray(top.unlocks)?top.unlocks.length:0)+'</b><small>Potential follow-on actions</small></div>'+
    '<div><span>Queued intent</span><b>'+e(model.plannedCount||0)+'</b><small>Operator-selected work remains stable</small></div>'+
    '<div><span>Blockers</span><b>'+e(blockers.count)+'</b><small>'+e(blockers.detail)+'</small></div>'+
   '</section>'+renderModeSwitch(ui)+renderSelectedPathView(model,ui)+
+  scriptMovesPanel(proposals.moves,examOn)+
   evidenceNeedsDrawer(top,topCard)+
  '</main>';
  wirePathControls(view,ui);
  root.__OBOL_CURRENT_OPERATOR_ROUTE_OWNER__='path-current';
+ // Script proposals need the route-lazy script data; fetch it once and re-render when present.
+ if(!scriptList().length&&!root.__OBOL_OPERATOR_SCRIPTDATA_TRIED__){
+  root.__OBOL_OPERATOR_SCRIPTDATA_TRIED__=true;
+  ensureScriptData(()=>{if(scriptList().length&&page()==='path')renderCurrentPath();});
+ }
  return true;
 }
 function ensureStack(scope,anchor){
@@ -371,7 +457,7 @@ function decorateRoute(){
  if(page()==='path')renderCurrentPath();
  if(page()==='tools')compactToolPanels();
 }
-root.OBOL_OPERATOR_ROUTES=Object.freeze({version:'1.2.0',MAX_PRIMARY_BUILDERS,buildPathModel,renderSimplified,renderChecklist,renderLiveMap,renderCurrentPath,compactToolPanels,ensureOperatorStyle,decorateRoute,expandRecurring,evidenceNeedsDrawer,primaryMovePanel,recurrenceMeta});
+root.OBOL_OPERATOR_ROUTES=Object.freeze({version:'1.3.0',MAX_PRIMARY_BUILDERS,buildPathModel,renderSimplified,renderChecklist,renderLiveMap,renderCurrentPath,compactToolPanels,ensureOperatorStyle,decorateRoute,expandRecurring,evidenceNeedsDrawer,primaryMovePanel,recurrenceMeta,scriptProposals,scriptPrereqMet,pathScripts,examSafeSubstitute,substitutionPanel,scriptMovesPanel,scriptRoute,ensureScriptData});
 ensureOperatorStyle();
 for(const t of [0,80,260,900,1800])root.setTimeout&&root.setTimeout(decorateRoute,t);
 })(typeof window!=='undefined'?window:globalThis);

