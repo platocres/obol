@@ -65,6 +65,13 @@ function derivedFieldValue(field,context){
  if(['output','outputFile','outputDir'].includes(id))return context.workspace&&context.workspace.outputDir||'';
  return'';
 }
+function commandReferencesField(builder,fieldId){
+ for(const token of arr(builder&&builder.command&&builder.command.tokens)){
+  if(token.field===fieldId)return true;
+  for(const part of arr(token.parts))if(part.field===fieldId)return true;
+ }
+ return false;
+}
 function safeDefaults(builder,context,values){
  let out={};
  const registry=root.OBOL_TOOL_BUILDERS;
@@ -109,8 +116,8 @@ function validateImplementedBuilders(){
   if(!profiles[builder.id])failures.push(builder.id+' missing executable Evidence profile/shared analyzer proof');
   try{const noContext=compileMinimum(builder,{target:{},context:{},workspace:{}},{});if(hasBlockedPlaceholder(noContext))failures.push(builder.id+' generated blocked placeholder without real state: '+noContext);}catch(_err){}
   try{const values=minimumFixtureValues(builder,context);const command=compileMinimum(builder,context,values);commands.push(Object.freeze({builderId:builder.id,tool:record.tool,command}));if(hasBlockedPlaceholder(command))failures.push(builder.id+' generated blocked placeholder in minimum command: '+command);if(!command||command.split(/\s+/).length<1)failures.push(builder.id+' generated empty minimum command');
-   const joined=text(command);if(arr(builder.fields).some(f=>['target','rhost','rhosts','url'].includes(f.id))&&!/(203\.0\.113\.77|http:\/\/203\.0\.113\.77|198\.51\.100\.77)/.test(joined))failures.push(builder.id+' did not prefill target/url from supplied or parsed context');
-   if(arr(builder.fields).some(f=>f.id==='lhost')&&!joined.includes('198.51.100.77'))failures.push(builder.id+' did not prefill LHOST from supplied or parsed context');
+   const joined=text(command);const targetReferenced=['target','rhost','rhosts','url'].some(id=>commandReferencesField(builder,id));if(targetReferenced&&!/(203\.0\.113\.77|http:\/\/203\.0\.113\.77|198\.51\.100\.77)/.test(joined))failures.push(builder.id+' did not prefill target/url from supplied or parsed context');
+   if(commandReferencesField(builder,'lhost')&&!joined.includes('198.51.100.77'))failures.push(builder.id+' did not prefill LHOST from supplied or parsed context');
   }catch(err){failures.push(builder.id+' failed minimum viable command compilation: '+(err&&err.message||err));}
  }
  return failures;
