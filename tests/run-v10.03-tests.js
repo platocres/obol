@@ -119,21 +119,21 @@ const roadmap = read('docs/TOOL-BUILDER-BUILD-QUEUE.md');
 for (const token of [
   'Every implemented builder starts from the minimal valid command',
   'Queue lifecycle rule',
-  'Shell, payload, privesc, and transfer helper batch',
-  'Placeholder values such as `user`, `domain.local`, `Password123!`, fake NT hashes, and fake `hashes.txt` must never make a command look valid'
-]) assert(roadmap.includes(token), 'tool-builder active roadmap missing ' + token);
+  'Placeholder values such as `user`, `domain.local`, `Password123!`, fake NT hashes, and fake `hashes.txt` must never make a command look valid',
+  'Implemented-tool Evidence and cross-surface audit'
+]) assert(roadmap.includes(token), 'tool-builder roadmap missing durable contract token ' + token);
 assert(!roadmap.includes('## v10.03')&&!roadmap.includes('## v10.04')&&!roadmap.includes('## v10.05'), 'completed Tool Builder releases must not reappear in the active roadmap');
-assert(/Implemented-tool Evidence and cross-surface audit/.test(roadmap), 'tool-builder roadmap must preserve the cross-surface audit phase');
+assert(!roadmap.includes('## Shell, payload, privesc, and transfer helper batch'), 'completed helper batch must not remain an active roadmap section after v10.07');
 
 const readme = read('README.md');
 for (const token of [
   'docs/TOOL-BUILDER-BUILD-QUEUE.md',
   '## Tool Builder implementation queue',
-  'Shell, payload, privesc, and transfer helper batch',
   'minimal valid command for the selected tool/mode',
-  'modeled tools remain modeled until a real schema-driven builder exists'
+  'modeled tools remain modeled until a real schema-driven builder exists',
+  'Implemented-tool Evidence and cross-surface audit'
 ]) assert(readme.includes(token), 'README active tool-builder queue handoff missing ' + token);
 assert(!readme.includes('**v10.03 —')&&!readme.includes('**v10.04 —')&&!readme.includes('**v10.05 —'), 'README active Tool Builder queue must contain only unfinished releases');
-assert(/Implemented-tool Evidence and cross-surface audit/.test(readme), 'README must preserve the cross-surface audit phase');
+assert(!readme.includes('Shell, payload, privesc, and transfer helper batch. Implement linpeas'), 'README must not retain the completed helper batch as an active numbered item');
 
 console.log('v10.03 tool builder minimal-command hygiene validation passed.');
