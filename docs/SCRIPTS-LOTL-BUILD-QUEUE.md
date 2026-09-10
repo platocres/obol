@@ -110,6 +110,17 @@ open release PRs as needed (granted). One open release/product-hardening PR at a
 - Validate: `node tools/scope-check.js` (inner loop), then the release/preflight chain.
   Required PR checks: `full-historical-regression` + `browser-smoke`. Merge only on a
   green exact head.
+- **Release-PR description contract (learned in Build C, cost a red CI cycle):** the
+  `quality-preservation` phase runs `tools/validate-release-pr.js` against the PR body from
+  the *event payload*, and for a product-hardening release it requires these `##` sections —
+  **Summary**, **README handoff**, **Product-hardening queue**, **Validation added**,
+  **Compatibility** (body ≥700 chars). These are NOT the headings in
+  `.github/pull_request_template.md`; write the release sections, not the generic template.
+  The workflow triggers only on `opened`/`synchronize`/`reopened`/`ready_for_review` — a bare
+  description `edit` will NOT re-run CI, so get the body right before opening, or push a real
+  commit to re-validate (never an empty commit). Reproduce the exact check locally with a fake
+  payload: `GITHUB_EVENT_NAME=pull_request GITHUB_EVENT_PATH=<event.json> node
+  tools/validate-release-pr.js`.
 
 ### Tool Builder ↔ site-version decoupling (done in Build A — remember this)
 - The pending Tool Builder batches used to be labeled `v10.06`/`v10.07`, i.e. 1:1 with
