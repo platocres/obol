@@ -193,7 +193,7 @@ green. Acceptance criteria are the Definition of Done; write item tests to match
 
 | Build | Site ver | State | PR | Notes |
 | --- | --- | --- | --- | --- |
-| A | v10.06 | IN PROGRESS | — | script rendering + param prefill + toggles; TB-batch decoupling |
+| A | v10.06 | PR OPEN (#224) | #224 | script rendering + param prefill + toggles; TB-batch decoupling. Set to DONE with head SHA when merged, then flip B to IN PROGRESS. |
 | B | (next) | PENDING | — | LOTL/exam-safe metadata + manual-SQLi substitute + facet |
 | C | (next) | PENDING | — | scripts on Next Steps path + substitution offer |
 | D | (next) | PENDING | — | Evidence ingestion for script output |
