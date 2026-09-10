@@ -37,15 +37,16 @@ fs.mkdirSync(outputDir, { recursive: true });
 // final source-note completion and post-notes queue extension, the v9.96
 // post-notes clarity audit and operator-UI queue split extension, the v9.97
 // network-position recurrence extension, the v10.0 card wrapper-retirement
-// queue closure, and the v10.05 current Tool Builder backlog projection plus
-// authentication/enumeration builder pack on tool-bearing target/card routes.
+// queue closure, the v10.05 current Tool Builder backlog projection plus
+// authentication/enumeration builder pack, and the v10.07 helper builder plus
+// helper Evidence pack on tool-bearing target/card/evidence routes.
 // The retired v9.77 why-now route stabilizer is intentionally no longer counted
 // as a browser runtime request. These budgets still fail loudly if the historical
 // fragment chain leaks back into loading.
 const routes = [
   { id: 'home', hash: '#/home', marker: /Home/i, requestBudget: 81 },
-  { id: 'targets', hash: '#/boxes', marker: /target/i, requestBudget: 89 },
-  { id: 'evidence', hash: '#/intake', marker: /evidence/i, requestBudget: 85 },
+  { id: 'targets', hash: '#/boxes', marker: /target/i, requestBudget: 90 },
+  { id: 'evidence', hash: '#/intake', marker: /evidence/i, requestBudget: 86 },
   { id: 'next-steps', hash: '#/path', marker: /(next|path|recommend)/i, requestBudget: 87 },
   { id: 'report', hash: '#/report', marker: /report/i, requestBudget: 82 },
   { id: 'dashboard', hash: '#/dashboard', marker: /Product Hardening/i, currentDashboard: true, settleMs: 5200, requestBudget: 82 }
