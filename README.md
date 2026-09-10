@@ -4,7 +4,7 @@ Obol is a static, browser-local workspace for OSCP-style labs, Active Directory 
 
 Live site: `https://platocres.github.io/obol/`
 
-Current release: **v10.07**
+Current release: **v10.08**
 
 Open `#/dashboard` for the active Product Hardening Dashboard and Product Build Next queue.
 
@@ -22,9 +22,9 @@ Agents may be operating from Kali or from a Windows host. Obol still never execu
 4. **Batch carefully.** Use the recommended coherent work package when it keeps one PR inside the same ownership area. Every item advanced or closed still needs its own acceptance criteria and proof. For Tool Builder releases, a completed version is removed from the active queue in the same PR; history belongs in the changelog and release document.
 5. **Treat note-mining docs as closed-source reference unless reactivated.** Source-note mining completed in v9.95. Do not look for another generated notes batch by default, and do not resurrect old cluster items as public UI filler. Historical note-derived work still uses the rule: **Extract the value, not the wording.** Use [`docs/RAW-NOTES-LFS.md`](docs/RAW-NOTES-LFS.md), [`docs/NOTE-DERIVATION-STANDARD.md`](docs/NOTE-DERIVATION-STANDARD.md), [`docs/NOTE-MINING-RUBRIC.md`](docs/NOTE-MINING-RUBRIC.md), [`docs/NOTES-INTEGRATION.md`](docs/NOTES-INTEGRATION.md), [`docs/NOTES-IMPACT.md`](docs/NOTES-IMPACT.md), and [`docs/SOURCE-NOTE-CLUSTERING.md`](docs/SOURCE-NOTE-CLUSTERING.md) as provenance and safety references only unless Product Build Next explicitly reopens note-derived work.
 6. **Use live tracking, not release narrative.** Do not use `CHANGELOG.md` to decide what remains to be re-mined. Current status lives in Product Build Next, the Product Hardening Dashboard, `data/product-hardening/source-note-clusters-current.js`, and `data/product-hardening/note-progress-current.js`.
-7. **Land and prove the work.** Wire new outputs into the actual user-visible Next Steps / Orange path surface where relevant, update stable current owners instead of adding disposable wrappers, sync generated outputs, run the focused validators for the touched ownership area, and keep the exact final head green. A tool must not be promoted to implemented merely because it renders a command: decision-relevant output must have executable Evidence ingestion, conservative proof boundaries, and Next Steps movement/blocking where applicable. If local shell access to GitHub fails, follow [`docs/CONNECTOR-FALLBACK.md`](docs/CONNECTOR-FALLBACK.md) and keep fixing the same PR through the connector until required checks pass.
+7. **Land and prove the work.** Wire new outputs into the actual user-visible Next Steps / Orange path surface where relevant, update stable current owners instead of adding disposable wrappers, sync generated outputs, run the focused validators for the touched ownership area, and keep the exact final head green. A tool must not be promoted to implemented merely because it renders a command: decision-relevant output must have executable Evidence ingestion, conservative proof boundaries, and Next Steps movement/blocking where applicable. Modeled tools remain modeled until a real schema-driven builder exists with minimum viable command generation, supplied/Evidence-derived prefill, additive toggles, executable Evidence ingestion, and path movement or blocking where the Evidence supports it. If local shell access to GitHub fails, follow [`docs/CONNECTOR-FALLBACK.md`](docs/CONNECTOR-FALLBACK.md) and keep fixing the same PR through the connector until required checks pass.
 
-The completed broad audit item was **Post-mining Next Steps and tool-card clarity audit**; the active queue below is the split follow-up work.
+The completed broad audit item was **Post-mining Next Steps and tool-card clarity audit**. The implemented-builder audit is complete, but the modeled Tool Builder implementation backlog remains active until every modeled inventory record is implemented, superseded, or rejected with proof.
 
 Product Build Next source note: This block is generated from `data/product-hardening/product-hardening-queue.js`. Do not edit it manually. Recommended work-package metadata comes from `data/product-hardening/work-packages.js`.
 
@@ -52,7 +52,7 @@ Historical Orange AD mindmap source: `https://orange-cyberdefense.github.io/ocd-
 <!-- OBOL-PRODUCT-BUILD-NEXT:START -->
 Generated from the same queue sources as the Product Hardening Dashboard. Do not edit this block manually.
 
-**Current product-hardening queue:** 227/657 complete (35%), 9 concrete queued, 9 modeled/standing items.
+**Current product-hardening queue:** 227/658 complete (35%), 9 concrete queued, 9 modeled/standing items.
 **Private notes source:** [`https://github.com/platocres/obol-source-notes/tree/main/sources/raw`](https://github.com/platocres/obol-source-notes/tree/main/sources/raw) — 556 notes and 1326 embedded resources accounted.
 **Private review packets:** `platocres/obol-source-notes@agent/review-packets:data/review-packets/manifest.json` — 556/556 notes, 29 packets, 0 truncated.
 **Complete source packet proof:** 556/556 notes in 29 complete-text packets, 0 truncated, 8,725,188 cleaned text chars.
@@ -70,7 +70,7 @@ Generated from the same queue sources as the Product Hardening Dashboard. Do not
 **Package detail:** Use the Product Hardening Dashboard for full track ledgers and `data/product-hardening/work-packages.js` for the long-form package guidance.
 
 **Highest-priority concrete live items:**
-1. **Post-mining modeled tool builder implementation backlog** — Continue only the remaining Tool Builder work. v10.03-v10.07 are complete release history and are not active queue scope. Batch labels are decoupled from the site release number so other tracks can advance the version without renumbering unfinished Tool Builder work. Every tool batch must ship command generation and decision-relevant Evidence behavior together. The shell/payload/privesc/transfer helper batch completed in v10.07 with linpeas/winPEAS, msfvenom/msfconsole, nc/Penelope, and common file-transfer builders plus executable Evidence ingestion. The remaining batch is the implemented-tool Evidence and cross-surface audit across the completed set, including older implemented builders.
+1. **Post-mining modeled tool builder implementation backlog** — v10.08 completed the implemented-builder audit only. Remaining modeled inventory records still need schema-driven builders or explicit supersession/rejection with the full Tool Builder contract before this backlog can close.
 2. **Post-mining runtime and old-layer retirement audit** — Use the current-owner/equivalence/fixture lifecycle to identify old note-mining and historical layers that can be retired without changing observable behavior.
 3. **Post-mining regression speed and coverage pass** — With the note queue closed, shorten slow historical/browser checks where proven redundant while keeping exact-head full regression and browser smoke meaningful.
 4. **Quiet service worker caching** — Improve repeat-load and offline behavior without prompting users to install anything.
@@ -82,13 +82,15 @@ Generated by `node tools/sync-product-build-next.js --write`. Verify with `node 
 
 ## Tool Builder implementation queue
 
-This section is active work only. Completed Tool Builder batches are removed when they land; their history lives in `CHANGELOG.md` and release docs. The next builds must follow the full contract in [`docs/TOOL-BUILDER-BUILD-QUEUE.md`](docs/TOOL-BUILDER-BUILD-QUEUE.md): start with the minimal valid command for the selected tool/mode, fill only real collected target/material parameters or safe defaults, add every extra flag through explicit GUI controls, and ship executable Evidence ingestion for every decision-relevant mode.
+This section is active work only. Completed Tool Builder batches are removed when they land; their history lives in `CHANGELOG.md` and release docs. The full contract remains in [`docs/TOOL-BUILDER-BUILD-QUEUE.md`](docs/TOOL-BUILDER-BUILD-QUEUE.md): start with the minimal valid command for the selected tool/mode, fill only real collected target/material parameters, parsed Evidence/workspace parameters, or safe defaults, add every extra flag through explicit GUI controls, and ship executable Evidence ingestion for every decision-relevant mode. Every tool batch must ship command generation and decision-relevant Evidence behavior together.
 
-Batch labels are decoupled from the site release number: a batch keeps its name until it lands, so other tracks (for example the operator scripts/LOTL work) can advance the version without renumbering these.
+Batch labels are decoupled from the site release number: a batch keeps its name until it lands, so other tracks can advance the version without renumbering unfinished Tool Builder work.
 
-1. **Implemented-tool Evidence and cross-surface audit.** Audit every inventory item already marked implemented and fail the contract when command generation, live Tools rendering, executable Evidence ingestion, relevant Next Steps handoff, proof boundaries, or regression fixtures are missing. Path, Card, Tools, and Evidence must remain different surfaces over one command/proof model.
+Active batch:
 
-For every batch, modeled tools remain modeled until a real schema-driven builder exists with fields, modes, generated command preview, additive toggles, executable Evidence ingestion or proven shared-analyzer coverage, conservative fact/proof boundaries, relevant Next Steps movement/blocking, collapsed legacy examples, and regression proof. When a batch is complete, remove it from this active list in the same PR.
+1. **Remaining modeled tool implementation backlog.** The **Implemented-tool Evidence and cross-surface audit** is complete for builders already marked implemented, but modeled tools remain modeled until a real schema-driven builder exists. Every remaining modeled tool must ship the same full contract: minimum viable command generation, supplied/Evidence-derived prefill, additive GUI toggles, executable Evidence ingestion, proof boundaries, cleanup/report guidance, and conservative Next Steps movement or blocking where applicable.
+
+Future Tool Builder work should burn down this active modeled inventory instead of pretending the backlog is closed.
 
 ## Run locally
 
