@@ -32,7 +32,7 @@ For every implemented builder:
 - When a tool is primarily a launcher, listener, transfer helper, or transport, its Evidence contract must still recognize the useful state it owns, such as listener bound, client connected, file transferred, route/interface created, cleanup completed, or failure reason. Any deeper downstream fact must remain gated on the appropriate independent Evidence.
 - An inventory record must not be promoted to `implemented` until command generation, live Tools rendering, Evidence ingestion, Next Steps handoff where applicable, cleanup/proof boundaries, and regression fixtures all exist.
 
-This is the permanent Definition of Done for modeled-tool work. The historical note-mining rubric already required terminal-output analyzers, Evidence expectations, and Path movement. v10.08 completed the implemented-tool Evidence and cross-surface audit, but it did not close the full modeled-tool backlog because many inventory records still remain `modeled`.
+This is the permanent Definition of Done for modeled-tool work. The historical note-mining rubric already required terminal-output analyzers, Evidence expectations, and Path movement. v10.08 completed the **Implemented-tool Evidence and cross-surface audit**, but it did not close the full modeled-tool backlog because many inventory records still remain `modeled`.
 
 ## Active Tool Builder batches
 
