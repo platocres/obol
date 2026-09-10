@@ -34,35 +34,13 @@ For every implemented builder:
 
 This is the permanent Definition of Done for the modeled-tool backlog. The historical note-mining rubric already required terminal-output analyzers, Evidence expectations, and Path movement; these builds are completing the implementation work that remained modeled or queued after note mining ended.
 
-## Shell, payload, privesc, and transfer helper batch
-
-Purpose: turn common lab support tools into dependable command builders instead of scattered snippets.
-
-Concrete work:
-
-- Promote linpeas/winpeas launchers with download/serve/run modes and cleanup notes.
-- Promote msfvenom with payload, LHOST/LPORT, format, encoder, architecture, output file, and handler-handoff fields.
-- Promote msfconsole handler/resource-script generation without auto-execution.
-- Promote nc and Penelope listener/shell helpers with explicit LHOST/LPORT and shell-upgrade notes.
-- Promote common file-transfer helpers for Python HTTP server, wget/curl fetches, certutil, PowerShell web requests, and Impacket SMB server where appropriate.
-- Implement or prove Evidence ingestion in the same build for helper-owned state: listener ready/failed, session received/lost, payload/handler match, transfer success/failure/integrity, privesc-enumeration signals, and cleanup. A listener or transfer alone must not imply code execution or privilege.
-
-Acceptance proof:
-
-- Builders generate minimal listener/payload/transfer commands from collected parameters.
-- Dangerous or irreversible actions are not auto-run.
-- Output/handler/proof expectations are explicit and backed by executable Evidence ingestion.
-- Representative transcripts exercise positive, negative, partial, and cleanup states and the appropriate Next Steps routing.
-- Commands remain copy/review only.
-- Once this acceptance proof is green, remove v10.06 from this active queue and the README active queue in the same PR.
-
 ## Implemented-tool Evidence and cross-surface audit
 
 Purpose: prove the completed builder batches are actually one operator system across Tools, Cards, Evidence, and Next Steps, and catch any older implemented builder that still lacks the full Evidence contract.
 
 Concrete work:
 
-- Audit every inventory item marked `implemented`, including builders completed before v10.06, and require executable Evidence-ingestion coverage or a specifically proven shared analyzer mapping.
+- Audit every inventory item marked `implemented`, including builders completed before v10.07, and require executable Evidence-ingestion coverage or a specifically proven shared analyzer mapping.
 - Ensure Path recommendations point to the correct builder route/mode when Evidence supports that next step.
 - Ensure Cards use the same builder schema and do not duplicate a separate command model.
 - Ensure every implemented tool exposes paste-back guidance that matches the parser/analyzer behavior actually shipped.
@@ -76,4 +54,4 @@ Acceptance proof:
 - A representative Evidence sample leads Path to the expected builder-backed next move where that tool owns a path transition.
 - A representative Card shows the primary builder-backed command/action and a clear Evidence loop.
 - Tools, Path, Card, and Evidence remain different surfaces over the same command/proof contract, not diverging implementations.
-- When the audit is complete, remove v10.07 and close or replace the modeled-tool backlog with only genuinely unfinished follow-up work.
+- When the audit is complete, remove this active batch and close or replace the modeled-tool backlog with only genuinely unfinished follow-up work.
