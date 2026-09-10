@@ -57,13 +57,10 @@ assert(/Current release: \*\*v10\.0[78]\*\*/.test(readme),'README current releas
 assert(!readme.includes('Shell, payload, privesc, and transfer helper batch. Implement linpeas'),'README active Tool Builder queue must not retain completed helper batch as item 1');
 const queueDoc=read('docs/TOOL-BUILDER-BUILD-QUEUE.md');
 assert(!queueDoc.includes('## Shell, payload, privesc, and transfer helper batch'),'canonical Tool Builder queue must remove completed helper batch');
-const auditClosed=queueDoc.includes('No active Tool Builder implementation batches remain')||readme.includes('final implemented-tool Evidence and cross-surface audit closed in v10.08');
-if(auditClosed){
- assert(readme.includes('No active Tool Builder implementation batches remain'),'README must say the Tool Builder backlog is closed once the audit lands');
-}else{
- assert(readme.includes('Implemented-tool Evidence and cross-surface audit'),'README active Tool Builder queue must advance to the audit batch before it closes');
- assert(queueDoc.includes('## Implemented-tool Evidence and cross-surface audit'),'canonical Tool Builder queue must retain the next unfinished batch before it closes');
-}
+assert(readme.includes('Implemented-tool Evidence and cross-surface audit'),'README must preserve the implemented-builder audit handoff/completion marker');
+assert(queueDoc.includes('Implemented-tool Evidence and cross-surface audit'),'canonical Tool Builder queue must preserve the implemented-builder audit marker');
+assert(readme.includes('Remaining modeled tool implementation backlog'),'README must keep the remaining modeled Tool Builder backlog active after the audit');
+assert(queueDoc.includes('Remaining modeled tool implementation backlog'),'canonical Tool Builder queue must keep the remaining modeled Tool Builder backlog active after the audit');
 const release=cp.spawnSync(process.execPath,['tools/validate-release-pr.js','--repo-only'],{cwd:root,encoding:'utf8'});
 if(release.status!==0){process.stdout.write(release.stdout||'');process.stderr.write(release.stderr||'');process.exit(release.status||1);}
 process.stdout.write(release.stdout||'');
