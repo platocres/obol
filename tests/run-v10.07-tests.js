@@ -21,7 +21,7 @@ assert(schema&&builder&&helper&&evidence,'helper builders and Evidence owner mus
 assert.strictEqual(helper.builders.length,6,'helper batch must register six schema-driven builders');
 for(const id of ['tb-linpeas','tb-winpeas','tb-msfvenom','tb-msfconsole','tb-nc-penelope','tb-file-transfer-helper']){
  const b=schema.get(id);assert(b,'missing builder '+id);
- const errors=schema.validateBuilder(b);assert.deepStrictEqual(errors,[],'invalid builder '+id+': '+errors.join('; '));
+ const errors=Array.from(schema.validateBuilder(b));assert.strictEqual(errors.length,0,'invalid builder '+id+': '+errors.join('; '));
  assert(b.evidence&&b.evidence.proofBoundary,'builder '+id+' must carry proof boundary');
  assert(evidence.profiles[id],'Evidence profile missing for '+id);
 }
