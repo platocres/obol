@@ -4,7 +4,7 @@ Obol is a static, browser-local workspace for OSCP-style labs, Active Directory 
 
 Live site: `https://platocres.github.io/obol/`
 
-Current release: **v10.08**
+Current release: **v10.09**
 
 Open `#/dashboard` for the active Product Hardening Dashboard and Product Build Next queue.
 
@@ -20,11 +20,11 @@ Agents may be operating from Kali or from a Windows host. Obol still never execu
 2. **Read the canonical docs by ownership.** Use [`docs/AGENT-WORKFLOW.md`](docs/AGENT-WORKFLOW.md) for the full agent loop, [`BUILDING.md`](BUILDING.md) for release/CI rules, [`docs/CONNECTOR-FALLBACK.md`](docs/CONNECTOR-FALLBACK.md) when shell GitHub access or DNS fails, [`docs/TEST-GOVERNANCE.md`](docs/TEST-GOVERNANCE.md) for the required PR checks and how to update tests when a release advances, [`docs/PRODUCT-HARDENING.md`](docs/PRODUCT-HARDENING.md) for the product-hardening contract, [`docs/TOOL-BUILDER-BUILD-QUEUE.md`](docs/TOOL-BUILDER-BUILD-QUEUE.md) for the modeled-tool implementation sequence, minimal-command rule, and mandatory Evidence-ingestion/Next-Steps contract, and the notes docs only when Product Build Next or the user explicitly asks for historical note-derivation work.
 3. **Do Product Build Next.** Start with the highest-priority Product Build Next item. Treat it as the entry point into the recommended coherent work package, not as a one-item limit. Use the generated Product Build Next item below unless the user explicitly directs otherwise. The dashboard and README consume the same queue sources, so do not hand-edit the generated block outside the queue owners or their current-release projection.
 4. **Batch carefully.** Use the recommended coherent work package when it keeps one PR inside the same ownership area. Every item advanced or closed still needs its own acceptance criteria and proof. For Tool Builder releases, a completed version is removed from the active queue in the same PR; history belongs in the changelog and release document.
-5. **Treat note-mining docs as closed-source reference unless reactivated.** Source-note mining completed in v9.95. Do not look for another generated notes batch by default, and do not resurrect old cluster items as public UI filler. Historical note-derived work still uses the rule: **Extract the value, not the wording.** Use [`docs/RAW-NOTES-LFS.md`](docs/RAW-NOTES-LFS.md), [`docs/NOTE-DERIVATION-STANDARD.md`](docs/NOTE-DERIVATION-STANDARD.md), [`docs/NOTE-MINING-RUBRIC.md`](docs/NOTE-MINING-RUBRIC.md), [`docs/NOTES-INTEGRATION.md`](docs/NOTES-INTEGRATION.md), [`docs/NOTES-IMPACT.md`](docs/NOTES-IMPACT.md), and [`docs/SOURCE-NOTE-CLUSTERING.md`](docs/SOURCE-NOTE-CLUSTERING.md) as provenance and safety references only unless Product Build Next explicitly reopens note-derived work.
+5. **Treat note-mining docs as closed-source reference unless reactivated.** Source-note mining completed in v9.95. Do not look for another generated notes batch by default, and do not resurrect old cluster items as public UI filler. Historical note-derived work still uses the rule: **Extract the value, not the wording.** Use [`docs/RAW-NOTES-LFS.md`](docs/RAW-NOTES-LFS.md), [`docs/NOTE-DERIVATION-STANDARD.md`](docs/NOTE-DERIVATION-STANDARD.md), [`docs/NOTE-MINING-RUBRIC.md`](docs/NOTE-MINING-RUBRIC.md), [`docs/NOTES-INTEGRATION.md`](docs/NOTES-INTEGRATION.md), and [`docs/SOURCE-NOTE-CLUSTERING.md`](docs/SOURCE-NOTE-CLUSTERING.md) as provenance and safety references only unless Product Build Next explicitly reopens note-derived work.
 6. **Use live tracking, not release narrative.** Do not use `CHANGELOG.md` to decide what remains to be re-mined. Current status lives in Product Build Next, the Product Hardening Dashboard, `data/product-hardening/source-note-clusters-current.js`, and `data/product-hardening/note-progress-current.js`.
 7. **Land and prove the work.** Wire new outputs into the actual user-visible Next Steps / Orange path surface where relevant, update stable current owners instead of adding disposable wrappers, sync generated outputs, run the focused validators for the touched ownership area, and keep the exact final head green. A tool must not be promoted to implemented merely because it renders a command: decision-relevant output must have executable Evidence ingestion, conservative proof boundaries, and Next Steps movement/blocking where applicable. Modeled tools remain modeled until a real schema-driven builder exists with minimum viable command generation, supplied/Evidence-derived prefill, additive toggles, executable Evidence ingestion, and path movement or blocking where the Evidence supports it. If local shell access to GitHub fails, follow [`docs/CONNECTOR-FALLBACK.md`](docs/CONNECTOR-FALLBACK.md) and keep fixing the same PR through the connector until required checks pass.
 
-The completed broad audit item was **Post-mining Next Steps and tool-card clarity audit**. The implemented-builder audit is complete, but the modeled Tool Builder implementation backlog remains active until every modeled inventory record is implemented, superseded, or rejected with proof.
+The completed broad audit item was **Post-mining Next Steps and tool-card clarity audit**. The implemented-builder audit is complete, but the modeled Tool Builder implementation backlog remains active until every modeled inventory record is implemented, superseded, or rejected with proof. The v10.09 web discovery/scanning burn-down slice is complete for WhatWeb, Nikto, httpx, wfuzz, and ZAP; remaining modeled tools still stay in the active Tool Builder queue.
 
 Product Build Next source note: This block is generated from `data/product-hardening/product-hardening-queue.js`. Do not edit it manually. Recommended work-package metadata comes from `data/product-hardening/work-packages.js`.
 
@@ -86,11 +86,15 @@ This section is active work only. Completed Tool Builder batches are removed whe
 
 Batch labels are decoupled from the site release number: a batch keeps its name until it lands, so other tracks can advance the version without renumbering unfinished Tool Builder work.
 
+Completed current burn-down slice:
+
+- **v10.09 web discovery/scanning slice:** WhatWeb, Nikto, httpx, wfuzz, and ZAP now have schema-driven builders, minimum viable commands, supplied/Evidence-derived prefill, additive GUI controls, executable Evidence ingestion, proof boundaries, and regression coverage.
+
 Active batch:
 
-1. **Remaining modeled tool implementation backlog.** The **Implemented-tool Evidence and cross-surface audit** is complete for builders already marked implemented, but modeled tools remain modeled until a real schema-driven builder exists. Every remaining modeled tool must ship the same full contract: minimum viable command generation, supplied/Evidence-derived prefill, additive GUI toggles, executable Evidence ingestion, proof boundaries, cleanup/report guidance, and conservative Next Steps movement or blocking where applicable.
+1. **Remaining modeled tool implementation backlog.** The **Implemented-tool Evidence and cross-surface audit** is complete for builders already marked implemented, and the v10.09 web discovery/scanning slice is complete, but modeled tools remain modeled until a real schema-driven builder exists. Every remaining modeled tool must ship the same full contract: minimum viable command generation, supplied/Evidence-derived prefill, additive GUI toggles, executable Evidence ingestion, proof boundaries, cleanup/report guidance, and conservative Next Steps movement or blocking where applicable.
 
-Future Tool Builder work should burn down this active modeled inventory instead of pretending the backlog is closed.
+Future Tool Builder work should burn down this active modeled inventory instead of pretending the backlog is closed. Remaining groups still include network/host discovery, DNS/SNMP/AD collectors, remote execution/lateral movement, credential relay/capture helpers, pivot transports, privilege-escalation helpers, cloud/container/database/service tooling, and controlled CVE/PoC wrappers.
 
 ## Run locally
 
