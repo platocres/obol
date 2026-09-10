@@ -62,7 +62,8 @@ function derivedFieldValue(field,context,builder){
  if(['output','outputFile','outputDir'].includes(id))return context.workspace&&context.workspace.outputDir||'';
  return'';
 }
-function commandReferencesField(builder,fieldId){for(const token of arr(builder&&builder.command&&builder.command.tokens)){if(token.field===fieldId)return true;for(const part of arr(token.parts))if(part.field===fieldId)return true;}return false;}
+function tokenActive(token,values){const api=root.OBOL_TOOL_BUILDER;return !token||!token.when||!api||typeof api.conditionMatches!=='function'?true:api.conditionMatches(token.when,values);}
+function commandUsesField(builder,fieldId,values){for(const token of arr(builder&&builder.command&&builder.command.tokens)){if(!tokenActive(token,values))continue;if(token.field===fieldId)return true;for(const part of arr(token.parts))if(part.field===fieldId)return true;}return false;}
 function safeDefaults(builder,context,values){
  let out={};const registry=root.OBOL_TOOL_BUILDERS;
  if(registry&&typeof registry.defaultsFor==='function')try{out=Object.assign(out,registry.defaultsFor(builder.id,{},context));}catch(_err){}
@@ -95,8 +96,8 @@ function validateImplementedBuilders(){
   if(!profiles[builder.id])failures.push(builder.id+' missing executable Evidence profile/shared analyzer proof');
   try{const noContext=compileMinimum(builder,{target:{},context:{},workspace:{}},{});if(hasBlockedPlaceholder(noContext))failures.push(builder.id+' generated blocked placeholder without real state: '+noContext);}catch(_err){}
   try{const values=minimumFixtureValues(builder,context);const command=compileMinimum(builder,context,values);if(hasBlockedPlaceholder(command))failures.push(builder.id+' generated blocked placeholder in minimum command: '+command);if(!command||command.split(/\s+/).length<1)failures.push(builder.id+' generated empty minimum command');
-   const targetReferenced=['target','rhost','rhosts','url'].some(id=>commandReferencesField(builder,id));if(targetReferenced&&!/(203\.0\.113\.77|http:\/\/203\.0\.113\.77|198\.51\.100\.77)/.test(command))failures.push(builder.id+' did not prefill target/url from supplied or parsed context');
-   if(commandReferencesField(builder,'lhost')&&!command.includes('198.51.100.77'))failures.push(builder.id+' did not prefill LHOST from supplied or parsed context');
+   const targetReferenced=['target','rhost','rhosts','url'].some(id=>commandUsesField(builder,id,values));if(targetReferenced&&!/(203\.0\.113\.77|http:\/\/203\.0\.113\.77|198\.51\.100\.77)/.test(command))failures.push(builder.id+' did not prefill target/url from supplied or parsed context');
+   if(commandUsesField(builder,'lhost',values)&&!command.includes('198.51.100.77'))failures.push(builder.id+' did not prefill LHOST from supplied or parsed context');
   }catch(err){failures.push(builder.id+' failed minimum viable command compilation: '+(err&&err.message||err));}
  }
  return failures;
