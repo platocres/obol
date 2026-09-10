@@ -1,3 +1,11 @@
+## v10.09 — Is a product-hardening release that burns down the first concrete slice of the remaining modeled Tool Builder backlog after the v10.08 implemented-builder audit
+
+- Promoted WhatWeb, Nikto, httpx, wfuzz, and OWASP ZAP handoff from modeled inventory to implemented Tool Builder coverage.
+- Added schema-driven web discovery/scanning builders with minimum viable commands, supplied or Evidence-derived prefill, additive GUI controls, and fake-placeholder refusal.
+- Added executable web Evidence ingestion for fingerprint observations, scan findings, live endpoint probes, fuzz results, ZAP alerts/reports, failure, blocked, and partial states.
+- Wired the web builder pack into current runtime loading so Tools and Card routes load it alongside the tunnel, Ligolo, authentication/enumeration, and helper builder packs.
+- Kept the remaining modeled Tool Builder implementation backlog active and descriptive instead of falsely closing the full backlog.
+
 ## v10.08 — Closes the modeled Tool Builder implementation backlog with the implemented-tool Evidence and cross-surface audit
 
 - Adds a permanent implemented-builder audit owner in `data/product-hardening/tool-builder-backlog-current.js`.
