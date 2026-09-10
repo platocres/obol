@@ -24,7 +24,7 @@ Agents may be operating from Kali or from a Windows host. Obol still never execu
 6. **Use live tracking, not release narrative.** Do not use `CHANGELOG.md` to decide what remains to be re-mined. Current status lives in Product Build Next, the Product Hardening Dashboard, `data/product-hardening/source-note-clusters-current.js`, and `data/product-hardening/note-progress-current.js`.
 7. **Land and prove the work.** Wire new outputs into the actual user-visible Next Steps / Orange path surface where relevant, update stable current owners instead of adding disposable wrappers, sync generated outputs, run the focused validators for the touched ownership area, and keep the exact final head green. A tool must not be promoted to implemented merely because it renders a command: decision-relevant output must have executable Evidence ingestion, conservative proof boundaries, and Next Steps movement/blocking where applicable. Modeled tools remain modeled until a real schema-driven builder exists with minimum viable command generation, supplied/Evidence-derived prefill, additive toggles, executable Evidence ingestion, and path movement or blocking where the Evidence supports it. If local shell access to GitHub fails, follow [`docs/CONNECTOR-FALLBACK.md`](docs/CONNECTOR-FALLBACK.md) and keep fixing the same PR through the connector until required checks pass.
 
-The completed broad audit item was **Post-mining Next Steps and tool-card clarity audit**. The v10.08 implemented-builder audit is complete, but the modeled Tool Builder implementation backlog remains active until every modeled inventory record is implemented, superseded, or rejected with proof.
+The completed broad audit item was **Post-mining Next Steps and tool-card clarity audit**. The implemented-builder audit is complete, but the modeled Tool Builder implementation backlog remains active until every modeled inventory record is implemented, superseded, or rejected with proof.
 
 Product Build Next source note: This block is generated from `data/product-hardening/product-hardening-queue.js`. Do not edit it manually. Recommended work-package metadata comes from `data/product-hardening/work-packages.js`.
 
@@ -88,7 +88,7 @@ Batch labels are decoupled from the site release number: a batch keeps its name 
 
 Active batch:
 
-1. **Remaining modeled tool implementation backlog.** v10.08 completed the **Implemented-tool Evidence and cross-surface audit** for builders already marked implemented, but modeled tools remain modeled until a real schema-driven builder exists. Every remaining modeled tool must ship the same full contract: minimum viable command generation, supplied/Evidence-derived prefill, additive GUI toggles, executable Evidence ingestion, proof boundaries, cleanup/report guidance, and conservative Next Steps movement or blocking where applicable.
+1. **Remaining modeled tool implementation backlog.** The **Implemented-tool Evidence and cross-surface audit** is complete for builders already marked implemented, but modeled tools remain modeled until a real schema-driven builder exists. Every remaining modeled tool must ship the same full contract: minimum viable command generation, supplied/Evidence-derived prefill, additive GUI toggles, executable Evidence ingestion, proof boundaries, cleanup/report guidance, and conservative Next Steps movement or blocking where applicable.
 
 Future Tool Builder work should burn down this active modeled inventory instead of pretending the backlog is closed.
 
