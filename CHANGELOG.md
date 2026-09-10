@@ -1,3 +1,16 @@
+## v10.08 — Closes the modeled Tool Builder implementation backlog with the implemented-tool Evidence and cross-surface audit
+
+- Adds a permanent implemented-builder audit owner in `data/product-hardening/tool-builder-backlog-current.js`.
+- Audits every inventory record marked `implemented` after the base, tunnel, Ligolo, authentication/enumeration, and helper builder extensions have registered.
+- Requires every implemented inventory record to resolve to a real registered schema-driven builder.
+- Requires every implemented builder to generate a minimum viable command for its selected mode from supplied workspace/Evidence context, collected material, or safe tool defaults.
+- Blocks fake runnable placeholders such as `10.10.10.10`, `10.10.14.9`, `domain.local`, `user`, `Password123!`, fake NT hashes, and fake `hashes.txt` from satisfying command readiness.
+- Preserves missing-field behavior: if required target, credential, callback, request, hash, listener, transfer, or file material is absent, the builder must show an incomplete state rather than manufacturing a command.
+- Adds a Tools-route repair pass that remounts implemented builders with context derived from stored workspace/Evidence-style parameters instead of the older fake fallback values.
+- Adds permanent Evidence coverage mapping for older implemented builders and keeps native/shared analyzer coverage explicit for tunnel, auth/enumeration, Ligolo, and helper builders.
+- Adds `tests/run-v10.08-tests.js` and wires it into the current-product regression phase.
+- Removes the final active Tool Builder implementation batch from `docs/TOOL-BUILDER-BUILD-QUEUE.md` and the README handoff.
+
 ## v10.07 — Completes the shell, payload, privilege-enumeration, listener, and transfer helper batch from the active Tool Builder implementation queue
 
 - Adds schema-driven builders for linpeas, winPEAS, msfvenom, msfconsole, nc/Penelope, and common file-transfer helpers.
