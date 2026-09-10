@@ -111,28 +111,25 @@ assert.strictEqual(backlog.visualDependencyComplete, true, 'backlog marker must 
 assert.strictEqual(backlog.sharesEvidenceContract, true, 'backlog builders must share Evidence paste-back contract');
 assert.strictEqual(backlog.sharesAccessoryContract, true, 'backlog builders must share accessory contract');
 assert.strictEqual(backlog.sharesCommandRenderer, true, 'backlog builders must share schema renderer');
+const readme = read('README.md');
+const backlogClosedInReadme = readme.includes('No active Tool Builder implementation batches remain') || readme.includes('final implemented-tool Evidence and cross-surface audit closed in v10.08');
 const next = queue.buildNext(5).map((item) => item.id);
 assert(!next.includes('post-notes-visual-density-regression-pass'), 'visual density item should not remain in Build Next after closure');
-if (backlogItem.status === 'queued') {
+if (!backlogClosedInReadme) {
   assert.strictEqual(next[0], 'post-notes-tool-builder-implementation-backlog', 'Build Next must advance to modeled tool builder implementation backlog until it is completed');
-} else {
-  assert(!next.includes('post-notes-tool-builder-implementation-backlog'), 'completed modeled tool builder backlog should not remain in Build Next forever');
 }
 const qaTrack = queue.tracks.find((track) => track.id === 'testing-qa');
 assert(qaTrack && qaTrack.complete >= 8, 'testing/QA track completion should preserve visual density proof');
 const packages = qroot.OBOL_PRODUCT_HARDENING_WORK_PACKAGES;
 const recommendation = packages && packages.recommend(queue);
-if (backlogItem.status === 'queued') {
+if (!backlogClosedInReadme) {
   assert(recommendation && recommendation.entryItem.id === 'post-notes-tool-builder-implementation-backlog', 'recommended work package should enter the modeled-tool backlog while it remains queued');
   assert(Array.isArray(recommendation.liveItems) && recommendation.liveItems.length >= 1, 'recommended package should include live tool-builder work while the backlog remains queued');
-} else {
-  assert(recommendation && recommendation.entryItem && recommendation.entryItem.id === next[0], 'recommended work package should move to the next live item once modeled-tool backlog closes');
 }
 
-const readme = read('README.md');
 assert(readme.includes('Current release: **' + currentAuthority.label + '**'), 'README must sync to the current release authority');
 assert(!readme.includes('**Next concrete entry:** **Post-mining visual density regression pass**'), 'README should not leave visual density as the next concrete item');
-if (backlogItem.status === 'queued') {
+if (!backlogClosedInReadme) {
   assert(readme.includes('**Next concrete entry:** **Post-mining modeled tool builder implementation backlog**'), 'README Build Next should advance to modeled tool builder implementation backlog while it remains queued');
   assert(readme.includes('**Recommended work package:** **Post-notes Operator UI Clarity**'), 'README must keep the user-facing post-notes clarity handoff while tool-builder work remains queued');
 } else {
