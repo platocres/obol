@@ -58,6 +58,8 @@ async function fillIfPresent(page, selector, value) {
     await expectText(page, /Nmap/i, 'nmap direct selector');
     await expectText(page, /NetExec \/ nxc/i, 'nxc direct selector');
     await expectText(page, /Ligolo-ng/i, 'ligolo-ng direct selector');
+    await expectText(page, /Hydra/i, 'Hydra direct selector');
+    await expectText(page, /Kerbrute/i, 'Kerbrute direct selector');
     let state = await readState(page);
     if (!/Direct tool selection stays/i.test(state.text)) failures.push('Tools home does not explicitly preserve direct tool selection');
     if (!/implemented builder/i.test(state.text)) failures.push('Tools home does not show implemented-builder status');
@@ -150,6 +152,35 @@ async function fillIfPresent(page, selector, value) {
     if (state.expandedCardDumpCount !== 0) failures.push('ligolo-ng route rendered expanded card dump count ' + state.expandedCardDumpCount);
     await page.screenshot({ path: path.join(outputDir, 'tools-library-pivot-and-ad.png'), fullPage: true });
 
+    const v1005 = [
+      ['hydra', 'Hydra credential test builder', 'tb-hydra'],
+      ['kerbrute', 'Kerbrute enumeration and spray builder', 'tb-kerbrute'],
+      ['smbclient', 'smbclient share builder', 'tb-smbclient'],
+      ['smbmap', 'SMBMap permission builder', 'tb-smbmap'],
+      ['enum4linux-ng', 'enum4linux-ng enumeration builder', 'tb-enum4linux-ng'],
+      ['ldapsearch', 'ldapsearch query builder', 'tb-ldapsearch'],
+      ['responder', 'Responder analyze/capture builder', 'tb-responder']
+    ];
+    for (const [route, title, id] of v1005) {
+      await page.goto(baseUrl + '#/tools/' + route, { waitUntil: 'domcontentloaded', timeout: 30000 });
+      await expectText(page, new RegExp(title.replace(/[.*+?^${}()|[\]\\]/g, '\\$&'), 'i'), route + ' v10.05 builder title');
+      await expectText(page, /implemented builder/i, route + ' implemented status');
+      await expectText(page, /Generated command/, route + ' generated command surface');
+      await expectText(page, /Evidence and report boundary/, route + ' Evidence boundary');
+      state = await readState(page);
+      if (state.builderCount !== 1) failures.push(route + ' should mount exactly one implemented builder, saw ' + state.builderCount);
+      if (state.expandedCardDumpCount !== 0) failures.push(route + ' rendered expanded card dump count ' + state.expandedCardDumpCount);
+      const mounted = await page.locator('[data-tool-builder="' + id + '"]').count();
+      if (mounted !== 1) failures.push(route + ' did not mount expected builder ' + id);
+    }
+
+    await page.goto(baseUrl + '#/tools/hydra', { waitUntil: 'domcontentloaded', timeout: 30000 });
+    await fillIfPresent(page, '[data-tool-builder="tb-hydra"] [name="target"]', '10.10.10.10');
+    await fillIfPresent(page, '[data-tool-builder="tb-hydra"] [name="username"]', 'alice');
+    await fillIfPresent(page, '[data-tool-builder="tb-hydra"] [name="password"]', 'Winter2026');
+    state = await readState(page);
+    if (!/^hydra -l alice -p Winter2026 10\.10\.10\.10 ssh$/im.test(state.generatedCommand.trim())) failures.push('Hydra live preview is not minimal after required material is entered: ' + state.generatedCommand);
+
     await page.close();
   } finally {
     await browser.close();
@@ -159,7 +190,7 @@ async function fillIfPresent(page, selector, value) {
     for (const failure of failures) console.error('- ' + failure);
     process.exit(1);
   }
-  console.log('Tools builder-library browser smoke passed for library home, ffuf accessories, hashcat modes/accessories, nmap/nxc builders, implemented Ligolo-ng, chisel drilldown, and netexec alias de-dupe.');
+  console.log('Tools builder-library browser smoke passed for library home, existing builder families, v10.05 authentication/enumeration routes, Evidence boundaries, and direct-tool de-dupe.');
 })().catch((err) => {
   console.error(err && err.stack || err);
   process.exit(1);

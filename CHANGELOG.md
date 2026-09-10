@@ -1,3 +1,11 @@
+## v10.05 — Is a product-hardening release for the authentication and enumeration Tool Builder batch
+
+- Added schema-driven builders for Hydra, Kerbrute, smbclient, SMBMap, enum4linux-ng, ldapsearch, and Responder.
+- Kept commands minimal by default. Required targets, identities, credential material, domain/base-DN inputs, or interfaces must be real before the corresponding mode becomes runnable; rate, thread, timeout, output, recursion, filter, capture, and escalation options remain explicit additions.
+- Split smbclient and SMBMap into separate builders so share/session interaction and permission mapping do not collapse into one ambiguous workflow.
+- Superseded legacy enum4linux with the enum4linux-ng builder rather than maintaining duplicate active command models.
+- Wired the new builders into the current Tools/Card/Path runtime without adding execution. Obol continues to generate commands for human review and external execution only.
+
 ## v10.04 — - Promotes Ligolo-ng into the schema-driven Tool Builder platform for proxy, agent, interface/route, tunnel, listener, and proof/cleanup workflows
 
 - Promotes Ligolo-ng into the schema-driven Tool Builder platform for proxy, agent, interface/route, tunnel, listener, and proof/cleanup workflows.

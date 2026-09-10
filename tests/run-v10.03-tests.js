@@ -26,7 +26,7 @@ const builder = w.OBOL_TOOL_BUILDER;
 const builders = w.OBOL_TOOL_BUILDERS;
 assert(builder, 'Tool Builder renderer must load');
 assert(builders, 'Concrete tool builders must load');
-assert.strictEqual(builder.version, '1.3.0', 'v10.03 command hygiene must advance renderer version');
+assert.strictEqual(builder.version, '1.3.0', 'v10.03 command hygiene must remain the renderer baseline');
 
 function b(id) {
   const found = builders.byId && builders.byId[id];
@@ -118,25 +118,22 @@ assert(rendererSource.includes('minimal valid command'), 'preview copy must expl
 const roadmap = read('docs/TOOL-BUILDER-BUILD-QUEUE.md');
 for (const token of [
   'Every implemented builder starts from the minimal valid command',
-  'v10.03 - Minimal-command hygiene and implemented-builder audit',
-  'v10.04 - Pivot and remote-access first builder batch',
-  'v10.05 - Authentication and enumeration builder batch',
+  'Queue lifecycle rule',
   'v10.06 - Shell, payload, privesc, and transfer helper batch',
   'Placeholder values such as `user`, `domain.local`, `Password123!`, fake NT hashes, and fake `hashes.txt` must never make a command look valid'
-]) assert(roadmap.includes(token), 'tool-builder roadmap missing ' + token);
+]) assert(roadmap.includes(token), 'tool-builder active roadmap missing ' + token);
+assert(!roadmap.includes('## v10.03')&&!roadmap.includes('## v10.04')&&!roadmap.includes('## v10.05'), 'completed Tool Builder releases must not reappear in the active roadmap');
 assert(/v10\.07 - (?:Path\/Card\/Evidence builder handoff pass|Implemented-tool Evidence and cross-surface audit)/.test(roadmap), 'tool-builder roadmap must preserve a v10.07 cross-surface handoff/audit phase');
 
 const readme = read('README.md');
 for (const token of [
   'docs/TOOL-BUILDER-BUILD-QUEUE.md',
   '## Tool Builder implementation queue',
-  'v10.03 — Minimal-command hygiene and implemented-builder audit',
-  'v10.04 — Pivot and remote-access first batch',
-  'v10.05 — Authentication and enumeration batch',
   'v10.06 — Shell, payload, privesc, and transfer helper batch',
   'minimal valid command for the selected tool/mode',
   'modeled tools remain modeled until a real schema-driven builder exists'
-]) assert(readme.includes(token), 'README tool-builder queue handoff missing ' + token);
+]) assert(readme.includes(token), 'README active tool-builder queue handoff missing ' + token);
+assert(!readme.includes('**v10.03 —')&&!readme.includes('**v10.04 —')&&!readme.includes('**v10.05 —'), 'README active Tool Builder queue must contain only unfinished releases');
 assert(/v10\.07 — (?:Path\/Card\/Evidence handoff pass|Implemented-tool Evidence and cross-surface audit)/.test(readme), 'README must preserve a v10.07 cross-surface handoff/audit phase');
 
 console.log('v10.03 tool builder minimal-command hygiene validation passed.');

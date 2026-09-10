@@ -6,6 +6,8 @@ const { chromium } = require('playwright');
 
 const baseUrl = process.env.OBOL_SMOKE_BASE_URL || 'http://127.0.0.1:4173/index.html';
 const outputDir = process.env.OBOL_SMOKE_OUTPUT || path.join(__dirname, '..', 'artifacts', 'playwright-smoke');
+fs.mkdirSync(outputDir, { recursive: true });
+
 // Dashboard freshness regression proof tokens kept visible for validate-dashboard-freshness.js:
 // window.OBOL_CURRENT_RELEASE = { version: '0.0.0'
 // window.OBOL_PRODUCT_HARDENING_NOTES_IMPACT = { review: { reviewed: -1 } }
@@ -34,14 +36,16 @@ const outputDir = process.env.OBOL_SMOKE_OUTPUT || path.join(__dirname, '..', 'a
 // exam skills assessment private-boundary disposition extension, the v9.95
 // final source-note completion and post-notes queue extension, the v9.96
 // post-notes clarity audit and operator-UI queue split extension, the v9.97
-// network-position recurrence extension, and the v10.0 card wrapper-retirement
-// queue closure. The retired v9.77 why-now route stabilizer is intentionally no
-// longer counted as a browser runtime request. These budgets still fail loudly
-// if the historical fragment chain leaks back into loading.
+// network-position recurrence extension, the v10.0 card wrapper-retirement
+// queue closure, and the v10.05 current Tool Builder backlog projection plus
+// authentication/enumeration builder pack on tool-bearing target/card routes.
+// The retired v9.77 why-now route stabilizer is intentionally no longer counted
+// as a browser runtime request. These budgets still fail loudly if the historical
+// fragment chain leaks back into loading.
 const routes = [
   { id: 'home', hash: '#/home', marker: /Home/i, requestBudget: 81 },
-  { id: 'targets', hash: '#/boxes', marker: /target/i, requestBudget: 87 },
-  { id: 'evidence', hash: '#/intake', marker: /evidence/i, requestBudget: 84 },
+  { id: 'targets', hash: '#/boxes', marker: /target/i, requestBudget: 89 },
+  { id: 'evidence', hash: '#/intake', marker: /evidence/i, requestBudget: 85 },
   { id: 'next-steps', hash: '#/path', marker: /(next|path|recommend)/i, requestBudget: 87 },
   { id: 'report', hash: '#/report', marker: /report/i, requestBudget: 82 },
   { id: 'dashboard', hash: '#/dashboard', marker: /Product Hardening/i, currentDashboard: true, settleMs: 5200, requestBudget: 82 }
