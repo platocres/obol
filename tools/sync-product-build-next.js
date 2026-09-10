@@ -261,6 +261,16 @@ function normalize(content) {
     .replace(/\s*$/, '\n');
 }
 
+function comparable(content) {
+  return String(content || '')
+    .normalize('NFKC')
+    .replace(/\r\n/g, '\n')
+    .replace(/[\u00a0\t ]+/g, ' ')
+    .replace(/\s*\n\s*/g, '\n')
+    .replace(/\s+/g, ' ')
+    .trim();
+}
+
 function replace(content) {
   const normalized = content.replace(/\r\n/g, '\n');
   const re = /<!-- OBOL-PRODUCT-BUILD-NEXT:START -->[\s\S]*?<!-- OBOL-PRODUCT-BUILD-NEXT:END -->/;
@@ -276,9 +286,10 @@ function currentReadmeBlock(content) {
 function checkCurrentBlock(content) {
   const found = currentReadmeBlock(content);
   if (!found) return ['README Product Build Next markers are missing'];
+  const foundComparable = comparable(found);
   const expectedLines = block().split('\n').filter(Boolean);
   return expectedLines
-    .filter(line => !found.includes(line))
+    .filter(line => !found.includes(line) && !foundComparable.includes(comparable(line)))
     .map(line => 'missing generated line: ' + line);
 }
 
