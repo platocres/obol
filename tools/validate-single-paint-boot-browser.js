@@ -14,9 +14,21 @@ const executablePath=process.env.OBOL_SMOKE_BROWSER_PATH||undefined;
   await page.route('**/'+appArea.owner,async route=>{await new Promise(resolve=>setTimeout(resolve,1200));await route.continue();});
   await page.goto(baseUrl+'#/home',{waitUntil:'domcontentloaded',timeout:30000});
   await page.waitForFunction(()=>document.documentElement.dataset.obolBoot==='ready'&&document.documentElement.dataset.obolCurrentPaint==='home'&&!!document.querySelector('#view [data-current-home-owner="workflow-current"]'),null,{timeout:20000});
-  await page.waitForFunction(()=>{const release=window.OBOL_CURRENT_RELEASE||null;if(!release||!release.label||!release.phaseLabel)return false;const title='Obol '+release.label+' — '+release.phaseLabel;const tagline=(document.querySelector('.tagline')||{}).textContent||'';return document.title===title&&tagline.includes(release.label);},null,{timeout:4000});
-  await page.waitForTimeout(150);
-  const result=await page.evaluate(()=>{const release=window.OBOL_CURRENT_RELEASE||null;return{frames:window.__OBOL_VISIBLE_BOOT_FRAMES__.slice(),boot:document.documentElement.dataset.obolBoot,paint:document.documentElement.dataset.obolCurrentPaint,first:window.__OBOL_CURRENT_FIRST_VISIBLE_ROUTE__,title:document.title,tagline:(document.querySelector('.tagline')||{}).textContent||'',current:!!document.querySelector('#view [data-current-home-owner="workflow-current"]'),text:(document.getElementById('view').innerText||'').slice(0,200),release:release?{label:release.label,phaseLabel:release.phaseLabel}:null};});
+  // Sample the title, tagline, and live release authority atomically and retry until they settle
+  // into mutual consistency. Historical release-wave overlays re-stamp document.title and
+  // window.OBOL_CURRENT_RELEASE independently a few times during the injected boot delay, so a
+  // single sample could catch a sub-frame window where they disagreed (e.g. title vN vs authority
+  // vN-1) — the source of this proof's flakiness. Each evaluate reads both from the same instant;
+  // retrying until they agree asserts the SETTLED state rather than a boot flicker, while a
+  // genuinely wrong title still fails once the loop is exhausted.
+  const sample=()=>page.evaluate(()=>{const release=window.OBOL_CURRENT_RELEASE||null;return{frames:window.__OBOL_VISIBLE_BOOT_FRAMES__.slice(),boot:document.documentElement.dataset.obolBoot,paint:document.documentElement.dataset.obolCurrentPaint,first:window.__OBOL_CURRENT_FIRST_VISIBLE_ROUTE__,title:document.title,tagline:(document.querySelector('.tagline')||{}).textContent||'',current:!!document.querySelector('#view [data-current-home-owner="workflow-current"]'),text:(document.getElementById('view').innerText||'').slice(0,200),release:release?{label:release.label,phaseLabel:release.phaseLabel}:null};});
+  let result=await sample();
+  for(let attempt=0;attempt<120;attempt++){
+   const consistent=result.release&&result.title==='Obol '+result.release.label+' — '+result.release.phaseLabel&&result.tagline.includes(result.release.label);
+   if(consistent)break;
+   await page.waitForTimeout(150);
+   result=await sample();
+  }
   assert.strictEqual(result.boot,'ready');assert.strictEqual(result.paint,'home');assert.strictEqual(result.first,'home');assert(result.current,'explicit current Home owner is rendered');
   assert(result.release&&result.release.label&&result.release.phaseLabel,'current release authority is available in the browser');
   assert.strictEqual(result.title,'Obol '+result.release.label+' — '+result.release.phaseLabel,'browser title matches the settled current release authority');
