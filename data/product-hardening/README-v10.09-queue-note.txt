@@ -1,0 +1,1 @@
+v10.09 completes the web discovery/scanning modeled-tool burn-down slice for WhatWeb, Nikto, httpx, wfuzz, and ZAP. The remaining modeled Tool Builder implementation backlog stays active and must continue to name the remaining groups until each modeled record is implemented, superseded, or rejected with proof.
