@@ -129,10 +129,11 @@ const readme = read('README.md');
 for (const token of [
   'docs/TOOL-BUILDER-BUILD-QUEUE.md',
   '## Tool Builder implementation queue',
-  'minimal valid command for the selected tool/mode',
   'modeled tools remain modeled until a real schema-driven builder exists',
   'Implemented-tool Evidence and cross-surface audit'
 ]) assert(readme.includes(token), 'README active tool-builder queue handoff missing ' + token);
+const readmeKeepsMinimumCommandContract = readme.includes('minimal valid command for the selected tool/mode') || readme.includes('minimal valid command or guided third-party handoff for the selected tool/mode');
+assert(readmeKeepsMinimumCommandContract, 'README active tool-builder queue handoff missing minimal command/guided-handoff contract');
 assert(!readme.includes('**v10.03 —')&&!readme.includes('**v10.04 —')&&!readme.includes('**v10.05 —'), 'README active Tool Builder queue must contain only unfinished releases');
 assert(!readme.includes('Shell, payload, privesc, and transfer helper batch. Implement linpeas'), 'README must not retain the completed helper batch as an active numbered item');
 
