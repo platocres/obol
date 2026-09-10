@@ -70,7 +70,7 @@ Generated from the same queue sources as the Product Hardening Dashboard. Do not
 **Package detail:** Use the Product Hardening Dashboard for full track ledgers and `data/product-hardening/work-packages.js` for the long-form package guidance.
 
 **Highest-priority concrete live items:**
-1. **Post-mining modeled tool builder implementation backlog** — v10.08 completed the implemented-builder audit only. 0 inventory records still remain modeled and must be implemented or explicitly superseded/rejected with the full Tool Builder contract before this backlog can close.
+1. **Post-mining modeled tool builder implementation backlog** — v10.08 completed the implemented-builder audit only. Remaining modeled inventory records still need schema-driven builders or explicit supersession/rejection with the full Tool Builder contract before this backlog can close.
 2. **Post-mining runtime and old-layer retirement audit** — Use the current-owner/equivalence/fixture lifecycle to identify old note-mining and historical layers that can be retired without changing observable behavior.
 3. **Post-mining regression speed and coverage pass** — With the note queue closed, shorten slow historical/browser checks where proven redundant while keeping exact-head full regression and browser smoke meaningful.
 4. **Quiet service worker caching** — Improve repeat-load and offline behavior without prompting users to install anything.
