@@ -1,3 +1,14 @@
+## v10.13 — Is a product-hardening release that closes the operator scripts / LOTL track by making
+
+- Added a conservative script-output Evidence analyzer, `assets/script-output-evidence-current.js`
+- The analyzer recognizes the output of the path-proposable snippets and emits a fact **only** when
+  - **manual SQLi** → `web.sqli_confirmed` on a SQL error / version echo / a recorded true-vs-false
+  - **bash `/dev/tcp` sweep** and **PowerShell port sweep** → `scan.internal` only from an "open"
+  - **LDAPSearch** and the **LDAPSearch cookbook** → `ad.user_list` from returned directory entries
+- Every fact a snippet can emit is a subset of that snippet's `produces`, and each emitted fact is a
+- Declared each path-proposable snippet's paste-back expectations in `data/scripts.js` as an
+- Refined the v10.12 `produces` on the proposable snippets to the concrete facts the analyzer emits
+
 ## v10.12 — Is a product-hardening release that continues the operator scripts / LOTL track
 
 - Added Next Steps path metadata to a curated set of scripts in `data/scripts.js`: `prereq`
