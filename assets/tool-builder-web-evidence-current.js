@@ -42,7 +42,7 @@ function analyzeHttpx(input){
 }
 function analyzeWfuzz(input){
  const text=String(input||''),low=text.toLowerCase(),facts=[],states=[];
- addIf(facts,states,/^\s*\d{3}:\s+\d+\s+L\s+\d+\s+W\s+\d+\s+Ch\s+"[^"]+"/im.test(text)||/Target:\s+.*FUZZ/i.test(text),'web.fuzz_result_observed','positive');
+ addIf(facts,states,/^\s*\d+:\s+\d{3}\s+\d+\s+L\s+\d+\s+W\s+\d+\s+Ch\s+"[^"]+"/im.test(text)||/Target:\s+.*FUZZ/i.test(text),'web.fuzz_result_observed','positive');
  addIf(facts,states,/filtered|Total requests|Processed Requests|ID\s+Response\s+Lines\s+Word/i.test(text),'web.fuzz_baseline_or_summary_observed','partial');
  addIf(facts,states,/C=\d{3}|\b(?:200|204|301|302|307|308|401|403|500)\b/i.test(text)&&/FUZZ|wfuzz/i.test(low),'web.discovered_content_lead_observed','positive');
  addIf(facts,states,/ERROR|timed out|Connection refused|No route to host|invalid URL|missing FUZZ/i.test(text),'web.fuzz_failure_observed','blocked');
@@ -61,7 +61,7 @@ function detect(input){
  if(/whatweb|HTTPServer\[|Title\[|WordPress\[/i.test(text))return'tb-whatweb';
  if(/nikto|OSVDB|\+ Target Hostname|\+ Server:/i.test(text))return'tb-nikto';
  if(/\bhttpx\b|"status_code"\s*:|\[tech:/i.test(low)||/(?:https?:\/\/\S+).*\[(?:200|301|302|401|403)\]/i.test(text))return'tb-httpx';
- if(/\bwfuzz\b|Target:\s+.*FUZZ|Processed Requests|\d{3}:\s+\d+\s+L\s+\d+\s+W/i.test(text))return'tb-wfuzz';
+ if(/\bwfuzz\b|Target:\s+.*FUZZ|Processed Requests|\d+:\s+\d{3}\s+\d+\s+L\s+\d+\s+W/i.test(text))return'tb-wfuzz';
  if(/zap-baseline|zap\.sh|\bPASS-NEW\b|\bWARN-NEW\b|\bFAIL-NEW\b|ZAP/i.test(text))return'tb-zap';
  return null;
 }
