@@ -47,6 +47,10 @@ assert.strictEqual(builder.executionContext,'any','Burp is a third-party GUI wor
 assert(builder.fields.some(field=>field.id==='workflow'),'Burp builder should expose workflow choice control');
 assert(builder.fields.some(field=>field.id==='proxyHost')&&builder.fields.some(field=>field.id==='proxyPort'),'Burp builder should expose proxy host/port controls');
 assert(builder.fields.some(field=>field.id==='payloadPosition'),'Burp Intruder handoff should expose payload-position guidance');
+assert(builder.fields.some(field=>field.id==='attackType'),'Burp Intruder handoff should expose attack-type selection');
+assert(builder.fields.some(field=>field.id==='payloadProcessing'),'Burp Intruder handoff should expose payload processing/encoding notes');
+assert(builder.fields.some(field=>field.id==='grepMatch'),'Burp Intruder handoff should expose grep match/extract tracking');
+assert(builder.fields.some(field=>field.id==='rateBoundary'),'Burp Intruder handoff should expose scope/rate boundary selection');
 assert(builder.evidence.proofBoundary.includes('guided third-party GUI handoff'),'Burp proof boundary should name the non-terminal handoff boundary');
 const context=Object.freeze({
  target:Object.freeze({value:'https://app.corp.example',ip:'203.0.113.90',hostname:'app.corp.example'}),
@@ -57,15 +61,19 @@ function command(values){return ctx.OBOL_TOOL_BUILDER.compile(builder,values||{}
 const minimum=command();
 assert(minimum.startsWith('burpsuite # Burp handoff: proxy for https://app.corp.example via proxy 127.0.0.1:8080'),minimum);
 assert(minimum.includes('Configure browser burp-browser through Burp Proxy'),'minimum Burp preview should be a launch plus operator handoff, not fake GUI control');
-const intruder=command({workflow:'intruder',requestFile:'requests/login.req',payloadPosition:'username=§FUZZ§',wordlist:'/usr/share/seclists/Usernames/top-usernames-shortlist.txt'});
-assert(intruder.includes('Send request to Intruder'),intruder);
+const intruder=command({workflow:'intruder',requestFile:'requests/login.req',payloadPosition:'username=§FUZZ§',attackType:'sniper',wordlist:'/usr/share/seclists/Usernames/top-usernames-shortlist.txt',payloadProcessing:'URL-encode only; preserve transform order',grepMatch:'Invalid password|Welcome|Set-Cookie',rateBoundary:'short-contextual'});
+assert(intruder.includes('Send requests/login.req to Intruder'),intruder);
+assert(intruder.includes('use sniper'),intruder);
 assert(intruder.includes('username=§FUZZ§'),intruder);
 assert(intruder.includes('/usr/share/seclists/Usernames/top-usernames-shortlist.txt'),intruder);
+assert(intruder.includes('Preserve payload processing/encoding exactly: URL-encode only; preserve transform order'),intruder);
+assert(intruder.includes('Track grep match/extract marker: Invalid password|Welcome|Set-Cookie'),intruder);
+assert(intruder.includes('Burp Intruder deltas are triage until manual replay proves impact'),intruder);
 for(const built of [minimum,intruder])for(const blocked of ['10.10.10.10','10.10.14.9','domain.local','Password123!','8846f7eaee8fb117ad06bdd830b7586c','hashes.txt'])assert(!built.includes(blocked),'Burp command leaked blocked placeholder '+blocked+': '+built);
 let missing=false;
 try{ctx.OBOL_TOOL_BUILDER.compile(builder,{}, {target:{},context:{},workspace:{}});}catch(err){missing=/target/i.test(String(err&&err.message||err));}
 assert(missing,'missing Burp target should remain a missing-field state, not a fake runnable command');
-const sample='Burp Suite Repeater\nGET /login?next=/admin HTTP/1.1\nHost: app.corp.example\nCookie: session=secret\n\nHTTP/1.1 302 Found\nLocation: /admin\nSet-Cookie: session=rotated\n\nIssue detail\nSeverity: Medium\nConfidence: Firm\nReflected input observed in response body';
+const sample='Burp Suite Repeater\nGET /login?next=/admin HTTP/1.1\nHost: app.corp.example\nCookie: session=secret\n\nHTTP/1.1 302 Found\nLocation: /admin\nSet-Cookie: session=rotated\n\nIntruder attack\nPayload position username=§FUZZ§\nPayload Processing: URL-encode payloads\nGrep - Match: Welcome\nStatus Length\n1 200 3210\nCommunity Version throttled resource pool\n\nIssue detail\nSeverity: Medium\nConfidence: Firm\nReflected input observed in response body';
 const analysis=ctx.OBOL_TOOL_BUILDER_EVIDENCE_CURRENT.analyzeForBuilder('tb-burp-suite',sample);
 assert(analysis,'Burp Evidence analyzer should return analysis');
 assert.strictEqual(analysis.analyzer,'tool-builder-burp-evidence-current');
@@ -73,6 +81,8 @@ assert.strictEqual(analysis.cardId,'web-content-discovery-and-fingerprinting');
 assert(analysis.outcomeFacts.includes('web.burp_request_response_observed'),'Burp analyzer should recognize pasted request/response pairs');
 assert(analysis.outcomeFacts.includes('web.burp_scanner_issue_observed'),'Burp analyzer should recognize Scanner issue detail');
 assert(analysis.outcomeFacts.includes('web.burp_vulnerability_lead_observed'),'Burp analyzer should keep vulnerability-like behavior as a lead');
+assert(analysis.outcomeFacts.includes('web.burp_payload_transform_observed'),'Burp analyzer should recognize payload processing/encoding as proof-state context');
+assert(analysis.outcomeFacts.includes('web.burp_rate_or_scope_boundary_observed'),'Burp analyzer should recognize rate/scope limits from the mined Burp notes');
 assert(!analysis.redactedSample.includes('session=secret'),'Burp analyzer should redact pasted cookies');
 const intake=ctx.OBOL_INTAKE_V21.analyzeTerminal(sample);
 assert(intake.activities.some(activity=>activity.builderId==='tb-burp-suite'&&activity.title==='Burp Suite Evidence'),'Burp Evidence should flow through intake activities');
