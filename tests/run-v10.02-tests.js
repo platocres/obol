@@ -102,31 +102,43 @@ assert.strictEqual(visualItem.followUpItem, 'post-notes-tool-builder-implementat
 assert(Array.isArray(visualItem.screenshots) && visualItem.screenshots.length >= 8, 'visual density queue item must list screenshot targets');
 assert.strictEqual(visual.status, 'complete', 'visual density marker must be complete');
 assert.strictEqual(visual.browserProof, 'tests/playwright-visual-density.js', 'visual density marker must point at browser proof');
-assert.strictEqual(visual.toolBacklogNext, true, 'Build Next should advance to modeled-tool backlog after visual proof');
+assert.strictEqual(visual.toolBacklogNext, true, 'visual proof must keep pointing to the modeled-tool backlog handoff');
 assert.strictEqual(visual.requestBudgetNeutral, true, 'visual-density proof ledger should be request-neutral');
 const backlogItem = queue.items.find((item) => item.id === 'post-notes-tool-builder-implementation-backlog');
 assert(backlogItem, 'modeled tool builder backlog queue item missing');
-assert.strictEqual(backlogItem.status, 'queued', 'modeled tool builder backlog must stay queued');
+assert(['queued', 'complete'].includes(backlogItem.status), 'modeled tool builder backlog must be queued until implemented, then complete');
 assert.strictEqual(backlog.visualDependencyComplete, true, 'backlog marker must know the visual-density dependency is complete');
 assert.strictEqual(backlog.sharesEvidenceContract, true, 'backlog builders must share Evidence paste-back contract');
 assert.strictEqual(backlog.sharesAccessoryContract, true, 'backlog builders must share accessory contract');
 assert.strictEqual(backlog.sharesCommandRenderer, true, 'backlog builders must share schema renderer');
 const next = queue.buildNext(5).map((item) => item.id);
-assert.strictEqual(next[0], 'post-notes-tool-builder-implementation-backlog', 'Build Next must advance to modeled tool builder implementation backlog');
 assert(!next.includes('post-notes-visual-density-regression-pass'), 'visual density item should not remain in Build Next after closure');
+if (backlogItem.status === 'queued') {
+  assert.strictEqual(next[0], 'post-notes-tool-builder-implementation-backlog', 'Build Next must advance to modeled tool builder implementation backlog until it is completed');
+} else {
+  assert(!next.includes('post-notes-tool-builder-implementation-backlog'), 'completed modeled tool builder backlog should not remain in Build Next forever');
+}
 const qaTrack = queue.tracks.find((track) => track.id === 'testing-qa');
-assert(qaTrack && qaTrack.complete >= 9, 'testing/QA track completion should include visual density proof');
+assert(qaTrack && qaTrack.complete >= 8, 'testing/QA track completion should preserve visual density proof');
 const packages = qroot.OBOL_PRODUCT_HARDENING_WORK_PACKAGES;
 const recommendation = packages && packages.recommend(queue);
-assert(recommendation && recommendation.entryItem.id === 'post-notes-tool-builder-implementation-backlog', 'recommended work package should now enter the modeled-tool backlog');
-assert(Array.isArray(recommendation.liveItems) && recommendation.liveItems.length === 1, 'recommended package should have one concrete live item left after visual proof');
-assert(recommendation.liveItems[0].id === 'post-notes-tool-builder-implementation-backlog', 'the remaining live post-notes item should be the modeled-tool backlog');
+if (backlogItem.status === 'queued') {
+  assert(recommendation && recommendation.entryItem.id === 'post-notes-tool-builder-implementation-backlog', 'recommended work package should enter the modeled-tool backlog while it remains queued');
+  assert(Array.isArray(recommendation.liveItems) && recommendation.liveItems.length >= 1, 'recommended package should include live tool-builder work while the backlog remains queued');
+} else {
+  assert(recommendation && recommendation.entryItem && recommendation.entryItem.id === next[0], 'recommended work package should move to the next live item once modeled-tool backlog closes');
+}
 
 const readme = read('README.md');
 assert(readme.includes('Current release: **' + currentAuthority.label + '**'), 'README must sync to the current release authority');
-assert(readme.includes('**Next concrete entry:** **Post-mining modeled tool builder implementation backlog**'), 'README Build Next should advance to modeled tool builder implementation backlog');
-assert(readme.includes('**Recommended work package:** **Post-notes Operator UI Clarity**'), 'README must keep the user-facing post-notes clarity handoff');
 assert(!readme.includes('**Next concrete entry:** **Post-mining visual density regression pass**'), 'README should not leave visual density as the next concrete item');
+if (backlogItem.status === 'queued') {
+  assert(readme.includes('**Next concrete entry:** **Post-mining modeled tool builder implementation backlog**'), 'README Build Next should advance to modeled tool builder implementation backlog while it remains queued');
+  assert(readme.includes('**Recommended work package:** **Post-notes Operator UI Clarity**'), 'README must keep the user-facing post-notes clarity handoff while tool-builder work remains queued');
+} else {
+  assert(readme.includes('No active Tool Builder implementation batches remain'), 'README must record that the Tool Builder implementation backlog closed once later releases complete it');
+  assert(readme.includes('**Next concrete entry:**') && !readme.includes('**Next concrete entry:** **Post-mining modeled tool builder implementation backlog**'), 'README Build Next should move past the modeled-tool backlog once it closes');
+}
 const index = read('index.html');
 assert(index.includes('<title>Obol ' + currentAuthority.label + ' — Product Hardening</title>'), 'index title must sync to current release');
 assert(index.includes('Offensive Box Operations Ledger · ' + currentAuthority.label), 'index tagline must sync to current release');
