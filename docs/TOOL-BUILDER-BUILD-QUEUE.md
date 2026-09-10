@@ -29,8 +29,8 @@ For every implemented builder:
 - Every builder mode that can produce decision-relevant output must name what the operator can paste back, what facts may be extracted, what remains only a lead, and what positive, negative, blocked, partial, or inconclusive output means.
 - Evidence ingestion must be executable product behavior, not only prose in the builder. The tool must either have a dedicated analyzer/parser or cite an existing shared analyzer whose fixtures prove that tool/mode is actually recognized.
 - Parsed output may advance, block, re-arm, or deprioritize Next Steps only from supported Evidence. Merely recognizing a command line, banner, listener startup, or tool invocation must not manufacture access, compromise, reachability, credential validity, or privilege.
-- When a tool is primarily a launcher, listener, transfer helper, or transport, its Evidence contract must still recognize the useful state it owns, such as listener bound, client connected, file transferred, route/interface created, cleanup completed, or failure reason. Any deeper downstream fact must remain gated on the appropriate independent Evidence.
-- An inventory record must not be promoted to `implemented` until command generation, live Tools rendering, Evidence ingestion, Next Steps handoff where applicable, cleanup/proof boundaries, and regression fixtures all exist.
+- When a tool is primarily a launcher, listener, transfer helper, transport, or third-party GUI handoff, its Evidence contract must still recognize the useful state it owns, such as listener bound, client connected, file transferred, route/interface created, proxy capture, request/response captured, scanner issue recorded, manual verification completed, or failure reason. Any deeper downstream fact must remain gated on the appropriate independent Evidence.
+- An inventory record must not be promoted to `implemented` until command generation or guided handoff generation, live Tools rendering, Evidence ingestion, Next Steps handoff where applicable, cleanup/proof boundaries, and regression fixtures all exist.
 
 This is the permanent Definition of Done for modeled-tool work. The historical note-mining rubric already required terminal-output analyzers, Evidence expectations, and Path movement. v10.08 completed the **Implemented-tool Evidence and cross-surface audit**, but it did not close the full modeled-tool backlog because many inventory records still remain `modeled`.
 
@@ -39,6 +39,7 @@ This is the permanent Definition of Done for modeled-tool work. The historical n
 Completed slices live here only as current handoff metadata so the active queue stays honest while the modeled backlog is burned down:
 
 - **v10.09 web discovery/scanning slice:** WhatWeb, Nikto, httpx, wfuzz, and ZAP now have schema-driven builders, minimum viable commands, supplied/Evidence-derived prefill, additive controls, executable Evidence ingestion, conservative proof boundaries, and regression coverage.
+- **v10.10 Burp Suite guided GUI workflow slice:** Burp Suite now has a first-class guided Tool Builder instead of a legacy/example fallback. It provides proxy setup, browser proxying, target scope, sitemap capture, Repeater, Intruder, Scanner triage, raw request/response import handoffs, executable Burp Evidence ingestion, conservative proof boundaries, and regression coverage without pretending Obol can control the Burp GUI.
 
 ## Active Tool Builder batches
 
@@ -50,7 +51,7 @@ Representative remaining groups include:
 
 - **Network and host discovery:** masscan, rustscan, naabu, fping, nbtscan, ping-style helpers, and adjacent probe tools.
 - **SMB, LDAP, DNS, SNMP, and AD enumeration:** enum4linux legacy coverage where not superseded, BloodHound collectors, rpcclient, dnsrecon, dig, nslookup, snmpwalk, onesixtyone, windapsearch, ldapdomaindump, and related directory/query tooling.
-- **Web discovery, scanning, and request helpers:** nuclei, wpscan, browser/request utilities, Burp helpers, and any remaining web tooling not already covered by curl, ffuf, Gobuster/feroxbuster, sqlmap, WhatWeb, Nikto, httpx, wfuzz, or ZAP.
+- **Web discovery, scanning, and request helpers:** nuclei, wpscan, browser/request utilities, and any remaining web tooling not already covered by curl, ffuf, Gobuster/feroxbuster, sqlmap, WhatWeb, Nikto, httpx, wfuzz, ZAP, or the Burp Suite guided GUI workflow.
 - **Remote execution and lateral movement:** Impacket psexec, wmiexec, smbexec, dcomexec, atexec, mssqlclient, runas/cmdkey, Windows service/task helpers, RDP/VNC clients, and PowerShell/cmd launchers.
 - **Credential capture, relay, roasting, and cracking helpers:** ntlmrelayx, mitm6, coercion tools, medusa, o365spray, hash-identification/conversion tools, John/Hashcat helper formats, and credential-routing utilities not already implemented.
 - **Tunneling, pivoting, and transport helpers:** SSH/plink/chisel follow-through where inventory still reports modeled, sshuttle, socat, proxychains, rpivot, ptunnel-ng, socks-over-RDP, dnscat2, and transport cleanup/check commands.
@@ -61,13 +62,13 @@ Representative remaining groups include:
 Acceptance for each promoted tool:
 
 - A schema-driven builder exists and renders on the live Tools surface.
-- The first preview is the minimum viable command for the selected mode.
+- The first preview is the minimum viable command or guided third-party handoff for the selected mode.
 - Parameters pre-populate only from supplied workspace state, parsed Evidence state, collected material, or safe defaults.
 - Optional flags, modes, filters, output paths, cleanup, and riskier behaviors are explicit GUI controls or toggles.
 - Missing required values stay missing instead of being replaced with fake runnable placeholders.
 - Evidence ingestion recognizes the tool's decision-relevant output, including success, failure, partial, blocked, inconclusive, and cleanup states.
 - Evidence can move, block, re-arm, or deprioritize the Next Steps path only when the parsed output actually proves that move.
 - The tool has clear proof boundaries and report/cleanup guidance.
-- Regression fixtures prove command generation, prefill behavior, placeholder refusal, Evidence ingestion, and Path movement where applicable.
+- Regression fixtures prove command or handoff generation, prefill behavior, placeholder refusal, Evidence ingestion, and Path movement where applicable.
 
 v10.08's implemented-builder audit remains permanent and must keep passing while this remaining modeled-tool backlog is burned down.
