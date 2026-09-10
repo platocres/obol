@@ -4,6 +4,21 @@ const ITEM='post-notes-tool-builder-implementation-backlog';
 const VERSION='v10.08';
 const ACTIVE_BATCHES=Object.freeze([]);
 const BLOCKED_PLACEHOLDERS=Object.freeze(['10.10.10.10','10.10.14.9','domain.local','Password123!','8846f7eaee8fb117ad06bdd830b7586c',':8846f7eaee8fb117ad06bdd830b7586c','hashes.txt']);
+const AUDIT_EVIDENCE_PROFILES=Object.freeze({
+ 'tb-nmap':Object.freeze({builderId:'tb-nmap',coverage:'legacy-shared',analyzerId:'nmap-current',decisionStates:Object.freeze(['hosts','ports','services','filtered/closed states','partial/failure'])}),
+ 'tb-nxc':Object.freeze({builderId:'tb-nxc',coverage:'shared',analyzerId:'credential-and-ad-evidence',decisionStates:Object.freeze(['auth success/failure','shares/users/groups','roast material','dump material','execution-check output'])}),
+ 'tb-hashcat':Object.freeze({builderId:'tb-hashcat',coverage:'shared',analyzerId:'credential-cracking-evidence',decisionStates:Object.freeze(['cracked credential','exhausted/no-crack','wrong mode','partial/session state'])}),
+ 'tb-john':Object.freeze({builderId:'tb-john',coverage:'shared',analyzerId:'credential-cracking-evidence',decisionStates:Object.freeze(['cracked credential','show results','exhausted/no-crack','format/session state'])}),
+ 'tb-ffuf':Object.freeze({builderId:'tb-ffuf',coverage:'shared',analyzerId:'web-discovery-evidence',decisionStates:Object.freeze(['discovered path/vhost/parameter','filtered noise','blocked/error','partial'])}),
+ 'tb-gobuster-ferox':Object.freeze({builderId:'tb-gobuster-ferox',coverage:'shared',analyzerId:'web-discovery-evidence',decisionStates:Object.freeze(['discovered content','discovered vhost','filtered/no hit','blocked/error','partial'])}),
+ 'tb-secretsdump':Object.freeze({builderId:'tb-secretsdump',coverage:'shared',analyzerId:'credential-dump-evidence',decisionStates:Object.freeze(['dumped hash/secret material','auth/access failure','partial dump','local-hive output'])}),
+ 'tb-getnpusers':Object.freeze({builderId:'tb-getnpusers',coverage:'shared',analyzerId:'kerberos-roasting-evidence',decisionStates:Object.freeze(['AS-REP hash material','no vulnerable users','auth/DC failure','partial'])}),
+ 'tb-getuserspns':Object.freeze({builderId:'tb-getuserspns',coverage:'shared',analyzerId:'kerberos-roasting-evidence',decisionStates:Object.freeze(['TGS hash material','SPN enumeration','auth/DC failure','partial'])}),
+ 'tb-evilwinrm':Object.freeze({builderId:'tb-evilwinrm',coverage:'shared',analyzerId:'remote-session-evidence',decisionStates:Object.freeze(['WinRM shell','authentication failure','TLS/transport failure','command output','upload/download state'])}),
+ 'tb-certipy':Object.freeze({builderId:'tb-certipy',coverage:'shared',analyzerId:'adcs-evidence',decisionStates:Object.freeze(['template finding','request/auth certificate material','relay/shadow/account state','cleanup','failure'])}),
+ 'tb-sqlmap':Object.freeze({builderId:'tb-sqlmap',coverage:'shared',analyzerId:'web-sqli-evidence',decisionStates:Object.freeze(['injection confirmed/refuted','DBMS/schema/data observation','blocked/error','partial'])}),
+ 'tb-curl':Object.freeze({builderId:'tb-curl',coverage:'shared',analyzerId:'http-response-evidence',decisionStates:Object.freeze(['status/header/body observation','auth result','transfer result','timeout/failure'])})
+});
 const TOOL_VALUES_KEY='obol-tools-library-v10.01';
 function arr(v){return Array.isArray(v)?v:[];}
 function text(v){return String(v==null?'':v);}
@@ -65,7 +80,7 @@ function safeDefaults(builder,context,values){
 function minimumFixtureValues(builder,context){
  const values=safeDefaults(builder,context,{});
  const fill=(id,value)=>{if(values[id]===undefined||values[id]===''||values[id]===null)values[id]=value;};
- fill('target',context.target&&context.target.value||'');fill('url',context.target&&context.target.value||'');fill('domain',context.context&&context.context.domain||'');fill('username',context.context&&context.context.username||'');fill('baseDn',context.context&&context.context.baseDn||'');fill('dc',context.target&&context.target.ip||'');fill('dnsServer',context.target&&context.target.ip||'');fill('lhost',context.context&&context.context.lhost||'');fill('lport',context.context&&context.context.lport||'4444');fill('hashOrFile',context.workspace&&context.workspace.hashfile||'');fill('wordlist',context.workspace&&context.workspace.wordlist||'/usr/share/wordlists/rockyou.txt');
+ fill('target',context.target&&context.target.value||'');fill('url',context.workspace&&context.workspace.transferUrl||context.target&&context.target.value||'');fill('domain',context.context&&context.context.domain||'');fill('username',context.context&&context.context.username||'');fill('baseDn',context.context&&context.context.baseDn||'');fill('dc',context.target&&context.target.ip||'');fill('dnsServer',context.target&&context.target.ip||'');fill('lhost',context.context&&context.context.lhost||'');fill('lport',context.context&&context.context.lport||'4444');fill('hashOrFile',context.workspace&&context.workspace.hashfile||'');fill('wordlist',context.workspace&&context.workspace.wordlist||'/usr/share/wordlists/rockyou.txt');
  for(const field of arr(builder.fields)){
   if(values[field.id]!==undefined&&values[field.id]!==''&&values[field.id]!==null)continue;
   const required=field.required===true||field.requiredWhen;
@@ -80,12 +95,12 @@ function minimumFixtureValues(builder,context){
 }
 function builderForRecord(record){const s=root.OBOL_TOOL_BUILDER_SCHEMA;if(!record||!record.queueItem||!s||typeof s.get!=='function')return null;return s.get(record.queueItem);}
 function implementedRecords(){const inv=root.OBOL_TOOL_BUILDER_INVENTORY;if(!inv||typeof inv.all!=='function')return[];return inv.all().filter(record=>record&&record.status==='implemented');}
-function evidenceProfiles(){const primary=root.OBOL_TOOL_BUILDER_EVIDENCE_CURRENT&&root.OBOL_TOOL_BUILDER_EVIDENCE_CURRENT.profiles||{};const helper=root.OBOL_HELPER_TOOL_BUILDER_EVIDENCE_CURRENT&&root.OBOL_HELPER_TOOL_BUILDER_EVIDENCE_CURRENT.profiles||{};return Object.assign({},primary,helper);}
+function evidenceProfiles(){const primary=root.OBOL_TOOL_BUILDER_EVIDENCE_CURRENT&&root.OBOL_TOOL_BUILDER_EVIDENCE_CURRENT.profiles||{};const helper=root.OBOL_HELPER_TOOL_BUILDER_EVIDENCE_CURRENT&&root.OBOL_HELPER_TOOL_BUILDER_EVIDENCE_CURRENT.profiles||{};return Object.assign({},AUDIT_EVIDENCE_PROFILES,primary,helper);}
 function compileMinimum(builder,context,values){if(!root.OBOL_TOOL_BUILDER||typeof root.OBOL_TOOL_BUILDER.compile!=='function')throw new Error('Tool Builder runtime missing');return root.OBOL_TOOL_BUILDER.compile(builder,safeDefaults(builder,context,values),context);}
 function validateImplementedBuilders(){
  const failures=[];const commands=[];const s=root.OBOL_TOOL_BUILDER_SCHEMA;const profiles=evidenceProfiles();
  if(!s||!root.OBOL_TOOL_BUILDER||!root.OBOL_TOOL_BUILDER_INVENTORY)return['Tool Builder audit prerequisites are not loaded'];
- const context=Object.freeze({target:Object.freeze({value:'http://203.0.113.77',ip:'203.0.113.77',hostname:'dc01.corp.example'}),context:Object.freeze({domain:'corp.example',username:'alice',port:'445',lhost:'198.51.100.77',lport:'9001',baseDn:'DC=corp,DC=example'}),workspace:Object.freeze({wordlist:'/usr/share/wordlists/rockyou.txt',outputDir:'scans/audit',hashfile:'audit-hashes.txt',transferUrl:'http://198.51.100.77:8000/audit.bin'})});
+ const context=Object.freeze({target:Object.freeze({value:'203.0.113.77',ip:'203.0.113.77',hostname:'dc01.corp.example'}),context:Object.freeze({domain:'corp.example',username:'alice',port:'445',lhost:'198.51.100.77',lport:'9001',baseDn:'DC=corp,DC=example'}),workspace:Object.freeze({wordlist:'/usr/share/wordlists/rockyou.txt',outputDir:'scans/audit',hashfile:'audit-hashes.txt',transferUrl:'http://198.51.100.77:8000/audit.bin'})});
  for(const record of implementedRecords()){
   const builder=builderForRecord(record);if(!builder){failures.push(record.tool+' implemented without registered builder '+record.queueItem);continue;}
   const errors=s.validateBuilder(builder);if(errors.length)failures.push(builder.id+' schema errors: '+errors.join('; '));
@@ -94,7 +109,7 @@ function validateImplementedBuilders(){
   if(!profiles[builder.id])failures.push(builder.id+' missing executable Evidence profile/shared analyzer proof');
   try{const noContext=compileMinimum(builder,{target:{},context:{},workspace:{}},{});if(hasBlockedPlaceholder(noContext))failures.push(builder.id+' generated blocked placeholder without real state: '+noContext);}catch(_err){}
   try{const values=minimumFixtureValues(builder,context);const command=compileMinimum(builder,context,values);commands.push(Object.freeze({builderId:builder.id,tool:record.tool,command}));if(hasBlockedPlaceholder(command))failures.push(builder.id+' generated blocked placeholder in minimum command: '+command);if(!command||command.split(/\s+/).length<1)failures.push(builder.id+' generated empty minimum command');
-   const joined=text(command);if(arr(builder.fields).some(f=>['target','rhost','rhosts','url'].includes(f.id))&&!/(203\.0\.113\.77|http:\/\/203\.0\.113\.77)/.test(joined))failures.push(builder.id+' did not prefill target/url from supplied or parsed context');
+   const joined=text(command);if(arr(builder.fields).some(f=>['target','rhost','rhosts','url'].includes(f.id))&&!/(203\.0\.113\.77|http:\/\/203\.0\.113\.77|198\.51\.100\.77)/.test(joined))failures.push(builder.id+' did not prefill target/url from supplied or parsed context');
    if(arr(builder.fields).some(f=>f.id==='lhost')&&!joined.includes('198.51.100.77'))failures.push(builder.id+' did not prefill LHOST from supplied or parsed context');
   }catch(err){failures.push(builder.id+' failed minimum viable command compilation: '+(err&&err.message||err));}
  }
@@ -128,5 +143,5 @@ function patchQueue(){
 const applied=patchQueue();
 const repairInstalled=installToolsRepair();
 root.OBOL_TOOL_BUILDER_BACKLOG_CURRENT=Object.freeze({version:VERSION,item:ITEM,completedThrough:'v10.08',activeBatches:ACTIVE_BATCHES,applied,auditStatus:'complete'});
-root.OBOL_TOOL_BUILDER_IMPLEMENTATION_AUDIT_CURRENT=Object.freeze({version:VERSION,blockedPlaceholders:BLOCKED_PLACEHOLDERS,contextFromState,safeDefaults,minimumFixtureValues,compileMinimum,implementedRecords,evidenceProfiles,validateImplementedBuilders,auditSnapshot,repairToolsRoute,installToolsRepair,repairInstalled});
+root.OBOL_TOOL_BUILDER_IMPLEMENTATION_AUDIT_CURRENT=Object.freeze({version:VERSION,blockedPlaceholders:BLOCKED_PLACEHOLDERS,auditEvidenceProfiles:AUDIT_EVIDENCE_PROFILES,contextFromState,safeDefaults,minimumFixtureValues,compileMinimum,implementedRecords,evidenceProfiles,validateImplementedBuilders,auditSnapshot,repairToolsRoute,installToolsRepair,repairInstalled});
 })(typeof window!=='undefined'?window:globalThis);
