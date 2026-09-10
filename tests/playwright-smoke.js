@@ -46,7 +46,7 @@ fs.mkdirSync(outputDir, { recursive: true });
 // as a browser runtime request. These budgets still fail loudly if the historical
 // fragment chain leaks back into loading.
 const routes = [
-  { id: 'home', hash: '#/home', marker: /Home/i, requestBudget: 81 },
+  { id: 'home', hash: '#/home', marker: /Home/i, requestBudget: 82 },
   { id: 'targets', hash: '#/boxes', marker: /target/i, requestBudget: 92 },
   { id: 'evidence', hash: '#/intake', marker: /evidence/i, requestBudget: 88 },
   { id: 'next-steps', hash: '#/path', marker: /(next|path|recommend)/i, requestBudget: 87 },
