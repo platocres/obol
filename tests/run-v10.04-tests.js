@@ -134,7 +134,7 @@ for(const token of [
  'A tool is not fully implemented merely because Obol can generate its command',
  'Evidence ingestion must be executable product behavior, not only prose in the builder',
  'An inventory record must not be promoted to `implemented` until command generation, live Tools rendering, Evidence ingestion, Next Steps handoff where applicable',
- 'v10.07 - Implemented-tool Evidence and cross-surface audit'
+ 'Implemented-tool Evidence and cross-surface audit'
 ])assert(roadmap.includes(token),'Tool Builder Evidence contract missing '+token);
 
 const queueOwner=read('data/product-hardening/card-wrapper-retirement-queue-v9.98.js');

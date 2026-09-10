@@ -119,21 +119,21 @@ const roadmap = read('docs/TOOL-BUILDER-BUILD-QUEUE.md');
 for (const token of [
   'Every implemented builder starts from the minimal valid command',
   'Queue lifecycle rule',
-  'v10.06 - Shell, payload, privesc, and transfer helper batch',
+  'Shell, payload, privesc, and transfer helper batch',
   'Placeholder values such as `user`, `domain.local`, `Password123!`, fake NT hashes, and fake `hashes.txt` must never make a command look valid'
 ]) assert(roadmap.includes(token), 'tool-builder active roadmap missing ' + token);
 assert(!roadmap.includes('## v10.03')&&!roadmap.includes('## v10.04')&&!roadmap.includes('## v10.05'), 'completed Tool Builder releases must not reappear in the active roadmap');
-assert(/v10\.07 - (?:Path\/Card\/Evidence builder handoff pass|Implemented-tool Evidence and cross-surface audit)/.test(roadmap), 'tool-builder roadmap must preserve a v10.07 cross-surface handoff/audit phase');
+assert(/Implemented-tool Evidence and cross-surface audit/.test(roadmap), 'tool-builder roadmap must preserve the cross-surface audit phase');
 
 const readme = read('README.md');
 for (const token of [
   'docs/TOOL-BUILDER-BUILD-QUEUE.md',
   '## Tool Builder implementation queue',
-  'v10.06 — Shell, payload, privesc, and transfer helper batch',
+  'Shell, payload, privesc, and transfer helper batch',
   'minimal valid command for the selected tool/mode',
   'modeled tools remain modeled until a real schema-driven builder exists'
 ]) assert(readme.includes(token), 'README active tool-builder queue handoff missing ' + token);
 assert(!readme.includes('**v10.03 —')&&!readme.includes('**v10.04 —')&&!readme.includes('**v10.05 —'), 'README active Tool Builder queue must contain only unfinished releases');
-assert(/v10\.07 — (?:Path\/Card\/Evidence handoff pass|Implemented-tool Evidence and cross-surface audit)/.test(readme), 'README must preserve a v10.07 cross-surface handoff/audit phase');
+assert(/Implemented-tool Evidence and cross-surface audit/.test(readme), 'README must preserve the cross-surface audit phase');
 
 console.log('v10.03 tool builder minimal-command hygiene validation passed.');
