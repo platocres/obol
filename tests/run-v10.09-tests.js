@@ -51,7 +51,7 @@ const context=Object.freeze({
 });
 function command(id,values){const builder=ctx.OBOL_TOOL_BUILDER_SCHEMA.get(id);assert(builder,'missing '+id);return ctx.OBOL_TOOL_BUILDER.compile(builder,values||{},context);}
 const whatweb=command('tb-whatweb');
-assert.strictEqual(whatweb,'whatweb web.corp.example','WhatWeb minimum command should be only tool plus supplied target');
+assert.strictEqual(whatweb,'whatweb -a 1 web.corp.example','WhatWeb minimum command should use only the supplied target plus the safe default aggression level');
 const nikto=command('tb-nikto');
 assert.strictEqual(nikto,'nikto -h web.corp.example -p 8080','Nikto minimum command should use supplied host and parsed/supplied port only');
 const httpx=command('tb-httpx');
