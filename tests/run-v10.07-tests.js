@@ -3,6 +3,7 @@
 // nc/Penelope, and common transfer helpers must ship with executable Evidence
 // handling and conservative proof boundaries.
 const assert=require('assert');
+const cp=require('child_process');
 const fs=require('fs');
 const path=require('path');
 const vm=require('vm');
@@ -58,4 +59,7 @@ assert(readme.includes('Implemented-tool Evidence and cross-surface audit'),'REA
 const queueDoc=read('docs/TOOL-BUILDER-BUILD-QUEUE.md');
 assert(!queueDoc.includes('## Shell, payload, privesc, and transfer helper batch'),'canonical Tool Builder queue must remove completed helper batch');
 assert(queueDoc.includes('## Implemented-tool Evidence and cross-surface audit'),'canonical Tool Builder queue must retain the next unfinished batch');
+const release=cp.spawnSync(process.execPath,['tools/validate-release-pr.js','--repo-only'],{cwd:root,encoding:'utf8'});
+if(release.status!==0){process.stdout.write(release.stdout||'');process.stderr.write(release.stderr||'');process.exit(release.status||1);}
+process.stdout.write(release.stdout||'');
 console.log('v10.07 helper builders, Evidence ingestion, inventory promotion, and README queue handoff passed.');
