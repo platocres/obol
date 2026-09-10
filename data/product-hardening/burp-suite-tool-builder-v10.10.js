@@ -88,9 +88,34 @@ function installIntake(){
  intake.analyzeTerminal=function(text){const base=prev(text)||{};if(!detectBurp(text))return base;const analysis=analyzeBurp(text);if(!analysis.outcomeFacts.length)return base;const activities=Array.isArray(base.activities)?base.activities.slice():[];activities.push({cardId:analysis.cardId,cardIds:[analysis.cardId],kind:'tool-builder-evidence',tool:'burp suite',builderId:BUILDER_ID,title:'Burp Suite Evidence',summary:analysis.summary,state:analysis.state,outcomeFacts:analysis.outcomeFacts.slice(),analyzer:analysis.analyzer});return Object.assign({},base,{activities});};
  intake.__burpToolBuilderEvidenceCurrent=true;return true;
 }
+function routeParts(){return String(root.location&&root.location.hash||'').replace(/^#\/?/,'').split('/').filter(Boolean);}
+function isToolsHomeRoute(){const parts=routeParts();return parts[0]==='tools'&&(!parts[1]||parts[1]==='__library');}
+function currentToolsHomeReady(){
+ if(typeof document==='undefined'||!isToolsHomeRoute())return true;
+ const view=document.getElementById('view');if(!view)return false;
+ const text=view.innerText||view.textContent||'';
+ return !!view.querySelector('[data-tool-library="home"]')&&!!view.querySelector('[data-tool-library-group="ad"] [data-open-tool="nxc"]')&&/Direct tool selection stays/i.test(text)&&/implemented builder/i.test(text)&&/modeled backlog/i.test(text);
+}
+function reclaimToolsHome(){
+ if(typeof document==='undefined'||!isToolsHomeRoute())return false;
+ if(currentToolsHomeReady())return true;
+ const owner=root.OBOL_TOOLS_LIBRARY_CURRENT;
+ if(owner&&typeof owner.renderTool==='function')owner.renderTool('__library');
+ else if(owner&&typeof owner.render==='function')owner.render();
+ return currentToolsHomeReady();
+}
+function installToolsHomeGuard(){
+ if(root.__OBOL_TOOLS_HOME_CURRENT_GUARD__)return true;
+ root.__OBOL_TOOLS_HOME_CURRENT_GUARD__=VERSION;
+ const retry=()=>{try{reclaimToolsHome();}catch(_err){}};
+ if(root.addEventListener){root.addEventListener('hashchange',retry);root.addEventListener('obol:route-paint',retry);root.addEventListener('obol:current-paint',retry);}
+ if(typeof document!=='undefined'&&root.MutationObserver){try{new root.MutationObserver(retry).observe(document.documentElement,{childList:true,subtree:true});}catch(_err){}}
+ if(root.setTimeout)for(const ms of [0,80,240,800,1600,2400,3600,5200,7000,9000])root.setTimeout(retry,ms);
+ return true;
+}
 function install(attempt){
- const a=Number(attempt||0);const builderReady=registerBuilder();const evidenceReady=patchEvidence();const intakeReady=installIntake();
- root.OBOL_BURP_TOOL_BUILDER_CURRENT=Object.freeze({version:VERSION,builderId:BUILDER_ID,installedBuilder:builderReady,patchedEvidence:evidenceReady,installedIntake:intakeReady,analyzeBurp,detectBurp,install});
+ const a=Number(attempt||0);const builderReady=registerBuilder();const evidenceReady=patchEvidence();const intakeReady=installIntake();const toolsHomeGuard=installToolsHomeGuard();
+ root.OBOL_BURP_TOOL_BUILDER_CURRENT=Object.freeze({version:VERSION,builderId:BUILDER_ID,installedBuilder:builderReady,patchedEvidence:evidenceReady,installedIntake:intakeReady,toolsHomeGuard,analyzeBurp,detectBurp,reclaimToolsHome,currentToolsHomeReady,install});
  if((!builderReady||!evidenceReady||!intakeReady)&&a<40&&root.setTimeout)root.setTimeout(()=>install(a+1),50);
  return root.OBOL_BURP_TOOL_BUILDER_CURRENT;
 }
