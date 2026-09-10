@@ -112,7 +112,7 @@ assert(blocked.outcomeFacts.includes('scan.discovery_blocked_or_failed')&&blocke
 const audit=ctx.OBOL_TOOL_BUILDER_IMPLEMENTATION_AUDIT_CURRENT;
 assert(audit,'v10.08 implemented-builder audit must still load after v10.15');
 const auditFailures=audit.validateImplementedBuilders();
-assert.deepStrictEqual(auditFailures,[],auditFailures.join('\n'));
+assert.strictEqual(auditFailures.length,0,auditFailures.join('\n'));
 assert(audit.auditSnapshot().modeledCount>0,'modeled backlog must remain active after this slice');
 
 const relCtx=makeContext();
