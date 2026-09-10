@@ -30,9 +30,9 @@ const ctx=makeContext();
 const audit=ctx.OBOL_TOOL_BUILDER_IMPLEMENTATION_AUDIT_CURRENT;
 assert(audit,'v10.08 audit API should be published');
 assert.strictEqual(audit.version,'v10.08');
-const failures=audit.validateImplementedBuilders();
-assert.deepStrictEqual(failures,[],failures.join('\n'));
-const records=audit.implementedRecords();
+const failures=Array.from(audit.validateImplementedBuilders());
+assert.strictEqual(failures.length,0,failures.join('\n'));
+const records=Array.from(audit.implementedRecords());
 assert(records.length>=25,'implemented inventory should include base, tunnel, auth/enum, and helper builders');
 for(const record of records){
  assert(record.queueItem,record.tool+' must point at a registered builder');
@@ -40,7 +40,7 @@ for(const record of records){
  assert(builder,record.tool+' builder should be registered');
  assert(audit.evidenceProfiles()[builder.id],builder.id+' should have executable/shared Evidence coverage');
 }
-const modeled=audit.modeledRecords();
+const modeled=Array.from(audit.modeledRecords());
 assert(modeled.length>0,'v10.08 must not falsely close the remaining modeled-tool inventory backlog');
 assert(audit.activeBatches()[0].id==='remaining-modeled-tool-builder-backlog','remaining modeled tools must stay visible as the active Tool Builder batch');
 const context=Object.freeze({
