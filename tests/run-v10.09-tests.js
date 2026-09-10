@@ -86,10 +86,10 @@ assert(audit,'v10.08+ audit API must still load');
 const failures=Array.from(audit.validateImplementedBuilders());
 assert.strictEqual(failures.length,0,failures.join('\n'));
 assert(audit.modeledRecords().length>0,'remaining modeled tools should still be queued after v10.09');
-assert.strictEqual(ctx.OBOL_CURRENT_RELEASE.label,'v10.09');
+assert.strictEqual(ctx.OBOL_CURRENT_RELEASE.phase,'product-hardening');
 const readme=fs.readFileSync(path.join(root,'README.md'),'utf8');
-assert(readme.includes('Current release: **v10.09**'),'README should identify v10.09');
-assert(readme.includes('WhatWeb, Nikto, httpx, wfuzz, and ZAP'),'README Tool Builder queue should name the completed v10.09 web slice');
+assert(readme.includes('Current release: **v10.10**'),'README should identify the latest release after v10.10');
+assert(readme.includes('v10.09 web discovery/scanning slice'),'README Tool Builder queue should keep the completed v10.09 web slice as handoff metadata');
 assert(readme.includes('Remaining modeled tool implementation backlog'),'README should keep the modeled backlog active');
 const docs=fs.readFileSync(path.join(root,'docs/TOOL-BUILDER-BUILD-QUEUE.md'),'utf8');
 assert(docs.includes('WhatWeb, Nikto, httpx, wfuzz, and ZAP'),'Tool Builder queue doc should name the completed web slice');
@@ -97,4 +97,4 @@ assert(docs.includes('Remaining modeled tool implementation backlog'),'Tool Buil
 const release=cp.spawnSync(process.execPath,['tools/validate-release-pr.js','--repo-only'],{cwd:root,encoding:'utf8'});
 if(release.status!==0){process.stdout.write(release.stdout||'');process.stderr.write(release.stderr||'');process.exit(release.status||1);}
 process.stdout.write(release.stdout||'');
-console.log('v10.09 web modeled-tool builder burn-down passed.');
+console.log('v10.09 web modeled-tool builder burn-down remains covered after v10.10.');
