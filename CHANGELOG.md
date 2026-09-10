@@ -1,3 +1,9 @@
+## v10.06 — Restores the operator **scripts** experience on the Tools route and starts the
+
+- `assets/tools-library-current.js` now renders each script with its category, its
+- Scripts now **pre-fill target-collected parameters** (target IP, `lhost`/`lport`,
+- Builder control changes persist to the browser-local workspace (`C.updateScriptBuilder`)
+
 ## v10.05 — Is a product-hardening release for the authentication and enumeration Tool Builder batch
 
 - Added schema-driven builders for Hydra, Kerbrute, smbclient, SMBMap, enum4linux-ng, ldapsearch, and Responder.

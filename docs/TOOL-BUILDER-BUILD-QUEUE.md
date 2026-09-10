@@ -34,7 +34,7 @@ For every implemented builder:
 
 This is the permanent Definition of Done for the modeled-tool backlog. The historical note-mining rubric already required terminal-output analyzers, Evidence expectations, and Path movement; these builds are completing the implementation work that remained modeled or queued after note mining ended.
 
-## v10.06 - Shell, payload, privesc, and transfer helper batch
+## Shell, payload, privesc, and transfer helper batch
 
 Purpose: turn common lab support tools into dependable command builders instead of scattered snippets.
 
@@ -56,7 +56,7 @@ Acceptance proof:
 - Commands remain copy/review only.
 - Once this acceptance proof is green, remove v10.06 from this active queue and the README active queue in the same PR.
 
-## v10.07 - Implemented-tool Evidence and cross-surface audit
+## Implemented-tool Evidence and cross-surface audit
 
 Purpose: prove the completed builder batches are actually one operator system across Tools, Cards, Evidence, and Next Steps, and catch any older implemented builder that still lacks the full Evidence contract.
 
