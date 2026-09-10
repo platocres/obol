@@ -34,6 +34,12 @@ For every implemented builder:
 
 This is the permanent Definition of Done for modeled-tool work. The historical note-mining rubric already required terminal-output analyzers, Evidence expectations, and Path movement. v10.08 completed the **Implemented-tool Evidence and cross-surface audit**, but it did not close the full modeled-tool backlog because many inventory records still remain `modeled`.
 
+## Completed modeled-tool burn-down slices
+
+Completed slices live here only as current handoff metadata so the active queue stays honest while the modeled backlog is burned down:
+
+- **v10.09 web discovery/scanning slice:** WhatWeb, Nikto, httpx, wfuzz, and ZAP now have schema-driven builders, minimum viable commands, supplied/Evidence-derived prefill, additive controls, executable Evidence ingestion, conservative proof boundaries, and regression coverage.
+
 ## Active Tool Builder batches
 
 ### Remaining modeled tool implementation backlog
@@ -43,11 +49,11 @@ Implement or explicitly supersede/reject every inventory record that still repor
 Representative remaining groups include:
 
 - **Network and host discovery:** masscan, rustscan, naabu, fping, nbtscan, ping-style helpers, and adjacent probe tools.
-- **SMB, LDAP, DNS, SNMP, and AD enumeration:** enum4linux-ng, enum4linux, smbclient, smbmap, ldapsearch, BloodHound collectors, rpcclient, dnsrecon, dig, nslookup, snmpwalk, onesixtyone, windapsearch, ldapdomaindump, and related directory/query tooling.
-- **Web discovery, scanning, and request helpers:** nikto, httpx, nuclei, wfuzz, wpscan, whatweb, Burp/ZAP handoff helpers, and browser/request utilities not already covered by curl, ffuf, gobuster/ferox, or sqlmap.
+- **SMB, LDAP, DNS, SNMP, and AD enumeration:** enum4linux legacy coverage where not superseded, BloodHound collectors, rpcclient, dnsrecon, dig, nslookup, snmpwalk, onesixtyone, windapsearch, ldapdomaindump, and related directory/query tooling.
+- **Web discovery, scanning, and request helpers:** nuclei, wpscan, browser/request utilities, Burp helpers, and any remaining web tooling not already covered by curl, ffuf, Gobuster/feroxbuster, sqlmap, WhatWeb, Nikto, httpx, wfuzz, or ZAP.
 - **Remote execution and lateral movement:** Impacket psexec, wmiexec, smbexec, dcomexec, atexec, mssqlclient, runas/cmdkey, Windows service/task helpers, RDP/VNC clients, and PowerShell/cmd launchers.
-- **Credential capture, relay, roasting, and cracking helpers:** responder, ntlmrelayx, mitm6, coercion tools, hydra, medusa, o365spray, hash-identification/conversion tools, John/Hashcat helper formats, and credential-routing utilities not already implemented.
-- **Tunneling, pivoting, and transport helpers:** SSH/plink/chisel follow-through where inventory still reports modeled, Ligolo agent/proxy flows, sshuttle, socat, proxychains, rpivot, ptunnel-ng, socks-over-RDP, dnscat2, and transport cleanup/check commands.
+- **Credential capture, relay, roasting, and cracking helpers:** ntlmrelayx, mitm6, coercion tools, medusa, o365spray, hash-identification/conversion tools, John/Hashcat helper formats, and credential-routing utilities not already implemented.
+- **Tunneling, pivoting, and transport helpers:** SSH/plink/chisel follow-through where inventory still reports modeled, sshuttle, socat, proxychains, rpivot, ptunnel-ng, socks-over-RDP, dnscat2, and transport cleanup/check commands.
 - **Privilege-escalation and local-enumeration helpers:** pspy, searchsploit, PE/PowerShell/Linux helper scripts, systeminfo/wesng, sudo, icacls/accesschk, procmon/procdump, GodPotato/fodhelper/UAC/service-path helpers, and local exploit proof boundaries.
 - **Cloud, container, database, and service-specific tooling:** aws, awslocal, kubectl, docker/lxc, mysql, psql, redis-cli, odat, IPMI tooling, and service-specific enumeration/abuse utilities.
 - **Exploit PoC and CVE helpers:** named CVE scripts and PoC wrappers must be modeled as controlled operator-reviewed builders with strong proof boundaries, not as magic exploit execution.
