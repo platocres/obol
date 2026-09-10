@@ -11,7 +11,7 @@
  * suppresses historical schedulers and commits current route owners last.
  *
  * Historical fragment order sha256: 40e3006d9423d669acf5869b577ecf56a6ca2ee1629c95fd0fcc5d242d2c5f27
- * Generated body sha256: 3fb66e63152d468a40c8f8bcc5b3e605584545c4c5f5209eb2ea487df9c38379
+ * Generated body sha256: 4372ed67a6c2dfe2de6149004fdcc121c787fa67614dc7c4df9258f7aa901df2
  * First historical fragment: assets/report-v2.js
  * Last historical fragment:  assets/app-v8.8.js
  */
@@ -2101,8 +2101,8 @@ if(__nativeMutationObserver)root.MutationObserver=__nativeMutationObserver;
 'use strict';
 (function(root){
 const release=Object.freeze({
- version:'10.0.10',
- label:'v10.10',
+ version:'10.0.11',
+ label:'v10.11',
  phase:'product-hardening',
  phaseLabel:'Product Hardening',
  orangeBaseline:'v8.8',
@@ -2196,7 +2196,7 @@ function normalizeReportMarkdown(markdown){
 function finalizeProductHardeningExtensions(){
  const api=root.OBOL_NOTE_CARD_DISPOSITION_RECONCILIATION_API_V968;
  if(api&&typeof api.install==='function'){
-  try{api.install();root.__OBOL_PRODUCT_HARDENING_FINAL_CARD_DISPOSITION__='v10.10';}catch(_err){root.__OBOL_PRODUCT_HARDENING_FINAL_CARD_DISPOSITION_ERROR__=String(_err&&_err.message||_err);}
+  try{api.install();root.__OBOL_PRODUCT_HARDENING_FINAL_CARD_DISPOSITION__='v10.11';}catch(_err){root.__OBOL_PRODUCT_HARDENING_FINAL_CARD_DISPOSITION_ERROR__=String(_err&&_err.message||_err);}
  }
 }
 function loadProductHardeningExtensions(){
