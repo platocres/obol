@@ -41,8 +41,11 @@ This is the permanent Definition of Done for modeled-tool work. The historical n
 
 Completed slices live here only as current handoff metadata so the active queue stays honest while the modeled backlog is burned down:
 
-- **v10.09 web discovery/scanning slice:** WhatWeb, Nikto, httpx, wfuzz, and ZAP now have schema-driven builders, minimum viable commands, supplied/Evidence-derived prefill, additive controls, executable Evidence ingestion, conservative proof boundaries, and regression coverage.
-- **v10.10 Burp Suite guided GUI workflow slice:** Burp Suite now has a first-class guided Tool Builder instead of a legacy/example fallback. It provides proxy setup, browser proxying, target scope, sitemap capture, Repeater, Intruder, Scanner triage, raw request/response import handoffs, executable Burp Evidence ingestion, conservative proof boundaries, and regression coverage without pretending Obol can control the Burp GUI.
+- **v10.09 web discovery/scanning slice** completed WhatWeb, Nikto, httpx, wfuzz, and ZAP with schema-driven builders, minimum viable commands, supplied/Evidence-derived prefill, additive controls, executable Evidence ingestion, conservative proof boundaries, and regression coverage.
+- **v10.10 Burp Suite guided GUI workflow slice** completed the first-class Burp Suite guided Tool Builder for proxy setup, browser proxying, target scope, sitemap capture, Repeater, Intruder, Scanner triage, raw request/response import handoffs, executable Burp Evidence ingestion, conservative proof boundaries, and regression coverage without pretending Obol can control the Burp GUI.
+- **v10.15 network and host discovery slice** completes masscan, Rustscan, naabu, fping, and nbtscan with schema-driven builders, minimum viable commands, supplied/Evidence-derived prefill, additive controls, executable network discovery Evidence ingestion, conservative proof boundaries, and regression coverage.
+
+The next modeled-tool build is **v10.15** for this PR. After it lands, the active queue remains the same backlog name, but the network/host discovery slice must not be treated as pending anymore.
 
 ## Active Tool Builder batches
 
@@ -52,7 +55,7 @@ Implement or explicitly supersede/reject every inventory record that still repor
 
 Representative remaining groups include:
 
-- **Network and host discovery:** masscan, rustscan, naabu, fping, nbtscan, ping-style helpers, and adjacent probe tools.
+- **Network and host discovery:** ping-style helpers and adjacent probe tools not covered by the v10.15 network and host discovery slice.
 - **SMB, LDAP, DNS, SNMP, and AD enumeration:** enum4linux legacy coverage where not superseded, BloodHound collectors, rpcclient, dnsrecon, dig, nslookup, snmpwalk, onesixtyone, windapsearch, ldapdomaindump, and related directory/query tooling.
 - **Web discovery, scanning, and request helpers:** nuclei, wpscan, browser/request utilities, and any remaining web tooling not already covered by curl, ffuf, Gobuster/feroxbuster, sqlmap, WhatWeb, Nikto, httpx, wfuzz, ZAP, or the Burp Suite guided GUI workflow.
 - **Remote execution and lateral movement:** Impacket psexec, wmiexec, smbexec, dcomexec, atexec, mssqlclient, runas/cmdkey, Windows service/task helpers, RDP/VNC clients, and PowerShell/cmd launchers.
