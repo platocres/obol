@@ -10,6 +10,7 @@ const vm=require('vm');
 const root=path.join(__dirname,'..');
 const read=rel=>fs.readFileSync(path.join(root,rel),'utf8');
 function run(rel,ctx){vm.runInContext(read(rel),ctx,{filename:rel});}
+function atLeast(version,major,minor,patch){const parts=String(version||'').split('.').map(Number);return parts[0]>major||(parts[0]===major&&(parts[1]>minor||(parts[1]===minor&&parts[2]>=patch)));}
 
 const ctx={console,window:null,globalThis:null,document:undefined};ctx.window=ctx;ctx.globalThis=ctx;vm.createContext(ctx);
 for(const rel of ['data/tool-builder-schema.js','data/tool-builder-inventory.js','assets/tool-builder-current.js','data/tool-builders.js','data/tool-builders-helper-current.js','assets/tool-builder-evidence-current.js','assets/tool-builder-helper-evidence-current.js','data/current-release.js'])run(rel,ctx);
@@ -50,10 +51,10 @@ assert(facts('tb-nc-penelope','listening on [any] 4444 ... connect to [10.10.14.
 assert(facts('tb-file-transfer-helper','GET /payload.exe HTTP/1.1 200 - saved 100% sha256 hash match').includes('transfer.integrity_observed'),'transfer integrity output must be recognized');
 assert(facts('tb-msfvenom','Payload size: 510 bytes Final size of exe file: 73802 bytes Saved as: payload.exe').includes('payload.artifact_generated_observed'),'payload generation output must be recognized');
 
-const rv=String(ctx.OBOL_CURRENT_RELEASE.version).split('.').map(Number);
-assert(rv[0]>10||(rv[0]===10&&(rv[1]>0||(rv[1]===0&&rv[2]>=7))),'current release must be v10.07 or later');
+assert(atLeast(ctx.OBOL_CURRENT_RELEASE.version,10,0,7),'current release must be v10.07 or later');
 const readme=read('README.md');
-assert(/Current release: \*\*v10\.0[78]\*\*/.test(readme),'README current release must remain at v10.07 or later');
+const readmeRelease=(readme.match(/Current release:\s*\*\*v(\d+\.\d+)\*\*/)||[])[1];
+assert(atLeast(readmeRelease,10,7,0)||atLeast(readmeRelease,10,0,7),'README current release must remain at v10.07 or later');
 assert(!readme.includes('Shell, payload, privesc, and transfer helper batch. Implement linpeas'),'README active Tool Builder queue must not retain completed helper batch as item 1');
 const queueDoc=read('docs/TOOL-BUILDER-BUILD-QUEUE.md');
 assert(!queueDoc.includes('## Shell, payload, privesc, and transfer helper batch'),'canonical Tool Builder queue must remove completed helper batch');
