@@ -11,7 +11,7 @@
  * suppresses historical schedulers and commits current route owners last.
  *
  * Historical fragment order sha256: 40e3006d9423d669acf5869b577ecf56a6ca2ee1629c95fd0fcc5d242d2c5f27
- * Generated body sha256: 49096459343c7762a0fa51a9dfd5301262d050bb1cfadda2c2b3d4b92389b168
+ * Generated body sha256: 469acb11efe54a005f015a5b763a215f47b84fb7c082cc06554b840673ee8f73
  * First historical fragment: assets/report-v2.js
  * Last historical fragment:  assets/app-v8.8.js
  */
@@ -2101,8 +2101,8 @@ if(__nativeMutationObserver)root.MutationObserver=__nativeMutationObserver;
 'use strict';
 (function(root){
 const release=Object.freeze({
- version:'10.0.14',
- label:'v10.14',
+ version:'10.0.15',
+ label:'v10.15',
  phase:'product-hardening',
  phaseLabel:'Product Hardening',
  orangeBaseline:'v8.8',
@@ -2166,7 +2166,8 @@ const release=Object.freeze({
   'data/product-hardening/network-position-recurrence-v9.97.js',
   'data/product-hardening/card-wrapper-retirement-queue-v9.98.js',
   'data/product-hardening/tool-builder-backlog-current.js',
-  'data/product-hardening/burp-suite-tool-builder-v10.10.js'
+  'data/product-hardening/burp-suite-tool-builder-v10.10.js',
+  'data/product-hardening/network-discovery-tool-builders-v10.15.js'
  ])
 });
 function stampState(target){
@@ -2196,7 +2197,7 @@ function normalizeReportMarkdown(markdown){
 function finalizeProductHardeningExtensions(){
  const api=root.OBOL_NOTE_CARD_DISPOSITION_RECONCILIATION_API_V968;
  if(api&&typeof api.install==='function'){
-  try{api.install();root.__OBOL_PRODUCT_HARDENING_FINAL_CARD_DISPOSITION__='v10.13';}catch(_err){root.__OBOL_PRODUCT_HARDENING_FINAL_CARD_DISPOSITION_ERROR__=String(_err&&_err.message||_err);}
+  try{api.install();root.__OBOL_PRODUCT_HARDENING_FINAL_CARD_DISPOSITION__='v10.15';}catch(_err){root.__OBOL_PRODUCT_HARDENING_FINAL_CARD_DISPOSITION_ERROR__=String(_err&&_err.message||_err);}
  }
 }
 function loadProductHardeningExtensions(){
