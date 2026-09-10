@@ -40,10 +40,13 @@ for(const record of records){
  assert(builder,record.tool+' builder should be registered');
  assert(audit.evidenceProfiles()[builder.id],builder.id+' should have executable/shared Evidence coverage');
 }
+const modeled=audit.modeledRecords();
+assert(modeled.length>0,'v10.08 must not falsely close the remaining modeled-tool inventory backlog');
+assert(audit.activeBatches()[0].id==='remaining-modeled-tool-builder-backlog','remaining modeled tools must stay visible as the active Tool Builder batch');
 const context=Object.freeze({
  target:Object.freeze({value:'203.0.113.77',ip:'203.0.113.77',hostname:'dc01.corp.example'}),
  context:Object.freeze({domain:'corp.example',username:'alice',port:'445',lhost:'198.51.100.77',lport:'9001',baseDn:'DC=corp,DC=example'}),
- workspace:Object.freeze({wordlist:'/usr/share/wordlists/rockyou.txt',outputDir:'scans/audit',hashfile:'audit-hashes.txt',transferUrl:'http://198.51.100.77:8000/audit.bin'})
+ workspace:Object.freeze({wordlist:'/usr/share/wordlists/rockyou.txt',outputDir:'scans/audit',hashfile:'audit-hash-material.txt',transferUrl:'http://198.51.100.77:8000/audit.bin'})
 });
 function command(id,extra){const builder=ctx.OBOL_TOOL_BUILDER_SCHEMA.get(id);assert(builder,'missing '+id);return audit.compileMinimum(builder,context,Object.assign(audit.minimumFixtureValues(builder,context),extra||{}));}
 const nmap=command('tb-nmap');
@@ -71,7 +74,8 @@ assert(missingThrew,'missing LHOST should produce a missing-field state, not a f
 const snap=audit.auditSnapshot();
 assert.strictEqual(snap.version,'v10.08');
 assert(Array.isArray(snap.failures));
+assert(snap.modeledCount>0,'audit snapshot must preserve remaining modeled-tool count when inventory is loaded');
 const release=cp.spawnSync(process.execPath,['tools/validate-release-pr.js','--repo-only'],{cwd:root,encoding:'utf8'});
 if(release.status!==0){process.stdout.write(release.stdout||'');process.stderr.write(release.stderr||'');process.exit(release.status||1);}
 process.stdout.write(release.stdout||'');
-console.log('v10.08 implemented Tool Builder audit passed with '+records.length+' implemented inventory records.');
+console.log('v10.08 implemented Tool Builder audit passed with '+records.length+' implemented inventory records and '+modeled.length+' modeled records still queued.');
