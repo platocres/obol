@@ -1,3 +1,12 @@
+## v10.07 — Completes the shell, payload, privilege-enumeration, listener, and transfer helper batch from the active Tool Builder implementation queue
+
+- Adds schema-driven builders for linpeas, winPEAS, msfvenom, msfconsole, nc/Penelope, and common file-transfer helpers.
+- Keeps helper commands minimal by default. Required callback, URL, target path, payload, output, listener, and transfer fields must be supplied before a command becomes valid. Optional behavior is added only through explicit GUI controls.
+- Adds helper-specific Evidence ingestion for privilege-enumeration leads, payload generation, handler/listener readiness, callback/session observations, transfer success/failure/integrity, and cleanup state.
+- Preserves the proof boundary: launching a helper, generating a payload, binding a listener, or serving a file is activity only. Access, execution, privilege, route reachability, credential validity, and cleanup are facts only when reviewed Evidence supports them.
+- Wires the helper builders into the same current runtime loading path as the existing tunnel, Ligolo, authentication, and enumeration builders.
+- Updates the Tool Builder implementation queue in README and `docs/TOOL-BUILDER-BUILD-QUEUE.md` so the completed helper batch is removed from active scope. The remaining active batch is the implemented-tool Evidence and cross-surface audit.
+
 ## v10.06 — Restores the operator **scripts** experience on the Tools route and starts the
 
 - `assets/tools-library-current.js` now renders each script with its category, its
