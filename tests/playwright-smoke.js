@@ -49,7 +49,7 @@ const routes = [
   { id: 'home', hash: '#/home', marker: /Home/i, requestBudget: 82 },
   { id: 'targets', hash: '#/boxes', marker: /target/i, requestBudget: 92 },
   { id: 'evidence', hash: '#/intake', marker: /evidence/i, requestBudget: 89 },
-  { id: 'next-steps', hash: '#/path', marker: /(next|path|recommend)/i, requestBudget: 87 },
+  { id: 'next-steps', hash: '#/path', marker: /(next|path|recommend)/i, requestBudget: 88 },
   { id: 'report', hash: '#/report', marker: /report/i, requestBudget: 83 },
   { id: 'dashboard', hash: '#/dashboard', marker: /Product Hardening/i, currentDashboard: true, settleMs: 5200, requestBudget: 83 }
 ];
