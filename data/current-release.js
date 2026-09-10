@@ -1,8 +1,8 @@
 'use strict';
 (function(root){
 const release=Object.freeze({
- version:'10.0.9',
- label:'v10.09',
+ version:'10.0.10',
+ label:'v10.10',
  phase:'product-hardening',
  phaseLabel:'Product Hardening',
  orangeBaseline:'v8.8',
@@ -65,7 +65,8 @@ const release=Object.freeze({
   'data/product-hardening/post-notes-clarity-audit-v9.96.js',
   'data/product-hardening/network-position-recurrence-v9.97.js',
   'data/product-hardening/card-wrapper-retirement-queue-v9.98.js',
-  'data/product-hardening/tool-builder-backlog-current.js'
+  'data/product-hardening/tool-builder-backlog-current.js',
+  'data/product-hardening/burp-suite-tool-builder-v10.10.js'
  ])
 });
 function stampState(target){
@@ -95,7 +96,7 @@ function normalizeReportMarkdown(markdown){
 function finalizeProductHardeningExtensions(){
  const api=root.OBOL_NOTE_CARD_DISPOSITION_RECONCILIATION_API_V968;
  if(api&&typeof api.install==='function'){
-  try{api.install();root.__OBOL_PRODUCT_HARDENING_FINAL_CARD_DISPOSITION__='v10.09';}catch(_err){root.__OBOL_PRODUCT_HARDENING_FINAL_CARD_DISPOSITION_ERROR__=String(_err&&_err.message||_err);}
+  try{api.install();root.__OBOL_PRODUCT_HARDENING_FINAL_CARD_DISPOSITION__='v10.10';}catch(_err){root.__OBOL_PRODUCT_HARDENING_FINAL_CARD_DISPOSITION_ERROR__=String(_err&&_err.message||_err);}
  }
 }
 function loadProductHardeningExtensions(){
