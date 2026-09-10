@@ -1,3 +1,11 @@
+## v10.10 — Is a product-hardening release that promotes Burp Suite out of legacy/example treatment and into first-class Tool Builder coverage
+
+- Added a first-class Burp Suite guided workflow builder.
+- Fixed the Burp Suite tool identity gap that made `#/tools/burp-suite` fall through as a legacy/example tool even though `burp suite` was present in the modeled inventory.
+- Added guided proxy setup, browser proxying, target scope, sitemap capture, Repeater, Intruder, Scanner triage, and raw request/response import handoffs.
+- Added executable Burp Evidence ingestion for Proxy history, raw HTTP request/response pairs, Repeater observations, Intruder result rows, Scanner issue details, sitemap/scope findings, vulnerability leads, and proxy/TLS failures.
+- Kept Burp as a third-party GUI handoff instead of pretending Obol can drive the Burp GUI.
+
 ## v10.09 — Is a product-hardening release that burns down the first concrete slice of the remaining modeled Tool Builder backlog after the v10.08 implemented-builder audit
 
 - Promoted WhatWeb, Nikto, httpx, wfuzz, and OWASP ZAP handoff from modeled inventory to implemented Tool Builder coverage.
