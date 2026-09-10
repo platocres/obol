@@ -52,7 +52,7 @@ Historical Orange AD mindmap source: `https://orange-cyberdefense.github.io/ocd-
 <!-- OBOL-PRODUCT-BUILD-NEXT:START -->
 Generated from the same queue sources as the Product Hardening Dashboard. Do not edit this block manually.
 
-**Current product-hardening queue:** 228/657 complete (35%), 8 concrete queued, 9 modeled/standing items.
+**Current product-hardening queue:** 227/657 complete (35%), 9 concrete queued, 9 modeled/standing items.
 **Private notes source:** [`https://github.com/platocres/obol-source-notes/tree/main/sources/raw`](https://github.com/platocres/obol-source-notes/tree/main/sources/raw) — 556 notes and 1326 embedded resources accounted.
 **Private review packets:** `platocres/obol-source-notes@agent/review-packets:data/review-packets/manifest.json` — 556/556 notes, 29 packets, 0 truncated.
 **Complete source packet proof:** 556/556 notes in 29 complete-text packets, 0 truncated, 8,725,188 cleaned text chars.
@@ -63,10 +63,10 @@ Generated from the same queue sources as the Product Hardening Dashboard. Do not
 **Source re-mining status:** 556/556 full-spectrum re-mined; 0 old-rubric-only notes remain.
 **Source-note cluster status:** source-note mining complete; no pending cluster review items remain.
 
-**Recommended work package:** **Runtime Layer Consolidation** — 1 concrete live item / 8 tracked.
+**Recommended work package:** **Post-mining runtime and old-layer retirement audit** — 1 concrete live item / 1 tracked.
 **Next concrete entry:** **Post-mining runtime and old-layer retirement audit**
-**Ownership area:** `runtime/ownership-areas`
-**Package dependencies:** runtime-consolidation-foundation, runtime-dashboard-retirement.
+**Ownership area:** `architecture-runtime`
+**Package dependencies:** none.
 **Package detail:** Use the Product Hardening Dashboard for full track ledgers and `data/product-hardening/work-packages.js` for the long-form package guidance.
 
 **Highest-priority concrete live items:**
