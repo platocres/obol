@@ -1,3 +1,11 @@
+## v10.14 — Is a product-hardening release that closes the operator scripts / LOTL track with a
+
+- **Scripts UI now reflows at any width.** The `.script-usage` rows used a fixed 64px label column,
+- **SQL injection is now two operator tools, not one wall of curl.**
+  - New **SQLi login / auth bypass checklist** (`sqli-login`): a ready-to-fuzz list of
+  - The **Manual SQLi** snippet (`manual-sqli`) is reframed as a database-navigation tool with a
+- **New metadata contract validator** `tools/validate-script-metadata.js` (wired into the
+
 ## v10.13 — Is a product-hardening release that closes the operator scripts / LOTL track by making
 
 - Added a conservative script-output Evidence analyzer, `assets/script-output-evidence-current.js`

