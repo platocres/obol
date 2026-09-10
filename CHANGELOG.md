@@ -1,3 +1,12 @@
+## v10.11 — Is a product-hardening release that continues the operator scripts / LOTL track started in v10.06
+
+- Added exam-safe / LOTL metadata to every script in `data/scripts.js`: `execMode` (`kali`/`target`/`pivot`), `examSafe` (rule-safe: no automated exploitation), `substitutesFor` (tool ids the snippet replaces), and a short `examSafeReason`.
+- Marked LDAPSearch and the LDAP/PowerView cookbooks as substitutes for `bloodhound-python`/`netexec`, and the PowerShell port sweep as a substitute for `nmap`.
+- Added a manual SQL-injection checklist (detect → UNION / error / boolean / time → extract → manual RCE) that stands in for `sqlmap`, issuing every request by hand.
+- Added a bash `/dev/tcp` port and host sweep that stands in for `nmap` on a target with nothing to upload, and a LOLBIN file-transfer snippet (curl / wget / bash `/dev/tcp` / PowerShell / certutil).
+- Added a Scripts / LOTL library facet, an `exam-safe · LOTL` badge, a `substitutes` label, and an `execMode` tag to the Scripts tab so operators can see and filter to exam-safe alternatives.
+- Added a workspace exam-safe mode flag (`state.ui.examSafe`, default off) persisted through the same UI slice the script builders use, so a later build can offer the exam-safe alternative wherever the Next Steps path would recommend a rule-breaking tool.
+
 ## v10.10 — Is a product-hardening release that promotes Burp Suite out of legacy/example treatment and into first-class Tool Builder coverage
 
 - Added a first-class Burp Suite guided workflow builder.

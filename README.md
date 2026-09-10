@@ -4,7 +4,7 @@ Obol is a static, browser-local workspace for OSCP-style labs, Active Directory 
 
 Live site: `https://platocres.github.io/obol/`
 
-Current release: **v10.10**
+Current release: **v10.11**
 
 Open `#/dashboard` for the active Product Hardening Dashboard and Product Build Next queue.
 
