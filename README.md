@@ -88,7 +88,7 @@ Batch labels are decoupled from the site release number: a batch keeps its name 
 
 Active batch:
 
-1. **Remaining modeled tool implementation backlog.** v10.08 completed the implemented-tool Evidence and cross-surface audit for builders already marked implemented, but modeled tools remain modeled until a real schema-driven builder exists. Every remaining modeled tool must ship the same full contract: minimum viable command generation, supplied/Evidence-derived prefill, additive GUI toggles, executable Evidence ingestion, proof boundaries, cleanup/report guidance, and conservative Next Steps movement or blocking where applicable.
+1. **Remaining modeled tool implementation backlog.** v10.08 completed the **Implemented-tool Evidence and cross-surface audit** for builders already marked implemented, but modeled tools remain modeled until a real schema-driven builder exists. Every remaining modeled tool must ship the same full contract: minimum viable command generation, supplied/Evidence-derived prefill, additive GUI toggles, executable Evidence ingestion, proof boundaries, cleanup/report guidance, and conservative Next Steps movement or blocking where applicable.
 
 Future Tool Builder work should burn down this active modeled inventory instead of pretending the backlog is closed.
 
