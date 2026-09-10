@@ -1,5 +1,6 @@
 'use strict';
 const assert=require('assert');
+const cp=require('child_process');
 const fs=require('fs');
 const path=require('path');
 const vm=require('vm');
@@ -70,4 +71,7 @@ assert(missingThrew,'missing LHOST should produce a missing-field state, not a f
 const snap=audit.auditSnapshot();
 assert.strictEqual(snap.version,'v10.08');
 assert(Array.isArray(snap.failures));
+const release=cp.spawnSync(process.execPath,['tools/validate-release-pr.js','--repo-only'],{cwd:root,encoding:'utf8'});
+if(release.status!==0){process.stdout.write(release.stdout||'');process.stderr.write(release.stderr||'');process.exit(release.status||1);}
+process.stdout.write(release.stdout||'');
 console.log('v10.08 implemented Tool Builder audit passed with '+records.length+' implemented inventory records.');
