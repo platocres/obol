@@ -1,3 +1,12 @@
+## v10.12 — Is a product-hardening release that continues the operator scripts / LOTL track
+
+- Added Next Steps path metadata to a curated set of scripts in `data/scripts.js`: `prereq`
+- Marked the manual SQL-injection checklist (prereq `web.sqli_confirmed`/`web.parameterized`),
+- `assets/operator-route-current.js` now proposes path-relevant scripts **additively** on
+- When a ranked Orange card would recommend a rule-breaking tool (`sqlmap` and the like), the
+- Script proposals and substitute offers deep-link to `#/tools/__scripts/<id>`;
+- The additive script layer honors the workspace exam-safe mode flag (`state.ui.examSafe`)
+
 ## v10.11 — Is a product-hardening release that continues the operator scripts / LOTL track started in v10.06
 
 - Added exam-safe / LOTL metadata to every script in `data/scripts.js`: `execMode` (`kali`/`target`/`pivot`), `examSafe` (rule-safe: no automated exploitation), `substitutesFor` (tool ids the snippet replaces), and a short `examSafeReason`.

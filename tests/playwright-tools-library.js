@@ -36,7 +36,33 @@ async function readState(page) {
 
 async function fillIfPresent(page, selector, value) {
   const locator = page.locator(selector).first();
-  if (await locator.count()) await locator.fill(value);
+  if (!(await locator.count())) return;
+  // Filling one field triggers a preview recompute that can re-render the form and drop a value
+  // filled a moment earlier. Fill, then confirm the value stuck, and re-fill if a re-render reset
+  // it — so a later field's fill cannot silently clear an earlier one.
+  for (let attempt = 0; attempt < 6; attempt++) {
+    await locator.fill(value);
+    try {
+      await page.waitForFunction((arg) => {
+        const el = document.querySelector(arg.selector);
+        return !!el && el.value === arg.value;
+      }, { selector, value }, { timeout: 1500 });
+      return;
+    } catch (_err) { /* re-render cleared the field; re-fill on the next attempt */ }
+  }
+}
+
+// The generated-command preview recomputes asynchronously after a mount or an input fill, so
+// reading it immediately can catch the pre-recompute (stale/empty) text. Poll the preview until it
+// reaches the expected shape before asserting; on timeout fall through so the assertion below still
+// reports the descriptive failure with the actual command.
+async function waitForCommand(page, pattern) {
+  const flags = pattern.flags.includes('i') ? pattern.flags : pattern.flags + 'i';
+  await page.waitForFunction((arg) => {
+    const re = new RegExp(arg.source, arg.flags);
+    const cmd = Array.from(document.querySelectorAll('.tool-builder-preview code')).map((node) => node.textContent || '').join('\n');
+    return re.test(cmd);
+  }, { source: pattern.source, flags }, { timeout: 15000 }).catch(() => {});
 }
 
 (async () => {
@@ -78,6 +104,7 @@ async function fillIfPresent(page, selector, value) {
     await expectText(page, /Parameters & Hidden Inputs/, 'ffuf parameter wordlists');
     await fillIfPresent(page, '[data-tool-builder="tb-ffuf"] [name="url"]', 'http://10.10.10.10/FUZZ');
     await fillIfPresent(page, '[data-tool-builder="tb-ffuf"] [name="wordlist"]', '/usr/share/seclists/Discovery/Web-Content/raft-medium-directories.txt');
+    await waitForCommand(page, /ffuf -u .*FUZZ.* -w/i);
     state = await readState(page);
     if (state.builderCount < 1) failures.push('ffuf route did not mount the implemented builder first');
     if (state.accessoryCount < 1) failures.push('ffuf route did not expose accessories');
@@ -95,10 +122,12 @@ async function fillIfPresent(page, selector, value) {
     await expectText(page, /Hash mode/, 'Hashcat mode picker');
     await expectText(page, /Kerberos TGS/, 'Hashcat Kerberos TGS mode');
     await expectText(page, /Mask attack/, 'Hashcat mask mode');
+    await waitForCommand(page, /(Complete required fields to generate a command|Missing required fields: Hash or hash file)/i);
     state = await readState(page);
     if (!/(Complete required fields to generate a command|Missing required fields: Hash or hash file)/i.test(state.generatedCommand)) failures.push('hashcat should ask for real hash material before generating a command, saw: ' + state.generatedCommand);
     if (/^hashcat\s+-m\b/i.test(state.generatedCommand)) failures.push('hashcat generated command appeared before real hash material was entered: ' + state.generatedCommand);
     await fillIfPresent(page, '[data-tool-builder="tb-hashcat"] [name="hashOrFile"]', 'ntlm.txt');
+    await waitForCommand(page, /hashcat -m 1000 .*ntlm\.txt.*rockyou\.txt/i);
     state = await readState(page);
     if (state.builderCount < 1) failures.push('hashcat route did not mount the implemented builder first');
     if (state.accessoryCount < 1) failures.push('hashcat route did not expose accessories');
@@ -145,6 +174,7 @@ async function fillIfPresent(page, selector, value) {
     await expectText(page, /Evidence and report boundary/, 'ligolo-ng Evidence boundary');
     await expectText(page, /Recommended accessories/, 'ligolo-ng accessories');
     await expectText(page, /proxy\/agent|tunnel interface|Add route|Route proof/i, 'ligolo-ng pivot accessory guidance');
+    await waitForCommand(page, /^proxy -selfcert$/im);
     state = await readState(page);
     if (state.builderCount < 1) failures.push('ligolo-ng route did not mount the implemented builder first');
     if (state.modeCount < 1) failures.push('ligolo-ng route did not expose pickable modes');
@@ -178,6 +208,7 @@ async function fillIfPresent(page, selector, value) {
     await fillIfPresent(page, '[data-tool-builder="tb-hydra"] [name="target"]', '10.10.10.10');
     await fillIfPresent(page, '[data-tool-builder="tb-hydra"] [name="username"]', 'alice');
     await fillIfPresent(page, '[data-tool-builder="tb-hydra"] [name="password"]', 'Winter2026');
+    await waitForCommand(page, /^hydra -l alice -p Winter2026 10\.10\.10\.10 ssh$/im);
     state = await readState(page);
     if (!/^hydra -l alice -p Winter2026 10\.10\.10\.10 ssh$/im.test(state.generatedCommand.trim())) failures.push('Hydra live preview is not minimal after required material is entered: ' + state.generatedCommand);
 

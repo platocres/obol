@@ -110,6 +110,17 @@ open release PRs as needed (granted). One open release/product-hardening PR at a
 - Validate: `node tools/scope-check.js` (inner loop), then the release/preflight chain.
   Required PR checks: `full-historical-regression` + `browser-smoke`. Merge only on a
   green exact head.
+- **Release-PR description contract (learned in Build C, cost a red CI cycle):** the
+  `quality-preservation` phase runs `tools/validate-release-pr.js` against the PR body from
+  the *event payload*, and for a product-hardening release it requires these `##` sections —
+  **Summary**, **README handoff**, **Product-hardening queue**, **Validation added**,
+  **Compatibility** (body ≥700 chars). These are NOT the headings in
+  `.github/pull_request_template.md`; write the release sections, not the generic template.
+  The workflow triggers only on `opened`/`synchronize`/`reopened`/`ready_for_review` — a bare
+  description `edit` will NOT re-run CI, so get the body right before opening, or push a real
+  commit to re-validate (never an empty commit). Reproduce the exact check locally with a fake
+  payload: `GITHUB_EVENT_NAME=pull_request GITHUB_EVENT_PATH=<event.json> node
+  tools/validate-release-pr.js`.
 
 ### Tool Builder ↔ site-version decoupling (done in Build A — remember this)
 - The pending Tool Builder batches used to be labeled `v10.06`/`v10.07`, i.e. 1:1 with
@@ -194,8 +205,8 @@ green. Acceptance criteria are the Definition of Done; write item tests to match
 | Build | Site ver | State | PR | Notes |
 | --- | --- | --- | --- | --- |
 | A | v10.06 | DONE | #224 | Merged (merge commit `a34cd60`, release head `11892cb`). script rendering + param prefill + toggles; TB-batch decoupling. |
-| B | v10.11 | PR OPEN (#229) | #229 | LOTL/exam-safe metadata on all scripts + manual-SQLi (sqlmap), bash /dev/tcp sweep (nmap), LOLBIN transfer + Scripts/LOTL facet, exam-safe badge, and `state.ui.examSafe` flag. Site advanced past v10.06→v10.10 via the Tool Builder track, so this build ships as v10.11. Set to DONE with head SHA when merged, then flip C to IN PROGRESS. |
-| C | (next) | PENDING | — | scripts on Next Steps path + substitution offer |
+| B | v10.11 | DONE | #229 | Merged (merge commit `09d7f0c`, PR head `748e299`). LOTL/exam-safe metadata on all scripts + manual-SQLi (sqlmap), bash /dev/tcp sweep (nmap), LOLBIN transfer + Scripts/LOTL facet, exam-safe badge, and `state.ui.examSafe` flag. |
+| C | v10.12 | IN PROGRESS | — | scripts on Next Steps path + substitution offer. `data/scripts.js` gains `prereq`/`produces`/`lane`/`pathProposable` on manual-SQLi, bash sweep, PS sweep, LDAPSearch cookbook. `operator-route-current.js` proposes them additively on `#/path` (Exam-safe / LOTL script moves panel) and offers the `substitutesFor` snippet beside a ranked restricted-tool (sqlmap) card; `tools-library-current.js` deep-links `#/tools/__scripts/<id>`. Tests in `tests/run-v10.12-tests.js`. Set to DONE with PR number + head SHA when merged, then flip D to IN PROGRESS. |
 | D | (next) | PENDING | — | Evidence ingestion for script output |
 | E | (next) | PENDING | — | optional cross-surface audit + validator |
 
