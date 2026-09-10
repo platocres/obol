@@ -194,7 +194,7 @@ green. Acceptance criteria are the Definition of Done; write item tests to match
 | Build | Site ver | State | PR | Notes |
 | --- | --- | --- | --- | --- |
 | A | v10.06 | DONE | #224 | Merged (merge commit `a34cd60`, release head `11892cb`). script rendering + param prefill + toggles; TB-batch decoupling. |
-| B | v10.11 | IN PROGRESS | — | LOTL/exam-safe metadata on all scripts + manual-SQLi (sqlmap), bash /dev/tcp sweep (nmap), LOLBIN transfer + Scripts/LOTL facet, exam-safe badge, and `state.ui.examSafe` flag. Site advanced past v10.06→v10.10 via the Tool Builder track, so this build ships as v10.11. |
+| B | v10.11 | PR OPEN (#229) | #229 | LOTL/exam-safe metadata on all scripts + manual-SQLi (sqlmap), bash /dev/tcp sweep (nmap), LOLBIN transfer + Scripts/LOTL facet, exam-safe badge, and `state.ui.examSafe` flag. Site advanced past v10.06→v10.10 via the Tool Builder track, so this build ships as v10.11. Set to DONE with head SHA when merged, then flip C to IN PROGRESS. |
 | C | (next) | PENDING | — | scripts on Next Steps path + substitution offer |
 | D | (next) | PENDING | — | Evidence ingestion for script output |
 | E | (next) | PENDING | — | optional cross-surface audit + validator |
