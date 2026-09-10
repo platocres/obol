@@ -14,23 +14,26 @@ The implementation rule is strict:
 
 > Every implemented builder starts from the minimal valid command for the selected tool and mode, populated only with real collected target/material parameters, parsed Evidence/workspace parameters, or safe tool defaults. GUI fields and toggles may add flags, modes, filters, output handling, credentials, and escalation options onto that base. They must not manufacture fake credentials, placeholder hashes, fake targets, or kitchen-sink commands.
 
+> Third-party GUI tools, such as Burp Suite, use the same rule in handoff form: the first preview must be the minimal guided workflow for the selected mode, populated only with real supplied or Evidence-derived state and safe defaults. Extra behavior is added through explicit controls. Obol guides the human operator, but does not control the GUI.
+
 > A tool is not fully implemented merely because Obol can generate its command. Every implemented tool must also have an Evidence-ingestion contract for the decision-relevant output that tool can produce, conservative fact extraction, failure/partial-result handling, and Next Steps movement or blocking where that Evidence changes what the operator should do next.
 
 ## Cross-build command and Evidence contract
 
 For every implemented builder:
 
-- The initial preview must be the minimal valid command for the selected tool/mode.
+- The initial preview must be the minimal valid command for the selected tool/mode. For third-party GUI tools, the initial preview must be the minimal guided handoff for the selected workflow/mode.
 - Required target, credential, request, hash, ticket, certificate, callback, listener, transfer, or file material must be collected or autofilled from current target/workspace/Evidence-derived state before the command is valid.
 - Missing required material must show a missing-field state, not a fake runnable command.
 - Toggles and optional fields must be additive only.
 - Placeholder values such as `user`, `domain.local`, `Password123!`, fake NT hashes, and fake `hashes.txt` must never make a command look valid. Lab-looking placeholders such as `10.10.10.10` and `10.10.14.9` are blocked the same way unless they came from actual workspace or parsed Evidence state.
 - Output from the generated command returns through Evidence. Command generation is activity, not proof.
+- Output from a guided third-party workflow returns through Evidence. Handoff generation is activity, not proof.
 - Every builder mode that can produce decision-relevant output must name what the operator can paste back, what facts may be extracted, what remains only a lead, and what positive, negative, blocked, partial, or inconclusive output means.
 - Evidence ingestion must be executable product behavior, not only prose in the builder. The tool must either have a dedicated analyzer/parser or cite an existing shared analyzer whose fixtures prove that tool/mode is actually recognized.
-- Parsed output may advance, block, re-arm, or deprioritize Next Steps only from supported Evidence. Merely recognizing a command line, banner, listener startup, or tool invocation must not manufacture access, compromise, reachability, credential validity, or privilege.
+- Parsed output may advance, block, re-arm, or deprioritize Next Steps only from supported Evidence. Merely recognizing a command line, banner, listener startup, tool invocation, GUI workflow step, Scanner alert, proxy capture, or request replay must not manufacture access, compromise, reachability, credential validity, exploitability, or privilege.
 - When a tool is primarily a launcher, listener, transfer helper, transport, or third-party GUI handoff, its Evidence contract must still recognize the useful state it owns, such as listener bound, client connected, file transferred, route/interface created, proxy capture, request/response captured, scanner issue recorded, manual verification completed, or failure reason. Any deeper downstream fact must remain gated on the appropriate independent Evidence.
-- An inventory record must not be promoted to `implemented` until command generation or guided handoff generation, live Tools rendering, Evidence ingestion, Next Steps handoff where applicable, cleanup/proof boundaries, and regression fixtures all exist.
+- An inventory record must not be promoted to `implemented` until command generation, live Tools rendering, Evidence ingestion, Next Steps handoff where applicable, cleanup/proof boundaries, and regression fixtures all exist. Third-party GUI tools satisfy the command-generation part of this rule with guided handoff generation instead of fake GUI automation.
 
 This is the permanent Definition of Done for modeled-tool work. The historical note-mining rubric already required terminal-output analyzers, Evidence expectations, and Path movement. v10.08 completed the **Implemented-tool Evidence and cross-surface audit**, but it did not close the full modeled-tool backlog because many inventory records still remain `modeled`.
 
