@@ -1,0 +1,438 @@
+name: Agent v10.21 build patch
+
+on:
+  push:
+    branches:
+      - release/obol-v10.21
+
+permissions:
+  contents: write
+
+jobs:
+  patch:
+    if: github.actor != 'github-actions[bot]'
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: release/obol-v10.21
+          fetch-depth: 0
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 24
+      - name: Apply v10.21 taxonomy and standard patch
+        run: |
+          python3 - <<'PY'
+          from pathlib import Path
+          import re
+
+          def read(path):
+              return Path(path).read_text()
+          def write(path, content):
+              Path(path).write_text(content)
+
+          tool_groups_js = """const TOOL_GROUPS=Object.freeze([
+           {id:'web',title:'Web discovery and HTTP',tools:['ffuf','gobuster','feroxbuster','dirsearch','curl','whatweb','nikto','httpx','wfuzz','zap','burp suite','nuclei','wpscan','openvas','nessus','shodan','crt.sh','google','git-dumper']},
+           {id:'credentials',title:'Credentials, cracking, and secrets',tools:['hashcat','john','hydra','kerbrute','cewl','crunch','hashid','name-that-hash','keepass2john','office2john','pfx2john','rar2john','ssh2john','zip2john','unshadow','nth','ntlm-theft','mimikatz','pypykatz','donpapi','dploot','pcredz','gpp-decrypt','gmsadumper','policysecretunobfuscate','sccmdecryptpoc','ntdsutil','vssadmin','vshadow','procdump','impacket-dpapi','impacket-secretsdump','responder','impacket-ntlmrelayx','mitm6','coercer','petitpotam','printerbug','privexchange','psk-crack','medusa','o365spray','ntlm_theft']},
+           {id:'ad-kerberos-pki',title:'Active Directory, Kerberos, LDAP, and PKI',tools:['nxc','bloodhound-python','bloodhound-cypher','sharphound','rusthound','rusthound-ce','ldapsearch','ldapdomaindump','windapsearch','adidnsdump','ad-miner','adpeas','certipy','certify','certsync','passthecert','gettgtpkinit','pkinittools','pfx2john','powerview','rubeus','bloodyad','impacket-getnpusers','impacket-getuserspns','impacket-getadusers','impacket-gettgt','impacket-getst','impacket-finddelegation','impacket-addcomputer','impacket-dacledit','impacket-owneredit','impacket-rbcd','impacket-reg','impacket-raisechild','impacket-goldenpac','impacket-tgssub','impacket-ticketconverter','impacket-ticketer','kinit','klist','krbrelayup','krbrelayx','masky','nopac','ouned','pywhisker','setspn','sprayhound','targetedkerberoast','timeroast','pingcastle','zerologon-scan','dnstool','dnscmd','grouppolicy-powershell','ldeep']},
+           {id:'smb-rpc-services',title:'SMB, RPC, and network services',tools:['nmap','masscan','rustscan','naabu','fping','nbtscan','smbclient','smbclient-ng','smbmap','enum4linux-ng','enum4linux','rpcclient','rpcdump.py','snmpwalk','onesixtyone','dig','dnsrecon','nslookup','whois','theharvester','finger','smtp-user-enum','swaks','showmount','ipmitool','ike-scan','bettercap','tcpdump','impacket-smbclient','crackmapexec']},
+           {id:'remote-access-exec',title:'Remote access, execution, and lateral movement',tools:['evil-winrm','impacket-psexec','impacket-wmiexec','impacket-smbexec','impacket-dcomexec','impacket-atexec','psexec','wmiexec','smbexec','dcomexec','atexec','xfreerdp','rdesktop','vncviewer','ssh','sshpass','runas','cmdkey','sc','schtasks','wmic','net','nltest','query','query-user','query user','psloggedon','shutdown','tscon','remote-method-guesser','impacket-mssqlclient']},
+           {id:'pivoting',title:'Pivoting, proxying, and tunneling',tools:['chisel','plink','ligolo-ng','ligolo-agent','ligolo-proxy','proxychains','socat','sshuttle','rpivot','ptunnel-ng','socksoverrdp','dnscat2']},
+           {id:'privesc',title:'Privilege escalation and local enumeration',tools:['linpeas','winpeas','pspy','accesschk','searchsploit','systeminfo','wesng','sudo','whoami','icacls','reg','rundll32','fodhelper','godpotato','msiexec','mona','procmon','getnthash','mount','poc-aug3.py','poc_aug3.py','pxethief']},
+           {id:'shells-transfer',title:'Shells, payloads, listeners, and file transfer',tools:['msfconsole','msfvenom','metasploit','meterpreter','nc','penelope','rlwrap','python3','python','powershell','pwsh','bash','sh','cmd','wget','certutil','curl','ftp','tftp','webdav','impacket-smbserver','findstr','sed','gcc','mingw-w64','java','installutil','msbuild','controlled-callback-service','controlled callback service']},
+           {id:'databases',title:'Databases',tools:['mssql','mysql','psql','redis-cli','odat','impacket-mssqlclient']},
+           {id:'cloud-containers',title:'Cloud and containers',tools:['aws','awslocal','docker','kubectl','lxc','svn']},
+           {id:'exploit-cve',title:'Exploit and CVE helpers',tools:['cve-pocs','cve pocs','cve-2023-27532','cve-2024-29849','cve-2024-29855','cve-2024-40711','cve-2023-41320.py','cve_2023_41320.py','proxyshell-rce.py','proxyshell_rce.py','printnightmare.py','sharpprintnightmare','sharpprintnightmare','veeamhax','ysoserial']},
+           {id:'operator-utilities',title:'Reporting, cleanup, and operator utilities',tools:['obol','impacket','openssl','kpcli','keepwn','libreoffice','immunity-debugger','immunity debugger','irs','manspider','rmg','sccmhound','sccmhunter','sccmsecrets','sccmwtf','sharpsccm','sharpwsus','snaffler','azuread-decrypt-msol-v2.ps1','azuread_decrypt_msol_v2.ps1','firefox']}
+          ]);"""
+
+          # Tools route taxonomy: one operator taxonomy, no extra residual inventory category.
+          p = Path('assets/tools-library-current.js')
+          data = read(p)
+          data = re.sub(r"const TOOL_GROUPS=Object\.freeze\(\[.*?\n\]\);\nconst DISPLAY_ALIASES", tool_groups_js + "\nconst DISPLAY_ALIASES", data, flags=re.S)
+          data = re.sub(r"function sortTools\(list\)\{.*?\}\nfunction groupTools\(\)\{.*?\nfunction visibleInventoryKeysFromGroups", """function sortTools(list){return arr(list).slice().sort((a,b)=>{const ra=inventoryRecord(a),rb=inventoryRecord(b);return (ra&&ra.status==='implemented'?0:1)-(rb&&rb.status==='implemented'?0:1)||toolLabel(a).localeCompare(toolLabel(b),undefined,{numeric:true,sensitivity:'base'});});}
+          function categoryForTool(tool){
+           const k=inventoryKey(tool);
+           for(const group of TOOL_GROUPS){if(uniqueTools(group.tools).map(inventoryKey).includes(k))return group.id;}
+           const audit=root.OBOL_TOOL_BUILDER_IMPLEMENTATION_AUDIT_CURRENT;
+           if(audit&&typeof audit.groupForTool==='function')try{const group=audit.groupForTool(k);if(group&&TOOL_GROUPS.some(g=>g.id===group.id))return group.id;}catch(_err){}
+           return 'operator-utilities';
+          }
+          function groupTools(){
+           const groups=TOOL_GROUPS.map(g=>Object.assign({},g,{tools:[]}));
+           const byId=new Map(groups.map(g=>[g.id,g]));
+           const seen=new Set();
+           const addTool=tool=>{const k=inventoryKey(tool);if(!k||seen.has(k))return;seen.add(k);const id=categoryForTool(k);const group=byId.get(id)||byId.get('operator-utilities')||groups[groups.length-1];group.tools.push(k);};
+           for(const group of TOOL_GROUPS)for(const tool of arr(group.tools))addTool(tool);
+           for(const e of commandEntries())if(e.cmd&&e.cmd.tool)addTool(e.cmd.tool);
+           const inv=inventory();
+           if(inv&&typeof inv.all==='function')for(const record of arr(inv.all()))addTool(record&&record.tool);
+           for(const group of groups)group.tools=sortTools(uniqueTools(group.tools));
+           const visible=visibleInventoryKeysFromGroups(groups);
+           root.__OBOL_TOOLS_LIBRARY_HIDDEN_INVENTORY_KEYS__=Object.freeze([]);
+           root.__OBOL_TOOLS_LIBRARY_INVENTORY_VISIBLE_COUNT__=visible.length;
+           root.__OBOL_TOOLS_LIBRARY_INVENTORY_TOTAL_COUNT__=inv&&typeof inv.all==='function'?arr(inv.all()).length:visible.length;
+           return groups.filter(group=>group.tools.length);
+          }
+          function visibleInventoryKeysFromGroups""", data, flags=re.S)
+          data = data.replace("root.OBOL_TOOLS_LIBRARY_CURRENT=Object.freeze({version:VERSION,owner:'assets/tools-library-current.js',canonicalTool,inventoryKey,groupTools,visibleInventoryKeysFromGroups,render", "root.OBOL_TOOLS_LIBRARY_CURRENT=Object.freeze({version:VERSION,owner:'assets/tools-library-current.js',canonicalTool,inventoryKey,groupTools,categoryForTool,operatorTaxonomy:TOOL_GROUPS,noBacklogCategoryOnToolsRoute:true,toolIdentityRequired:true,sharedPlumbingAllowed:true,visibleInventoryKeysFromGroups,render")
+          if 'All remaining Tool Builder inventory' in data or 'Remaining Tool Builder inventory by function' in data:
+              raise SystemExit('Tools Library still exposes residual inventory wording')
+          write(p, data)
+
+          # Backlog owner taxonomy mirrors operator categories and stops rewriting the UI into a second backlog taxonomy.
+          p = Path('data/product-hardening/tool-builder-backlog-current.js')
+          data = read(p)
+          data = data.replace("const VERSION='v10.20';", "const VERSION='v10.21';")
+          standard = """const IMPLEMENTATION_STANDARD=Object.freeze({
+           rule:'reuse plumbing, preserve tool identity',
+           sharedPrimitiveKinds:Object.freeze(['target input','URL/request input','credential material input','Kerberos/certificate options','wordlist/hash-file input','proxy/header/cookie controls','output path controls','missing-field validation','fake-placeholder refusal','Evidence paste-back scaffolding','common failure/partial parsing','route/render test harness']),
+           requiredProfileFields:Object.freeze(['operatorPurpose','whyChooseThisTool','nearestNeighbors','requiredInputs','curatedModes','curatedControls','dangerousOrNoisyControls','evidenceSuccess','evidenceFailureBlockedPartial','factsItCanProve','factsItCannotProve','nextStepsMovementOrBlocking','cleanupAndReportingNotes','routeRegression']),
+           forbidden:Object.freeze(['one generic factory category in the operator UI','full help-page flag spam','identical profile shells for neighboring tools','promotion to implemented without executable Evidence behavior'])
+          });
+          """
+          data = data.replace("const INVENTORY_GROUPS=Object.freeze([", standard + "const INVENTORY_GROUPS=Object.freeze([")
+          data = re.sub(r"const INVENTORY_GROUPS=Object\.freeze\(\[.*?\n\]\);\nfunction arr", tool_groups_js.replace('TOOL_GROUPS','INVENTORY_GROUPS') + "\nfunction arr", data, flags=re.S)
+          data = re.sub(r"function patchInventoryOrganization\(\)\{.*?\n\}\nfunction installInventoryOrganization", "function patchInventoryOrganization(){return false;}\nfunction installInventoryOrganization", data, flags=re.S)
+          data = re.sub(r"function installInventoryOrganization\(\)\{.*?return true;\n\}", "function installInventoryOrganization(){return false;}", data, flags=re.S)
+          data = data.replace('The implemented-builder audit is complete. The remaining modeled inventory is now grouped into functional Tool Library slices so agents can burn it down coherently instead of staring at a flat chip dump.', 'The implemented-builder audit is complete. The remaining modeled inventory now appears inside the normal operator Tool Library categories with status badges intact, so agents can burn it down coherently without creating a fake residual inventory category.')
+          data = data.replace('Promote each modeled tool only after it has schema-driven minimum viable command generation, real supplied/parsed prefill, additive toggles, executable Evidence ingestion, path movement or blocking where applicable, proof boundaries, cleanup/report guidance, and regression fixtures.', 'Promote each modeled tool only after it has a distinct tool profile, schema-driven minimum viable command generation, real supplied/parsed prefill, additive controls, executable Evidence ingestion, path movement or blocking where applicable, proof boundaries, cleanup/report guidance, and regression fixtures. Shared primitives are encouraged, but the operator-facing tool identity must stay bespoke.')
+          data = data.replace('profiles:AUDIT_EVIDENCE_PROFILES,inventoryGroups:INVENTORY_GROUPS,contextFromState', 'profiles:AUDIT_EVIDENCE_PROFILES,implementationStandard:IMPLEMENTATION_STANDARD,operatorTaxonomy:INVENTORY_GROUPS,inventoryGroups:INVENTORY_GROUPS,contextFromState')
+          if 'Remaining Tool Builder inventory by function' in data:
+              raise SystemExit('Backlog owner still contains old residual heading')
+          write(p, data)
+
+          # Docs: update existing inventory doc to sane operator taxonomy.
+          write('docs/TOOL-BUILDER-INVENTORY-ORGANIZATION.md', '''# Tool Builder Inventory Organization
+
+The Tools route uses one operator taxonomy. It must not create a second category named after the implementation backlog, such as “Remaining Tool Builder inventory by function.” `implemented builder` and `modeled` badges stay visible, but both statuses live inside the same real tool categories.
+
+Every real tool has a place. A `modeled` record means the full builder contract is still pending. It does not mean the tool is disposable, deprecated, or unworthy of a route.
+
+## Operator taxonomy
+
+Use these categories on the live Tools route and in backlog burn-down planning:
+
+- Web discovery and HTTP
+- Credentials, cracking, and secrets
+- Active Directory, Kerberos, LDAP, and PKI
+- SMB, RPC, and network services
+- Remote access, execution, and lateral movement
+- Pivoting, proxying, and tunneling
+- Privilege escalation and local enumeration
+- Shells, payloads, listeners, and file transfer
+- Databases
+- Cloud and containers
+- Exploit and CVE helpers
+- Reporting, cleanup, and operator utilities
+
+Do not expose backlog mechanics as a visible tool category. The backlog can be tracked in docs, dashboard state, and tests, but the operator should browse actual tool categories.
+
+## Placement rules
+
+- Place a tool where an operator would naturally look for it during a lab.
+- Preserve specific tool identity even when a tool shares internal builder primitives with neighbors.
+- Classic and overlapping tools stay searchable and selectable. `enum4linux` still belongs with SMB/RPC/service enumeration even when `enum4linux-ng` or another builder is preferred for some workflows.
+- Aliases and wrappers should resolve to a canonical route only when that does not erase the user’s ability to find the specific tool name they intended.
+- When placement is ambiguous, prefer the category tied to the primary operator purpose, not the implementation library or package name.
+
+## Implementation rule
+
+A tool should move from `modeled` to `implemented` only when Obol ships the full Tool Builder contract for it:
+
+- schema-driven minimum viable command or guided handoff generation;
+- supplied workspace or parsed Evidence prefill only;
+- additive GUI controls for optional behavior;
+- missing-field states instead of fake runnable placeholders;
+- executable Evidence ingestion for decision-relevant output;
+- conservative proof boundaries;
+- cleanup and report guidance;
+- Next Steps movement or blocking only when supported by Evidence;
+- regression fixtures for generation, prefill, placeholder refusal, Evidence ingestion, and path behavior where applicable.
+''')
+
+          write('docs/TOOL-BUILDER-IMPLEMENTATION-STANDARD.md', '''# Tool Builder Implementation Standard
+
+This standard exists to speed up Tool Builder backlog burn-down without turning Obol into generic command-wrapper sludge.
+
+The rule is simple:
+
+> Reuse plumbing. Preserve tool identity.
+
+Shared internals are encouraged. Generic operator-facing tools are not.
+
+## Shared plumbing that may be reused
+
+Agents should reuse or create common primitives for boring repeated mechanics:
+
+- target, URL, request, listener, callback, output-path, and wordlist inputs;
+- credential material controls for passwords, hashes, tickets, certificates, keys, cookies, and tokens;
+- Kerberos, certificate, proxy, header, cookie, timeout, rate, recursion, and output controls;
+- missing-field rendering;
+- fake-placeholder refusal;
+- generated-command preview and copy/export behavior;
+- Evidence paste-back scaffolding;
+- common failure, blocked, partial, and inconclusive parsing;
+- route, rendering, and inventory visibility tests.
+
+These primitives are implementation aids. They are not user-facing replacement categories.
+
+## Bespoke profile required for every implemented tool
+
+A modeled tool cannot be promoted to `implemented builder` unless it has a tool-specific profile covering:
+
+- primary operator purpose;
+- why an operator would choose this tool over its nearest neighbors;
+- nearest-neighbor tools;
+- required inputs;
+- useful modes and presets;
+- curated optional controls;
+- dangerous, noisy, or situational controls that should be hidden, gated, or explained;
+- minimum viable command or guided handoff;
+- Evidence success patterns;
+- Evidence failure, blocked, partial, and inconclusive patterns;
+- facts the tool can prove;
+- facts the tool cannot prove;
+- Next Steps movement, blocking, re-arming, or deprioritization behavior;
+- cleanup and reporting notes;
+- route-specific regression coverage.
+
+A tool profile must make the tool feel like itself. `ffuf`, `feroxbuster`, `gobuster`, and `wfuzz` may share HTTP discovery primitives, but they must not render as identical generic web-fuzzer cards. `impacket-secretsdump`, `impacket-psexec`, and `impacket-getuserspns` may share authentication controls, but their purpose, modes, output, risk, and proof boundaries are different.
+
+## Tests must enforce the distinction
+
+Tool Builder tests should prove both halves of the contract:
+
+- shared primitives work consistently across tools;
+- each implemented tool exposes distinct identity, curated controls, Evidence expectations, and proof boundaries;
+- no live Tools route category is named after backlog state;
+- every inventory record appears in exactly one approved operator category;
+- `implemented builder` and `modeled` status remain visible without creating a second inventory wall;
+- neighboring tools that share plumbing do not have identical profile shells.
+
+## Implementation cadence
+
+Future acceleration builds should implement tool families by plumbing reuse, but promote individual tools by profile. A good batch can ship several tools when shared primitives make that safe, but the `implemented builder` label still means the individual tool was examined and tested.
+''')
+
+          # Tool Builder queue docs point to standard and avoid endorsing a residual Tools category.
+          p = Path('docs/TOOL-BUILDER-BUILD-QUEUE.md')
+          data = read(p)
+          if 'docs/TOOL-BUILDER-IMPLEMENTATION-STANDARD.md' not in data:
+              data = data.replace('## Cross-build command and Evidence contract', '## Bespoke/reuse acceleration rule\n\nUse [`docs/TOOL-BUILDER-IMPLEMENTATION-STANDARD.md`](TOOL-BUILDER-IMPLEMENTATION-STANDARD.md) for the reusable-plumbing / bespoke-profile contract. Shared primitives should speed implementation, but every promoted tool still needs an individual operator-purpose profile, curated controls, Evidence behavior, proof boundaries, and route regression.\n\n## Cross-build command and Evidence contract')
+          data = data.replace('The remaining modeled inventory is now grouped into functional Tool Library slices so agents can burn it down coherently instead of staring at a flat chip dump.', 'The remaining modeled inventory now appears inside the normal operator Tool Library categories with status badges intact. Agents should burn it down coherently without creating a fake residual inventory category.')
+          write(p, data)
+
+          # README link and validation pointers.
+          p = Path('README.md')
+          data = read(p)
+          if 'docs/TOOL-BUILDER-IMPLEMENTATION-STANDARD.md' not in data:
+              data = data.replace('- [`docs/TOOL-BUILDER-BUILD-QUEUE.md`](docs/TOOL-BUILDER-BUILD-QUEUE.md) - active Tool Builder backlog sequence and the permanent command, Evidence, proof, and Next Steps contract.\n', '- [`docs/TOOL-BUILDER-BUILD-QUEUE.md`](docs/TOOL-BUILDER-BUILD-QUEUE.md) - active Tool Builder backlog sequence and the permanent command, Evidence, proof, and Next Steps contract.\n- [`docs/TOOL-BUILDER-IMPLEMENTATION-STANDARD.md`](docs/TOOL-BUILDER-IMPLEMENTATION-STANDARD.md) - reusable-plumbing / bespoke-profile standard for faster Tool Builder implementation without generic tool smearing.\n')
+          data = data.replace('node tests/run-tool-builder-inventory-organization-tests.js\n', 'node tests/run-tool-builder-inventory-organization-tests.js\nnode tests/run-tool-builder-taxonomy-tests.js\nnode tests/run-tool-builder-implementation-standard-tests.js\n')
+          data = data.replace('The implemented-builder audit is complete. The remaining modeled inventory is now grouped into functional Tool Library slices so agents can burn it down coherently instead of staring at a flat chip dump.', 'The implemented-builder audit is complete. The remaining modeled inventory now appears inside the normal operator Tool Library categories with status badges intact, so agents can burn it down coherently without creating a fake residual inventory category.')
+          write(p, data)
+
+          # Product Build Next source detail.
+          p = Path('data/product-hardening/product-hardening-queue.js')
+          data = read(p)
+          data = data.replace('The implemented-builder audit is complete. The remaining modeled inventory is now grouped into functional Tool Library slices so agents can burn it down coherently instead of staring at a flat chip dump.', 'The implemented-builder audit is complete. The remaining modeled inventory now appears inside the normal operator Tool Library categories with status badges intact, so agents can burn it down coherently without creating a fake residual inventory category.')
+          write(p, data)
+
+          # Release identity.
+          p = Path('data/current-release.js')
+          data = read(p)
+          data = data.replace("version:'10.0.20'", "version:'10.0.21'")
+          data = data.replace("label:'v10.20'", "label:'v10.21'")
+          data = data.replace("root.__OBOL_PRODUCT_HARDENING_FINAL_CARD_DISPOSITION__='v10.20'", "root.__OBOL_PRODUCT_HARDENING_FINAL_CARD_DISPOSITION__='v10.21'")
+          write(p, data)
+
+          # Release docs and tests.
+          write('docs/v10.21.md', '''# Obol v10.21
+
+This product-hardening build corrects the v10.20 Tools taxonomy regression and adds the reusable-plumbing / bespoke-profile standard for faster Tool Builder backlog burn-down without generic tool smearing.
+
+## What changed
+
+- Removed the operator-facing residual backlog category from the Tools route: there is no visible “Remaining Tool Builder inventory by function” category anymore.
+- Merged modeled and implemented inventory records into one approved operator taxonomy while keeping `implemented builder` and `modeled` badges visible.
+- Reworked the taxonomy around how operators look for tools: web/HTTP, credentials/secrets, AD/Kerberos/LDAP/PKI, SMB/RPC/services, remote access/execution, pivoting, privilege escalation, shells/transfer, databases, cloud/containers, exploit/CVE helpers, and operator utilities.
+- Added `docs/TOOL-BUILDER-IMPLEMENTATION-STANDARD.md` so future agents can reuse internal primitives while still writing a bespoke profile for each implemented tool.
+- Exposed the implementation standard and operator taxonomy through the current Tool Builder audit API for tests and future burn-down planning.
+- Added taxonomy and implementation-standard regressions that fail on fake backlog categories, crazy category drift, hidden inventory records, or generic-family smearing.
+- Updated README and Tool Builder queue docs so agents keep using linked docs, the changelog rule, and the bespoke/reuse standard when working the modeled-tool backlog.
+
+## Proof
+
+Run:
+
+```bash
+node --check assets/tools-library-current.js
+node --check data/product-hardening/tool-builder-backlog-current.js
+node tests/run-tool-builder-taxonomy-tests.js
+node tests/run-tool-builder-implementation-standard-tests.js
+node tests/run-v10.21-tests.js
+node tools/validate-release-pr.js --repo-only
+```
+
+## Safety and boundaries
+
+This build changes organization, documentation, and enforcement. It does not execute tools, add a backend, add telemetry, or promote a modeled tool to implemented without its individual builder/Evidence contract.
+''')
+
+          write('tests/run-tool-builder-taxonomy-tests.js', r'''use strict';
+const assert=require('assert');
+const fs=require('fs');
+const path=require('path');
+const vm=require('vm');
+const root=path.join(__dirname,'..');
+const read=rel=>fs.readFileSync(path.join(root,rel),'utf8');
+const source=read('assets/tools-library-current.js');
+assert(!source.includes('All remaining Tool Builder inventory'),'Tools route must not create a residual inventory category');
+assert(!source.includes('Remaining Tool Builder inventory by function'),'Tools route must not expose backlog mechanics as a category');
+assert(source.includes('Web discovery and HTTP'),'approved taxonomy should include web/HTTP');
+assert(source.includes('Active Directory, Kerberos, LDAP, and PKI'),'approved taxonomy should include AD/Kerberos/LDAP/PKI');
+assert(source.includes('SMB, RPC, and network services'),'approved taxonomy should include SMB/RPC/services');
+assert(source.includes('Databases'),'approved taxonomy should split databases out of cloud/containers');
+const sandbox={window:{},globalThis:null,location:{hash:'#/tools'},addEventListener(){},setTimeout(){},localStorage:{getItem(){return null;},setItem(){}},module:{exports:{}}};
+sandbox.globalThis=sandbox.window=sandbox;
+vm.createContext(sandbox);
+vm.runInContext(read('data/tool-builder-inventory.js'),sandbox,{filename:'data/tool-builder-inventory.js'});
+vm.runInContext(read('data/product-hardening/tool-builder-backlog-current.js'),sandbox,{filename:'data/product-hardening/tool-builder-backlog-current.js'});
+vm.runInContext(source,sandbox,{filename:'assets/tools-library-current.js'});
+const api=sandbox.OBOL_TOOLS_LIBRARY_CURRENT;
+assert(api,'Tools Library API should load in tests');
+assert.strictEqual(api.noBacklogCategoryOnToolsRoute,true,'Tools Library should declare that backlog categories are not operator categories');
+const groups=api.groupTools();
+const allowed=new Set(api.operatorTaxonomy.map(g=>g.id));
+assert(groups.length>=10,'operator taxonomy should render multiple real categories');
+for(const group of groups){
+ assert(allowed.has(group.id),'unexpected category id '+group.id);
+ assert(!/remaining|inventory complete|backlog/i.test(group.title),'category should not be backlog mechanics: '+group.title);
+ assert(!group.generatedFromInventory,'no generated residual inventory group should be emitted');
+}
+const lookup=new Map();
+for(const group of groups)for(const tool of group.tools){assert(!lookup.has(tool),'tool rendered in multiple categories: '+tool);lookup.set(tool,group.id);}
+const records=sandbox.OBOL_TOOL_BUILDER_INVENTORY.all();
+for(const record of records)assert(lookup.has(sandbox.OBOL_TOOL_BUILDER_INVENTORY.key(record.tool)),'inventory record hidden from Tools taxonomy: '+record.tool);
+assert.strictEqual(lookup.get('enum4linux'),'smb-rpc-services','classic enum4linux belongs with SMB/RPC/service enumeration');
+assert.strictEqual(lookup.get('certipy'),'ad-kerberos-pki','Certipy belongs with AD/Kerberos/LDAP/PKI');
+assert.strictEqual(lookup.get('mimikatz'),'credentials','Mimikatz belongs with credentials/secrets, not generic privesc');
+assert.strictEqual(lookup.get('impacket-mssqlclient'),'remote-access-exec','mssqlclient keeps remote-exec/lateral movement visibility as an Impacket operator choice');
+assert.strictEqual(lookup.get('proxychains'),'pivoting','proxychains belongs with pivoting/proxying/tunneling');
+assert.strictEqual(lookup.get('tftp'),'shells-transfer','tftp belongs with transfer helpers');
+assert.strictEqual(lookup.get('sshpass'),'remote-access-exec','sshpass belongs with remote access');
+assert(records.some(r=>r.status==='modeled'),'test fixture should include modeled records');
+assert(records.some(r=>r.status==='implemented'),'test fixture should include implemented records');
+console.log('Tool Builder operator taxonomy regression passed.');
+''')
+
+          write('tests/run-tool-builder-implementation-standard-tests.js', r'''use strict';
+const assert=require('assert');
+const fs=require('fs');
+const path=require('path');
+const vm=require('vm');
+const root=path.join(__dirname,'..');
+const read=rel=>fs.readFileSync(path.join(root,rel),'utf8');
+const doc=read('docs/TOOL-BUILDER-IMPLEMENTATION-STANDARD.md');
+assert(doc.includes('Reuse plumbing. Preserve tool identity.'),'standard should state the core rule');
+assert(doc.includes('Bespoke profile required for every implemented tool'),'standard should require per-tool bespoke profiles');
+assert(doc.includes('ffuf'), 'standard should call out neighboring tools that must not smear together');
+assert(doc.includes('impacket-secretsdump'), 'standard should distinguish Impacket tools by purpose');
+assert(doc.includes('no live Tools route category is named after backlog state'),'standard should ban backlog-state categories in the live Tools route');
+const queue=read('docs/TOOL-BUILDER-BUILD-QUEUE.md');
+assert(queue.includes('TOOL-BUILDER-IMPLEMENTATION-STANDARD.md'),'Tool Builder queue should link the implementation standard');
+assert(queue.includes('Shared primitives should speed implementation'),'queue should permit acceleration by shared primitives');
+const sandbox={window:{},globalThis:null,location:{hash:'#/tools'},addEventListener(){},setTimeout(){},localStorage:{getItem(){return null;},setItem(){}}};
+sandbox.globalThis=sandbox.window=sandbox;
+vm.createContext(sandbox);
+vm.runInContext(read('data/tool-builder-inventory.js'),sandbox,{filename:'data/tool-builder-inventory.js'});
+vm.runInContext(read('data/product-hardening/tool-builder-backlog-current.js'),sandbox,{filename:'data/product-hardening/tool-builder-backlog-current.js'});
+const api=sandbox.OBOL_TOOL_BUILDER_IMPLEMENTATION_AUDIT_CURRENT;
+assert(api,'Tool Builder audit API should load');
+assert.strictEqual(api.implementationStandard.rule,'reuse plumbing, preserve tool identity');
+assert(api.implementationStandard.sharedPrimitiveKinds.length>=8,'standard should expose reusable primitive kinds');
+assert(api.implementationStandard.requiredProfileFields.includes('whyChooseThisTool'),'standard should require why-this-tool identity');
+assert(api.implementationStandard.requiredProfileFields.includes('nearestNeighbors'),'standard should require neighbor distinction');
+assert(api.implementationStandard.requiredProfileFields.includes('factsItCannotProve'),'standard should require proof boundaries');
+assert(api.implementationStandard.forbidden.some(x=>/generic factory category/.test(x)),'standard should forbid generic operator-facing factory categories');
+assert(Array.isArray(api.operatorTaxonomy)||Object.isFrozen(api.operatorTaxonomy),'operator taxonomy should be exposed for tests/planning');
+assert.strictEqual(api.groupForTool('enum4linux').id,'smb-rpc-services');
+assert.strictEqual(api.groupForTool('certipy').id,'ad-kerberos-pki');
+assert.strictEqual(api.groupForTool('mimikatz').id,'credentials');
+console.log('Tool Builder implementation standard regression passed.');
+''')
+
+          write('tests/run-v10.21-tests.js', r'''use strict';
+const assert=require('assert');
+const fs=require('fs');
+const path=require('path');
+const vm=require('vm');
+const cp=require('child_process');
+const root=path.join(__dirname,'..');
+const read=rel=>fs.readFileSync(path.join(root,rel),'utf8');
+function run(args){const out=cp.spawnSync(process.execPath,args,{cwd:root,encoding:'utf8'});if(out.status!==0){process.stdout.write(out.stdout||'');process.stderr.write(out.stderr||'');process.exit(out.status||1);}return out.stdout;}
+const releaseSandbox={window:{},globalThis:null,document:{head:{appendChild(){}},documentElement:{appendChild(){}},createElement(){return {dataset:{},onload:null,onerror:null};},querySelector(){return null;}},location:{hash:'#/tools'},addEventListener(){}};
+releaseSandbox.globalThis=releaseSandbox.window=releaseSandbox;
+vm.createContext(releaseSandbox);
+vm.runInContext(read('data/current-release.js'),releaseSandbox,{filename:'data/current-release.js'});
+assert.strictEqual(releaseSandbox.OBOL_CURRENT_RELEASE.label,'v10.21','current release label should be v10.21');
+assert.strictEqual(releaseSandbox.OBOL_CURRENT_RELEASE.version,'10.0.21','current release version should be 10.0.21');
+assert.strictEqual(releaseSandbox.OBOL_RELEASE_IDENTITY.extensionPlan('tools').mode,'compact-tool-library','Tools route should keep compact Tool Library loading');
+const taxonomy=run(['tests/run-tool-builder-taxonomy-tests.js']);
+assert(taxonomy.includes('Tool Builder operator taxonomy regression passed.'),'taxonomy regression should pass');
+const standard=run(['tests/run-tool-builder-implementation-standard-tests.js']);
+assert(standard.includes('Tool Builder implementation standard regression passed.'),'implementation standard regression should pass');
+const docs=read('docs/v10.21.md');
+assert(docs.includes('corrects the v10.20 Tools taxonomy regression'),'release doc should describe taxonomy correction');
+assert(docs.includes('bespoke-profile standard'),'release doc should describe bespoke/reuse standard');
+const readme=read('README.md');
+assert(readme.includes('[`docs/TOOL-BUILDER-IMPLEMENTATION-STANDARD.md`](docs/TOOL-BUILDER-IMPLEMENTATION-STANDARD.md)'),'README should retain the implementation standard link');
+assert(readme.includes('[`CHANGELOG.md`](CHANGELOG.md)'),'README should retain the changelog link');
+assert(!readme.includes('## Tool Builder implementation queue'),'README should not duplicate the detailed Tool Builder queue section');
+const changelog=read('CHANGELOG.md');
+assert(changelog.startsWith('## v10.21'),'CHANGELOG should start with v10.21');
+assert(changelog.includes('## v10.20'),'CHANGELOG should preserve v10.20 history');
+const toolOwner=read('data/product-hardening/tool-builder-backlog-current.js');
+assert(toolOwner.includes('reuse plumbing, preserve tool identity'),'Tool Builder current owner should expose the standard');
+assert(!toolOwner.includes('Remaining Tool Builder inventory by function'),'Tool Builder current owner should not rewrite a residual Tools category');
+const release=run(['tools/validate-release-pr.js','--repo-only']);
+process.stdout.write(release);
+console.log('v10.21 Tool Builder taxonomy and implementation standard validation passed.');
+''')
+
+          # Historical v10.20 tests should preserve v10.20 invariants without requiring the bad residual category.
+          p = Path('tests/run-v10.20-tests.js')
+          data = read(p)
+          data = data.replace("assert.strictEqual(releaseSandbox.OBOL_CURRENT_RELEASE.label,'v10.20','current release label should be v10.20');\nassert.strictEqual(releaseSandbox.OBOL_CURRENT_RELEASE.version,'10.0.20','current release version should be 10.0.20');\n", "assert(/^v10\\./.test(releaseSandbox.OBOL_CURRENT_RELEASE.label),'current release should remain in the v10 product-hardening line');\n")
+          data = data.replace("assert(toolOwner.includes('Remaining Tool Builder inventory by function'),'Tool Builder current owner should rewrite the flat inventory heading');\nassert(toolOwner.includes('Every real tool remains selectable'),'Tool Builder current owner should preserve all tools as selectable');", "assert(toolOwner.includes('groupedInventory'),'Tool Builder current owner should preserve grouped inventory API behavior');\nassert(toolOwner.includes('Every real tool remains selectable')||toolOwner.includes('tool identity'),'Tool Builder current owner should preserve selectable tool identity guidance');")
+          write(p, data)
+
+          # Add v10.21 to historical current-product regression.
+          p = Path('tools/run-historical-contracts.js')
+          data = read(p)
+          if "['tests/run-v10.21-tests.js']" not in data:
+              data = data.replace("['tests/run-v10.20-tests.js'],['tests/run-notes-batch-selector-tests.js']", "['tests/run-v10.20-tests.js'],['tests/run-v10.21-tests.js'],['tests/run-notes-batch-selector-tests.js']")
+          write(p, data)
+          PY
+      - name: Sync generated files and changelog
+        run: |
+          node tools/sync-app-current.js --write
+          node tools/sync-current-release.js --write
+          node tools/sync-readme-build-next.js --write
+          node tools/sync-product-build-next.js --write
+          node tools/sync-release-docs.js --write
+          node tools/sync-current-changelog.js --write
+      - name: Focused validation
+        run: |
+          node --check assets/tools-library-current.js
+          node --check data/product-hardening/tool-builder-backlog-current.js
+          node tests/run-tool-builder-taxonomy-tests.js
+          node tests/run-tool-builder-implementation-standard-tests.js
+          node tests/run-v10.21-tests.js
+      - name: Commit v10.21 patch
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "github-actions[bot]@users.noreply.github.com"
+          git add .
+          git commit -m "Implement v10.21 tool taxonomy and builder standard" || exit 0
+          git push
