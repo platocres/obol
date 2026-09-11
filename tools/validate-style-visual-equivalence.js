@@ -147,7 +147,7 @@ function firstDifference(a,b,pathName){
  }
  if(typeof a==='object'){
   const keys=[...new Set([...Object.keys(a),...Object.keys(b)])].sort();
-  for(const key of keys){const diff=firstDifference(a[key],b,key?pathName+'.'+key:pathName);if(diff)return diff;}
+  for(const key of keys){const diff=firstDifference(a[key],b[key],pathName+'.'+key);if(diff)return diff;}
   return null;
  }
  return pathName+': historical='+JSON.stringify(a)+' current='+JSON.stringify(b);
