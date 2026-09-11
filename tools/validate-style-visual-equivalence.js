@@ -56,18 +56,32 @@ async function waitForDomStable(page,timeoutMs){
  throw new Error('DOM did not settle before stylesheet comparison');
 }
 
+async function waitForToolsFullInventory(page){
+ await page.waitForFunction(()=>{
+  const inv=window.OBOL_TOOL_BUILDER_INVENTORY;
+  if(!inv||typeof inv.all!=='function')return false;
+  const remote=window.OBOL_REMOTE_EXEC_TOOL_BUILDERS_CURRENT;
+  if(remote&&typeof remote.patchToolsLibraryCompleteness==='function'){
+   try{remote.patchToolsLibraryCompleteness();}catch(_err){}
+  }
+  const normalize=value=>String(value||'').trim().toLowerCase().replace(/^.*[\\/]/,'').replace(/\.exe$/,'').replace(/\s+/g,'-');
+  const key=value=>{let name=normalize(value);if(typeof inv.key==='function')try{name=normalize(inv.key(name)||name);}catch(_err){}return name;};
+  const nodes=Array.from(document.querySelectorAll('#tool-body [data-open-tool],#tool-body [data-inventory-open],#tool-groups [data-open-tool],#tool-groups [data-inventory-open]'));
+  const visible=new Set(nodes.map(node=>key(node.getAttribute('data-open-tool')||node.getAttribute('data-inventory-open')||'')).filter(Boolean));
+  const all=Array.from(new Set(inv.all().map(record=>key(record&&record.tool)).filter(Boolean)));
+  const hidden=all.filter(tool=>!visible.has(tool));
+  window.__OBOL_STYLE_TOOLS_FULL_INVENTORY_READY__={allCount:all.length,visibleCount:visible.size,hidden};
+  return all.length>0&&hidden.length===0&&visible.has(key('impacket-psexec'))&&/psexec/i.test(document.body&&document.body.innerText||'');
+ },null,{timeout:30000});
+}
+
 async function waitForRouteReady(page,route){
  if(route.id==='dashboard'){
   await page.waitForSelector('[data-product-dashboard-owner="current"]',{state:'visible',timeout:15000});
   return;
  }
  if(route.id==='tools'){
-  await page.waitForFunction(()=>{
-   const inv=window.OBOL_TOOL_BUILDER_INVENTORY;
-   const complete=window.__OBOL_TOOLS_LIBRARY_INVENTORY_COMPLETE__;
-   const text=document.body&&document.body.innerText||'';
-   return !!(inv&&typeof inv.all==='function'&&complete&&/psexec/i.test(text));
-  },null,{timeout:15000});
+  await waitForToolsFullInventory(page);
  }
 }
 
