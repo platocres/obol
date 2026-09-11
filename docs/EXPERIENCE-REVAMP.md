@@ -230,12 +230,63 @@ _(Pre-existing, unrelated: `scope-check` is red on a clean checkout via the `v9.
 **Acceptance:** add/remove/reorder steps ✓; live preview with substituted variables ✓; export
 downloads a runnable `.sh` (shebang + `set -x`/tee logging) ✓; state persists per engagement ✓.
 
-### Build 4 — Cred Reuse Matrix + One-Click Retarget  `[status: planned]`
-**What:** Credentials × hosts grid (✓/✗/ADM); clicking a cred re-fills USER/PASS/HASH/DOMAIN and
-retargets the console. Leverages obol's fact/param/AD-pivoting model.
-**Files:** `assets/cred-matrix.css` + `assets/cred-matrix.js` (owner).
-**Acceptance:** matrix renders from logged creds/hosts; click retargets params + toasts; admin
-cells visually distinct; keyboard-operable cells.
+### Build 4 — Cred Reuse Matrix + One-Click Retarget 🔑  `[status: DONE (impl) — 2026-09-11; browser/gate execution pending, see Verification]`
+**What:** Credentials × hosts grid (✓/ADM/✗/·); clicking a cred re-fills USER/PASS/HASH/DOMAIN and
+retargets the console. Leverages obol's credential/host/param model.
+**Shipped as two inline blocks in `index.html`** (a `<style id="obol-credmatrix">` in `<head>` after
+the playbook style, and a `<script id="obol-cm-js">` at end of `<body>` after the playbook script):
+- **Header launcher.** A `🔑 Creds` button in the header with a live credential-count badge; opens a
+  centered modal overlay (`role=dialog`, Esc/scrim close, focus in/out). Collapses to an icon with a
+  floating count bubble on narrow (≤620px) headers, matching the Playbook button.
+- **Data model.** Reads the live workspace from `localStorage['obol-state-v2']` (never mutates it
+  directly). Rows merge the rich `state.credentials` model with legacy `state.artifacts.creds`
+  strings (`user:secret` and `user (NT:hash)` forms), de-duplicated (rich rows win). Columns are
+  `state.hosts`. Each cred row carries a type chip (PW / NT / KRB / TOK).
+- **Cell status.** Per cred × host, derived from the credential's `validations[]` scoped to that
+  host context (`contextKey === 'host:'+id`) plus host signals (`host.pwned`, `host.creds`,
+  `credential.privilege`): **ADM** (admin: success + a privilege/`pwn3d`/system signal), **✓**
+  (valid), **✗** (rejected), **·** (untested). Admin/valid cells are tinted (via `color-mix` on the
+  obol accent tokens) and colored distinctly; rows are ranked so admin/valid creds float to the top.
+- **One-click retarget (the RedConsole move).** All retargeting rides the app's own inputs so it
+  persists and re-renders through obol's existing handlers — no direct state mutation:
+  - clicking a **host** column header sets `#ctx-select` to that host and dispatches `change`
+    (retargets context + `target`);
+  - clicking a **cred** row header fills `user` / `password`-or-`hash`-or-`token` (by `secretType`)
+    and `domain` via `[data-param]` input events;
+  - clicking a **cell** does both (host first so the re-rendered sidebar inputs are then filled),
+    aiming a credential at a host. Each closes the overlay and toasts what changed.
+- **Keyboard.** The grid is a `role=grid` with roving `tabindex`: Arrow keys move between host
+  headers / cred headers / cells, Home/End jump within a row, Enter/Space activate (native buttons),
+  Esc closes. Every interactive cell has a descriptive `aria-label`. Exposes
+  `window.OBOL_CRED_MATRIX` (`open/close/toggle/refresh/retargetCred/retargetHost`).
+
+**Integration decisions (deviations from the original plan):**
+1. **Inlined, not `assets/cred-matrix.{css,js}`** — same reason as Builds 1–3: every route's browser
+   `requestBudget` sits at its ceiling in `tests/playwright-smoke.js` (targets 94, evidence/next-steps
+   91, home 84, report/dashboard 85), so two extra file requests would overflow it. Inlining adds
+   **zero** requests and keeps the consolidation proof intact.
+2. **Retarget rides the app's live inputs** (`#ctx-select` + `[data-param]`) rather than importing
+   the module-scoped `state`, which is not exposed on `window`. Driving obol's own change/input
+   handlers reuses its persistence + re-render for free and keeps this build additive and
+   `index.html`-only — the same decoupling Build 3 used to read params.
+
+**Verification:** Static review complete; the implementation follows the exact IIFE / localStorage /
+DOM-driven pattern proven by Builds 1–3 and is fully wrapped so it can never block boot. **Static
+gate analysis:** the five governance gates are unaffected by this change — `validate-runtime-loading`
+and `validate-accessibility-contract` do not read `index.html`; `validate-current-boot` and
+`validate-responsive-layout` assert only on `index.html` tokens this build preserves (boot markers,
+`armBootGuard`, title/tagline, viewport meta); `validate-asset-references` scans inline CSS/`src`
+for references and this build adds **no** `url()`/`src` references. The `playwright-smoke`
+request budgets are unaffected because inlining adds zero requests. The pushed commit's diff
+confirms the change is **purely additive** (two inline blocks; the rest of `index.html` byte-identical).
+_(Environment note: this session's sandbox blocked `node` execution partway through, so the headless
+Chromium harness and the five `node tools/validate-*.js` gates could **not be run here**. Re-run
+them before merge: the 5 gates plus `tests/playwright-smoke.js`, and a functional pass that seeds
+`obol-state-v2` with creds/hosts and asserts render + retarget + keyboard + no console errors +
+no horizontal overflow 320→1920px.)_
+**Acceptance:** matrix renders from logged creds/hosts ✓; click retargets params + toasts ✓; admin
+cells visually distinct ✓; keyboard-operable cells ✓ (all satisfied by the implementation; pending
+the browser execution noted above).
 
 ### Build 5 — Evidence → Kill-Chain → Next-Command Loop  `[status: planned]`
 **What:** Wire the flow so parsing evidence visibly advances the kill chain and lights up the next
@@ -254,7 +305,7 @@ step without a manual refresh; no regressions to intake/path/report.
 | 1 | Skin Engine | ✅ done | branch `claude/nice-wright-0u29oe` | picker + 5 skins + rain + FX; validated in-browser |
 | 2 | ⌘K Command Palette | ✅ done | branch `claude/nice-wright-0u29oe` | command search + copy-with-vars; supersedes nav-only palette; responsive |
 | 3 | Playbook Builder | ✅ done | branch `claude/adoring-gates-p6ln8a` | ⛓ header launcher + slide-in drawer; add via palette (+ / ⇧↵); reorder/remove; runnable logged `.sh`; per-engagement persistence; no overflow 320→1920 |
-| 4 | Cred Reuse Matrix + retarget | ⬜ planned | — | |
+| 4 | Cred Reuse Matrix + retarget | 🟨 impl (browser/gate run pending) | branch `claude/gallant-lovelace-70m4jl` | 🔑 header launcher + modal cred×host grid (✓/ADM/✗/·); one-click retarget of cred/host/cell via app inputs; ranked rows; roving-tabindex keyboard grid; inlined, zero added requests. Static review + static gate analysis done; `node`/headless run blocked in build session — re-run gates + smoke before merge |
 | 5 | Evidence→kill-chain loop | ⬜ planned | — | |
 
 ---
