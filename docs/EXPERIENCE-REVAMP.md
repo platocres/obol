@@ -181,14 +181,54 @@ five workspace gates pass.
 **Scoring note:** results rank by "all query tokens present, earliest + prefix wins"; the
 no-match sentinel is `-Infinity` (filtered with `isFinite`) so negative match scores are kept.
 
-### Build 3 — Playbook Builder ⛓  `[status: planned]`
+### Build 3 — Playbook Builder ⛓  `[status: DONE — 2026-09-11]`
 **What:** The multi-command chainer the owner flagged. Add commands from any surface → reorder →
 export an executable, logged `.sh` with variables substituted.
 **Why:** Converts obol from reference into repeatable automation; pairs with existing params.
-**Files:** `assets/playbook.css` + `assets/playbook.js` (owner). Reuse existing export/report
-plumbing where possible.
-**Acceptance:** add/remove/reorder steps; live preview with substituted variables; export downloads
-a runnable `.sh` (shebang + `set -x`/tee logging); state persists per engagement.
+**Shipped as two inline blocks in `index.html`** (a `<style id="obol-playbook">` in `<head>` after
+the palette style, and a `<script id="obol-pb-js">` at end of `<body>` after the palette script),
+plus a small enhancement to the Build 2 palette blocks.
+- **Header launcher.** A `⛓ Playbook` button in the header with a live step-count badge; opens a
+  right-side slide-in drawer (`role=dialog`, Esc/scrim close, focus in/out, `prefers-reduced-motion`
+  guarded). Collapses to an icon + floating count bubble on narrow (≤620px) headers.
+- **Add from any surface = the command palette.** The palette (Build 2) already indexes every
+  `OBOL_LANES` command **and** every `OBOL_SCRIPTS` snippet, so it is the cross-surface entry point:
+  each command row gained a `+` affordance and **⇧↵ adds to the playbook** (plain ↵ still copies).
+  No frozen card/tool renderers were touched.
+- **Drawer.** Numbered steps with ▲/▼ reorder + ✕ remove; a live **Preview · runnable .sh** that is
+  byte-identical to what Export writes; footer **Export .sh / Copy / Clear**.
+- **The `.sh`.** `#!/usr/bin/env bash`, a header caveat, `set -o pipefail`, a **Variables preamble**
+  built from engagement params (referenced `{{k}}` → a shell var seeded from `state.params`/live
+  sidebar inputs, `base_dn` derived from `domain`; unset ones emitted as `k=""  # TODO`), then
+  `LOG=…; exec > >(tee -a "$LOG") 2>&1; set -x`, one commented section per step with `{{k}}`→`"$k"`.
+  Not `set -e` (offensive tools return nonzero legitimately). Export reuses `OBOL_REPORT_V2.download`.
+- **Per-engagement persistence.** Steps live in `localStorage` under `obol-playbook::<workspace
+  createdAt>`. Because the app only writes `createdAt` on its first `save()`, steps added before
+  that land in a `::default` bucket and are **migrated forward** into the real engagement key the
+  first time it appears, so nothing is orphaned. Exposes `window.OBOL_PLAYBOOK`
+  (`add/open/close/toggle/clear/list`).
+
+**Integration decisions (deviations from the original plan):**
+1. **Inlined, not `assets/playbook.{css,js}`** — same reason as Builds 1–2: every route's browser
+   `requestBudget` sits at ceiling, so two extra file requests overflow it. Inlining adds **zero**
+   requests and keeps the consolidation proof intact.
+2. **Add-to-playbook rides the palette** rather than editing per-surface card/tool renderers — the
+   palette is already the one place that sees all commands, so this satisfies "from any surface"
+   additively and index.html-only.
+
+**Verified (headless Chromium + governance gates):** a 25-check functional suite passes — header
+button + `OBOL_PLAYBOOK` present; add/reorder/remove + badge; engagement-scoped persistence and
+persistence across reload; preview has shebang/`set -x`/tee, declares + substitutes vars, marks
+unset vars TODO; a filled param flows into the preamble; **Export triggers an `obol-playbook-*.sh`
+download**; palette `+` and ⇧↵ both add; **zero console errors**. **No horizontal overflow at any
+width 320→1920px** (drawer closed, drawer open, and palette open, sweep with a deliberately long
+command); 320px is the floor only because obol's existing header controls hit their own
+minimum-content width below that — no real device is narrower. Passing: `validate-asset-references`,
+`validate-runtime-loading`, `validate-current-boot`, `validate-responsive-layout`,
+`validate-accessibility-contract`.
+_(Pre-existing, unrelated: `scope-check` is red on a clean checkout via the `v9.99` queue assertion.)_
+**Acceptance:** add/remove/reorder steps ✓; live preview with substituted variables ✓; export
+downloads a runnable `.sh` (shebang + `set -x`/tee logging) ✓; state persists per engagement ✓.
 
 ### Build 4 — Cred Reuse Matrix + One-Click Retarget  `[status: planned]`
 **What:** Credentials × hosts grid (✓/✗/ADM); clicking a cred re-fills USER/PASS/HASH/DOMAIN and
@@ -213,7 +253,7 @@ step without a manual refresh; no regressions to intake/path/report.
 | — | Interactive showcase | ✅ done | artifact v2 | 5 skins + FX toggle + motion |
 | 1 | Skin Engine | ✅ done | branch `claude/nice-wright-0u29oe` | picker + 5 skins + rain + FX; validated in-browser |
 | 2 | ⌘K Command Palette | ✅ done | branch `claude/nice-wright-0u29oe` | command search + copy-with-vars; supersedes nav-only palette; responsive |
-| 3 | Playbook Builder | ⬜ planned | — | |
+| 3 | Playbook Builder | ✅ done | branch `claude/adoring-gates-p6ln8a` | ⛓ header launcher + slide-in drawer; add via palette (+ / ⇧↵); reorder/remove; runnable logged `.sh`; per-engagement persistence; no overflow 320→1920 |
 | 4 | Cred Reuse Matrix + retarget | ⬜ planned | — | |
 | 5 | Evidence→kill-chain loop | ⬜ planned | — | |
 
@@ -223,8 +263,8 @@ step without a manual refresh; no regressions to intake/path/report.
 
 Give Claude any of these:
 
-- **`Review docs/EXPERIENCE-REVAMP.md and start Build 1 (Skin Engine).`**  ← the next build
+- `Review docs/EXPERIENCE-REVAMP.md and start Build 1 (Skin Engine).`
 - `Review docs/EXPERIENCE-REVAMP.md and start Build 2 (Command Palette).`
 - `Review docs/EXPERIENCE-REVAMP.md and start Build 3 (Playbook Builder).`
-- `Review docs/EXPERIENCE-REVAMP.md and start Build 4 (Cred Matrix).`
+- **`Review docs/EXPERIENCE-REVAMP.md and start Build 4 (Cred Matrix).`**  ← the next build
 - `Review docs/EXPERIENCE-REVAMP.md and start Build 5 (Evidence loop).`

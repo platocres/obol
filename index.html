@@ -487,6 +487,9 @@ html.obol-fx[data-skin="matrix"] .coin{animation:obol-wire 1.8s ease-in-out infi
 .obol-pal-sub{font-family:var(--mono,monospace);font-size:11px;color:var(--dim,#8b98a9);white-space:nowrap;overflow:hidden;text-overflow:ellipsis;margin-top:2px}
 .obol-pal-hint{flex:0 0 auto;font-family:var(--mono,monospace);font-size:10px;color:var(--dim,#8b98a9);opacity:0;transition:opacity .1s}
 .obol-pal-row[aria-selected="true"] .obol-pal-hint{opacity:1}
+.obol-pal-add{flex:0 0 auto;width:22px;height:22px;border-radius:6px;border:1px solid var(--border,#2d3646);background:transparent;color:var(--dim,#8b98a9);font-size:15px;line-height:1;cursor:pointer;display:none}
+.obol-pal-row:hover .obol-pal-add,.obol-pal-row[aria-selected="true"] .obol-pal-add{display:inline-flex;align-items:center;justify-content:center}
+.obol-pal-add:hover{color:var(--fg,#d7e0ea);border-color:var(--accent,#58d68d)}
 .obol-pal-empty{padding:22px 16px;text-align:center;color:var(--dim,#8b98a9);font-size:13px}
 #obol-pal-foot{flex:0 0 auto;display:flex;gap:14px;flex-wrap:wrap;padding:8px 14px;border-top:1px solid var(--border,#2d3646);
   font-family:var(--mono,monospace);font-size:10px;color:var(--dim,#8b98a9)}
@@ -502,6 +505,68 @@ html.obol-fx[data-skin="matrix"] .coin{animation:obol-wire 1.8s ease-in-out infi
   #obol-pal-foot{display:none}
 }
 @media(prefers-reduced-motion:reduce){#obol-pal-toast{transition:none}}
+</style>
+<!-- Playbook Builder (Build 3): chain commands from any surface into a runnable, logged .sh. Inlined for zero added requests; theme-aware via obol's tokens; per-engagement persistence. -->
+<style id="obol-playbook">
+#obol-pb-btn{display:flex;align-items:center;gap:7px;cursor:pointer;background:var(--panel2);color:var(--dim);border:1px solid var(--border);border-radius:8px;padding:5px 10px;font:600 12px/1 -apple-system,'Segoe UI',Roboto,sans-serif;letter-spacing:.4px}
+#obol-pb-btn:hover{color:var(--fg);border-color:var(--accent)}
+#obol-pb-btn .ic{font-size:13px;line-height:1}
+#obol-pb-btn .ct{min-width:16px;text-align:center;font-family:var(--mono,monospace);font-size:10px;padding:1px 5px;border-radius:999px;background:var(--bg);border:1px solid var(--border);color:var(--dim)}
+#obol-pb-btn[data-count]:not([data-count="0"]) .ct{color:var(--accent);border-color:var(--accent);box-shadow:0 0 8px var(--glow-soft)}
+#obol-pb{position:fixed;inset:0;z-index:900;display:none}
+#obol-pb.open{display:block}
+#obol-pb-scrim{position:absolute;inset:0;background:rgba(0,0,0,.5);backdrop-filter:blur(2px)}
+#obol-pb-panel{position:absolute;top:0;right:0;height:100%;width:min(460px,100%);display:flex;flex-direction:column;background:var(--panel);color:var(--fg);border-left:1px solid var(--border);box-shadow:-18px 0 50px rgba(0,0,0,.5);transform:translateX(100%);transition:transform .22s ease}
+#obol-pb.open #obol-pb-panel{transform:translateX(0)}
+#obol-pb-head{flex:0 0 auto;display:flex;align-items:center;gap:10px;padding:14px 16px;border-bottom:1px solid var(--border)}
+#obol-pb-head .sub{font-family:var(--mono,monospace);font-size:10px;color:var(--dim);letter-spacing:1.5px;text-transform:uppercase}
+#obol-pb-head h2{margin:0;font:700 15px/1.1 -apple-system,'Segoe UI',Roboto,sans-serif;letter-spacing:.3px;flex:1 1 auto}
+#obol-pb-close{cursor:pointer;background:transparent;border:1px solid var(--border);border-radius:7px;color:var(--dim);padding:4px 9px;font-size:14px;line-height:1}
+#obol-pb-close:hover{color:var(--fg);border-color:var(--accent)}
+#obol-pb-steps{flex:1 1 auto;overflow-y:auto;overscroll-behavior:contain;padding:10px 12px;min-height:0}
+.obol-pb-step{display:flex;gap:9px;align-items:flex-start;background:var(--panel2);border:1px solid var(--border);border-radius:9px;padding:9px 10px;margin-bottom:8px}
+.obol-pb-num{flex:0 0 auto;font-family:var(--mono,monospace);font-size:11px;color:var(--accent);padding-top:2px;min-width:18px}
+.obol-pb-body{flex:1 1 auto;min-width:0}
+.obol-pb-title{font-size:13px;font-weight:600;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.obol-pb-cmd{font-family:var(--mono,monospace);font-size:11px;color:var(--dim);white-space:nowrap;overflow:hidden;text-overflow:ellipsis;margin-top:3px}
+.obol-pb-ctrls{flex:0 0 auto;display:flex;flex-direction:column;gap:3px}
+.obol-pb-ctrls button{cursor:pointer;background:transparent;border:1px solid transparent;border-radius:5px;color:var(--dim);font-size:11px;line-height:1;padding:2px 5px}
+.obol-pb-ctrls button:hover:not(:disabled){color:var(--fg);border-color:var(--accent)}
+.obol-pb-ctrls button:disabled{opacity:.3;cursor:default}
+.obol-pb-ctrls .rm:hover{color:var(--danger);border-color:var(--danger)}
+.obol-pb-empty{text-align:center;color:var(--dim);font-size:13px;padding:34px 18px;line-height:1.6}
+.obol-pb-empty kbd{border:1px solid var(--border);border-radius:4px;padding:0 5px;font-family:var(--mono,monospace);color:var(--fg)}
+#obol-pb-preview-wrap{flex:0 0 auto;border-top:1px solid var(--border);display:flex;flex-direction:column;max-height:38%}
+#obol-pb-preview-head{display:flex;align-items:center;padding:8px 14px 2px}
+#obol-pb-preview-head .lbl{font-family:var(--mono,monospace);font-size:10px;letter-spacing:1.5px;text-transform:uppercase;color:var(--dim)}
+#obol-pb-preview{margin:0;overflow:auto;overscroll-behavior:contain;padding:4px 14px 10px;font-family:var(--mono,monospace);font-size:11px;line-height:1.45;color:var(--fg);white-space:pre;min-height:0}
+#obol-pb-foot{flex:0 0 auto;display:flex;gap:8px;flex-wrap:wrap;padding:10px 14px;border-top:1px solid var(--border)}
+.obol-pb-act{cursor:pointer;background:var(--panel2);color:var(--fg);border:1px solid var(--border);border-radius:8px;padding:8px 12px;font:600 12px/1 -apple-system,'Segoe UI',Roboto,sans-serif;letter-spacing:.3px}
+.obol-pb-act:hover:not(:disabled){border-color:var(--accent)}
+.obol-pb-act.primary{border-color:var(--accent);box-shadow:0 0 14px var(--glow-soft)}
+.obol-pb-act:disabled{opacity:.4;cursor:default}
+.obol-pb-act.clear{margin-left:auto}
+.obol-pb-act.clear:hover:not(:disabled){border-color:var(--danger);color:var(--danger)}
+#obol-pb-toast{position:fixed;left:50%;bottom:26px;transform:translateX(-50%) translateY(10px);z-index:1001;background:var(--panel);color:var(--fg);border:1px solid var(--accent);border-radius:8px;padding:9px 15px;font:600 12.5px/1 -apple-system,'Segoe UI',Roboto,sans-serif;letter-spacing:.3px;box-shadow:0 10px 30px rgba(0,0,0,.5),0 0 18px var(--glow-soft);opacity:0;pointer-events:none;transition:opacity .18s ease,transform .18s ease}
+#obol-pb-toast.show{opacity:1;transform:translateX(-50%) translateY(0)}
+@media(max-width:620px){
+  /* The narrow (<=980px) header is an intentional single-row nowrap operator bar. Collapse
+     the Playbook button to an icon with a floating count bubble so it adds minimal width and
+     never pushes the row past the viewport. */
+  #obol-pb-btn{position:relative;padding:5px 7px;gap:0}
+  #obol-pb-btn .lbl{display:none}
+  #obol-pb-btn .ic{font-size:12px}
+  #obol-pb-btn .ct{position:absolute;top:-5px;right:-4px;min-width:0;height:14px;padding:0 4px;font-size:9px;line-height:14px}
+  #obol-pb-btn[data-count="0"] .ct{display:none}
+}
+@media(max-width:520px){
+  #obol-pb-panel{width:100%}
+  #obol-pb-preview-wrap{max-height:32%}
+}
+@media(prefers-reduced-motion:reduce){
+  #obol-pb-panel{transition:none}
+  #obol-pb-toast{transition:none}
+}
 </style>
 </head>
 <body>
@@ -712,11 +777,12 @@ function rowHtml(item,flatIdx){
  var kindLabel=item.kind==='nav'?'go':'cmd';
  var sub=item.kind==='nav'?item.sub:(item.sub+(item.run?'  ·  '+firstLine(item.run):''));
  var hint=item.kind==='nav'?'go →':'copy';
+ var addBtn=item.kind==='cmd'?'<button class="obol-pal-add" type="button" data-add="'+flatIdx+'" title="Add to playbook" aria-label="Add to playbook">+</button>':'';
  return '<div class="obol-pal-row" role="option" data-i="'+flatIdx+'" aria-selected="false">'+
   '<span class="obol-pal-kind '+kindLabel+'">'+kindLabel+'</span>'+
   '<span class="obol-pal-main"><span class="obol-pal-title">'+esc(item.label)+'</span>'+
   '<span class="obol-pal-sub">'+esc(sub)+'</span></span>'+
-  '<span class="obol-pal-hint">'+hint+'</span></div>';
+  addBtn+'<span class="obol-pal-hint">'+hint+'</span></div>';
 }
 function render(q){
  q=(q||'').trim().toLowerCase();
@@ -739,6 +805,10 @@ function render(q){
   r.addEventListener('mousemove',function(){setActive(+r.dataset.i);});
   r.addEventListener('click',function(){activate(+r.dataset.i);});
  });
+ list.querySelectorAll('.obol-pal-add').forEach(function(b){
+  b.addEventListener('mousedown',function(e){e.stopPropagation();});
+  b.addEventListener('click',function(e){e.stopPropagation();addToPlaybook(+b.dataset.add);});
+ });
  active=0; paint();
 }
 function paint(){
@@ -760,6 +830,11 @@ function activate(i){
  var text=fill(item.run);
  try{ (root.navigator.clipboard&&root.navigator.clipboard.writeText(text)); }catch(e){}
  close(); toast('Copied: '+firstLine(text));
+}
+function addToPlaybook(i){
+ var item=ITEMS[i]; if(!item||item.kind!=='cmd')return;
+ var ok=false; try{ ok=!!(root.OBOL_PLAYBOOK&&root.OBOL_PLAYBOOK.add(item.run,item.label)); }catch(e){}
+ toast(ok?'Added to playbook: '+firstLine(item.label):'Playbook unavailable');
 }
 
 /* ---- open / close ---- */
@@ -787,7 +862,7 @@ function build(){
  el.innerHTML='<div id="obol-pal-panel">'+
   '<input id="obol-pal-input" role="combobox" aria-controls="obol-pal-list" aria-expanded="true" aria-autocomplete="list" autocomplete="off" spellcheck="false" placeholder="Search commands, or jump to a section…">'+
   '<div id="obol-pal-list" role="listbox" aria-label="Results"></div>'+
-  '<div id="obol-pal-foot"><span><kbd>↑</kbd><kbd>↓</kbd> move</span><span><kbd>↵</kbd> copy / go</span><span><kbd>esc</kbd> close</span></div>'+
+  '<div id="obol-pal-foot"><span><kbd>↑</kbd><kbd>↓</kbd> move</span><span><kbd>↵</kbd> copy / go</span><span><kbd>⇧↵</kbd> playbook</span><span><kbd>esc</kbd> close</span></div>'+
  '</div>';
  doc.body.appendChild(el);
  toastEl=doc.createElement('div'); toastEl.id='obol-pal-toast'; toastEl.setAttribute('role','status'); toastEl.setAttribute('aria-live','polite'); doc.body.appendChild(toastEl);
@@ -797,7 +872,7 @@ function build(){
  el.addEventListener('keydown',function(e){
   if(e.key==='ArrowDown'){e.preventDefault();move(1);}
   else if(e.key==='ArrowUp'){e.preventDefault();move(-1);}
-  else if(e.key==='Enter'){e.preventDefault();if(active>=0)activate(active);}
+  else if(e.key==='Enter'){e.preventDefault();if(active>=0){e.shiftKey?addToPlaybook(active):activate(active);}}
   else if(e.key==='Escape'){e.preventDefault();close();}
  });
 }
@@ -812,6 +887,185 @@ doc.addEventListener('click',function(e){
 },true);
 
 root.OBOL_PALETTE=Object.freeze({open:open,close:close,toggle:toggle});
+})(window);
+</script>
+<!-- Playbook Builder behavior (Build 3): inlined for zero added requests. Chains commands into a runnable, logged .sh; persists per engagement. -->
+<script id="obol-pb-js">
+'use strict';
+(function(root){
+var doc=root.document; if(!doc) return;
+function esc(s){return String(s==null?'':s).replace(/[&<>"]/g,function(c){return {'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c];});}
+function firstLine(s){var t=String(s).split('\n')[0];return t.length>120?t.slice(0,120)+'…':t;}
+
+var LS_STATE='obol-state-v2';
+var steps=[], key=null, el=null, stepsEl=null, previewEl=null, btnEl=null, toastEl=null, lastFocus=null;
+
+/* ---- engagement-scoped persistence (keyed by the workspace createdAt) ---- */
+function readWorkspace(){ try{ var raw=root.localStorage.getItem(LS_STATE); return raw?JSON.parse(raw):null; }catch(e){ return null; } }
+function engagementKey(){ var ws=readWorkspace(); var id=(ws&&ws.createdAt)||'default'; return 'obol-playbook::'+id; }
+function isStep(s){ return s&&typeof s==='object'&&typeof s.cmd==='string'; }
+function loadFrom(k){ try{ var raw=root.localStorage.getItem(k); var arr=raw?JSON.parse(raw):[]; steps=Array.isArray(arr)?arr.filter(isStep):[]; }catch(e){ steps=[]; } }
+function load(){
+ var desired=engagementKey();
+ // The workspace only persists its createdAt after the app's first save. Carry any
+ // steps added before that (the "::default" bucket) forward into the real engagement
+ // key once it appears, so nothing is orphaned when the workspace is first saved.
+ if(key && key!==desired && /::default$/.test(key)){
+  try{ var cur=root.localStorage.getItem(key); if(cur&&!root.localStorage.getItem(desired))root.localStorage.setItem(desired,cur); root.localStorage.removeItem(key); }catch(e){}
+ }
+ key=desired; loadFrom(key);
+}
+function persist(){ try{ root.localStorage.setItem(key,JSON.stringify(steps)); }catch(e){} }
+
+/* ---- params: live sidebar inputs win, fall back to saved workspace params ---- */
+function params(){
+ var m={}, ws=readWorkspace();
+ if(ws&&ws.params&&typeof ws.params==='object')for(var k in ws.params){ if(Object.prototype.hasOwnProperty.call(ws.params,k))m[k.toLowerCase()]=ws.params[k]||''; }
+ doc.querySelectorAll('[data-param]').forEach(function(i){ var p=(i.getAttribute('data-param')||'').toLowerCase(); if(p)m[p]=i.value||''; });
+ if((!m.base_dn)&&m.domain)m.base_dn=m.domain.split('.').map(function(x){return 'DC='+x;}).join(',');
+ return m;
+}
+function refVars(text){ var out=[],seen={},re=/\{\{(\w+)\}\}/g,x; while((x=re.exec(text))){ if(!seen[x[1]]){seen[x[1]]=1;out.push(x[1]);} } return out; }
+function allVars(){ var set=[],seen={}; steps.forEach(function(s){ refVars(s.cmd).forEach(function(v){ if(!seen[v]){seen[v]=1;set.push(v);} }); }); return set; }
+function subst(cmd){ return String(cmd).replace(/"?\{\{(\w+)\}\}"?/g,function(_m,k){ return '"$'+k+'"'; }); }
+function shQuote(v){ return '"'+String(v).replace(/(["\\$`])/g,'\\$1')+'"'; }
+
+/* ---- build the runnable, logged .sh (preview == export) ---- */
+function buildScript(){
+ var p=params(), vars=allVars(), L=[];
+ L.push('#!/usr/bin/env bash');
+ L.push('#');
+ L.push('# Obol Playbook — exported '+new Date().toISOString());
+ L.push('# Review every command before running. Authorized engagements only.');
+ L.push('# Nothing runs until you execute this file; each step is logged.');
+ L.push('#');
+ L.push('set -o pipefail');
+ L.push('');
+ if(vars.length){
+  L.push('# \u2500\u2500 Variables (from engagement params \u2014 fill any marked TODO) \u2500\u2500');
+  vars.forEach(function(v){ var val=p[v];
+   if(val!=null&&val!=='')L.push(v+'='+shQuote(val));
+   else L.push(v+'=""            # TODO: set '+v+' before running');
+  });
+  L.push('');
+ }
+ L.push('# \u2500\u2500 Logging: tee all output to a timestamped log \u2500\u2500');
+ L.push('LOG="obol-playbook-$(date +%Y%m%d-%H%M%S).log"');
+ L.push('exec > >(tee -a "$LOG") 2>&1');
+ L.push('set -x');
+ L.push('');
+ steps.forEach(function(s,i){
+  L.push('# \u2500\u2500 ['+(i+1)+'] '+String(s.label||'step').replace(/\n/g,' ')+' \u2500\u2500');
+  L.push(subst(s.cmd));
+  L.push('');
+ });
+ L.push('set +x');
+ L.push('echo "Playbook complete ('+steps.length+' step'+(steps.length===1?'':'s')+'). Log: $LOG"');
+ return L.join('\n')+'\n';
+}
+
+/* ---- render ---- */
+function renderSteps(){
+ if(!stepsEl)return;
+ if(!steps.length){
+  stepsEl.innerHTML='<div class="obol-pb-empty">No steps yet.<br>Open the command palette with <kbd>Ctrl/\u2318 K</kbd>, find a command, then press <kbd>\u21e7\u21b5</kbd> or click <b>+</b> to add it here.</div>';
+ } else {
+  var h='';
+  steps.forEach(function(s,i){
+   h+='<div class="obol-pb-step" role="listitem">'
+    + '<span class="obol-pb-num">'+(i+1)+'</span>'
+    + '<div class="obol-pb-body"><div class="obol-pb-title">'+esc(s.label||'step')+'</div>'
+    +   '<div class="obol-pb-cmd">'+esc(firstLine(subst(s.cmd)))+'</div></div>'
+    + '<div class="obol-pb-ctrls">'
+    +   '<button class="up" type="button" aria-label="Move step '+(i+1)+' up" data-i="'+i+'"'+(i===0?' disabled':'')+'>\u25b2</button>'
+    +   '<button class="dn" type="button" aria-label="Move step '+(i+1)+' down" data-i="'+i+'"'+(i===steps.length-1?' disabled':'')+'>\u25bc</button>'
+    +   '<button class="rm" type="button" aria-label="Remove step '+(i+1)+'" data-i="'+i+'">\u2715</button>'
+    + '</div></div>';
+  });
+  stepsEl.innerHTML=h;
+  stepsEl.querySelectorAll('.up').forEach(function(b){b.addEventListener('click',function(){move(+b.dataset.i,-1);});});
+  stepsEl.querySelectorAll('.dn').forEach(function(b){b.addEventListener('click',function(){move(+b.dataset.i,1);});});
+  stepsEl.querySelectorAll('.rm').forEach(function(b){b.addEventListener('click',function(){remove(+b.dataset.i);});});
+ }
+ if(previewEl)previewEl.textContent=steps.length?buildScript():'# Add commands to build a runnable .sh playbook.';
+ syncActions();
+}
+function syncActions(){ var has=steps.length>0; ['obol-pb-export','obol-pb-copy','obol-pb-clear'].forEach(function(id){var b=doc.getElementById(id);if(b)b.disabled=!has;}); }
+function updateBadge(){ if(!btnEl)btnEl=doc.getElementById('obol-pb-btn'); if(!btnEl)return; var n=steps.length;
+ btnEl.setAttribute('data-count',String(n)); var ct=btnEl.querySelector('.ct'); if(ct)ct.textContent=n;
+ btnEl.setAttribute('aria-label','Playbook \u2014 '+n+' step'+(n===1?'':'s')); }
+
+/* ---- operations (always target the current engagement) ---- */
+function changed(){ persist(); updateBadge(); if(isOpen())renderSteps(); }
+function add(cmd,label){ if(!cmd)return false; load();
+ steps.push({id:'s'+Date.now().toString(36)+Math.random().toString(36).slice(2,6),cmd:String(cmd),label:(String(label||'command').trim())||'command'});
+ changed(); return true; }
+function move(i,d){ var j=i+d; if(i<0||i>=steps.length||j<0||j>=steps.length)return; var t=steps[i];steps[i]=steps[j];steps[j]=t; changed(); }
+function remove(i){ if(i<0||i>=steps.length)return; steps.splice(i,1); changed(); }
+function clearAll(){ if(!steps.length)return; if(!root.confirm('Clear all '+steps.length+' playbook step'+(steps.length===1?'':'s')+'?'))return; steps=[]; changed(); toast('Playbook cleared'); }
+
+/* ---- export / copy ---- */
+function scriptName(){ return 'obol-playbook-'+new Date().toISOString().slice(0,10)+'.sh'; }
+function exportSh(){ if(!steps.length)return; var txt=buildScript(), name=scriptName();
+ try{
+  if(root.OBOL_REPORT_V2&&typeof root.OBOL_REPORT_V2.download==='function'){ root.OBOL_REPORT_V2.download(name,txt); }
+  else { var blob=new Blob([txt],{type:'text/x-shellscript;charset=utf-8'}); var a=doc.createElement('a'); a.href=URL.createObjectURL(blob); a.download=name; a.click(); root.setTimeout(function(){URL.revokeObjectURL(a.href);},1500); }
+  toast('Exported '+name);
+ }catch(e){ toast('Export failed'); }
+}
+function copyScript(){ if(!steps.length)return; try{ root.navigator.clipboard&&root.navigator.clipboard.writeText(buildScript()); toast('Script copied'); }catch(e){} }
+
+/* ---- toast ---- */
+function toast(msg){ if(!toastEl)return; toastEl.textContent=msg; toastEl.classList.add('show');
+ root.clearTimeout(toast._t); toast._t=root.setTimeout(function(){toastEl.classList.remove('show');},1600); }
+
+/* ---- open / close ---- */
+function isOpen(){return el&&el.classList.contains('open');}
+function open(){ if(!el)build(); load(); updateBadge(); renderSteps(); if(isOpen())return;
+ lastFocus=doc.activeElement; el.classList.add('open');
+ root.setTimeout(function(){var c=doc.getElementById('obol-pb-close');if(c)c.focus();},0); }
+function close(){ if(!isOpen())return; el.classList.remove('open'); if(lastFocus&&doc.contains(lastFocus))try{lastFocus.focus();}catch(e){} }
+function toggle(){ isOpen()?close():open(); }
+
+/* ---- build DOM ---- */
+function build(){
+ if(doc.getElementById('obol-pb'))return;
+ el=doc.createElement('div'); el.id='obol-pb'; el.setAttribute('role','dialog'); el.setAttribute('aria-modal','true'); el.setAttribute('aria-label','Playbook builder');
+ el.innerHTML=''
+  +'<div id="obol-pb-scrim"></div>'
+  +'<div id="obol-pb-panel">'
+  + '<div id="obol-pb-head"><span class="sub">\u26d3 Playbook</span><h2 id="obol-pb-title">Command chain</h2>'
+  +   '<button id="obol-pb-close" type="button" aria-label="Close playbook">\u2715</button></div>'
+  + '<div id="obol-pb-steps" role="list"></div>'
+  + '<div id="obol-pb-preview-wrap"><div id="obol-pb-preview-head"><span class="lbl">Preview \u00b7 runnable .sh</span></div>'
+  +   '<pre id="obol-pb-preview" tabindex="0" aria-label="Script preview"></pre></div>'
+  + '<div id="obol-pb-foot">'
+  +   '<button class="obol-pb-act primary" id="obol-pb-export" type="button">\u2b07 Export .sh</button>'
+  +   '<button class="obol-pb-act" id="obol-pb-copy" type="button">Copy</button>'
+  +   '<button class="obol-pb-act clear" id="obol-pb-clear" type="button">Clear</button>'
+  + '</div>'
+  +'</div>';
+ doc.body.appendChild(el);
+ toastEl=doc.createElement('div'); toastEl.id='obol-pb-toast'; toastEl.setAttribute('role','status'); toastEl.setAttribute('aria-live','polite'); doc.body.appendChild(toastEl);
+ stepsEl=doc.getElementById('obol-pb-steps'); previewEl=doc.getElementById('obol-pb-preview');
+ doc.getElementById('obol-pb-close').addEventListener('click',close);
+ doc.getElementById('obol-pb-scrim').addEventListener('click',close);
+ doc.getElementById('obol-pb-export').addEventListener('click',exportSh);
+ doc.getElementById('obol-pb-copy').addEventListener('click',copyScript);
+ doc.getElementById('obol-pb-clear').addEventListener('click',clearAll);
+ el.addEventListener('keydown',function(e){ if(e.key==='Escape'){e.preventDefault();close();} });
+}
+function buildButton(){
+ var header=doc.querySelector('header'); if(!header||doc.getElementById('obol-pb-btn'))return;
+ btnEl=doc.createElement('button'); btnEl.id='obol-pb-btn'; btnEl.type='button';
+ btnEl.setAttribute('title','Playbook \u2014 chain commands into a runnable .sh');
+ btnEl.innerHTML='<span class="ic" aria-hidden="true">\u26d3</span><span class="lbl">Playbook</span><span class="ct">0</span>';
+ btnEl.addEventListener('click',toggle);
+ header.appendChild(btnEl); updateBadge();
+}
+function install(){ try{ load(); buildButton(); }catch(e){} }
+if(doc.readyState==='loading')doc.addEventListener('DOMContentLoaded',install,{once:true}); else install();
+root.OBOL_PLAYBOOK=Object.freeze({ add:add, open:open, close:close, toggle:toggle, clear:clearAll, list:function(){return steps.slice();} });
 })(window);
 </script>
 </body>
