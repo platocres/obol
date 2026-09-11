@@ -1,25 +1,35 @@
 # Tool Builder Inventory Organization
 
-The remaining modeled Tool Builder inventory should be organized by function, not by a flat residual dump and not by whether a tool feels old, modern, niche, or popular.
+The Tools route uses one operator taxonomy. It must not create a second visible category named after the implementation backlog, such as “Remaining Tool Builder inventory by function.” `implemented builder` and `modeled` badges stay visible, but both statuses live inside the same real tool categories.
 
-Every real tool has a place. A `modeled` record means the full builder contract is still pending. It does not mean the tool is disposable.
+Every real tool has a place. A `modeled` record means the full builder contract is still pending. It does not mean the tool is disposable, deprecated, or unworthy of a route.
 
-## Functional slices
+## Operator taxonomy
 
-Use these slices when burning down the remaining modeled backlog:
+Use these categories on the live Tools route and in backlog burn-down planning:
 
-- Active Directory and Kerberos
-- Remote execution and lateral movement
-- Pivoting, tunneling, and transport
-- Enumeration and services
-- Credential capture, relay, spraying, and cracking
+- Web discovery and HTTP
+- Credentials, cracking, and secrets
+- Active Directory, Kerberos, LDAP, and PKI
+- SMB, RPC, and network services
+- Remote access, execution, and lateral movement
+- Pivoting, proxying, and tunneling
 - Privilege escalation and local enumeration
-- Shells, payloads, and transfer helpers
-- Web, browser, and request tooling
-- Cloud, containers, databases, and services
-- Controlled CVE and PoC helpers
-- Operator utilities and binary/workshop helpers
-- Needs classification
+- Shells, payloads, listeners, and file transfer
+- Databases
+- Cloud and containers
+- Exploit and CVE helpers
+- Reporting, cleanup, and operator utilities
+
+Do not expose backlog mechanics as a visible tool category. The backlog can be tracked in docs, dashboard state, and tests, but the operator should browse actual tool categories.
+
+## Placement rules
+
+- Place a tool where an operator would naturally look for it during a lab.
+- Preserve specific tool identity even when a tool shares internal builder primitives with neighbors.
+- Classic and overlapping tools stay searchable and selectable. `enum4linux` still belongs with SMB/RPC/service enumeration even when `enum4linux-ng` or another builder is preferred for some workflows.
+- Aliases and wrappers should resolve to a canonical route only when that does not erase the user's ability to find the specific tool name they intended.
+- When placement is ambiguous, prefer the category tied to the primary operator purpose, not the implementation library or package name.
 
 ## Implementation rule
 
@@ -34,7 +44,3 @@ A tool should move from `modeled` to `implemented` only when Obol ships the full
 - cleanup and report guidance;
 - Next Steps movement or blocking only when supported by Evidence;
 - regression fixtures for generation, prefill, placeholder refusal, Evidence ingestion, and path behavior where applicable.
-
-## Classic and overlapping tools
-
-Classic tools, aliases, and overlapping wrappers should stay searchable and selectable. When two tools overlap, prefer a canonical builder relationship or compatibility note rather than deleting the older tool. For example, classic enum4linux still belongs under Enumeration and services even when enum4linux-ng is the preferred builder for some workflows.
