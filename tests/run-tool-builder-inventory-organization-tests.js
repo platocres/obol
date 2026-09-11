@@ -1,0 +1,34 @@
+'use strict';
+const assert=require('assert');
+const fs=require('fs');
+const path=require('path');
+const vm=require('vm');
+const root=path.join(__dirname,'..');
+const read=rel=>fs.readFileSync(path.join(root,rel),'utf8');
+const sandbox={window:{},globalThis:null};
+sandbox.globalThis=sandbox.window;
+vm.createContext(sandbox);
+for(const rel of ['data/tool-builder-inventory.js','data/product-hardening/tool-builder-backlog-current.js']){
+ vm.runInContext(read(rel),sandbox,{filename:rel});
+}
+const api=sandbox.window.OBOL_TOOL_BUILDER_IMPLEMENTATION_AUDIT_CURRENT;
+assert(api,'Tool Builder backlog current owner should expose the audit API');
+assert.strictEqual(api.version,'v10.19','inventory organization owner should advertise the current grouping build');
+const groups=Array.from(api.modeledInventoryGroups());
+const byId=Object.fromEntries(groups.map(group=>[group.id,Array.from(group.tools)]));
+assert(byId['ad-kerberos']&&byId['ad-kerberos'].includes('bloodhound-cypher'),'AD/Kerberos slice should capture BloodHound/AD tooling');
+assert(byId['remote-exec']&&byId['remote-exec'].includes('impacket-mssqlclient'),'remote execution slice should capture MSSQL/lateral tooling');
+assert(byId['pivoting']&&byId['pivoting'].includes('ptunnel-ng'),'pivoting slice should capture tunnel transports');
+assert(byId['enum-services']&&byId['enum-services'].includes('smbclient-ng'),'enumeration slice should capture service enumeration tools');
+assert(byId.creds&&byId.creds.includes('mitm6'),'credential slice should capture relay/capture tooling');
+assert(byId.privesc&&byId.privesc.includes('godpotato'),'privilege escalation slice should capture PE helpers');
+assert(byId['web-request']&&byId['web-request'].includes('nuclei'),'web/request slice should capture scanner/request tools');
+assert(byId['cloud-data-services']&&byId['cloud-data-services'].includes('kubectl'),'cloud/data slice should capture container/cloud/database tooling');
+assert(byId['controlled-poc']&&byId['controlled-poc'].includes('cve-2024-29849'),'controlled PoC slice should capture named CVE wrappers');
+const batch=api.activeBatches()[0];
+assert(batch.groups&&batch.groups.length>=8,'active batch should expose grouped remaining inventory, not only one flat tools array');
+assert.strictEqual(api.groupForTool('enum4linux').title,'Enumeration and services','classic tools should be classified by function, not dismissed as trash');
+const source=read('data/product-hardening/tool-builder-backlog-current.js');
+assert(source.includes('Remaining Tool Builder inventory by function'),'live Tools regrouping should rename the flat inventory card');
+assert(source.includes('Every real tool remains selectable'),'copy should preserve the every-tool-has-a-place rule');
+console.log('Tool Builder inventory organization regression passed.');
