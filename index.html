@@ -411,6 +411,98 @@ OBOL-RUNTIME-MANIFEST-PROJECTION:END -->
 <script src="data/runtime-manifest.js"></script>
 <script src="assets/runtime-current.js"></script>
 <script>window.OBOL_RUNTIME_LOADER.writeStyles();</script>
+<!-- Skin engine owner: inlined after the runtime styles so its [data-skin] token overrides win the cascade, and so it adds zero browser requests (route request budgets sit at ceiling). Base skin is a no-op. -->
+<style id="obol-themes">
+:root{--glow:transparent;--glow-soft:transparent;--grid:transparent}
+html[data-skin="matrix"]{--bg:#000502;--panel:#04160c;--panel2:#07200f;--border:#124a2a;--fg:#e6ffe9;--dim:#4fbf74;--accent:#00ff66;--accent2:#ffffff;--danger:#ff2d2d;--info:#7dffb0;--glow:rgba(0,255,102,.55);--glow-soft:rgba(0,255,102,.16)}
+html[data-skin="crt"]{--bg:#0a0700;--panel:#160f02;--panel2:#1f1604;--border:#4a340a;--fg:#ffcf82;--dim:#c08a34;--accent:#ffb000;--accent2:#ffe6b0;--danger:#ff5b3b;--info:#e0ab4a;--glow:rgba(255,176,0,.5);--glow-soft:rgba(255,176,0,.14)}
+html[data-skin="neon"]{--bg:#0a0616;--panel:#160c2a;--panel2:#1e123c;--border:#3d2668;--fg:#f2e9ff;--dim:#a184d0;--accent:#ff2fb9;--accent2:#21e6ff;--danger:#ff4d6a;--info:#21e6ff;--glow:rgba(255,47,185,.5);--glow-soft:rgba(33,230,255,.16);--grid:rgba(126,72,196,.11)}
+html[data-skin="recon"]{--bg:#e9edf1;--panel:#ffffff;--panel2:#f2f5f8;--border:#d0d8e0;--fg:#1a2430;--dim:#5c6a7a;--accent:#0f7a52;--accent2:#b3630b;--danger:#c0392b;--info:#1668c2}
+.brand h1,.coin{text-shadow:0 0 16px var(--glow)}
+.timer{text-shadow:0 0 10px var(--glow)}
+nav a.active{box-shadow:0 0 18px var(--glow)}
+.state-card:hover,.svc:hover{box-shadow:0 0 22px var(--glow-soft)}
+#obol-rain,#obol-scanlines,#obol-gridwash{position:fixed;inset:0;z-index:-1;pointer-events:none}
+#obol-rain{opacity:0;transition:opacity .45s ease}
+html[data-skin="matrix"].obol-fx #obol-rain{opacity:.5}
+#obol-scanlines{opacity:0;transition:opacity .4s ease;background:repeating-linear-gradient(0deg,rgba(0,0,0,.30) 0,rgba(0,0,0,.30) 1px,transparent 2px,transparent 3px)}
+html[data-skin="crt"] #obol-scanlines{opacity:.55}
+#obol-gridwash{background-image:linear-gradient(var(--grid) 1px,transparent 1px),linear-gradient(90deg,var(--grid) 1px,transparent 1px);background-size:44px 44px}
+#obol-sweep{position:fixed;inset:0;z-index:60;pointer-events:none;opacity:0;background:linear-gradient(90deg,transparent,var(--accent),transparent);mix-blend-mode:screen}
+html.obol-fx #obol-sweep.go{animation:obol-sweep .5s ease-out}
+@keyframes obol-sweep{0%{opacity:0;transform:translateX(-100%)}18%{opacity:.45}100%{opacity:0;transform:translateX(100%)}}
+@keyframes obol-scanroll{from{background-position:0 0}to{background-position:0 3px}}
+@keyframes obol-crtflicker{0%,100%{opacity:1}92%{opacity:1}93%{opacity:.9}94%{opacity:1}97%{opacity:.95}}
+@keyframes obol-neonpulse{0%,100%{box-shadow:0 0 10px var(--glow-soft)}50%{box-shadow:0 0 22px var(--glow)}}
+@keyframes obol-neontext{0%,100%{text-shadow:0 0 12px var(--glow-soft)}50%{text-shadow:0 0 22px var(--glow)}}
+@keyframes obol-wire{0%,100%{opacity:1}50%{opacity:.82}}
+html.obol-fx[data-skin="crt"] #obol-scanlines{animation:obol-scanroll .5s steps(3) infinite}
+html.obol-fx[data-skin="crt"] header{animation:obol-crtflicker 6s linear infinite}
+html.obol-fx[data-skin="neon"] .timer{animation:obol-neonpulse 2.6s ease-in-out infinite}
+html.obol-fx[data-skin="neon"] .brand h1,html.obol-fx[data-skin="neon"] .coin{animation:obol-neontext 2.6s ease-in-out infinite}
+html.obol-fx[data-skin="matrix"] .coin{animation:obol-wire 1.8s ease-in-out infinite}
+#obol-skin{position:relative;display:flex;align-items:center}
+#obol-skin-btn{display:flex;align-items:center;gap:8px;cursor:pointer;background:var(--panel2);color:var(--dim);border:1px solid var(--border);border-radius:8px;padding:5px 10px;font:600 12px/1 -apple-system,'Segoe UI',Roboto,sans-serif;letter-spacing:.4px}
+#obol-skin-btn:hover{color:var(--fg);border-color:var(--accent)}
+#obol-skin-btn .sw{width:26px;height:12px;border-radius:3px;border:1px solid rgba(255,255,255,.16);background:linear-gradient(90deg,var(--pv1,#161b22) 0 40%,var(--pv2,#58d68d) 40% 70%,var(--pv3,#e8b54a) 70% 100%)}
+#obol-skin-btn .caret{font-size:9px;opacity:.7}
+#obol-skin-menu{position:absolute;top:calc(100% + 6px);right:0;z-index:80;min-width:210px;background:var(--panel);border:1px solid var(--border);border-radius:10px;padding:6px;box-shadow:0 12px 34px rgba(0,0,0,.5)}
+#obol-skin-menu[hidden]{display:none}
+.obol-skin-opt{display:flex;align-items:center;gap:9px;width:100%;cursor:pointer;text-align:left;background:transparent;color:var(--dim);border:1px solid transparent;border-radius:7px;padding:7px 9px;font:600 12.5px/1.1 -apple-system,'Segoe UI',Roboto,sans-serif}
+.obol-skin-opt:hover{color:var(--fg);background:var(--panel2)}
+.obol-skin-opt[aria-checked="true"]{color:var(--fg);border-color:var(--accent)}
+.obol-skin-opt .sw{width:30px;height:13px;border-radius:3px;flex-shrink:0;border:1px solid rgba(255,255,255,.16)}
+.obol-skin-sep{height:1px;background:var(--border);margin:6px 4px}
+.obol-fx-row{display:flex;align-items:center;justify-content:space-between;gap:9px;padding:7px 9px;font:600 11px/1 -apple-system,'Segoe UI',Roboto,sans-serif;letter-spacing:1.4px;text-transform:uppercase;color:var(--dim)}
+#obol-fx-toggle{display:inline-flex;align-items:center;gap:7px;cursor:pointer;background:transparent;border:1px solid var(--border);border-radius:999px;padding:3px 9px;color:inherit;font:inherit}
+#obol-fx-toggle .led{width:8px;height:8px;border-radius:50%;background:var(--dim)}
+#obol-fx-toggle[aria-pressed="true"]{color:var(--fg);border-color:var(--accent)}
+#obol-fx-toggle[aria-pressed="true"] .led{background:var(--accent);box-shadow:0 0 9px var(--glow)}
+@media (prefers-reduced-motion:reduce){#obol-rain{display:none}}
+</style>
+<!-- Command palette (Build 2): supersedes the nav-only Ctrl+K palette with command search + copy-with-variables. Inlined for zero added requests; theme-aware via obol's tokens. -->
+<style id="obol-palette">
+#obol-pal{position:fixed;inset:0;z-index:1000;display:none;justify-content:center;align-items:flex-start;
+  padding:10vh 16px 16px;background:rgba(0,0,0,.55);backdrop-filter:blur(2px)}
+#obol-pal.open{display:flex}
+#obol-pal-panel{display:flex;flex-direction:column;width:min(680px,100%);max-height:min(72vh,calc(100dvh - 96px));
+  background:var(--panel,#161b22);color:var(--fg,#d7e0ea);border:1px solid var(--border,#2d3646);
+  border-radius:12px;box-shadow:0 24px 60px rgba(0,0,0,.55),0 0 0 1px var(--glow-soft,transparent);overflow:hidden}
+#obol-pal-input{width:100%;flex:0 0 auto;background:var(--bg,#0d1117);color:var(--fg,#d7e0ea);
+  border:0;border-bottom:1px solid var(--border,#2d3646);padding:15px 18px;font:500 15px/1.3 -apple-system,'Segoe UI',Roboto,sans-serif;letter-spacing:.2px}
+#obol-pal-input:focus{outline:none;border-bottom-color:var(--accent,#58d68d)}
+#obol-pal-input::placeholder{color:var(--dim,#8b98a9)}
+#obol-pal-list{overflow-y:auto;overscroll-behavior:contain;padding:6px;min-height:0}
+.obol-pal-grp{font-family:var(--mono,monospace);font-size:10px;letter-spacing:2px;text-transform:uppercase;
+  color:var(--dim,#8b98a9);padding:10px 12px 5px}
+.obol-pal-row{display:flex;align-items:center;gap:11px;padding:9px 12px;border-radius:8px;cursor:pointer;border:1px solid transparent}
+.obol-pal-row[aria-selected="true"]{background:var(--panel2,#1c2330);border-color:var(--accent,#58d68d)}
+.obol-pal-kind{flex:0 0 auto;font-family:var(--mono,monospace);font-size:9px;letter-spacing:1px;text-transform:uppercase;
+  padding:2px 7px;border-radius:999px;border:1px solid currentColor}
+.obol-pal-kind.go{color:var(--info,#5ca8e0)}
+.obol-pal-kind.cmd{color:var(--accent,#58d68d)}
+.obol-pal-main{min-width:0;flex:1 1 auto}
+.obol-pal-title{font-size:13.5px;font-weight:600;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.obol-pal-title mark{background:transparent;color:var(--accent2,#e8b54a);font-weight:700}
+.obol-pal-sub{font-family:var(--mono,monospace);font-size:11px;color:var(--dim,#8b98a9);white-space:nowrap;overflow:hidden;text-overflow:ellipsis;margin-top:2px}
+.obol-pal-hint{flex:0 0 auto;font-family:var(--mono,monospace);font-size:10px;color:var(--dim,#8b98a9);opacity:0;transition:opacity .1s}
+.obol-pal-row[aria-selected="true"] .obol-pal-hint{opacity:1}
+.obol-pal-empty{padding:22px 16px;text-align:center;color:var(--dim,#8b98a9);font-size:13px}
+#obol-pal-foot{flex:0 0 auto;display:flex;gap:14px;flex-wrap:wrap;padding:8px 14px;border-top:1px solid var(--border,#2d3646);
+  font-family:var(--mono,monospace);font-size:10px;color:var(--dim,#8b98a9)}
+#obol-pal-foot kbd{border:1px solid var(--border,#2d3646);border-radius:4px;padding:0 5px;color:var(--fg,#d7e0ea)}
+#obol-pal-toast{position:fixed;left:50%;bottom:26px;transform:translateX(-50%) translateY(10px);z-index:1001;
+  background:var(--panel,#161b22);color:var(--fg,#d7e0ea);border:1px solid var(--accent,#58d68d);
+  border-radius:8px;padding:9px 15px;font:600 12.5px/1 -apple-system,'Segoe UI',Roboto,sans-serif;letter-spacing:.3px;
+  box-shadow:0 10px 30px rgba(0,0,0,.5),0 0 18px var(--glow-soft,transparent);opacity:0;pointer-events:none;transition:opacity .18s ease,transform .18s ease}
+#obol-pal-toast.show{opacity:1;transform:translateX(-50%) translateY(0)}
+@media(max-width:520px){
+  #obol-pal{padding:16px 12px}
+  #obol-pal-panel{max-height:calc(100dvh - 32px)}
+  #obol-pal-foot{display:none}
+}
+@media(prefers-reduced-motion:reduce){#obol-pal-toast{transition:none}}
+</style>
 </head>
 <body>
 <header>
@@ -420,5 +512,307 @@ OBOL-RUNTIME-MANIFEST-PROJECTION:END -->
 </header>
 <div id="banner" class="hidden"></div><div class="layout"><aside id="sidebar"><details id="side-details" open><summary>Context details</summary><h3>Parameters</h3><div id="params"></div><div id="artifacts-line" style="margin:10px 0 2px"></div><h3>Facts</h3><div id="facts-panel"><div id="facts-list"></div><input id="fact-input" placeholder="add fact, e.g. port:445"></div></details></aside><main id="view" tabindex="-1"></main></div><div id="modal-backdrop" class="hidden"><div id="modal"></div></div><div id="toast" class="hidden"></div>
 <script>window.OBOL_RUNTIME_LOADER.armBootGuard();window.OBOL_RUNTIME_LOADER.writeScripts();</script>
+<!-- Skin engine behavior: inlined (zero extra requests) so it applies at first paint and can never block boot. -->
+<script id="obol-themes-js">
+'use strict';
+(function(root){
+var doc=root.document;
+if(!doc)return;
+var SKINS=[
+ {id:'obol',   label:'Obol Classic',  pv:['#161b22','#58d68d','#e8b54a']},
+ {id:'matrix', label:'Ghostwire',     pv:['#000502','#00ff66','#ff2d2d']},
+ {id:'crt',    label:'Amber Phosphor',pv:['#160f02','#ffb000','#ffe6b0']},
+ {id:'neon',   label:'Neon Noir',     pv:['#160c2a','#ff2fb9','#21e6ff']},
+ {id:'recon',  label:'Recon Daylight',pv:['#ffffff','#0f7a52','#b3630b']}
+];
+var LS_SKIN='obol-skin', LS_FX='obol-fx';
+var reduceMq=root.matchMedia?root.matchMedia('(prefers-reduced-motion:reduce)'):{matches:false,addEventListener:function(){}};
+var el=doc.documentElement;
+var state={skin:'obol', fx:true};
+function lsGet(k){try{return root.localStorage.getItem(k);}catch(e){return null;}}
+function lsSet(k,v){try{root.localStorage.setItem(k,v);}catch(e){}}
+function skinById(id){for(var i=0;i<SKINS.length;i++)if(SKINS[i].id===id)return SKINS[i];return SKINS[0];}
+function idxOf(id){for(var i=0;i<SKINS.length;i++)if(SKINS[i].id===id)return i;return 0;}
+function fxActive(){return state.fx && !reduceMq.matches;}
+(function bootstrap(){
+ var savedSkin=lsGet(LS_SKIN); if(savedSkin&&idxOf(savedSkin)>=0)state.skin=savedSkin;
+ if(lsGet(LS_FX)==='0')state.fx=false;
+ el.setAttribute('data-skin',state.skin);
+ el.classList.toggle('obol-fx',fxActive());
+})();
+var rain=(function(){
+ var cv=null,cx=null,on=false,raf=null,cols=0,drops=[],
+     glyphs='アカサタナハマヤラワｱｲｳｴｵｶｷｸ0123456789<>/#$%'.split('');
+ function ensure(){ if(cv)return; cv=doc.getElementById('obol-rain'); if(!cv)return; cx=cv.getContext('2d'); }
+ function size(){ if(!cv)return; cv.width=root.innerWidth; cv.height=root.innerHeight;
+  cols=Math.max(1,Math.floor(cv.width/16)); drops=[]; for(var i=0;i<cols;i++)drops[i]=Math.random()*cv.height/16; }
+ function frame(){
+  if(!on||!cx)return;
+  cx.fillStyle='rgba(0,5,2,0.09)'; cx.fillRect(0,0,cv.width,cv.height);
+  cx.font='15px monospace';
+  for(var i=0;i<cols;i++){
+   var g=glyphs[(Math.random()*glyphs.length)|0], x=i*16, y=drops[i]*16;
+   cx.fillStyle=Math.random()>0.975?'#ffffff':'#00ff66';
+   cx.fillText(g,x,y);
+   if(y>cv.height&&Math.random()>0.975)drops[i]=0;
+   drops[i]++;
+  }
+  raf=root.requestAnimationFrame(frame);
+ }
+ return {
+  toggle:function(want){ ensure();
+   if(want&&!on){ if(!cv)return; on=true; size(); frame(); }
+   else if(!want&&on){ on=false; if(raf)root.cancelAnimationFrame(raf); raf=null; if(cx)cx.clearRect(0,0,cv.width,cv.height); }
+  },
+  resize:function(){ if(on)size(); }
+ };
+})();
+function syncRain(){ rain.toggle(state.skin==='matrix' && fxActive()); }
+function fireSweep(){ if(!fxActive())return; var s=doc.getElementById('obol-sweep'); if(!s)return;
+ s.classList.remove('go'); void s.offsetWidth; s.classList.add('go'); }
+var menuOpen=false, menuEl=null, fxBtn=null;
+function swatchStyle(pv){return 'background:linear-gradient(90deg,'+pv[0]+' 0 40%,'+pv[1]+' 40% 70%,'+pv[2]+' 70% 100%)';}
+function buildPicker(){
+ var header=doc.querySelector('header'); if(!header||doc.getElementById('obol-skin'))return;
+ var cur=skinById(state.skin);
+ var wrap=doc.createElement('div'); wrap.id='obol-skin';
+ var btn=doc.createElement('button');
+ btn.id='obol-skin-btn'; btn.type='button';
+ btn.setAttribute('aria-haspopup','true'); btn.setAttribute('aria-expanded','false'); btn.setAttribute('title','Change skin');
+ btn.innerHTML='<span class="sw"></span><span class="lbl">Skin</span><span class="caret">▼</span>';
+ btn.style.setProperty('--pv1',cur.pv[0]); btn.style.setProperty('--pv2',cur.pv[1]); btn.style.setProperty('--pv3',cur.pv[2]);
+ var menu=doc.createElement('div'); menu.id='obol-skin-menu'; menu.setAttribute('role','menu'); menu.hidden=true;
+ SKINS.forEach(function(s){
+  var o=doc.createElement('button');
+  o.type='button'; o.className='obol-skin-opt'; o.setAttribute('role','menuitemradio');
+  o.dataset.skin=s.id; o.setAttribute('aria-checked', s.id===state.skin?'true':'false');
+  o.innerHTML='<span class="sw" style="'+swatchStyle(s.pv)+'"></span>'+s.label;
+  o.addEventListener('click',function(){ setSkin(s.id); closeMenu(); btn.focus(); });
+  menu.appendChild(o);
+ });
+ var sep=doc.createElement('div'); sep.className='obol-skin-sep'; menu.appendChild(sep);
+ var fxRow=doc.createElement('div'); fxRow.className='obol-fx-row'; fxRow.innerHTML='<span>Motion FX</span>';
+ fxBtn=doc.createElement('button'); fxBtn.id='obol-fx-toggle'; fxBtn.type='button';
+ fxBtn.setAttribute('aria-pressed', state.fx?'true':'false');
+ fxBtn.innerHTML='<span class="led"></span><span class="fxlbl">'+(state.fx?'On':'Off')+'</span>';
+ fxBtn.addEventListener('click',function(){ setFx(!state.fx); });
+ fxRow.appendChild(fxBtn); menu.appendChild(fxRow);
+ menuEl=menu;
+ btn.addEventListener('click',function(e){ e.stopPropagation(); menuOpen?closeMenu():openMenu(); });
+ wrap.appendChild(btn); wrap.appendChild(menu); header.appendChild(wrap);
+ doc.addEventListener('click',function(e){ if(menuOpen&&!wrap.contains(e.target))closeMenu(); });
+}
+function openMenu(){ if(!menuEl)return; menuEl.hidden=false; menuOpen=true;
+ var b=doc.getElementById('obol-skin-btn'); if(b)b.setAttribute('aria-expanded','true'); }
+function closeMenu(){ if(!menuEl)return; menuEl.hidden=true; menuOpen=false;
+ var b=doc.getElementById('obol-skin-btn'); if(b)b.setAttribute('aria-expanded','false'); }
+function refreshUI(){
+ var cur=skinById(state.skin);
+ var b=doc.getElementById('obol-skin-btn');
+ if(b){ b.style.setProperty('--pv1',cur.pv[0]); b.style.setProperty('--pv2',cur.pv[1]); b.style.setProperty('--pv3',cur.pv[2]); }
+ if(menuEl)menuEl.querySelectorAll('.obol-skin-opt').forEach(function(o){ o.setAttribute('aria-checked', o.dataset.skin===state.skin?'true':'false'); });
+ if(fxBtn){ fxBtn.setAttribute('aria-pressed', state.fx?'true':'false'); var l=fxBtn.querySelector('.fxlbl'); if(l)l.textContent=state.fx?'On':'Off'; }
+}
+function setSkin(id){
+ if(idxOf(id)<0)id='obol';
+ state.skin=id; el.setAttribute('data-skin',id); lsSet(LS_SKIN,id);
+ el.classList.toggle('obol-fx',fxActive());
+ syncRain(); fireSweep(); refreshUI();
+}
+function setFx(v){
+ state.fx=!!v; lsSet(LS_FX, state.fx?'1':'0');
+ el.classList.toggle('obol-fx',fxActive());
+ syncRain(); refreshUI();
+}
+function cycle(delta){ setSkin(SKINS[(idxOf(state.skin)+delta+SKINS.length)%SKINS.length].id); }
+doc.addEventListener('keydown',function(e){
+ if(e.ctrlKey||e.metaKey||e.altKey)return;
+ var t=e.target, tag=(t&&t.tagName||'').toLowerCase();
+ if(tag==='input'||tag==='textarea'||tag==='select'||(t&&t.isContentEditable))return;
+ if(e.key>='1'&&e.key<='5')setSkin(SKINS[+e.key-1].id);
+ else if(e.key===']')cycle(1);
+ else if(e.key==='[')cycle(-1);
+ else if(e.key==='0')setFx(!state.fx);
+ else if(e.key==='Escape'&&menuOpen)closeMenu();
+});
+if(reduceMq.addEventListener)reduceMq.addEventListener('change',function(){ el.classList.toggle('obol-fx',fxActive()); syncRain(); });
+root.addEventListener('resize',rain.resize);
+doc.addEventListener('visibilitychange',function(){ if(doc.hidden)rain.toggle(false); else syncRain(); });
+function injectLayers(){
+ if(!doc.body||doc.getElementById('obol-rain'))return;
+ var ids=['obol-gridwash','obol-scanlines','obol-rain','obol-sweep'];
+ var frag=doc.createDocumentFragment();
+ ids.forEach(function(id){ var node=doc.createElement(id==='obol-rain'?'canvas':'div'); node.id=id; node.setAttribute('aria-hidden','true'); frag.appendChild(node); });
+ doc.body.insertBefore(frag,doc.body.firstChild);
+}
+function install(){ try{ injectLayers(); buildPicker(); refreshUI(); syncRain(); }catch(e){} }
+if(doc.readyState==='loading')doc.addEventListener('DOMContentLoaded',install,{once:true});
+else install();
+root.OBOL_THEMES=Object.freeze({ skins:SKINS.map(function(s){return s.id;}), get:function(){return {skin:state.skin,fx:state.fx};}, set:setSkin, setFx:setFx });
+})(window);
+</script>
+<!-- Command palette behavior (Build 2): inlined for zero added requests. -->
+<script id="obol-pal-js">
+'use strict';
+(function(root){
+var doc=root.document; if(!doc) return;
+function esc(s){return String(s==null?'':s).replace(/[&<>"]/g,function(c){return {'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c];});}
+var el=null,input=null,list=null,toastEl=null,ITEMS=[],active=0,lastFocus=null,scriptsRequested=false;
+
+/* ---- data sources (stable runtime globals + live sidebar inputs) ---- */
+function navEntries(){
+ var out=[],seen={};
+ doc.querySelectorAll('header nav a[href^="#"]').forEach(function(a){
+  var href=a.getAttribute('href'),label=(a.textContent||'').trim();
+  if(!href||!label||seen[href])return; seen[href]=1;
+  out.push({kind:'nav',label:label,sub:href,run:null,text:(label+' '+href).toLowerCase()});
+ });
+ return out;
+}
+function cmdEntries(){
+ var out=[];
+ try{ (root.OBOL_LANES||[]).forEach(function(lane){
+  (lane&&lane.cards||[]).forEach(function(card){
+   (card&&card.commands||[]).forEach(function(cmd){
+    if(!cmd||!cmd.run)return;
+    out.push({kind:'cmd',label:card.title||cmd.tool||'command',sub:cmd.tool||'',run:cmd.run,
+      text:((card.title||'')+' '+(cmd.tool||'')+' '+cmd.run+' '+(cmd.note||'')).toLowerCase()});
+   });
+  });
+ }); }catch(e){}
+ try{ (root.OBOL_SCRIPTS||[]).forEach(function(s){
+  if(!s||!s.code)return;
+  out.push({kind:'cmd',label:s.name||s.id||'script',sub:s.cat||s.lang||'script',run:s.code,
+    text:((s.name||'')+' '+(s.cat||'')+' '+(s.desc||'')+' '+(s.lang||'')).toLowerCase()});
+ }); }catch(e){}
+ return out;
+}
+function paramMap(){
+ var m={};
+ doc.querySelectorAll('[data-param]').forEach(function(i){var k=(i.getAttribute('data-param')||'').toLowerCase();if(k)m[k]=i.value||'';});
+ return m;
+}
+function fill(run){
+ var m=paramMap();
+ return String(run).replace(/{{(\w+)}}/g,function(match,k){var v=m[k.toLowerCase()];return (v!=null&&v!=='')?v:match;});
+}
+
+/* ---- scoring: all query tokens must appear; prefix + earliness bonus ---- */
+function score(text,tokens){
+ if(!tokens.length)return 0;
+ var total=0;
+ for(var i=0;i<tokens.length;i++){var idx=text.indexOf(tokens[i]);if(idx<0)return -Infinity;total+=idx;}
+ var prefix=text.indexOf(tokens[0])===0?500:0; /* higher score = better match */
+ return 1000-total+prefix;
+}
+
+/* ---- render ---- */
+function firstLine(s){var t=String(s).split('\n')[0];return t.length>90?t.slice(0,90)+'…':t;}
+function rowHtml(item,flatIdx){
+ var kindLabel=item.kind==='nav'?'go':'cmd';
+ var sub=item.kind==='nav'?item.sub:(item.sub+(item.run?'  ·  '+firstLine(item.run):''));
+ var hint=item.kind==='nav'?'go →':'copy';
+ return '<div class="obol-pal-row" role="option" data-i="'+flatIdx+'" aria-selected="false">'+
+  '<span class="obol-pal-kind '+kindLabel+'">'+kindLabel+'</span>'+
+  '<span class="obol-pal-main"><span class="obol-pal-title">'+esc(item.label)+'</span>'+
+  '<span class="obol-pal-sub">'+esc(sub)+'</span></span>'+
+  '<span class="obol-pal-hint">'+hint+'</span></div>';
+}
+function render(q){
+ q=(q||'').trim().toLowerCase();
+ var tokens=q?q.split(/\s+/):[];
+ function rank(entries,cap){
+  var scored=[];
+  for(var i=0;i<entries.length;i++){var sc=score(entries[i].text,tokens);if(isFinite(sc))scored.push({e:entries[i],sc:sc,i:i});}
+  scored.sort(function(a,b){return b.sc-a.sc || a.i-b.i;});
+  return scored.slice(0,cap).map(function(x){return x.e;});
+ }
+ var navs=rank(navEntries(),8);
+ var cmds=rank(cmdEntries(), q?60:10);
+ ITEMS=navs.concat(cmds);
+ if(!ITEMS.length){ list.innerHTML='<div class="obol-pal-empty">No matches for “'+esc(q)+'”.</div>'; active=-1; return; }
+ var html='',flat=0;
+ if(navs.length){ html+='<div class="obol-pal-grp">Go to</div>'; navs.forEach(function(it){html+=rowHtml(it,flat++);}); }
+ if(cmds.length){ html+='<div class="obol-pal-grp">Commands'+(q?'':' · start typing to search all')+'</div>'; cmds.forEach(function(it){html+=rowHtml(it,flat++);}); }
+ list.innerHTML=html;
+ list.querySelectorAll('.obol-pal-row').forEach(function(r){
+  r.addEventListener('mousemove',function(){setActive(+r.dataset.i);});
+  r.addEventListener('click',function(){activate(+r.dataset.i);});
+ });
+ active=0; paint();
+}
+function paint(){
+ var rows=list.querySelectorAll('.obol-pal-row');
+ rows.forEach(function(r){var on=+r.dataset.i===active;r.setAttribute('aria-selected',on?'true':'false');if(on)r.scrollIntoView({block:'nearest'});});
+}
+function setActive(i){active=i;paint();}
+function move(d){ if(!ITEMS.length)return; active=(active+d+ITEMS.length)%ITEMS.length; paint(); }
+
+/* ---- actions ---- */
+function toast(msg){
+ if(!toastEl)return;
+ toastEl.textContent=msg; toastEl.classList.add('show');
+ root.clearTimeout(toast._t); toast._t=root.setTimeout(function(){toastEl.classList.remove('show');},1600);
+}
+function activate(i){
+ var item=ITEMS[i]; if(!item)return;
+ if(item.kind==='nav'){ close(); root.location.hash=item.sub; return; }
+ var text=fill(item.run);
+ try{ (root.navigator.clipboard&&root.navigator.clipboard.writeText(text)); }catch(e){}
+ close(); toast('Copied: '+firstLine(text));
+}
+
+/* ---- open / close ---- */
+function ensureScripts(){
+ if(root.OBOL_SCRIPTS||scriptsRequested)return; scriptsRequested=true;
+ try{ var L=root.OBOL_RUNTIME_LOADER; if(L&&typeof L.loadGroup==='function'){ var p=L.loadGroup('toolReferenceData'); if(p&&p.then)p.then(function(){ if(isOpen())render(input.value); }); } }catch(e){}
+}
+function isOpen(){return el&&el.classList.contains('open');}
+function open(){
+ if(!el)build(); if(isOpen())return;
+ lastFocus=doc.activeElement;
+ el.classList.add('open'); input.value=''; ensureScripts(); render('');
+ root.setTimeout(function(){input.focus();},0);
+}
+function close(){
+ if(!isOpen())return; el.classList.remove('open');
+ if(lastFocus&&doc.contains(lastFocus))try{lastFocus.focus();}catch(e){}
+}
+function toggle(){ isOpen()?close():open(); }
+
+/* ---- build DOM ---- */
+function build(){
+ if(doc.getElementById('obol-pal'))return;
+ el=doc.createElement('div'); el.id='obol-pal'; el.setAttribute('role','dialog'); el.setAttribute('aria-modal','true'); el.setAttribute('aria-label','Command palette');
+ el.innerHTML='<div id="obol-pal-panel">'+
+  '<input id="obol-pal-input" role="combobox" aria-controls="obol-pal-list" aria-expanded="true" aria-autocomplete="list" autocomplete="off" spellcheck="false" placeholder="Search commands, or jump to a section…">'+
+  '<div id="obol-pal-list" role="listbox" aria-label="Results"></div>'+
+  '<div id="obol-pal-foot"><span><kbd>↑</kbd><kbd>↓</kbd> move</span><span><kbd>↵</kbd> copy / go</span><span><kbd>esc</kbd> close</span></div>'+
+ '</div>';
+ doc.body.appendChild(el);
+ toastEl=doc.createElement('div'); toastEl.id='obol-pal-toast'; toastEl.setAttribute('role','status'); toastEl.setAttribute('aria-live','polite'); doc.body.appendChild(toastEl);
+ input=doc.getElementById('obol-pal-input'); list=doc.getElementById('obol-pal-list');
+ input.addEventListener('input',function(){render(input.value);});
+ el.addEventListener('mousedown',function(e){ if(e.target===el)close(); });
+ el.addEventListener('keydown',function(e){
+  if(e.key==='ArrowDown'){e.preventDefault();move(1);}
+  else if(e.key==='ArrowUp'){e.preventDefault();move(-1);}
+  else if(e.key==='Enter'){e.preventDefault();if(active>=0)activate(active);}
+  else if(e.key==='Escape'){e.preventDefault();close();}
+ });
+}
+
+/* ---- key + trigger interception (capture phase beats the v30 handler) ---- */
+root.addEventListener('keydown',function(e){
+ if((e.ctrlKey||e.metaKey)&&!e.altKey&&(e.key==='k'||e.key==='K')){ e.preventDefault(); e.stopImmediatePropagation(); toggle(); }
+},true);
+doc.addEventListener('click',function(e){
+ var t=e.target&&e.target.closest&&e.target.closest('#quick-open30,#home-search30');
+ if(t){ e.preventDefault(); e.stopImmediatePropagation(); open(); }
+},true);
+
+root.OBOL_PALETTE=Object.freeze({open:open,close:close,toggle:toggle});
+})(window);
+</script>
 </body>
 </html>

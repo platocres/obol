@@ -114,14 +114,30 @@ async function main() {
     pulls = await fetchOpenPulls(repo);
   }
 
-  const relevant = pulls.filter(pr => (pr.state || 'open') === 'open').filter(isRelevant);
-  const duplicates = relevant.filter(pr => {
+  const openPulls = pulls.filter(pr => (pr.state || 'open') === 'open');
+  const relevant = openPulls.filter(isRelevant);
+
+  function matchesCurrent(pr) {
     const n = numberOf(pr);
     const h = headOf(pr);
-    if (currentNumber && n === currentNumber) return false;
-    if (!currentNumber && currentHead && h === currentHead) return false;
-    return true;
-  });
+    if (currentNumber && n === currentNumber) return true;
+    if (!currentNumber && currentHead && h === currentHead) return true;
+    return false;
+  }
+
+  // The one-open-PR rule governs release/product-hardening PRs. A plain feature PR
+  // is not subject to it and never conflicts with an open release PR, so only enforce
+  // uniqueness when the CURRENT PR is itself release/product-hardening. When the current
+  // PR cannot be identified (e.g. a release-branch push before its PR exists), fall back
+  // to enforcing so the historical release-branch behavior is preserved.
+  const currentPr = openPulls.find(matchesCurrent) || null;
+  const currentIsRelevant = currentPr ? isRelevant(currentPr) : true;
+  if (!currentIsRelevant) {
+    console.log(`Open PR uniqueness check passed: current PR #${currentNumber || '?'} is a feature PR (not release/product-hardening), so the one-open-PR rule does not apply to it (${relevant.length} relevant open PR${relevant.length === 1 ? '' : 's'} present).`);
+    return;
+  }
+
+  const duplicates = relevant.filter(pr => !matchesCurrent(pr));
 
   if (duplicates.length) {
     console.error('Open release/product-hardening PR uniqueness check failed. Close or supersede duplicate PRs before continuing.');
