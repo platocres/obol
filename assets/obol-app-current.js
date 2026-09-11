@@ -11,7 +11,7 @@
  * suppresses historical schedulers and commits current route owners last.
  *
  * Historical fragment order sha256: 40e3006d9423d669acf5869b577ecf56a6ca2ee1629c95fd0fcc5d242d2c5f27
- * Generated body sha256: d83bbcbf9efbc4f91b2a94f55e4941e05239c12d602359ecf14e8f1a5c229607
+ * Generated body sha256: d959b84be26e7621abb90f00487ec89f6f29c3a35077902722ba5cee9f0505e9
  * First historical fragment: assets/report-v2.js
  * Last historical fragment:  assets/app-v8.8.js
  */
@@ -2173,6 +2173,7 @@ const release=Object.freeze({
  ])
 });
 const TOOL_LIBRARY_COMPACT_EXTENSIONS=Object.freeze([
+ 'data/tool-builders-auth-enum-current.js',
  'data/product-hardening/tool-builder-backlog-current.js',
  'data/product-hardening/tool-builder-discovery-current.js',
  'data/product-hardening/credential-helper-tool-builders-current.js'
