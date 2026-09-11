@@ -6,7 +6,7 @@ const vm=require('vm');
 const cp=require('child_process');
 const root=path.join(__dirname,'..');
 function loadRelease(hash){
- const context={console,globalThis:null,window:null,location:{hash},document:{head:{appendChild(node){context.loaded.push(node.src);if(typeof node.onload==='function')node.onload();}},documentElement:{appendChild(node){context.loaded.push(node.src);if(typeof node.onload==='function')node.onload();}},querySelector(){return null;}},loaded:[]};
+ const context={console,globalThis:null,window:null,location:{hash},document:{head:{appendChild(node){context.loaded.push(node.src);if(typeof node.onload==='function')node.onload();}},documentElement:{appendChild(node){context.loaded.push(node.src);if(typeof node.onload==='function')node.onload();}},createElement(tag){return {tagName:String(tag||'script').toUpperCase(),dataset:{},setAttribute(name,value){this[name]=String(value);}};},querySelector(){return null;}},loaded:[]};
  context.globalThis=context;context.window=context;context.addEventListener=function(){};
  vm.createContext(context);
  vm.runInContext(fs.readFileSync(path.join(root,'data/current-release.js'),'utf8'),context,{filename:'data/current-release.js'});
