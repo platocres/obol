@@ -230,7 +230,25 @@ _(Pre-existing, unrelated: `scope-check` is red on a clean checkout via the `v9.
 **Acceptance:** add/remove/reorder steps ✓; live preview with substituted variables ✓; export
 downloads a runnable `.sh` (shebang + `set -x`/tee logging) ✓; state persists per engagement ✓.
 
-### Build 4 — Cred Reuse Matrix + One-Click Retarget 🔑  `[status: DONE (impl) — 2026-09-11; browser/gate execution pending, see Verification]`
+**Post-ship fix (2026-09-11) — "can't add commands to the playbook".** Owner reported the add flow
+didn't work following the drawer's own instructions. Reproduced in headless Chromium: the *engine*
+was fine (`OBOL_PLAYBOOK.add`, the `+` button, and ⇧↵ all add correctly), but two **discoverability**
+defects made it feel broken:
+1. **⇧↵ on a "Go to" (nav) row failed silently.** When the palette opens, the default-highlighted
+   row is the first nav entry ("Home"), and `addToPlaybook` bailed on any non-`cmd` row **with no
+   toast**. A user who opened the palette and pressed ⇧↵ (exactly as instructed) got nothing — no
+   step, no feedback. Fixed: it now toasts *"Only commands add to the playbook — 'X' is a section"*
+   so the affordance explains itself.
+2. **The `+` button was `display:none` except on `:hover`/selection** — invisible on touch devices
+   and easy to miss on desktop. Fixed: `+` is now always shown on command rows at reduced opacity
+   (full on hover/selection), so it's tappable on mobile and visible at a glance.
+Both fixes are two-line edits to the existing `#obol-palette` CSS block and the `addToPlaybook`
+function in `#obol-pal-js` — inline, zero added requests. **Verified (headless Chromium):** `+`
+computes visible (opacity 1, 22×22) without hover; ⇧↵ on a nav row toasts the section message and
+adds nothing; `+` and ⇧↵ on a command row still add (badge → 1, correct toast); zero console errors;
+all five governance gates pass. Shipped on branch `claude/relaxed-cannon-3g71ch`.
+
+### Build 4 — Cred Reuse Matrix + One-Click Retarget 🔑  `[status: DONE — verified 2026-09-11 (PR #248 merged, CI green)]`
 **What:** Credentials × hosts grid (✓/ADM/✗/·); clicking a cred re-fills USER/PASS/HASH/DOMAIN and
 retargets the console. Leverages obol's credential/host/param model.
 **Shipped as two inline blocks in `index.html`** (a `<style id="obol-credmatrix">` in `<head>` after
@@ -284,11 +302,15 @@ Chromium harness and the five `node tools/validate-*.js` gates could **not be ru
 them before merge: the 5 gates plus `tests/playwright-smoke.js`, and a functional pass that seeds
 `obol-state-v2` with creds/hosts and asserts render + retarget + keyboard + no console errors +
 no horizontal overflow 320→1920px.)_
+**Resolved on merge:** PR #248 landed on `main` with **all 10 CI checks green**, including
+`browser-smoke` (the headless harness + request budgets) and `full-historical-regression` plus every
+`*-contracts` suite that stands in for the local `validate-*.js` gates. The pending browser/gate run
+is done — this build is verified, not just implemented.
 **Acceptance:** matrix renders from logged creds/hosts ✓; click retargets params + toasts ✓; admin
 cells visually distinct ✓; keyboard-operable cells ✓ (all satisfied by the implementation; pending
 the browser execution noted above).
 
-### Build 5 — Kill-Chain Milestone Spine  `[status: DONE (impl) — RESCOPED + shipped 2026-09-11; browser/gate execution pending]`
+### Build 5 — Kill-Chain Milestone Spine  `[status: DONE — RESCOPED + verified 2026-09-11 (PR #249 merged, CI green)]`
 
 **⚠️ Rescope note (why the original Build 5 was dropped).** The original Build 5 —
 "Evidence → Kill-Chain → Next-Command Loop" — was **redundant with obol's existing Next Steps
@@ -383,6 +405,58 @@ width:100%;overflow-x:auto`, no page overflow), and adds zero requests (`playwri
 unaffected). _Re-run before merge (as with Build 4): the 5 `node tools/validate-*.js` gates +
 `tests/playwright-smoke.js`, plus a functional pass that seeds `obol-state-v2` with facts and
 asserts chips advance live + no console errors + no horizontal overflow 320→1920px._
+**Resolved on merge:** PR #249 landed on `main` with **all 10 CI checks green** (`browser-smoke`,
+`full-historical-regression`, and every `*-contracts` suite). The pending browser/gate run is done —
+this build is verified, not just implemented.
+
+### Build 6 — Palette Favorites + Copy History ⭐  `[status: SPEC — proposed 2026-09-11]`
+
+**Why this is the next build.** With Builds 1–5 shipped, obol has matched or beaten every big-ticket
+RedConsole idea (§3.2): Ctrl+K search (B2), Playbook `.sh` (B3), Cred Matrix + retarget (B4),
+milestone spine (B5), variables auto-fill, and a native evidence-grounded attack plan (Next Steps).
+The **one cluster from §3.2 that no build borrowed** is RedConsole's *per-command ergonomics*:
+**★ favorites** and **copy history**. (Per-command ✔ done-tracking and progress obol already does
+*better* than RedConsole — evidence-tied card outcomes + coverage bars — so that half needs nothing;
+operator-editable notes is a marginal third that this build deliberately leaves out.)
+
+In obol the flat, cross-surface command list is **the ⌘K palette** (Build 2), not a scrolling
+cheatsheet — so favorites and copy-history belong there, not bolted onto the frozen card renderers.
+That keeps the build additive and `index.html`-only, exactly like Builds 1–5.
+
+**What:**
+- **★ Favorites.** A star toggle on each command row (next to the existing `+`). Starred commands
+  are pinned to a **"★ Favorites"** group at the top of the palette, shown first when the query is
+  empty and floated up when they match a query. Persisted in `localStorage` (`obol-fav-cmds`), keyed
+  by a stable command signature (`run` string, or `lane:tool`), engagement-independent (favorites are
+  operator muscle-memory, not per-target).
+- **Recent / Copy History.** Every palette **copy** (Enter) and **playbook add** (⇧↵/`+`) records the
+  command into a bounded ring (last ~15) in `localStorage` (`obol-cmd-history`). Shown as a
+  **"Recent"** group under Favorites on an empty query. Each recent row re-copies on Enter and still
+  supports `+`/⇧↵ and ★. This is the RedConsole "copy history" borrow, wired through the surface obol
+  already funnels every copy through.
+- **Keyboard + a11y.** `★` toggle reachable by keyboard (its own button, `aria-pressed`); Favorites/
+  Recent groups use the same `role=listbox`/`option` model as today; a small "clear history" control
+  in the palette footer. No change to the existing ↑/↓/Enter/⇧↵/Esc contract.
+
+**Approach (same additive rules as Builds 1–5):**
+- Extend the **existing** `#obol-palette` style block and `#obol-pal-js` script — no new files, **zero
+  added requests**, IIFE + try/catch, theme-aware via obol tokens.
+- Favorites/history are pure `localStorage` read-models layered over the current `navEntries()` /
+  `cmdEntries()` indexing; the empty-query render gains two groups above "Commands", the scored-query
+  render gains a favorite boost. No frozen card/tool renderer is touched.
+- Reuse the existing toast + row/`+`/★ event wiring; extend `window.OBOL_PALETTE` with
+  `favorites()` / `history()` for tests.
+
+**Acceptance:** star a command → it persists across reload and appears in a Favorites group at the top
+of the palette; copying or adding a command records it in Recent (bounded, most-recent-first);
+Favorites/Recent are keyboard-operable and theme-aware across all five skins; "clear history" empties
+Recent only (favorites untouched); inline + additive with **zero added requests**; no regression to
+Build 2 search/copy or Build 3 add-to-playbook; all five governance gates + `browser-smoke` green.
+
+**Notes / non-goals.** Operator-editable per-command *notes* are explicitly **out of scope** (low
+payoff, and obol already carries authored `note` content on commands). Adding a `+`/★ affordance
+directly onto in-app command *cards* (RedConsole's "add from any section") is a larger, renderer-
+touching change and stays out of Build 6 — the palette is obol's cross-surface command entry point.
 
 ---
 
@@ -393,9 +467,10 @@ asserts chips advance live + no console errors + no horizontal overflow 320→19
 | — | Interactive showcase | ✅ done | artifact v2 | 5 skins + FX toggle + motion |
 | 1 | Skin Engine | ✅ done | branch `claude/nice-wright-0u29oe` | picker + 5 skins + rain + FX; validated in-browser |
 | 2 | ⌘K Command Palette | ✅ done | branch `claude/nice-wright-0u29oe` | command search + copy-with-vars; supersedes nav-only palette; responsive |
-| 3 | Playbook Builder | ✅ done | branch `claude/adoring-gates-p6ln8a` | ⛓ header launcher + slide-in drawer; add via palette (+ / ⇧↵); reorder/remove; runnable logged `.sh`; per-engagement persistence; no overflow 320→1920 |
-| 4 | Cred Reuse Matrix + retarget | 🟨 impl (browser/gate run pending) | branch `claude/gallant-lovelace-70m4jl` (PR #248) | 🔑 header launcher + modal cred×host grid (✓/ADM/✗/·); one-click retarget of cred/host/cell via app inputs; ranked rows; roving-tabindex keyboard grid; inlined, zero added requests. Static review + static gate analysis done, push verified purely additive; `node`/headless run blocked in build session — CI + gates run on the PR |
-| 5 | Kill-Chain Milestone Spine | 🟨 impl (browser/gate run pending) | branch `claude/friendly-mayer-mzcfqs` | **Rescoped** from "Evidence→next-command loop" (redundant with the existing Next Steps recommender). Shipped: a header-anchored "trophy" progress spine (🎯 Target▸📡 Recon▸🔑 Creds▸🐚 Foothold▸🛡 Local Admin▸🏰 Domain Admin▸💎 Loot▸📄 Report) that reads live facts via `OBOL_CORE_V2.effectiveFacts`, advances live via a `#view` MutationObserver, pulses newly-reached chips, links to `#/path`. Inlined, zero added requests, purely additive (140 ins / 0 del). Static review + gate analysis done; CI + gates run on the PR |
+| 3 | Playbook Builder | ✅ done (+ fix) | branch `claude/adoring-gates-p6ln8a`; fix on `claude/relaxed-cannon-3g71ch` | ⛓ header launcher + slide-in drawer; add via palette (+ / ⇧↵); reorder/remove; runnable logged `.sh`; per-engagement persistence; no overflow 320→1920. **2026-09-11 fix:** add-flow discoverability — ⇧↵ on a nav row now gives feedback instead of failing silently; palette `+` always visible (was hover-only, invisible on touch). Verified headless + 5 gates |
+| 4 | Cred Reuse Matrix + retarget | ✅ done | branch `claude/gallant-lovelace-70m4jl` → **PR #248 merged, CI green** | 🔑 header launcher + modal cred×host grid (✓/ADM/✗/·); one-click retarget of cred/host/cell via app inputs; ranked rows; roving-tabindex keyboard grid; inlined, zero added requests. All 10 CI checks green (`browser-smoke` + `*-contracts`) — browser/gate run resolved on merge |
+| 5 | Kill-Chain Milestone Spine | ✅ done | branch `claude/friendly-mayer-mzcfqs` → **PR #249 merged, CI green** | **Rescoped** from "Evidence→next-command loop" (redundant with the existing Next Steps recommender). Shipped: a header-anchored "trophy" progress spine (🎯 Target▸📡 Recon▸🔑 Creds▸🐚 Foothold▸🛡 Local Admin▸🏰 Domain Admin▸💎 Loot▸📄 Report) that reads live facts via `OBOL_CORE_V2.effectiveFacts`, advances live via a `#view` MutationObserver, pulses newly-reached chips, links to `#/path`. Inlined, zero added requests, purely additive (140 ins / 0 del). All 10 CI checks green — browser/gate run resolved on merge |
+| 6 | Palette Favorites + Copy History | 📋 spec | — (proposed) | The one un-borrowed RedConsole per-command cluster: ★ favorites + copy/recent history, layered onto the ⌘K palette (Build 2) as `localStorage` read-models. Zero added requests; per-command notes and card-level `+` explicitly out of scope. See §4 Build 6 |
 
 ---
 
@@ -407,7 +482,8 @@ Give Claude any of these:
 - `Review docs/EXPERIENCE-REVAMP.md and start Build 2 (Command Palette).`
 - `Review docs/EXPERIENCE-REVAMP.md and start Build 3 (Playbook Builder).`
 - `Review docs/EXPERIENCE-REVAMP.md and start Build 4 (Cred Matrix).`
-- **`Review docs/EXPERIENCE-REVAMP.md and start Build 5 (Kill-Chain Milestone Spine).`**  ← the next build
+- `Review docs/EXPERIENCE-REVAMP.md and start Build 5 (Kill-Chain Milestone Spine).`
+- **`Review docs/EXPERIENCE-REVAMP.md and start Build 6 (Palette Favorites + Copy History).`**  ← the next build
 
 ---
 
