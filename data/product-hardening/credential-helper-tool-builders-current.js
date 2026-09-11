@@ -70,12 +70,12 @@ function builderDefs(){return [
  tb('tb-hashid','hashid','hashid identifier builder','Identify a hash shape from a supplied hash string or file before choosing cracking mode. Optional John/Hashcat mode output is additive and remains a hypothesis until confirmed.',[
   f('inputMode','Input mode','select',{default:'hash',options:[opt('hash','Single hash'),opt('file','Hash file')]}),
   f('hash','Hash string','secret',{credentialKind:'netntlm',requiredWhen:{field:'inputMode',equals:'hash'},visibleWhen:{field:'inputMode',equals:'hash'},placeholder:'paste one hash'}),
-  f('hashFile','Hash file','path',{requiredWhen:{field:'inputMode',equals:'file'},visibleWhen:{field:'inputMode',equals:'file'},placeholder:'loot/hashes-to-identify.txt'}),
+  f('hashOrFile','Hash file','path',{requiredWhen:{field:'inputMode',equals:'file'},visibleWhen:{field:'inputMode',equals:'file'},placeholder:'loot/hashes-to-identify.txt'}),
   f('hashcatMode','Show Hashcat mode hints (-m)','checkbox'),
   f('johnMode','Show John format hints (-j)','checkbox'),
   f('extended','Extended mode (-e)','checkbox')
  ],[
-  {kind:'field',field:'hashFile',flag:'-f',when:{field:'inputMode',equals:'file'}},
+  {kind:'field',field:'hashOrFile',flag:'-f',when:{field:'inputMode',equals:'file'}},
   {kind:'toggle',field:'hashcatMode',flag:'-m'},
   {kind:'toggle',field:'johnMode',flag:'-j'},
   {kind:'toggle',field:'extended',flag:'-e'},
@@ -85,12 +85,12 @@ function builderDefs(){return [
   f('binary','Command','select',{default:'nth',options:[opt('nth','nth'),opt('name-that-hash','name-that-hash')]}),
   f('inputMode','Input mode','select',{default:'hash',options:[opt('hash','Single hash'),opt('file','Hash file')]}),
   f('hash','Hash string','secret',{credentialKind:'netntlm',requiredWhen:{field:'inputMode',equals:'hash'},visibleWhen:{field:'inputMode',equals:'hash'},placeholder:'paste one hash'}),
-  f('hashFile','Hash file','path',{requiredWhen:{field:'inputMode',equals:'file'},visibleWhen:{field:'inputMode',equals:'file'},placeholder:'loot/hashes-to-identify.txt'}),
+  f('hashOrFile','Hash file','path',{requiredWhen:{field:'inputMode',equals:'file'},visibleWhen:{field:'inputMode',equals:'file'},placeholder:'loot/hashes-to-identify.txt'}),
   f('greppable','Greppable output','checkbox'),
   f('accessible','Accessible text output','checkbox')
  ],command:{executable:{field:'binary',choices:[{value:'nth',command:'nth'},{value:'name-that-hash',command:'name-that-hash'}]},tokens:[
   {kind:'field',field:'hash',flag:'-t',when:{field:'inputMode',equals:'hash'}},
-  {kind:'field',field:'hashFile',flag:'-f',when:{field:'inputMode',equals:'file'}},
+  {kind:'field',field:'hashOrFile',flag:'-f',when:{field:'inputMode',equals:'file'}},
   {kind:'toggle',field:'greppable',flag:'-g'},
   {kind:'toggle',field:'accessible',flag:'-a'}
  ]}},common('Paste name-that-hash candidate rankings, Hashcat/John examples, unknown output, parse errors, or ambiguous multiple-candidate results into Evidence.','Name-that-hash output is routing guidance for cracking, not proof of the true algorithm, a recovered password, credential validity, or access. Treat rankings and examples as candidates until cracking and validation Evidence support them.',['hash']))
