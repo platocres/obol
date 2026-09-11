@@ -42,7 +42,7 @@ This is the permanent Definition of Done for modeled-tool work. The historical n
 
 Completed Tool Builder slices are not active queue items. v10.16 folds the recent Burp Suite and network/host discovery release owners into `data/product-hardening/tool-builder-discovery-current.js` so the live Tool Library no longer has to load both `burp-suite-tool-builder-v10.10.js` and `network-discovery-tool-builders-v10.15.js` as separate release layers.
 
-Release docs and changelog entries remain the history for the completed v10.09 web discovery/scanning slice, v10.10 Burp Suite guided GUI workflow slice, and v10.15 network and host discovery slice. Those completed slices must not be reintroduced below as active work.
+Release docs and changelog entries remain the history for the completed v10.09 web discovery/scanning slice, v10.10 Burp Suite guided GUI workflow slice, and v10.15 network and host discovery slice. The completed web slice covered WhatWeb, Nikto, httpx, wfuzz, and ZAP. Those completed slices must not be reintroduced below as active work.
 
 ## Active Tool Builder batches
 
