@@ -28,6 +28,19 @@ assert(schema&&renderer&&inventory&&remote,'remote-exec builder owner must initi
 assert.strictEqual(remote.version,'v10.20','remote-exec owner should publish v10.20 ownership');
 assert.strictEqual(remote.pathCardId,'pth-remote-exec-artifacts','remote-exec Evidence should point at the existing remote-exec artifacts card');
 assert.deepStrictEqual(nativeArray(remote.tools).sort(),['impacket-atexec','impacket-dcomexec','impacket-psexec','impacket-smbexec','impacket-wmiexec'].sort(),'remote-exec owner should cover the coherent Impacket remote-exec slice');
+assert.strictEqual(typeof remote.inventoryCompletionGroups,'function','remote-exec owner should expose the Tools inventory-completeness grouping helper');
+assert.strictEqual(typeof remote.inventoryKey,'function','remote-exec owner should expose the inventory-key helper used to de-dupe aliases');
+const curatedHomeTools=nativeArray(w.OBOL_TOOLS_LIBRARY_CURRENT&&w.OBOL_TOOLS_LIBRARY_CURRENT.groupTools&&w.OBOL_TOOLS_LIBRARY_CURRENT.groupTools()).flatMap(group=>nativeArray(group.tools));
+const completionGroups=nativeArray(remote.inventoryCompletionGroups(curatedHomeTools));
+const completionTools=completionGroups.flatMap(group=>nativeArray(group.tools));
+assert(completionGroups.some(group=>group.id==='inventory-remote-exec'),'Tools home should get an appended remote-exec/lateral-movement inventory group for records outside the curated buckets');
+assert(completionTools.includes('impacket-psexec')&&completionTools.includes('impacket-atexec'),'Tools inventory completion should surface the implemented Impacket remote-exec builders on the library home');
+assert(completionTools.includes('mimikatz')&&completionTools.includes('pypykatz'),'Tools inventory completion should surface modeled inventory records that were previously absent from curated buckets');
+const fullInventoryKeys=new Set(nativeArray(inventory.all()).map(record=>remote.inventoryKey(record.tool)).filter(Boolean));
+const visiblePlusCompletionKeys=new Set(curatedHomeTools.map(remote.inventoryKey).filter(Boolean));
+completionTools.forEach(tool=>visiblePlusCompletionKeys.add(remote.inventoryKey(tool)));
+const stillHidden=nativeArray(fullInventoryKeys).filter(key=>!visiblePlusCompletionKeys.has(key));
+assert.deepStrictEqual(stillHidden,[],'Tools library home should account for every inventory key after curated groups plus generated inventory-completion groups');
 const remoteFailures=Array.from(inventory.validate()).filter(msg=>/\b(?:psexec|wmiexec|smbexec|dcomexec|atexec|remote-exec)\b/i.test(msg));
 assert.deepStrictEqual(remoteFailures,[],'remote-exec inventory patch must validate for the new tools');
 for(const [tool,id] of [['impacket-psexec','tb-impacket-psexec'],['psexec.py','tb-impacket-psexec'],['impacket-wmiexec','tb-impacket-wmiexec'],['wmiexec.py','tb-impacket-wmiexec'],['impacket-smbexec','tb-impacket-smbexec'],['smbexec.py','tb-impacket-smbexec'],['impacket-dcomexec','tb-impacket-dcomexec'],['dcomexec.py','tb-impacket-dcomexec'],['impacket-atexec','tb-impacket-atexec'],['atexec.py','tb-impacket-atexec']]){

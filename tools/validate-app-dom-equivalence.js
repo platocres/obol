@@ -89,7 +89,11 @@ async function capture(browser,ownerBody){
       parent.appendChild(marker);
      });
     };
-    if(routeId==='tools')normalizeTabCatalog('.lane-tab[data-tool]','data-obol-tool-tab-projection','current-product-hardening-tool-tab-projection');
+    if(routeId==='tools'){
+     clone.querySelectorAll('[data-inventory-complete],[data-inventory-completeness-owner]').forEach(node=>node.remove());
+     normalizeTabCatalog('.lane-tab[data-tool],.lane-tab[data-open-tool]','data-obol-tool-tab-projection','current-product-hardening-tool-tab-projection');
+     normalizeTabCatalog('.lane-tab[data-inventory-open]','data-obol-inventory-tool-projection','current-product-hardening-inventory-tool-projection');
+    }
     if(routeId==='methodology')normalizeTabCatalog('.lane-tab[data-lane]','data-obol-methodology-lane-tab-projection','current-product-hardening-lane-tab-projection');
     const laneParents=new Set(Array.from(clone.querySelectorAll('.lane-tab[data-lane]')).map(tab=>tab.parentElement).filter(Boolean));
     laneParents.forEach(parent=>{
