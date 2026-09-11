@@ -1,7 +1,7 @@
 'use strict';
 (function(root){
 const ITEM='post-notes-tool-builder-implementation-backlog';
-const VERSION='v10.19';
+const VERSION='v10.20';
 const TOOL_VALUES_KEY='obol-tools-library-v10.01';
 const BLOCKED_PLACEHOLDERS=Object.freeze(['10.10.10.10','10.10.14.9','domain.local','user','Password123!','8846f7eaee8fb117ad06bdd830b7586c',':8846f7eaee8fb117ad06bdd830b7586c','hashes.txt']);
 function profile(builderId,coverage,analyzerId,states){return Object.freeze({builderId,coverage,analyzerId,decisionStates:Object.freeze(states)});}
