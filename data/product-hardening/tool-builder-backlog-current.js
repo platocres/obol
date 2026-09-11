@@ -1,7 +1,7 @@
 'use strict';
 (function(root){
 const ITEM='post-notes-tool-builder-implementation-backlog';
-const VERSION='v10.08';
+const VERSION='v10.19';
 const TOOL_VALUES_KEY='obol-tools-library-v10.01';
 const BLOCKED_PLACEHOLDERS=Object.freeze(['10.10.10.10','10.10.14.9','domain.local','user','Password123!','8846f7eaee8fb117ad06bdd830b7586c',':8846f7eaee8fb117ad06bdd830b7586c','hashes.txt']);
 function profile(builderId,coverage,analyzerId,states){return Object.freeze({builderId,coverage,analyzerId,decisionStates:Object.freeze(states)});}
@@ -20,6 +20,20 @@ const AUDIT_EVIDENCE_PROFILES=Object.freeze({
  'tb-sqlmap':profile('tb-sqlmap','shared','web-sqli-evidence',['injection confirmed/refuted','DBMS/schema/data observation','blocked/error','partial']),
  'tb-curl':profile('tb-curl','shared','http-response-evidence',['status/header/body observation','auth result','transfer result','timeout/failure'])
 });
+const INVENTORY_GROUPS=Object.freeze([
+ {id:'ad-kerberos',title:'Active Directory and Kerberos',match:['ad-miner','adidnsdump','adpeas','bloodhound-cypher','bloodhound-python','bloodyad','certify','certipy','certsync','dnscmd','dnstool','gettgtpkinit','gmsadumper','gpp-decrypt','grouppolicy-powershell','impacket-addcomputer','impacket-dacledit','impacket-dpapi','impacket-finddelegation','impacket-get-gpppassword','impacket-getadusers','impacket-getnpusers','impacket-getst','impacket-gettgt','impacket-getuserspns','impacket-goldenpac','impacket-lookupsid','impacket-owneredit','impacket-raisechild','impacket-rbcd','impacket-reg','impacket-secretsdump','impacket-smbclient','impacket-tgssub','impacket-ticketconverter','impacket-ticketer','kinit','klist','krbrelayup','krbrelayx','ldapdomaindump','ldeep','masky','nopac','ntpdate','ouned','passthecert','pfx2john','pingcastle','pkinittools','policysecretunobfuscate','powerview','pywhisker','rubeus','rusthound','rusthound-ce','setspn','sharphound','sprayhound','targetedkerberoast','timeroast','windapsearch','zerologon-scan']},
+ {id:'remote-exec',title:'Remote execution and lateral movement',match:['cmdkey','impacket-atexec','impacket-dcomexec','impacket-mssqlclient','impacket-psexec','impacket-smbexec','impacket-wmiexec','psexec','wmic','rdesktop','xfreerdp','runas','sc','schtasks','shutdown','tscon','vncviewer','psloggedon','query','query-user','net','nltest','remote-method-guesser']},
+ {id:'pivoting',title:'Pivoting, tunneling, and transport',match:['chisel','dnscat2','ftp','ligolo-agent','ligolo-ng','ligolo-proxy','plink','proxychains','ptunnel-ng','rpivot','socat','socksoverrdp','ssh','sshpass','sshuttle','tftp','webdav','tcpdump','showmount']},
+ {id:'enum-services',title:'Enumeration and services',match:['bettercap','enum4linux','enum4linuxng','fping','finger','ike-scan','ipmitool','ldapsearch','masscan','nbtscan','nmap','nslookup','onesixtyone','rpcclient','rpcdump.py','smbclient','smbclient-ng','smbmap','smtp-user-enum','snmpwalk','theharvester','whois','swaks','dig','dnsrecon','naabu','rustscan']},
+ {id:'creds',title:'Credential capture, relay, spraying, and cracking',match:['cewl','coercer','crunch','hashcat','hashid','impacket-ntlmrelayx','john','keepass2john','keepwn','kerbrute','medusa','mimikatz','mitm6','name-that-hash','nth','ntlm-theft','o365spray','office2john','pcredz','petitpotam','printerbug','psk-crack','pypykatz','rar2john','responder','ssh2john','unshadow','zip2john']},
+ {id:'privesc',title:'Privilege escalation and local enumeration',match:['accesschk','fodhelper','getnthash','godpotato','icacls','linpeas','msiexec','mona','mount','ntdsutil','poc-aug3.py','privesc','procdump','procmon','pspy','pxethief','reg','rundll32','searchsploit','sudo','systeminfo','vssadmin','vshadow','wesng','whoami','winpeas']},
+ {id:'shells-transfer',title:'Shells, payloads, and transfer helpers',match:['bash','certutil','cmd','controlled-callback-service','findstr','gcc','impacket-smbserver','installutil','java','msbuild','msfconsole','msfvenom','nc','penelope','powershell','pwsh','python','python3','rlwrap','sed','sh','wget','mingw-w64']},
+ {id:'web-request',title:'Web, browser, and request tooling',match:['burp-suite','crt.sh','ffuf','firefox','feroxbuster','gobuster','google','httpx','nikto','nuclei','openvas','sqlmap','whatweb','wfuzz','wpscan','zap','nessus','shodan']},
+ {id:'cloud-data-services',title:'Cloud, containers, databases, and services',match:['aws','awslocal','docker','donpapi','dploot','kubectl','lxc','mssql','mysql','odat','psql','redis-cli','svn']},
+ {id:'controlled-poc',title:'Controlled CVE and PoC helpers',match:['cve-pocs','cve-2023-27532','cve-2024-29849','cve-2024-29855','cve-2024-40711','cve-2023-41320.py','poc_aug3.py','proxyshell-rce.py','printnightmare.py','sharpprintnightmare','veeamhax','ysoserial']},
+ {id:'operator-utilities',title:'Operator utilities and binary/workshop helpers',match:['azuread-decrypt-msol-v2.ps1','firefox','git-dumper','immunity-debugger','impacket','irs','kpcli','libreoffice','manspider','metasploit','meterpreter','obol','openssl','rmg','sccmdecryptpoc','sccmhound','sccmhunter','sccmsecrets','sccmwtf','sharpwsus','sharpprintnightmare','sharpsccm','snaffler']},
+ {id:'needs-classification',title:'Needs classification',match:[]}
+]);
 function arr(v){return Array.isArray(v)?v:[];}
 function text(v){return String(v==null?'':v);}
 function words(v){return text(v).split(/\s+/).map(x=>x.replace(/["']/g,''));}
@@ -97,8 +111,32 @@ function validateImplementedBuilders(){
  }
  return failures;
 }
-function activeBatches(){const modeled=modeledRecords().map(record=>record.tool).sort();return Object.freeze([{id:'remaining-modeled-tool-builder-backlog',title:'Remaining modeled tool implementation backlog',status:'active',count:modeled.length,tools:Object.freeze(modeled),acceptance:'Promote each modeled tool only after it has schema-driven minimum viable command generation, real supplied/parsed prefill, additive toggles, executable Evidence ingestion, path movement or blocking where applicable, proof boundaries, cleanup/report guidance, and regression fixtures.'}]);}
-function auditSnapshot(){return Object.freeze({version:VERSION,implementedCount:implementedRecords().length,modeledCount:modeledRecords().length,failures:validateImplementedBuilders(),activeBatches:activeBatches(),context:contextFromState()});}
+function normalizedTool(value){
+ const inv=root.OBOL_TOOL_BUILDER_INVENTORY;
+ let out=text(value).trim().toLowerCase().replace(/^.*[\\/]/,'').replace(/\.exe$/,'').replace(/[\s_]+/g,'-');
+ if(inv&&typeof inv.key==='function')try{out=text(inv.key(out)||out).replace(/[\s_]+/g,'-');}catch(_err){}
+ return out;
+}
+function groupForTool(tool){
+ const key=normalizedTool(tool);
+ for(const group of INVENTORY_GROUPS){if(group.id==='needs-classification')continue;if(arr(group.match).includes(key))return group;}
+ return INVENTORY_GROUPS[INVENTORY_GROUPS.length-1];
+}
+function displayToolName(tool){return text(tool).replace(/[\s_]+/g,'-');}
+function groupedInventory(records){
+ const groups=new Map();
+ for(const group of INVENTORY_GROUPS)groups.set(group.id,{id:group.id,title:group.title,tools:[]});
+ for(const record of arr(records)){
+  const tool=record&&record.tool||record;
+  if(!tool)continue;
+  const group=groupForTool(tool);
+  groups.get(group.id).tools.push(displayToolName(tool));
+ }
+ return Object.freeze(Array.from(groups.values()).filter(group=>group.tools.length).map(group=>Object.freeze({id:group.id,title:group.title,tools:Object.freeze(group.tools.sort((a,b)=>a.localeCompare(b,undefined,{numeric:true,sensitivity:'base'})))})));
+}
+function modeledInventoryGroups(){return groupedInventory(modeledRecords());}
+function activeBatches(){const modeled=modeledRecords().map(record=>record.tool).sort();return Object.freeze([{id:'remaining-modeled-tool-builder-backlog',title:'Remaining modeled tool implementation backlog',status:'active',count:modeled.length,tools:Object.freeze(modeled),groups:modeledInventoryGroups(),acceptance:'Promote each modeled tool only after it has schema-driven minimum viable command generation, real supplied/parsed prefill, additive toggles, executable Evidence ingestion, path movement or blocking where applicable, proof boundaries, cleanup/report guidance, and regression fixtures.'}]);}
+function auditSnapshot(){return Object.freeze({version:VERSION,implementedCount:implementedRecords().length,modeledCount:modeledRecords().length,failures:validateImplementedBuilders(),activeBatches:activeBatches(),inventoryGroups:modeledInventoryGroups(),context:contextFromState()});}
 function currentTool(){try{return decodeURIComponent(text(root.location&&root.location.hash||'').replace(/^#\/?tools\/?/,''));}catch(_err){return'';}}
 function repairToolsRoute(){
  if(typeof document==='undefined'||!/^#\/?tools(?:\/|$)/.test(text(root.location&&root.location.hash)))return false;
@@ -106,23 +144,51 @@ function repairToolsRoute(){
  const tool=(api.canonicalTool&&api.canonicalTool(currentTool()))||currentTool();if(!tool||tool[0]==='_')return false;
  const host=document.querySelector('[data-current-tool-builder88]');if(!host)return false;
  const builder=api.builderForTool(tool);if(!builder)return false;
- const mounted=builderApi.mount(host,builder,contextFromState(),safeDefaults(builder,contextFromState(),savedValues(builder.id)));host.dataset.obolAuditPrefill='v10.08';
+ const mounted=builderApi.mount(host,builder,contextFromState(),safeDefaults(builder,contextFromState(),savedValues(builder.id)));host.dataset.obolAuditPrefill=VERSION;
  if(root.OBOL_TOOL_BUILDERS&&typeof root.OBOL_TOOL_BUILDERS.enhanceMount==='function')root.OBOL_TOOL_BUILDERS.enhanceMount(builder.id,mounted,contextFromState());
  return true;
 }
-function installToolsRepair(){if(typeof document==='undefined')return false;const run=()=>{try{repairToolsRoute();}catch(_err){}};for(const ms of [0,80,240,800,1600,3200])root.setTimeout&&root.setTimeout(run,ms);root.addEventListener&&root.addEventListener('hashchange',run);root.addEventListener&&root.addEventListener('obol:route-paint',run);root.addEventListener&&root.addEventListener('obol:current-paint',run);return true;}
+function routeToTool(value){if(!value)return;root.location.hash='#/tools/'+encodeURIComponent(value);}
+function escHtml(v){return text(v).replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));}
+function bindInventoryCard(card){arr(card&&card.querySelectorAll?card.querySelectorAll('[data-open-tool]'):[]).forEach(node=>{node.onclick=()=>routeToTool(node.dataset.openTool);});}
+function groupExistingChips(chips){
+ const grouped=new Map();
+ for(const group of INVENTORY_GROUPS)grouped.set(group.id,{id:group.id,title:group.title,chips:[]});
+ arr(chips).forEach(chip=>{const tool=chip.dataset&&chip.dataset.openTool||chip.textContent;const group=groupForTool(tool);grouped.get(group.id).chips.push(chip.outerHTML);});
+ return Array.from(grouped.values()).filter(group=>group.chips.length);
+}
+function patchInventoryOrganization(){
+ if(typeof document==='undefined'||!/^#\/?tools(?:\/|$)/.test(text(root.location&&root.location.hash)))return false;
+ const card=document.querySelector('[data-tool-library-group="inventory-complete"],[data-generated-inventory-group="true"]');
+ if(!card||card.dataset.obolInventoryGrouped===VERSION)return false;
+ const picker=card.querySelector('.tool-picker');if(!picker)return false;
+ const chips=Array.from(picker.querySelectorAll('[data-open-tool]'));if(chips.length<8)return false;
+ const groups=groupExistingChips(chips);
+ const h3=card.querySelector('h3');if(h3)h3.textContent='Remaining Tool Builder inventory by function';
+ const hint=card.querySelector('.hint');if(hint)hint.textContent='Generated from the Tool Builder inventory ledger and grouped into implementation slices. Every real tool remains selectable; modeled means the builder contract is still pending, not that the tool is disposable.';
+ picker.classList.add('tool-inventory-slices');
+ picker.innerHTML=groups.map(group=>'<div class="tool-inventory-slice" data-tool-inventory-slice="'+escHtml(group.id)+'" style="margin:10px 0 12px;padding:10px;border:1px solid var(--border);border-radius:12px;background:color-mix(in srgb,var(--panel2) 75%,transparent)"><div class="hint" style="margin:0 0 8px"><b>'+escHtml(group.title)+'</b> · '+group.chips.length+' tools</div><div class="lane-tabs tool-picker">'+group.chips.join('')+'</div></div>').join('');
+ card.dataset.obolInventoryGrouped=VERSION;
+ root.__OBOL_TOOL_BUILDER_GROUPED_INVENTORY_COUNT__=chips.length;
+ root.__OBOL_TOOL_BUILDER_GROUPED_INVENTORY_SLICES__=Object.freeze(groups.map(group=>Object.freeze({id:group.id,title:group.title,count:group.chips.length})));
+ bindInventoryCard(card);
+ return true;
+}
+function installInventoryOrganization(){if(typeof document==='undefined')return false;const run=()=>{try{patchInventoryOrganization();}catch(_err){}};for(const ms of [0,60,160,320,800,1600,2600,4200])root.setTimeout&&root.setTimeout(run,ms);root.addEventListener&&root.addEventListener('hashchange',run);root.addEventListener&&root.addEventListener('obol:route-paint',run);root.addEventListener&&root.addEventListener('obol:current-paint',run);if(root.MutationObserver&&document.body){try{new root.MutationObserver(run).observe(document.body,{childList:true,subtree:true});}catch(_err){}}return true;}
+function installToolsRepair(){if(typeof document==='undefined')return false;const run=()=>{try{repairToolsRoute();patchInventoryOrganization();}catch(_err){}};for(const ms of [0,80,240,800,1600,3200])root.setTimeout&&root.setTimeout(run,ms);root.addEventListener&&root.addEventListener('hashchange',run);root.addEventListener&&root.addEventListener('obol:route-paint',run);root.addEventListener&&root.addEventListener('obol:current-paint',run);return true;}
 function patchQueue(){
  const q=root.OBOL_PRODUCT_HARDENING;if(!q||!Array.isArray(q.items))return false;
  const target=q.items.find(entry=>entry&&entry.id===ITEM);if(!target)return false;
  target.status='queued';target.priority=18.861;target.label='Post-mining modeled tool builder implementation backlog';
- target.detail='v10.08 completed the implemented-builder audit only. Remaining modeled inventory records still need schema-driven builders or explicit supersession/rejection with the full Tool Builder contract before this backlog can close.';
- target.acceptance='Every remaining modeled tool receives a schema-driven minimum viable command, prefill only from supplied workspace or parsed Evidence state, additive GUI toggles, executable Evidence ingestion, conservative path movement/blocking, proof boundaries, and regression fixtures before promotion to implemented.';
+ target.detail='The implemented-builder audit is complete. The remaining modeled inventory is now grouped into functional Tool Library slices so agents can burn it down coherently instead of staring at a flat chip dump.';
+ target.acceptance='Every remaining modeled tool receives a schema-driven minimum viable command, prefill only from supplied workspace or parsed Evidence state, additive GUI toggles, executable Evidence ingestion, conservative path movement/blocking, proof boundaries, cleanup/report guidance, and regression fixtures before promotion to implemented.';
  target.completedThrough='v10.08 implemented-builder audit';target.auditComplete=true;target.activeBatches=activeBatches();delete target.completedBy;delete target.proof;
  const track=Array.isArray(q.tracks)?q.tracks.find(entry=>entry&&entry.id==='tool-builders'):null;if(track){track.total=Math.max(Number(track.total)||0,Number(track.complete||0)+1);track.complete=Math.min(Number(track.complete)||0,Math.max(0,Number(track.total)||0-1));}
  return true;
 }
-const api=Object.freeze({version:VERSION,blockedPlaceholders:BLOCKED_PLACEHOLDERS,profiles:AUDIT_EVIDENCE_PROFILES,contextFromState,minimumFixtureValues,compileMinimum,validateImplementedBuilders,auditSnapshot,implementedRecords,modeledRecords,evidenceProfiles,activeBatches,hasBlockedPlaceholder,patchQueue,repairToolsRoute});
+const api=Object.freeze({version:VERSION,blockedPlaceholders:BLOCKED_PLACEHOLDERS,profiles:AUDIT_EVIDENCE_PROFILES,inventoryGroups:INVENTORY_GROUPS,contextFromState,minimumFixtureValues,compileMinimum,validateImplementedBuilders,auditSnapshot,implementedRecords,modeledRecords,evidenceProfiles,activeBatches,modeledInventoryGroups,groupedInventory,groupForTool,hasBlockedPlaceholder,patchQueue,repairToolsRoute,patchInventoryOrganization,installInventoryOrganization});
 root.OBOL_TOOL_BUILDER_IMPLEMENTATION_AUDIT_CURRENT=api;
 patchQueue();
 installToolsRepair();
+installInventoryOrganization();
 })(typeof window!=='undefined'?window:globalThis);
