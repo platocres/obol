@@ -1,0 +1,37 @@
+name: Agent fix Tool Builder audit version
+
+on:
+  push:
+    branches:
+      - release/obol-v10.20
+
+permissions:
+  contents: write
+
+jobs:
+  fix:
+    if: github.actor != 'github-actions[bot]'
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: release/obol-v10.20
+      - name: Patch Tool Builder audit owner version and remove temporary workflow
+        run: |
+          python3 - <<'PY'
+          from pathlib import Path
+          owner = Path('data/product-hardening/tool-builder-backlog-current.js')
+          data = owner.read_text()
+          data = data.replace("const VERSION='v10.19';", "const VERSION='v10.20';")
+          owner.write_text(data)
+          workflow = Path('.github/workflows/agent-fix-tool-builder-audit-version.yml')
+          if workflow.exists():
+              workflow.unlink()
+          PY
+      - name: Commit patch
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "github-actions[bot]@users.noreply.github.com"
+          git add data/product-hardening/tool-builder-backlog-current.js .github/workflows/agent-fix-tool-builder-audit-version.yml
+          git commit -m "Mark Tool Builder audit owner as v10.20" || exit 0
+          git push
