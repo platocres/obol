@@ -89,10 +89,10 @@ assert(audit.modeledRecords().length>0,'remaining modeled tools should still be 
 assert.strictEqual(ctx.OBOL_CURRENT_RELEASE.phase,'product-hardening');
 const readme=fs.readFileSync(path.join(root,'README.md'),'utf8');
 assert(/Current release: \*\*v\d+\.\d+(?:\.\d+)?\*\*/.test(readme),'README should identify a current release (version-agnostic)');
-assert(readme.includes('completed web discovery/scanning slice'),'README Tool Builder queue should keep the completed web slice as handoff metadata without future-version planning labels');
-assert(readme.includes('Remaining modeled tool implementation backlog'),'README should keep the modeled backlog active');
+assert(readme.includes('Remaining modeled tool implementation backlog')||readme.includes('Post-mining modeled tool builder implementation backlog'),'README should keep the modeled backlog active through Product Build Next');
 const docs=fs.readFileSync(path.join(root,'docs/TOOL-BUILDER-BUILD-QUEUE.md'),'utf8');
 assert(docs.includes('WhatWeb, Nikto, httpx, wfuzz, and ZAP'),'Tool Builder queue doc should name the completed web slice');
+assert(docs.includes('completed web discovery/scanning slice'),'Tool Builder queue doc should keep the completed web slice as handoff metadata without future-version planning labels');
 assert(docs.includes('Remaining modeled tool implementation backlog'),'Tool Builder queue doc should keep remaining modeled tools visible');
 const release=cp.spawnSync(process.execPath,['tools/validate-release-pr.js','--repo-only'],{cwd:root,encoding:'utf8'});
 if(release.status!==0){process.stdout.write(release.stdout||'');process.stderr.write(release.stderr||'');process.exit(release.status||1);}
