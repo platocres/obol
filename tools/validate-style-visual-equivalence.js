@@ -25,7 +25,7 @@ const routes=[
  {id:'evidence',hash:'#/intake'},
  {id:'next-steps',hash:'#/path'},
  {id:'report',hash:'#/report'},
- {id:'tools',hash:'#/tools'},
+ {id:'tools',hash:'#/tools',settleMs:6400},
  {id:'dashboard',hash:'#/dashboard',settleMs:5400}
 ];
 const viewports=[
