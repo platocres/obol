@@ -1,0 +1,77 @@
+name: Agent patch Tool Builder taxonomy
+
+on:
+  push:
+    branches:
+      - tool-builder-taxonomy-standard
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+jobs:
+  patch-taxonomy:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout branch
+        uses: actions/checkout@v4
+        with:
+          ref: tool-builder-taxonomy-standard
+          fetch-depth: 0
+      - name: Patch canonical Tool Library taxonomy merge
+        run: |
+          python3 - <<'PY'
+          from pathlib import Path
+          path = Path('data/product-hardening/tool-builder-backlog-current.js')
+          s = path.read_text()
+          insert = """const LIBRARY_GROUP_ALIASES=Object.freeze({\n 'ad-kerberos-pki':Object.freeze({id:'ad',title:'Active Directory'}),\n 'smb-rpc-services':Object.freeze({id:'enum',title:'Enumeration and services'}),\n 'remote-access-exec':Object.freeze({id:'remote-exec',title:'Remote execution and lateral movement'}),\n 'pivoting':Object.freeze({id:'pivot',title:'Pivoting and tunneling'}),\n 'shells-transfer':Object.freeze({id:'shells',title:'Shells, payloads, and transfer'})\n});\nfunction libraryGroupForTool(tool){const group=groupForTool(tool);const alias=LIBRARY_GROUP_ALIASES[group.id];return alias?Object.freeze(Object.assign({},group,{sourceTaxonomyId:group.id,id:alias.id,title:alias.title})):group;}\nfunction cleanupAliasCategorySections(){if(typeof document==='undefined')return 0;let removed=0;for(const sourceId of Object.keys(LIBRARY_GROUP_ALIASES)){const alias=LIBRARY_GROUP_ALIASES[sourceId];const canonical=document.querySelector('[data-tool-library-group=\\"'+alias.id+'\\"]');if(!canonical)continue;const picker=canonical.querySelector('.tool-picker')||canonical.querySelector('.lane-tabs')||canonical;Array.from(document.querySelectorAll('[data-tool-library-group=\\"'+sourceId+'\\"]')).forEach(node=>{if(node===canonical)return;Array.from(node.querySelectorAll('[data-open-tool]')).forEach(chip=>{const key=normalizedTool(chip.dataset&&chip.dataset.openTool||chip.textContent);if(!chipExists(canonical,key))picker.appendChild(chip.cloneNode(true));});if(node.parentNode){node.parentNode.removeChild(node);removed+=1;}});}return removed;}\nfunction removeDuplicateCategorySection(group){if(typeof document==='undefined'||!group||!group.sourceTaxonomyId)return 0;const alias=LIBRARY_GROUP_ALIASES[group.sourceTaxonomyId];if(!alias)return 0;const canonical=document.querySelector('[data-tool-library-group=\\"'+alias.id+'\\"]');let removed=0;Array.from(document.querySelectorAll('[data-tool-library-group=\\"'+group.sourceTaxonomyId+'\\"]')).forEach(node=>{if(node===canonical)return;if(node.parentNode){node.parentNode.removeChild(node);removed+=1;}});return removed;}\n"""
+          marker = "function arr(v){return Array.isArray(v)?v:[];}"
+          if 'const LIBRARY_GROUP_ALIASES=Object.freeze({' not in s:
+              if marker not in s:
+                  raise SystemExit('arr marker not found')
+              s = s.replace(marker, insert + marker, 1)
+          old = "function existingCategorySection(group){return document.querySelector('[data-tool-library-group=\\\"'+group.id+'\\\"]');}"
+          new = "function existingCategorySection(group){const ids=[group&&group.id,group&&group.sourceTaxonomyId].filter(Boolean);for(const id of ids){const found=document.querySelector('[data-tool-library-group=\\\"'+id+'\\\"]');if(found)return found;}return null;}"
+          if old in s:
+              s = s.replace(old, new, 1)
+          elif new not in s:
+              raise SystemExit('existingCategorySection target not found')
+          old_line = "const group=groupForTool(tool);const section=ensureCategorySection(group,residual);const picker=section.querySelector('.tool-picker')||section.querySelector('.lane-tabs')||section;if(!chipExists(section,key)){const clone=chip.cloneNode(true);picker.appendChild(clone);moved.push({tool:key,group:group.id});}"
+          new_line = "const group=libraryGroupForTool(tool);removeDuplicateCategorySection(group);const section=ensureCategorySection(group,residual);const picker=section.querySelector('.tool-picker')||section.querySelector('.lane-tabs')||section;if(!chipExists(section,key)){const clone=chip.cloneNode(true);picker.appendChild(clone);moved.push({tool:key,group:group.id});}"
+          if old_line in s:
+              s = s.replace(old_line, new_line, 1)
+          elif new_line not in s:
+              raise SystemExit('chip move target not found')
+          old_func = "function patchInventoryOrganization(){if(typeof document==='undefined'||!/^#\\\\/?tools(?:\\\\/|$)/.test(text(root.location&&root.location.hash)))return false;const residuals=Array.from(document.querySelectorAll('[data-tool-library-group=\\\"inventory-complete\\\"],[data-generated-inventory-group=\\\"true\\\"]'));if(!residuals.length)return false;const primary=residuals[0];const moved=[];let changed=false;"
+          new_func = "function patchInventoryOrganization(){if(typeof document==='undefined'||!/^#\\\\/?tools(?:\\\\/|$)/.test(text(root.location&&root.location.hash)))return false;let changed=cleanupAliasCategorySections()>0;const residuals=Array.from(document.querySelectorAll('[data-tool-library-group=\\\"inventory-complete\\\"],[data-generated-inventory-group=\\\"true\\\"]'));if(!residuals.length)return changed;const primary=residuals[0];const moved=[];"
+          if old_func in s:
+              s = s.replace(old_func, new_func, 1)
+          elif new_func not in s:
+              raise SystemExit('patchInventoryOrganization prefix target not found')
+          old_tail = "hideResidualInventorySection(residual);changed=true;}\n root.__OBOL_TOOL_BUILDER_GROUPED_INVENTORY_COUNT__=moved.length;"
+          new_tail = "hideResidualInventorySection(residual);changed=true;}\n changed=cleanupAliasCategorySections()>0||changed;\n root.__OBOL_TOOL_BUILDER_GROUPED_INVENTORY_COUNT__=moved.length;"
+          if old_tail in s:
+              s = s.replace(old_tail, new_tail, 1)
+          elif new_tail not in s:
+              raise SystemExit('patchInventoryOrganization tail target not found')
+          path.write_text(s)
+          PY
+      - name: Remove temporary workflow
+        run: rm -f .github/workflows/agent-patch-tool-builder-taxonomy.yml
+      - name: Validate targeted files
+        run: |
+          node --check data/product-hardening/tool-builder-backlog-current.js
+          node tests/run-tool-builder-taxonomy-tests.js
+          node tests/run-tool-builder-inventory-organization-tests.js
+          node tests/run-v10.20-tests.js
+      - name: Commit patch
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          if git diff --quiet; then
+            echo "No changes to commit"
+            exit 0
+          fi
+          git add data/product-hardening/tool-builder-backlog-current.js .github/workflows/agent-patch-tool-builder-taxonomy.yml
+          git commit -m "Merge modeled tools into canonical library groups"
+          git push origin HEAD:tool-builder-taxonomy-standard
