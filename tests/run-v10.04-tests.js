@@ -145,7 +145,9 @@ for(const token of [
  'v10.07-final-cross-surface-audit-not-deferred-implementation'
 ])assert(queueOwner.includes(token),'live Tool Builder queue missing '+token);
 const readme=read('README.md');
-assert(readme.includes('Every tool batch must ship command generation and decision-relevant Evidence behavior together'),'generated README Build Next must expose the same-build Evidence queue requirement');
+const readmeOrRoadmap=readme+'\n'+roadmap;
+assert(readme.includes('docs/TOOL-BUILDER-BUILD-QUEUE.md'),'README must keep the Tool Builder queue link for agents told to read linked docs');
+assert(readmeOrRoadmap.includes('Every tool batch must ship command generation and decision-relevant Evidence behavior together'),'linked Tool Builder handoff must expose the same-build Evidence queue requirement');
 const routeGuard=read('data/product-hardening/ad-metasploit-route-guard-v9.71.js');
 assert(routeGuard.includes('function integratedWhyNow()'),'historical AD/MSF route guard must recognize the integrated current card owner');
 assert(routeGuard.includes('[data-card-primary-action=\"true\"]'),'historical AD/MSF route guard must key current why-now ownership to the integrated card action');
