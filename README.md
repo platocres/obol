@@ -23,7 +23,7 @@ This is the single agent quickstart. Told to "read the README and keep developin
 7. **Keep private notes private.** Source-note mining is complete. Use notes docs as provenance and safety references unless Product Build Next explicitly reopens note-derived work. Extract the value, not the wording. Do not use `CHANGELOG.md` to decide what remains to be re-mined. Current re-mining status lives in the Product Build Next sources and dashboard.
 8. **Prove the head.** Run the focused validators for the touched ownership area, keep generated blocks synchronized, and do not call the PR merge-ready until the exact final head is green.
 
-The completed broad audit item was **Post-mining Next Steps and tool-card clarity audit**.
+The completed broad audit item was **Post-mining Next Steps and tool-card clarity audit**. The **Implemented-tool Evidence and cross-surface audit** is complete. The **Remaining modeled tool implementation backlog.** remains active until each modeled tool is implemented through the full Tool Builder contract or explicitly dispositioned with proof.
 
 ## Canonical docs
 
