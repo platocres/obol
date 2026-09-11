@@ -12,6 +12,7 @@ function makeContext(){
  ctx.OBOL_INTAKE_V21={analyzeTerminal(){return {activities:[]};}};
  ctx.window=ctx;ctx.globalThis=ctx;vm.createContext(ctx);return ctx;
 }
+function versionAtLeast(label,minor){const m=String(label||'').match(/^v10\.(\d+)/);return !!m&&Number(m[1])>=minor;}
 const ctx=makeContext();
 [
  'data/tool-builder-schema.js',
@@ -26,10 +27,11 @@ const ctx=makeContext();
  'assets/tool-builder-evidence-current.js',
  'assets/tool-builder-helper-evidence-current.js',
  'assets/tool-builder-web-evidence-current.js',
- 'data/product-hardening/burp-suite-tool-builder-v10.10.js',
+ 'data/product-hardening/tool-builder-discovery-current.js',
  'data/product-hardening/tool-builder-backlog-current.js',
  'data/current-release.js'
 ].forEach(file=>load(ctx,file));
+assert(ctx.OBOL_TOOL_BUILDER_DISCOVERY_CURRENT,'compact discovery current owner should load');
 assert(ctx.OBOL_BURP_TOOL_BUILDER_CURRENT,'Burp Suite owner should publish install state');
 assert.strictEqual(ctx.OBOL_BURP_TOOL_BUILDER_CURRENT.installedBuilder,true,'Burp Suite builder should install once schema is ready');
 assert.strictEqual(ctx.OBOL_BURP_TOOL_BUILDER_CURRENT.patchedEvidence,true,'Burp Suite Evidence should patch the shared Tool Builder Evidence API');
@@ -52,11 +54,7 @@ assert(builder.fields.some(field=>field.id==='payloadProcessing'),'Burp Intruder
 assert(builder.fields.some(field=>field.id==='grepMatch'),'Burp Intruder handoff should expose grep match/extract tracking');
 assert(builder.fields.some(field=>field.id==='rateBoundary'),'Burp Intruder handoff should expose scope/rate boundary selection');
 assert(builder.evidence.proofBoundary.includes('guided third-party GUI handoff'),'Burp proof boundary should name the non-terminal handoff boundary');
-const context=Object.freeze({
- target:Object.freeze({value:'https://app.corp.example',ip:'203.0.113.90',hostname:'app.corp.example'}),
- context:Object.freeze({domain:'corp.example',username:'alice',port:'443',lhost:'198.51.100.77',lport:'9001',baseDn:'DC=corp,DC=example'}),
- workspace:Object.freeze({wordlist:'/usr/share/seclists/Discovery/Web-Content/common.txt',outputDir:'scans/web',hashfile:'audit-hashes.txt',transferUrl:'http://198.51.100.77:8000/audit.bin'})
-});
+const context=Object.freeze({target:Object.freeze({value:'https://app.corp.example',ip:'203.0.113.90',hostname:'app.corp.example'}),context:Object.freeze({domain:'corp.example',username:'alice',port:'443',lhost:'198.51.100.77',lport:'9001',baseDn:'DC=corp,DC=example'}),workspace:Object.freeze({wordlist:'/usr/share/seclists/Discovery/Web-Content/common.txt',outputDir:'scans/web',hashfile:'audit-hash-material.txt',transferUrl:'http://198.51.100.77:8000/audit.bin'})});
 function command(values){return ctx.OBOL_TOOL_BUILDER.compile(builder,values||{},context);}
 const minimum=command();
 assert(minimum.startsWith('burpsuite # Burp handoff: proxy for https://app.corp.example via proxy 127.0.0.1:8080'),minimum);
@@ -75,7 +73,6 @@ try{ctx.OBOL_TOOL_BUILDER.compile(builder,{}, {target:{},context:{},workspace:{}
 assert(missing,'missing Burp target should remain a missing-field state, not a fake runnable command');
 const sample='Burp Suite Repeater\nGET /login?next=/admin HTTP/1.1\nHost: app.corp.example\nCookie: session=secret\n\nHTTP/1.1 302 Found\nLocation: /admin\nSet-Cookie: session=rotated\n\nIntruder attack\nPayload position username=§FUZZ§\nPayload Processing: URL-encode payloads\nGrep - Match: Welcome\nStatus Length\n1 200 3210\nCommunity Version throttled resource pool\n\nIssue detail\nSeverity: Medium\nConfidence: Firm\nReflected input observed in response body';
 const analysis=ctx.OBOL_TOOL_BUILDER_EVIDENCE_CURRENT.analyzeForBuilder('tb-burp-suite',sample);
-assert(analysis,'Burp Evidence analyzer should return analysis');
 assert.strictEqual(analysis.analyzer,'tool-builder-burp-evidence-current');
 assert.strictEqual(analysis.cardId,'web-content-discovery-and-fingerprinting');
 assert(analysis.outcomeFacts.includes('web.burp_request_response_observed'),'Burp analyzer should recognize pasted request/response pairs');
@@ -92,15 +89,16 @@ const failures=Array.from(audit.validateImplementedBuilders());
 assert.strictEqual(failures.length,0,failures.join('\n'));
 assert(audit.modeledRecords().length>0,'remaining modeled tools should still be queued after Burp promotion');
 assert.strictEqual(ctx.OBOL_CURRENT_RELEASE.phase,'product-hardening');
-assert(ctx.OBOL_CURRENT_RELEASE.productHardeningExtensions.includes('data/product-hardening/burp-suite-tool-builder-v10.10.js'),'current release should load Burp extension');
+assert(versionAtLeast(ctx.OBOL_CURRENT_RELEASE.label,10),'current release should remain at or after the Burp release');
+assert(ctx.OBOL_CURRENT_RELEASE.productHardeningExtensions.includes('data/product-hardening/tool-builder-discovery-current.js'),'current release should load compact discovery current owner');
+assert(!ctx.OBOL_CURRENT_RELEASE.productHardeningExtensions.includes('data/product-hardening/burp-suite-tool-builder-v10.10.js'),'v10.10 Burp release layer must not remain live after consolidation');
 const readme=fs.readFileSync(path.join(root,'README.md'),'utf8');
-assert(/Current release: \*\*v\d+\.\d+(?:\.\d+)?\*\*/.test(readme),'README should identify a current release (version-agnostic)');
-assert(readme.includes('Burp Suite guided GUI workflow slice'),'README Tool Builder queue should name the completed Burp slice');
+assert(/Current release: \*\*v\d+\.\d+(?:\.\d+)?\*\*/.test(readme),'README should identify a current release');
 assert(readme.includes('Remaining modeled tool implementation backlog'),'README should keep the modeled backlog active');
 const docs=fs.readFileSync(path.join(root,'docs/TOOL-BUILDER-BUILD-QUEUE.md'),'utf8');
-assert(docs.includes('Burp Suite guided GUI workflow slice'),'Tool Builder queue doc should name the completed Burp slice');
+assert(docs.includes('Current ownership hygiene'),'Tool Builder queue doc should name the current-owner consolidation rule');
 assert(docs.includes('browser/request utilities'),'Tool Builder queue doc should keep adjacent web request-helper work visible');
 const release=cp.spawnSync(process.execPath,['tools/validate-release-pr.js','--repo-only'],{cwd:root,encoding:'utf8'});
 if(release.status!==0){process.stdout.write(release.stdout||'');process.stderr.write(release.stderr||'');process.exit(release.status||1);}
 process.stdout.write(release.stdout||'');
-console.log('v10.10 Burp Suite guided Tool Builder passed.');
+console.log('v10.10 Burp Suite guided Tool Builder remains covered by compact current owner.');

@@ -9,6 +9,7 @@ This file is the active Tool Builder build queue, not release history. Completed
 - Do not retain completed version headings as context, milestones, or historical reference. Use `CHANGELOG.md` and release docs for that purpose.
 - Focused release regression must fail when the just-completed batch or any older completed Tool Builder batch remains in the active queue.
 - The Product Build Next/dashboard projection must describe only remaining Tool Builder work. Completed tool families may be mentioned only as completed-through metadata, never as pending scope.
+- When a Tool Builder slice lands as a versioned release owner, the next cleanup/consolidation pass must either fold it into a stable current owner or explicitly justify why it stays live. The Tool Library must not accumulate an unbounded stack of versioned builder layers.
 
 The implementation rule is strict:
 
@@ -37,15 +38,11 @@ For every implemented builder:
 
 This is the permanent Definition of Done for modeled-tool work. The historical note-mining rubric already required terminal-output analyzers, Evidence expectations, and Path movement. v10.08 completed the **Implemented-tool Evidence and cross-surface audit**, but it did not close the full modeled-tool backlog because many inventory records still remain `modeled`.
 
-## Completed modeled-tool burn-down slices
+## Current ownership hygiene
 
-Completed slices live here only as current handoff metadata so the active queue stays honest while the modeled backlog is burned down:
+Completed Tool Builder slices are not active queue items. v10.16 folds the recent Burp Suite and network/host discovery release owners into `data/product-hardening/tool-builder-discovery-current.js` so the live Tool Library no longer has to load both `burp-suite-tool-builder-v10.10.js` and `network-discovery-tool-builders-v10.15.js` as separate release layers.
 
-- **v10.09 web discovery/scanning slice** completed WhatWeb, Nikto, httpx, wfuzz, and ZAP with schema-driven builders, minimum viable commands, supplied/Evidence-derived prefill, additive controls, executable Evidence ingestion, conservative proof boundaries, and regression coverage.
-- **v10.10 Burp Suite guided GUI workflow slice** completed the first-class Burp Suite guided Tool Builder for proxy setup, browser proxying, target scope, sitemap capture, Repeater, Intruder, Scanner triage, raw request/response import handoffs, executable Burp Evidence ingestion, conservative proof boundaries, and regression coverage without pretending Obol can control the Burp GUI.
-- **v10.15 network and host discovery slice** completes masscan, Rustscan, naabu, fping, and nbtscan with schema-driven builders, minimum viable commands, supplied/Evidence-derived prefill, additive controls, executable network discovery Evidence ingestion, conservative proof boundaries, and regression coverage.
-
-The next modeled-tool build is **v10.15** for this PR. After it lands, the active queue remains the same backlog name, but the network/host discovery slice must not be treated as pending anymore.
+Release docs and changelog entries remain the history for the completed v10.09 web discovery/scanning slice, v10.10 Burp Suite guided GUI workflow slice, and v10.15 network and host discovery slice. The completed web slice covered WhatWeb, Nikto, httpx, wfuzz, and ZAP. Those completed slices must not be reintroduced below as active work.
 
 ## Active Tool Builder batches
 
@@ -55,9 +52,9 @@ Implement or explicitly supersede/reject every inventory record that still repor
 
 Representative remaining groups include:
 
-- **Network and host discovery:** ping-style helpers and adjacent probe tools not covered by the v10.15 network and host discovery slice.
+- **Network and host discovery:** ping-style helpers and adjacent probe tools not covered by the current discovery owner.
 - **SMB, LDAP, DNS, SNMP, and AD enumeration:** enum4linux legacy coverage where not superseded, BloodHound collectors, rpcclient, dnsrecon, dig, nslookup, snmpwalk, onesixtyone, windapsearch, ldapdomaindump, and related directory/query tooling.
-- **Web discovery, scanning, and request helpers:** nuclei, wpscan, browser/request utilities, and any remaining web tooling not already covered by curl, ffuf, Gobuster/feroxbuster, sqlmap, WhatWeb, Nikto, httpx, wfuzz, ZAP, or the Burp Suite guided GUI workflow.
+- **Web discovery, scanning, and request helpers:** nuclei, wpscan, browser/request utilities, and any remaining web tooling not already covered by curl, ffuf, Gobuster/feroxbuster, sqlmap, WhatWeb, Nikto, httpx, wfuzz, ZAP, or the current Burp Suite guided GUI workflow.
 - **Remote execution and lateral movement:** Impacket psexec, wmiexec, smbexec, dcomexec, atexec, mssqlclient, runas/cmdkey, Windows service/task helpers, RDP/VNC clients, and PowerShell/cmd launchers.
 - **Credential capture, relay, roasting, and cracking helpers:** ntlmrelayx, mitm6, coercion tools, medusa, o365spray, hash-identification/conversion tools, John/Hashcat helper formats, and credential-routing utilities not already implemented.
 - **Tunneling, pivoting, and transport helpers:** SSH/plink/chisel follow-through where inventory still reports modeled, sshuttle, socat, proxychains, rpivot, ptunnel-ng, socks-over-RDP, dnscat2, and transport cleanup/check commands.
