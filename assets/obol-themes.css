@@ -1,0 +1,122 @@
+/* ============================================================
+   Obol Themes — skin engine owner.
+   Loaded last (after accessibility.*), directly from index.html.
+
+   Skins re-tint obol by overriding the existing :root color tokens
+   (--bg --panel --panel2 --border --fg --dim --accent --accent2
+   --danger --info). The default "obol" skin sets no overrides, and
+   the added glow/motion tokens default to transparent/off — so with
+   no skin selected the classic look is byte-for-byte unchanged.
+
+   Motion is full-effect but opt-out: signature animation only runs
+   under html.obol-fx, and everything still zeroes under
+   prefers-reduced-motion (accessibility.css already enforces that
+   for CSS; obol-themes.js gates the JS rain canvas the same way).
+   ============================================================ */
+
+:root{
+  --glow:transparent;      /* accent bloom — transparent on classic */
+  --glow-soft:transparent;  /* ambient bloom */
+  --grid:transparent;       /* neon grid wash lines */
+}
+
+/* ---- Ghostwire — black · matrix green · white · red ---- */
+html[data-skin="matrix"]{
+  --bg:#000502; --panel:#04160c; --panel2:#07200f; --border:#124a2a;
+  --fg:#e6ffe9; --dim:#4fbf74; --accent:#00ff66; --accent2:#ffffff;
+  --danger:#ff2d2d; --info:#7dffb0;
+  --glow:rgba(0,255,102,.55); --glow-soft:rgba(0,255,102,.16);
+}
+/* ---- Amber Phosphor — CRT terminal ---- */
+html[data-skin="crt"]{
+  --bg:#0a0700; --panel:#160f02; --panel2:#1f1604; --border:#4a340a;
+  --fg:#ffcf82; --dim:#c08a34; --accent:#ffb000; --accent2:#ffe6b0;
+  --danger:#ff5b3b; --info:#e0ab4a;
+  --glow:rgba(255,176,0,.5); --glow-soft:rgba(255,176,0,.14);
+}
+/* ---- Neon Noir — synthwave magenta / cyan ---- */
+html[data-skin="neon"]{
+  --bg:#0a0616; --panel:#160c2a; --panel2:#1e123c; --border:#3d2668;
+  --fg:#f2e9ff; --dim:#a184d0; --accent:#ff2fb9; --accent2:#21e6ff;
+  --danger:#ff4d6a; --info:#21e6ff;
+  --glow:rgba(255,47,185,.5); --glow-soft:rgba(33,230,255,.16); --grid:rgba(126,72,196,.11);
+}
+/* ---- Recon Daylight — light ops theme ---- */
+html[data-skin="recon"]{
+  --bg:#e9edf1; --panel:#ffffff; --panel2:#f2f5f8; --border:#d0d8e0;
+  --fg:#1a2430; --dim:#5c6a7a; --accent:#0f7a52; --accent2:#b3630b;
+  --danger:#c0392b; --info:#1668c2;
+}
+
+/* ---- additive glow on existing chrome (no-op when --glow is transparent) ---- */
+.brand h1,.coin{text-shadow:0 0 16px var(--glow)}
+.timer{text-shadow:0 0 10px var(--glow)}
+nav a.active{box-shadow:0 0 18px var(--glow)}
+.state-card:hover,.svc:hover{box-shadow:0 0 22px var(--glow-soft)}
+
+/* ---- decorative layers (injected by obol-themes.js) ---- */
+#obol-rain,#obol-scanlines,#obol-gridwash{
+  position:fixed;inset:0;z-index:-1;pointer-events:none;
+}
+#obol-rain{opacity:0;transition:opacity .45s ease}
+html[data-skin="matrix"].obol-fx #obol-rain{opacity:.5}
+
+#obol-scanlines{opacity:0;transition:opacity .4s ease;
+  background:repeating-linear-gradient(0deg,rgba(0,0,0,.30) 0,rgba(0,0,0,.30) 1px,transparent 2px,transparent 3px)}
+html[data-skin="crt"] #obol-scanlines{opacity:.55}
+
+#obol-gridwash{
+  background-image:linear-gradient(var(--grid) 1px,transparent 1px),linear-gradient(90deg,var(--grid) 1px,transparent 1px);
+  background-size:44px 44px}
+
+/* ---- switch sweep (a bright line crosses on skin change) ---- */
+#obol-sweep{position:fixed;inset:0;z-index:60;pointer-events:none;opacity:0;
+  background:linear-gradient(90deg,transparent,var(--accent),transparent);mix-blend-mode:screen}
+html.obol-fx #obol-sweep.go{animation:obol-sweep .5s ease-out}
+@keyframes obol-sweep{0%{opacity:0;transform:translateX(-100%)}18%{opacity:.45}100%{opacity:0;transform:translateX(100%)}}
+
+/* ---- signature motion, full-effect, gated by html.obol-fx ---- */
+@keyframes obol-scanroll{from{background-position:0 0}to{background-position:0 3px}}
+@keyframes obol-crtflicker{0%,100%{opacity:1}92%{opacity:1}93%{opacity:.9}94%{opacity:1}97%{opacity:.95}}
+@keyframes obol-neonpulse{0%,100%{box-shadow:0 0 10px var(--glow-soft)}50%{box-shadow:0 0 22px var(--glow)}}
+@keyframes obol-neontext{0%,100%{text-shadow:0 0 12px var(--glow-soft)}50%{text-shadow:0 0 22px var(--glow)}}
+@keyframes obol-wire{0%,100%{opacity:1}50%{opacity:.82}}
+
+html.obol-fx[data-skin="crt"] #obol-scanlines{animation:obol-scanroll .5s steps(3) infinite}
+html.obol-fx[data-skin="crt"] header{animation:obol-crtflicker 6s linear infinite}
+html.obol-fx[data-skin="neon"] .timer{animation:obol-neonpulse 2.6s ease-in-out infinite}
+html.obol-fx[data-skin="neon"] .brand h1,html.obol-fx[data-skin="neon"] .coin{animation:obol-neontext 2.6s ease-in-out infinite}
+html.obol-fx[data-skin="matrix"] .coin{animation:obol-wire 1.8s ease-in-out infinite}
+
+/* ---- skin picker control (injected into the header) ---- */
+#obol-skin{position:relative;display:flex;align-items:center}
+#obol-skin-btn{display:flex;align-items:center;gap:8px;cursor:pointer;
+  background:var(--panel2);color:var(--dim);border:1px solid var(--border);
+  border-radius:8px;padding:5px 10px;font:600 12px/1 -apple-system,'Segoe UI',Roboto,sans-serif;letter-spacing:.4px}
+#obol-skin-btn:hover{color:var(--fg);border-color:var(--accent)}
+#obol-skin-btn .sw{width:26px;height:12px;border-radius:3px;border:1px solid rgba(255,255,255,.16);
+  background:linear-gradient(90deg,var(--pv1,#161b22) 0 40%,var(--pv2,#58d68d) 40% 70%,var(--pv3,#e8b54a) 70% 100%)}
+#obol-skin-btn .caret{font-size:9px;opacity:.7}
+#obol-skin-menu{position:absolute;top:calc(100% + 6px);right:0;z-index:80;min-width:210px;
+  background:var(--panel);border:1px solid var(--border);border-radius:10px;padding:6px;
+  box-shadow:0 12px 34px rgba(0,0,0,.5)}
+#obol-skin-menu[hidden]{display:none}
+.obol-skin-opt{display:flex;align-items:center;gap:9px;width:100%;cursor:pointer;text-align:left;
+  background:transparent;color:var(--dim);border:1px solid transparent;border-radius:7px;
+  padding:7px 9px;font:600 12.5px/1.1 -apple-system,'Segoe UI',Roboto,sans-serif}
+.obol-skin-opt:hover{color:var(--fg);background:var(--panel2)}
+.obol-skin-opt[aria-checked="true"]{color:var(--fg);border-color:var(--accent)}
+.obol-skin-opt .sw{width:30px;height:13px;border-radius:3px;flex-shrink:0;border:1px solid rgba(255,255,255,.16)}
+.obol-skin-sep{height:1px;background:var(--border);margin:6px 4px}
+.obol-fx-row{display:flex;align-items:center;justify-content:space-between;gap:9px;
+  padding:7px 9px;font:600 11px/1 -apple-system,'Segoe UI',Roboto,sans-serif;letter-spacing:1.4px;
+  text-transform:uppercase;color:var(--dim)}
+#obol-fx-toggle{display:inline-flex;align-items:center;gap:7px;cursor:pointer;
+  background:transparent;border:1px solid var(--border);border-radius:999px;padding:3px 9px;color:inherit;font:inherit}
+#obol-fx-toggle .led{width:8px;height:8px;border-radius:50%;background:var(--dim)}
+#obol-fx-toggle[aria-pressed="true"]{color:var(--fg);border-color:var(--accent)}
+#obol-fx-toggle[aria-pressed="true"] .led{background:var(--accent);box-shadow:0 0 9px var(--glow)}
+
+@media (prefers-reduced-motion:reduce){
+  #obol-rain{display:none}
+}

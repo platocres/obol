@@ -411,6 +411,8 @@ OBOL-RUNTIME-MANIFEST-PROJECTION:END -->
 <script src="data/runtime-manifest.js"></script>
 <script src="assets/runtime-current.js"></script>
 <script>window.OBOL_RUNTIME_LOADER.writeStyles();</script>
+<!-- Skin engine owner: loaded after the runtime styles so its [data-skin] token overrides win the cascade. Base skin is a no-op. -->
+<link rel="stylesheet" href="assets/obol-themes.css">
 </head>
 <body>
 <header>
@@ -420,5 +422,6 @@ OBOL-RUNTIME-MANIFEST-PROJECTION:END -->
 </header>
 <div id="banner" class="hidden"></div><div class="layout"><aside id="sidebar"><details id="side-details" open><summary>Context details</summary><h3>Parameters</h3><div id="params"></div><div id="artifacts-line" style="margin:10px 0 2px"></div><h3>Facts</h3><div id="facts-panel"><div id="facts-list"></div><input id="fact-input" placeholder="add fact, e.g. port:445"></div></details></aside><main id="view" tabindex="-1"></main></div><div id="modal-backdrop" class="hidden"><div id="modal"></div></div><div id="toast" class="hidden"></div>
 <script>window.OBOL_RUNTIME_LOADER.armBootGuard();window.OBOL_RUNTIME_LOADER.writeScripts();</script>
+<script src="assets/obol-themes.js"></script>
 </body>
 </html>

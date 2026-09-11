@@ -43,6 +43,15 @@ skins, and strong command organization + a multi-command builder.
   `accessibility.css` already uses) — never scattered edits across the versioned history.
 - **README is off-limits** for this effort; plan and track here instead.
 
+### Governance note (one-open-PR rule)
+- obol's `tools/validate-open-pr-uniqueness.js` permits **one open release/product-hardening PR
+  at a time**. As of 2026-09-11, **PR #237** (v10.18 credential/cracking Tool Builder burn-down)
+  holds that slot, and the earlier planning-doc PR **#238 was closed** for that reason.
+- **The owner granted this UX effort a standing exception**: it ships as **plain feature PRs**
+  (no version token / release sections in the title or body), which are *not* classified as
+  release/product-hardening PRs and therefore do not trip the uniqueness check. Keep titles
+  feature-shaped (e.g. "Skin Engine (Build 1)"), never "Obol vX.Y…".
+
 ---
 
 ## 3 · Context you'll need (so you don't re-derive it)
@@ -98,16 +107,35 @@ skins, and strong command organization + a multi-command builder.
 
 ## 4 · Builds
 
-### Build 1 — Skin Engine 🎨  `[status: planned]`
+### Build 1 — Skin Engine 🎨  `[status: DONE — 2026-09-11]`
 **What:** Ship the five-skin theme engine into real obol.
 **Why:** Highest delight-per-risk; validated visually in the showcase.
-**Files (new owners, loaded last via the manifest):**
-- `assets/obol-themes.css` — `:root` token defaults + `[data-skin="matrix|crt|neon|recon"]`
-  overrides + `.stage.fx` signature-motion rules + `@media(prefers-reduced-motion)` guard.
-- `assets/obol-themes.js` — inject skin picker + FX toggle into header, set `data-skin` on
-  `<html>`, `localStorage` persistence (`obol-skin`, `obol-fx`), matrix-rain canvas manager,
-  keyboard (`1`–`5`, `[` `]`, `0`), ARIA (`aria-pressed`), wordmark scramble + switch sweep.
-- Register both in `data/runtime-manifest.js` so they load after `accessibility.*`.
+**Shipped files (new owners, loaded last, wired directly in `index.html`):**
+- `assets/obol-themes.css` — `:root` glow/grid token defaults + `html[data-skin="matrix|crt|neon|recon"]`
+  overrides of the existing color tokens + additive glow on existing chrome (no-op when
+  `--glow` is transparent) + decorative-layer rules + `html.obol-fx` signature motion +
+  `@media(prefers-reduced-motion)` guard.
+- `assets/obol-themes.js` — injects the header skin picker + FX toggle, sets `data-skin` on
+  `<html>` before first paint, `localStorage` persistence (`obol-skin`, `obol-fx`), matrix-rain
+  canvas manager, keyboard (`1`–`5`, `[` `]`, `0`), ARIA (`aria-pressed`/`aria-checked`/menu roles),
+  switch sweep. Exposes `window.OBOL_THEMES` for later builds/tests. Fully wrapped so it can
+  never block obol boot.
+- `index.html` — one `<link>` after `writeStyles()` and one `<script>` after `writeScripts()`.
+
+**Integration decision (deviation from original plan):** loaded via `index.html`, **not** the
+runtime manifest. Rationale: the effective runtime stylesheet is a single `obol-current.css`
+snapshot and the manifest's lazy-group machinery is app-triggered; a direct `<link>`/`<script>`
+guarantees the skin applies at **first paint** (no flash, since the boot gate hides `body` until
+commit) and keeps the change out of the intricate manifest/validator contracts. `current-boot`
+only asserts token *presence* in `index.html`, so the additions are safe.
+
+**Verified (headless Chromium + governance gates):** boot commits (`data-obol-boot="ready"`);
+default `--accent` unchanged (`#58d68d`); Ghostwire overrides apply (`--accent:#00ff66`,
+`body` bg `rgb(0,5,2)`); rain layer present + running; app renders into `#view`; skin persists
+across reload; picker survives navigation across all routes; **zero console errors**. Passing:
+`validate-asset-references`, `validate-runtime-loading`, `validate-current-boot`,
+`validate-responsive-layout`, `validate-accessibility-contract`.
+_(Pre-existing, unrelated: `scope-check` is red on a clean checkout via a `v9.99` queue assertion.)_
 **Skins & signature motion (full-effect, opt-out):**
 | Skin | Ground | Accent | Accent2 | Danger | Motion |
 |---|---|---|---|---|---|
@@ -161,7 +189,7 @@ step without a manual refresh; no regressions to intake/path/report.
 | # | Build | Status | Shipped in | Notes |
 |---|---|---|---|---|
 | — | Interactive showcase | ✅ done | artifact v2 | 5 skins + FX toggle + motion |
-| 1 | Skin Engine | ⬜ planned | — | next up |
+| 1 | Skin Engine | ✅ done | branch `claude/nice-wright-0u29oe` | picker + 5 skins + rain + FX; validated in-browser |
 | 2 | ⌘K Command Palette | ⬜ planned | — | |
 | 3 | Playbook Builder | ⬜ planned | — | |
 | 4 | Cred Reuse Matrix + retarget | ⬜ planned | — | |
