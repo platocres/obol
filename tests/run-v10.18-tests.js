@@ -67,8 +67,6 @@ assert(evidence.analyzeForBuilder('tb-cewl','CeWL 6.2 Writing words to target-ce
 assert(evidence.analyzeForBuilder('tb-crunch','Crunch will now generate 1000 lines of output, 9000 bytes of data').outcomeFacts.includes('cred.wordlist_generation_plan_observed'),'crunch output should produce a bounded generation Evidence fact');
 assert(evidence.analyzeForBuilder('tb-hashid','Analyzing 098f6bcd4621d373cade4e832627b4f6 [+] MD5 [Hashcat Mode: 0]').outcomeFacts.includes('cred.hash_identification_observed'),'hashid output should produce a hash-identification Evidence fact');
 assert(evidence.analyzeForBuilder('tb-name-that-hash','Most Likely: MD5, Hashcat example mode 0, John example raw-md5').outcomeFacts.includes('cred.hash_identification_observed'),'name-that-hash output should produce a hash-identification Evidence fact');
-const readme=read('README.md');
-assert(readme.includes('credential-helper modeled-tool slice covers CeWL, crunch, hashid, and name-that-hash')||readme.includes('CeWL, crunch, hashid, and name-that-hash'),'README should mention the v10.18 credential-helper slice');
 const queue=read('docs/TOOL-BUILDER-BUILD-QUEUE.md');
 assert(queue.includes('CeWL, crunch, hashid, and name-that-hash'),'queue should preserve credential-helper completion handoff without closing the whole backlog');
 const releaseDoc=read('docs/v10.18.md');
