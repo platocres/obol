@@ -74,12 +74,14 @@ const release=Object.freeze({
  ])
 });
 const AUTH_ENUM_SOURCE='data/tool-builders-auth-enum-current.js';
+const REMOTE_EXEC_SOURCE='data/product-hardening/remote-exec-tool-builders-current.js';
 const TOOL_LIBRARY_COMPACT_EXTENSIONS=Object.freeze([
  AUTH_ENUM_SOURCE,
  'data/product-hardening/tool-builder-backlog-current.js',
  'data/product-hardening/tool-builder-discovery-current.js',
  'data/product-hardening/credential-helper-tool-builders-current.js',
- 'data/product-hardening/privesc-helper-tool-builders-current.js'
+ 'data/product-hardening/privesc-helper-tool-builders-current.js',
+ REMOTE_EXEC_SOURCE
 ]);
 function routeName(){return typeof location==='undefined'?'home':((location.hash||'#/home').replace(/^#\/?/,'').split('/').filter(Boolean)[0]||'home');}
 function extensionPlan(route){
@@ -119,12 +121,15 @@ function finalizeProductHardeningExtensions(){
  }
 }
 function schemaReady(){const schema=root.OBOL_TOOL_BUILDER_SCHEMA;return !!(schema&&typeof schema.register==='function');}
-function authEnumReady(){
+function builderRegistered(id){
  const schema=root.OBOL_TOOL_BUILDER_SCHEMA;
  if(!schema||typeof schema.get!=='function')return false;
- try{return !!(schema.get('tb-hydra')&&schema.get('tb-kerbrute'));}catch(_err){return false;}
+ try{return !!schema.get(id);}catch(_err){return false;}
 }
-function shouldSkipSource(src){return src===AUTH_ENUM_SOURCE&&authEnumReady();}
+function authEnumReady(){return builderRegistered('tb-hydra')&&builderRegistered('tb-kerbrute');}
+function remoteExecReady(){return builderRegistered('tb-impacket-psexec')&&builderRegistered('tb-impacket-atexec');}
+function requiresSchema(src){return src===AUTH_ENUM_SOURCE||src===REMOTE_EXEC_SOURCE;}
+function shouldSkipSource(src){return (src===AUTH_ENUM_SOURCE&&authEnumReady())||(src===REMOTE_EXEC_SOURCE&&remoteExecReady());}
 function appendExtensionSource(src,done){
  if(typeof document==='undefined'||typeof document.createElement!=='function'){done();return;}
  if(document.querySelector&&document.querySelector('script[data-obol-extension="'+src+'"],script[data-obol-dashboard-src="'+src+'"]')){done();return;}
@@ -133,9 +138,9 @@ function appendExtensionSource(src,done){
 function loadExtensionSource(src,done,attempt){
  const tries=Number(attempt||0);
  if(shouldSkipSource(src)){done();return;}
- if(src===AUTH_ENUM_SOURCE&&!schemaReady()){
+ if(requiresSchema(src)&&!schemaReady()){
   if(root.setTimeout&&tries<40){root.setTimeout(()=>loadExtensionSource(src,done,tries+1),50);return;}
-  root.__OBOL_AUTH_ENUM_COMPACT_LOAD_ERROR__='Tool Builder schema unavailable for compact auth/enumeration owner';
+  root.__OBOL_COMPACT_TOOL_BUILDER_LOAD_ERROR__='Tool Builder schema unavailable for '+src;
   done();return;
  }
  appendExtensionSource(src,done);
