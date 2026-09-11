@@ -68,7 +68,7 @@ const auditFailures=Array.from(ctx.OBOL_TOOL_BUILDER_IMPLEMENTATION_AUDIT_CURREN
 assert.strictEqual(auditFailures.length,0,auditFailures.join('\n'));
 const readme=read('README.md');
 assert(/Current release: \*\*v10\.(?:1[6-9]|[2-9]\d)\*\*/.test(readme),'README must identify v10.16 or later');
-assert(readme.includes('Completed slices are not active queue items'),'README must stop listing completed slices as active queue work');
+assert(readme.includes('completed Tool Builder slices are compacted into current owners')||readme.includes('Completed slices are not active queue items'),'README must stop listing completed slices as active queue work');
 assert(!readme.includes('Completed current burn-down slices'),'README must not retain the old completed-slices queue section');
 assert(!/The next modeled-tool build is \*\*v10\.15\*\*/.test(readme),'README must not describe v10.15 as the next build after it merged');
 const queue=read('docs/TOOL-BUILDER-BUILD-QUEUE.md');
