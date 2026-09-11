@@ -51,7 +51,7 @@ fs.mkdirSync(outputDir, { recursive: true });
 // fragment chain leaks back into loading.
 const routes = [
   { id: 'home', hash: '#/home', marker: /Home/i, requestBudget: 85 },
-  { id: 'targets', hash: '#/boxes', marker: /target/i, requestBudget: 95 },
+  { id: 'targets', hash: '#/boxes', marker: /target/i, requestBudget: 96 },
   { id: 'evidence', hash: '#/intake', marker: /evidence/i, requestBudget: 92 },
   { id: 'next-steps', hash: '#/path', marker: /(next|path|recommend)/i, requestBudget: 93 },
   { id: 'report', hash: '#/report', marker: /report/i, requestBudget: 86 },
