@@ -42,6 +42,8 @@ This is the permanent Definition of Done for modeled-tool work. The historical n
 
 Completed Tool Builder slices are not active queue items. The current discovery owner keeps the recent Burp Suite and network/host discovery release owners folded into `data/product-hardening/tool-builder-discovery-current.js` and extends that same owner with the first AD/name-service supplemental batch without taking over legacy v10.05 tool routes.
 
+v10.17 is a route-loading cleanup, not another Tool Builder implementation slice. The Tool Library route now uses the compact product-hardening extension plan and should load the current Tool Builder ownership it needs instead of the full historical v9 product-hardening stack. Dashboard and non-Tools product-hardening routes still keep the full plan until their behavior is compacted and proven separately.
+
 Release docs and changelog entries remain the history for the completed v10.05 credential/AD utility slice, v10.09 web discovery/scanning slice, v10.10 Burp Suite guided GUI workflow slice, and v10.15 network and host discovery slice. The completed web slice covered WhatWeb, Nikto, httpx, wfuzz, and ZAP. The legacy v10.05 tool routes for smbclient, smbmap, enum4linux-ng, and ldapsearch remain canonical and must not be shadowed by the current discovery owner. The completed current discovery owner covers masscan, Rustscan, naabu, fping, nbtscan, rpcclient, dig, nslookup, dnsrecon, snmpwalk, onesixtyone, windapsearch, and ldapdomaindump, while adding Evidence recognition for the broader AD/name-service output family. Those completed slices must not be reintroduced below as active work.
 
 ## Active Tool Builder batches
