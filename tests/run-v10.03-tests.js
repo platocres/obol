@@ -128,13 +128,15 @@ assert(!roadmap.includes('## Shell, payload, privesc, and transfer helper batch'
 const readme = read('README.md');
 for (const token of [
   'docs/TOOL-BUILDER-BUILD-QUEUE.md',
-  '## Tool Builder implementation queue',
-  'modeled tools remain modeled until a real schema-driven builder exists',
-  'Implemented-tool Evidence and cross-surface audit'
+  'Product Build Next',
+  'Post-mining modeled tool builder implementation backlog',
+  'a tool is not implemented until it has minimum viable command or guided-handoff generation',
+  'Every product-affecting build must update [`CHANGELOG.md`](CHANGELOG.md).'
 ]) assert(readme.includes(token), 'README active tool-builder queue handoff missing ' + token);
-const readmeKeepsMinimumCommandContract = readme.includes('minimal valid command for the selected tool/mode') || readme.includes('minimal valid command or guided third-party handoff for the selected tool/mode');
+const readmeKeepsMinimumCommandContract = readme.includes('minimal valid command for the selected tool/mode') || readme.includes('minimum viable command or guided-handoff generation');
 assert(readmeKeepsMinimumCommandContract, 'README active tool-builder queue handoff missing minimal command/guided-handoff contract');
 assert(!readme.includes('**v10.03 —')&&!readme.includes('**v10.04 —')&&!readme.includes('**v10.05 —'), 'README active Tool Builder queue must contain only unfinished releases');
 assert(!readme.includes('Shell, payload, privesc, and transfer helper batch. Implement linpeas'), 'README must not retain the completed helper batch as an active numbered item');
+assert(!readme.includes('## Tool Builder implementation queue'), 'README should not duplicate the detailed Tool Builder queue section after the lean handoff cleanup');
 
 console.log('v10.03 tool builder minimal-command hygiene validation passed.');

@@ -35,12 +35,11 @@ assert.strictEqual(dashboard.__OBOL_PRODUCT_HARDENING_EXTENSION_PLAN__.mode,'ful
 assert(dashboard.__OBOL_DEFERRED_PRODUCT_HARDENING_EXTENSIONS__.length>20,'Dashboard deferred plan should retain historical extensions');
 assert(Array.from(dashboard.__OBOL_DEFERRED_PRODUCT_HARDENING_EXTENSIONS__).includes('data/product-hardening/tool-builder-discovery-current.js'),'Full plan should keep current discovery owner');
 const readme=fs.readFileSync(path.join(root,'README.md'),'utf8');
-assert(readme.includes('completed Tool Builder slices are compacted into current owners'),'README should preserve current-owner Tool Builder handoff');
-assert(readme.includes('The Tool Library route uses the compact current Tool Builder extension plan')||readme.includes('Tool Library route now uses the compact current Tool Builder extension plan'),'README should describe the route-layer queue handoff without future-build version labels');
-assert(readme.includes('Dashboard and non-Tools product-hardening routes still keep the full plan until their behavior is compacted and proven separately'),'README should keep remaining runtime compaction scope honest');
-assert(readme.includes('clean-cache `#/tools` visit does not inject the full historical product-hardening stack')||readme.includes('compact Tool Library route prevents the full historical product-hardening layer stack'),'README Tool Builder queue should call out the visible layer fix without future-build version labels');
-assert(readme.includes('Do not assign planned version numbers to future Tool Builder work'),'README should explicitly reject fake future version planning');
+assert(readme.includes('docs/TOOL-BUILDER-BUILD-QUEUE.md'),'README should link to the canonical Tool Builder handoff');
+assert(readme.includes('Post-mining runtime and old-layer retirement audit'),'README Product Build Next should keep remaining runtime compaction scope honest');
+assert(readme.includes('Do not follow side-lane "next build" pointers unless directed'),'README should explicitly keep side-lane planning from overriding Product Build Next');
 const queue=fs.readFileSync(path.join(root,'docs/TOOL-BUILDER-BUILD-QUEUE.md'),'utf8');
+assert(queue.includes('Current ownership hygiene'),'queue should preserve current-owner Tool Builder handoff');
 assert(queue.includes('The Tool Library must not accumulate an unbounded stack of versioned builder layers'),'queue should keep live-layer hygiene rule');
 assert(queue.includes('The Tool Library route uses the compact product-hardening extension plan'),'queue should describe runtime cleanup without assigning future build versions');
 assert(queue.includes('Dashboard and non-Tools product-hardening routes still keep the full plan until their behavior is compacted and proven separately'),'queue should keep remaining compaction work explicit');

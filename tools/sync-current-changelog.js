@@ -11,6 +11,7 @@
 
 const fs=require('fs');
 const path=require('path');
+const cp=require('child_process');
 const vm=require('vm');
 const root=path.join(__dirname,'..');
 const read=rel=>fs.readFileSync(path.join(root,rel),'utf8').replace(/\r\n/g,'\n');
@@ -51,12 +52,32 @@ function buildEntry(release){
  return ['## '+title,'',...bullets,''].join('\n');
 }
 
+function priorHistoryFromMain(release){
+ try{
+  cp.spawnSync('git',['fetch','origin','main:refs/remotes/origin/main'],{cwd:root,encoding:'utf8',stdio:'ignore'});
+  const result=cp.spawnSync('git',['show','refs/remotes/origin/main:CHANGELOG.md'],{cwd:root,encoding:'utf8'});
+  if(result.status!==0||!result.stdout)return '';
+  const text=String(result.stdout).replace(/\r\n/g,'\n').replace(/^\s+/, '');
+  const currentHeading=new RegExp('^##\\s+'+release.label.replace(/[.*+?^${}()|[\]\\]/g,'\\$&')+'(?:\\s|$)[\\s\\S]*?(?=^##\\s+|\\s*$)','m');
+  return text.replace(currentHeading,'').replace(/^\s+/, '');
+ }catch(_err){return '';}
+}
+
+function missingHistoricalHeadings(changelog){
+ return !/^##\s+v10\.02\b/m.test(changelog) || !/^##\s+v10\.01\b/m.test(changelog) || !/^##\s+v10\.0\b/m.test(changelog);
+}
+
 function sync(){
  const release=loadRelease();
  const changelog=read('CHANGELOG.md');
  const headingRe=new RegExp('^##\\s+'+release.label.replace(/[.*+?^${}()|[\]\\]/g,'\\$&')+'(?:\\s|$)','m');
- if(headingRe.test(changelog))return {changed:false,release};
  const entry=buildEntry(release);
+ if(headingRe.test(changelog)){
+  if(!missingHistoricalHeadings(changelog))return {changed:false,release};
+  const history=priorHistoryFromMain(release);
+  if(history)return {changed:true,release,next:entry+'\n'+history};
+  return {changed:false,release};
+ }
  const next=entry+'\n'+changelog.replace(/^\s+/,'');
  return {changed:true,release,next};
 }
@@ -67,10 +88,10 @@ function main(){
   if(result.changed)write('CHANGELOG.md',result.next);
   console.log(result.changed?'CHANGELOG synchronized to '+result.release.label+'.':'CHANGELOG already contains '+result.release.label+'.');
  }else{
-  if(result.changed){console.error('CHANGELOG.md is missing the current release heading '+result.release.label+'. Run node tools/sync-current-changelog.js --write');process.exit(1);}
+  if(result.changed){console.error('CHANGELOG.md is missing or truncating the current release history '+result.release.label+'. Run node tools/sync-current-changelog.js --write');process.exit(1);}
   console.log('CHANGELOG contains '+result.release.label+'.');
  }
 }
 
 if(require.main===module)main();
-module.exports={loadRelease,releaseDocPath,section,buildEntry,sync,main};
+module.exports={loadRelease,releaseDocPath,section,buildEntry,priorHistoryFromMain,missingHistoricalHeadings,sync,main};

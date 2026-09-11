@@ -13,6 +13,10 @@ function makeContext(){
  vm.createContext(ctx);
  return ctx;
 }
+function assertVersionAtLeast(label,minor,context){
+ const match=String(label||'').match(/^v10\.(\d+)$/);
+ assert(match&&Number(match[1])>=minor,context+' should publish v10.'+minor+' or newer, got '+label);
+}
 const ctx=makeContext();
 [
  'data/tool-builder-schema.js',
@@ -29,7 +33,7 @@ const ctx=makeContext();
 ].forEach(file=>load(ctx,file));
 const audit=ctx.OBOL_TOOL_BUILDER_IMPLEMENTATION_AUDIT_CURRENT;
 assert(audit,'v10.08 audit API should be published');
-assert.strictEqual(audit.version,'v10.08');
+assertVersionAtLeast(audit.version,8,'Tool Builder audit current owner');
 const failures=Array.from(audit.validateImplementedBuilders());
 assert.strictEqual(failures.length,0,failures.join('\n'));
 const records=Array.from(audit.implementedRecords());
@@ -41,7 +45,7 @@ for(const record of records){
  assert(audit.evidenceProfiles()[builder.id],builder.id+' should have executable/shared Evidence coverage');
 }
 const modeled=Array.from(audit.modeledRecords());
-assert(modeled.length>0,'v10.08 must not falsely close the remaining modeled-tool inventory backlog');
+assert(modeled.length>0,'v10.08+ audit must not falsely close the remaining modeled-tool inventory backlog');
 assert(audit.activeBatches()[0].id==='remaining-modeled-tool-builder-backlog','remaining modeled tools must stay visible as the active Tool Builder batch');
 const context=Object.freeze({
  target:Object.freeze({value:'203.0.113.77',ip:'203.0.113.77',hostname:'dc01.corp.example'}),
@@ -72,10 +76,11 @@ let missingThrew=false;
 try{ctx.OBOL_TOOL_BUILDER.compile(ctx.OBOL_TOOL_BUILDER_SCHEMA.get('tb-msfvenom'),{payload:'windows/x64/meterpreter/reverse_tcp',lport:'4444',format:'exe',output:'payload.exe'},{target:{},context:{},workspace:{}});}catch(err){missingThrew=/LHOST/.test(String(err&&err.message||err));}
 assert(missingThrew,'missing LHOST should produce a missing-field state, not a fake runnable payload command');
 const snap=audit.auditSnapshot();
-assert.strictEqual(snap.version,'v10.08');
+assert.strictEqual(snap.version,audit.version,'audit snapshot should expose the current owner version');
+assertVersionAtLeast(snap.version,8,'Tool Builder audit snapshot');
 assert(Array.isArray(snap.failures));
 assert(snap.modeledCount>0,'audit snapshot must preserve remaining modeled-tool count when inventory is loaded');
 const release=cp.spawnSync(process.execPath,['tools/validate-release-pr.js','--repo-only'],{cwd:root,encoding:'utf8'});
 if(release.status!==0){process.stdout.write(release.stdout||'');process.stderr.write(release.stderr||'');process.exit(release.status||1);}
 process.stdout.write(release.stdout||'');
-console.log('v10.08 implemented Tool Builder audit passed with '+records.length+' implemented inventory records and '+modeled.length+' modeled records still queued.');
+console.log('v10.08+ implemented Tool Builder audit passed with '+records.length+' implemented inventory records and '+modeled.length+' modeled records still queued.');
