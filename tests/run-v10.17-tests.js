@@ -36,8 +36,13 @@ assert(dashboard.__OBOL_DEFERRED_PRODUCT_HARDENING_EXTENSIONS__.length>20,'Dashb
 assert(Array.from(dashboard.__OBOL_DEFERRED_PRODUCT_HARDENING_EXTENSIONS__).includes('data/product-hardening/tool-builder-discovery-current.js'),'Full plan should keep current discovery owner');
 const readme=fs.readFileSync(path.join(root,'README.md'),'utf8');
 assert(readme.includes('recently completed Tool Builder slices are compacted into current owners'),'README should preserve current-owner Tool Builder handoff');
+assert(readme.includes('v10.17 narrows the Tool Library route to the compact current Tool Builder extension plan'),'README should describe the v10.17 route-layer queue handoff');
+assert(readme.includes('Dashboard and non-Tools product-hardening routes still keep the full plan until their behavior is compacted and proven separately'),'README should keep remaining runtime compaction scope honest');
+assert(readme.includes('v10.17 also prevents the Tool Library route from loading the full historical v9 product-hardening layer stack'),'README Tool Builder queue should call out the visible layer fix');
 const queue=fs.readFileSync(path.join(root,'docs/TOOL-BUILDER-BUILD-QUEUE.md'),'utf8');
 assert(queue.includes('The Tool Library must not accumulate an unbounded stack of versioned builder layers'),'queue should keep live-layer hygiene rule');
+assert(queue.includes('v10.17 is a route-loading cleanup, not another Tool Builder implementation slice'),'queue should mark v10.17 as runtime cleanup, not tool implementation');
+assert(queue.includes('Dashboard and non-Tools product-hardening routes still keep the full plan until their behavior is compacted and proven separately'),'queue should keep remaining compaction work explicit');
 const releaseDoc=fs.readFileSync(path.join(root,'docs/v10.17.md'),'utf8');
 assert(releaseDoc.includes('route-aware product-hardening live-layer retirement'),'release doc should describe the live-layer retirement');
 const release=cp.spawnSync(process.execPath,['tools/validate-release-pr.js','--repo-only'],{cwd:root,encoding:'utf8'});
