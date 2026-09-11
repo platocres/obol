@@ -16,7 +16,7 @@ This is the single agent quickstart. Told to "read the README and keep developin
 
 1. **Use one active product-hardening PR.** Check for an open release/product-hardening PR first. Continue it if it exists. Otherwise open one normal, non-draft PR for the work.
 2. **Read the linked docs.** Read this README, [`docs/AGENT-WORKFLOW.md`](docs/AGENT-WORKFLOW.md), [`BUILDING.md`](BUILDING.md), and the owner docs relevant to the Product Build Next item. For Tool Builder work, [`docs/TOOL-BUILDER-BUILD-QUEUE.md`](docs/TOOL-BUILDER-BUILD-QUEUE.md) is mandatory.
-3. **Do Product Build Next.** The generated Product Build Next block below is the current queue authority for ChatGPT/product-hardening agents. Treat the highest-priority item as the entry point into the recommended coherent work package, not as a one-item limit.
+3. **Do Product Build Next.** Start with the highest-priority Product Build Next item. The generated Product Build Next block below is the current queue authority for ChatGPT/product-hardening agents. Treat the highest-priority item as the entry point into the recommended coherent work package, not as a one-item limit. Batch only closely related live items in the same ownership area. Every item advanced or closed still needs its own acceptance criteria and proof.
 4. **Do not follow side-lane "next build" pointers unless directed.** [`docs/EXPERIENCE-REVAMP.md`](docs/EXPERIENCE-REVAMP.md) is a Claude UX feature lane. Its one-liners do not override Product Build Next unless the user explicitly asks for that UX revamp work.
 5. **Land real product progress.** Wire outputs into the live route, card, dashboard, tool, analyzer, report, or runtime surface that consumes them. Every tool batch must ship command generation and decision-relevant Evidence behavior together. For Tool Builder work, a tool is not implemented until it has minimum viable command or guided-handoff generation, real supplied/Evidence-derived prefill, additive controls, executable Evidence ingestion, proof boundaries, and conservative Next Steps movement or blocking where applicable.
 6. **Update release history.** Every product-affecting build must update [`CHANGELOG.md`](CHANGELOG.md). Versioned product-hardening releases also need `data/current-release.js`, a `docs/vX.Y.md` release doc, the current release sync, Product Build Next sync when queue state changes, and the matching release test. Docs-only clarification PRs do not need a public release bump unless they change product behavior, queue state, generated outputs, or the visible website release identity.
@@ -50,6 +50,7 @@ Obol remains a website the user can visit and use: no backend, account system, t
 
 <!-- OBOL-PRODUCT-BUILD-NEXT:START -->
 Generated from the same queue sources as the Product Hardening Dashboard. Do not edit this block manually.
+This block is generated from `data/product-hardening/product-hardening-queue.js`. Do not edit it manually.
 
 **Current product-hardening queue:** 227/658 complete (35%), 9 concrete queued, 9 modeled/standing items.
 **Private notes source:** [`https://github.com/platocres/obol-source-notes/tree/main/sources/raw`](https://github.com/platocres/obol-source-notes/tree/main/sources/raw) — 556 notes and 1326 embedded resources accounted.
@@ -67,6 +68,7 @@ Generated from the same queue sources as the Product Hardening Dashboard. Do not
 **Ownership area:** `ui-ux/operator-surfaces`
 **Package dependencies:** none.
 **Package detail:** Use the Product Hardening Dashboard for full track ledgers and `data/product-hardening/work-packages.js` for the long-form package guidance.
+Recommended work-package metadata comes from `data/product-hardening/work-packages.js`.
 
 **Highest-priority concrete live items:**
 1. **Post-mining modeled tool builder implementation backlog** — The implemented-builder audit is complete. The remaining modeled inventory is now grouped into functional Tool Library slices so agents can burn it down coherently instead of staring at a flat chip dump.

@@ -123,7 +123,8 @@ function packageLines() {
     '**Next concrete entry:** **' + rec.entryItem.label + '**',
     '**Ownership area:** `' + rec.ownershipArea + '`',
     dependencies.length ? '**Package dependencies:** ' + dependencies.join(', ') + '.' : '**Package dependencies:** none.',
-    '**Package detail:** Use the Product Hardening Dashboard for full track ledgers and `data/product-hardening/work-packages.js` for the long-form package guidance.'
+    '**Package detail:** Use the Product Hardening Dashboard for full track ledgers and `data/product-hardening/work-packages.js` for the long-form package guidance.',
+    '**Recommended work-package metadata comes from `data/product-hardening/work-packages.js`.'
   ];
 }
 function clusterStatusLines() {
@@ -197,6 +198,7 @@ function block() {
   return [
     '<!-- OBOL-PRODUCT-BUILD-NEXT:START -->',
     'Generated from the same queue sources as the Product Hardening Dashboard. Do not edit this block manually.',
+    'This block is generated from `data/product-hardening/product-hardening-queue.js`. Do not edit it manually.',
     '',
     '**Current product-hardening queue:** ' + totals.complete + '/' + totals.total + ' complete (' + totals.pct + '%), ' + totals.queued + ' concrete queued, ' + totals.modeled + ' modeled/standing items.',
     '**Private notes source:** ' + sourceLink(q.notes.privateRepo) + ' — ' + totals.notes + ' notes and ' + totals.resources + ' embedded resources accounted.',
