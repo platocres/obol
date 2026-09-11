@@ -32,17 +32,17 @@ For every implemented builder:
 - Output from a guided third-party workflow returns through Evidence. Handoff generation is activity, not proof.
 - Every builder mode that can produce decision-relevant output must name what the operator can paste back, what facts may be extracted, what remains only a lead, and what positive, negative, blocked, partial, or inconclusive output means.
 - Evidence ingestion must be executable product behavior, not only prose in the builder. The tool must either have a dedicated analyzer/parser or cite an existing shared analyzer whose fixtures prove that tool/mode is actually recognized.
-- Parsed output may advance, block, re-arm, or deprioritize Next Steps only from supported Evidence. Merely recognizing a command line, banner, listener startup, tool invocation, GUI workflow step, Scanner alert, proxy capture, or request replay must not manufacture access, compromise, reachability, credential validity, exploitability, or privilege.
-- When a tool is primarily a launcher, listener, transfer helper, transport, or third-party GUI handoff, its Evidence contract must still recognize the useful state it owns, such as listener bound, client connected, file transferred, route/interface created, proxy capture, request/response captured, scanner issue recorded, manual verification completed, or failure reason. Any deeper downstream fact must remain gated on the appropriate independent Evidence.
+- Parsed output may advance, block, re-arm, or deprioritize Next Steps only from supported Evidence. Merely recognizing a command line, banner, listener startup, tool invocation, GUI workflow step, Scanner alert, proxy capture, request replay, share listing, directory object, DNS answer, SNMP OID, or RPC row must not manufacture access, compromise, reachability, credential validity, exploitability, or privilege.
+- When a tool is primarily a launcher, listener, transfer helper, transport, query helper, or third-party GUI handoff, its Evidence contract must still recognize the useful state it owns, such as listener bound, client connected, file transferred, route/interface created, proxy capture, request/response captured, scanner issue recorded, share or directory record observed, DNS record observed, SNMP disclosure observed, manual verification completed, or failure reason. Any deeper downstream fact must remain gated on the appropriate independent Evidence.
 - An inventory record must not be promoted to `implemented` until command generation, live Tools rendering, Evidence ingestion, Next Steps handoff where applicable, cleanup/proof boundaries, and regression fixtures all exist. Third-party GUI tools satisfy the command-generation part of this rule with guided handoff generation instead of fake GUI automation.
 
 This is the permanent Definition of Done for modeled-tool work. The historical note-mining rubric already required terminal-output analyzers, Evidence expectations, and Path movement. v10.08 completed the **Implemented-tool Evidence and cross-surface audit**, but it did not close the full modeled-tool backlog because many inventory records still remain `modeled`.
 
 ## Current ownership hygiene
 
-Completed Tool Builder slices are not active queue items. v10.16 folds the recent Burp Suite and network/host discovery release owners into `data/product-hardening/tool-builder-discovery-current.js` so the live Tool Library no longer has to load both `burp-suite-tool-builder-v10.10.js` and `network-discovery-tool-builders-v10.15.js` as separate release layers.
+Completed Tool Builder slices are not active queue items. v10.17 keeps the recent Burp Suite and network/host discovery release owners folded into `data/product-hardening/tool-builder-discovery-current.js` and extends that current owner with the first AD/name-service modeled-tool batch.
 
-Release docs and changelog entries remain the history for the completed v10.09 web discovery/scanning slice, v10.10 Burp Suite guided GUI workflow slice, and v10.15 network and host discovery slice. The completed web slice covered WhatWeb, Nikto, httpx, wfuzz, and ZAP. Those completed slices must not be reintroduced below as active work.
+Release docs and changelog entries remain the history for the completed v10.09 web discovery/scanning slice, v10.10 Burp Suite guided GUI workflow slice, v10.15 network and host discovery slice, and v10.17 AD/name-service enumeration slice. The completed web slice covered WhatWeb, Nikto, httpx, wfuzz, and ZAP. The completed current discovery owner now also covers masscan, Rustscan, naabu, fping, nbtscan, smbclient, smbmap, enum4linux-ng, rpcclient, ldapsearch, dig, nslookup, dnsrecon, snmpwalk, onesixtyone, windapsearch, and ldapdomaindump. Those completed slices must not be reintroduced below as active work.
 
 ## Active Tool Builder batches
 
@@ -52,8 +52,7 @@ Implement or explicitly supersede/reject every inventory record that still repor
 
 Representative remaining groups include:
 
-- **Network and host discovery:** ping-style helpers and adjacent probe tools not covered by the current discovery owner.
-- **SMB, LDAP, DNS, SNMP, and AD enumeration:** enum4linux legacy coverage where not superseded, BloodHound collectors, rpcclient, dnsrecon, dig, nslookup, snmpwalk, onesixtyone, windapsearch, ldapdomaindump, and related directory/query tooling.
+- **Network, host, SMB, LDAP, DNS, SNMP, and AD enumeration:** adjacent probe tools not covered by the current discovery owner, BloodHound collectors, enum4linux legacy coverage where not superseded, and related directory/query tooling not already covered by the v10.17 current owner.
 - **Web discovery, scanning, and request helpers:** nuclei, wpscan, browser/request utilities, and any remaining web tooling not already covered by curl, ffuf, Gobuster/feroxbuster, sqlmap, WhatWeb, Nikto, httpx, wfuzz, ZAP, or the current Burp Suite guided GUI workflow.
 - **Remote execution and lateral movement:** Impacket psexec, wmiexec, smbexec, dcomexec, atexec, mssqlclient, runas/cmdkey, Windows service/task helpers, RDP/VNC clients, and PowerShell/cmd launchers.
 - **Credential capture, relay, roasting, and cracking helpers:** ntlmrelayx, mitm6, coercion tools, medusa, o365spray, hash-identification/conversion tools, John/Hashcat helper formats, and credential-routing utilities not already implemented.
