@@ -24,17 +24,19 @@ jobs:
           from pathlib import Path
           path = Path('data/product-hardening/tool-builder-backlog-current.js')
           s = path.read_text()
-          insert = """const LIBRARY_GROUP_ALIASES=Object.freeze({
- 'ad-kerberos-pki':Object.freeze({id:'ad',title:'Active Directory'}),
- 'smb-rpc-services':Object.freeze({id:'enum',title:'Enumeration and services'}),
- 'remote-access-exec':Object.freeze({id:'remote-exec',title:'Remote execution and lateral movement'}),
- 'pivoting':Object.freeze({id:'pivot',title:'Pivoting and tunneling'}),
- 'shells-transfer':Object.freeze({id:'shells',title:'Shells, payloads, and transfer'})
-});
-function libraryGroupForTool(tool){const group=groupForTool(tool);const alias=LIBRARY_GROUP_ALIASES[group.id];return alias?Object.freeze(Object.assign({},group,{sourceTaxonomyId:group.id,id:alias.id,title:alias.title})):group;}
-function cleanupAliasCategorySections(){if(typeof document==='undefined')return 0;let removed=0;for(const sourceId of Object.keys(LIBRARY_GROUP_ALIASES)){const alias=LIBRARY_GROUP_ALIASES[sourceId];const canonical=document.querySelector('[data-tool-library-group="'+alias.id+'"]');if(!canonical)continue;const picker=canonical.querySelector('.tool-picker')||canonical.querySelector('.lane-tabs')||canonical;Array.from(document.querySelectorAll('[data-tool-library-group="'+sourceId+'"]')).forEach(node=>{if(node===canonical)return;Array.from(node.querySelectorAll('[data-open-tool]')).forEach(chip=>{const key=normalizedTool(chip.dataset&&chip.dataset.openTool||chip.textContent);if(!chipExists(canonical,key))picker.appendChild(chip.cloneNode(true));});if(node.parentNode){node.parentNode.removeChild(node);removed+=1;}});}return removed;}
-function removeDuplicateCategorySection(group){if(typeof document==='undefined'||!group||!group.sourceTaxonomyId)return 0;const alias=LIBRARY_GROUP_ALIASES[group.sourceTaxonomyId];if(!alias)return 0;const canonical=document.querySelector('[data-tool-library-group="'+alias.id+'"]');let removed=0;Array.from(document.querySelectorAll('[data-tool-library-group="'+group.sourceTaxonomyId+'"]')).forEach(node=>{if(node===canonical)return;if(node.parentNode){node.parentNode.removeChild(node);removed+=1;}});return removed;}
-"""
+          insert_lines = [
+              "const LIBRARY_GROUP_ALIASES=Object.freeze({",
+              " 'ad-kerberos-pki':Object.freeze({id:'ad',title:'Active Directory'}),",
+              " 'smb-rpc-services':Object.freeze({id:'enum',title:'Enumeration and services'}),",
+              " 'remote-access-exec':Object.freeze({id:'remote-exec',title:'Remote execution and lateral movement'}),",
+              " 'pivoting':Object.freeze({id:'pivot',title:'Pivoting and tunneling'}),",
+              " 'shells-transfer':Object.freeze({id:'shells',title:'Shells, payloads, and transfer'})",
+              "});",
+              "function libraryGroupForTool(tool){const group=groupForTool(tool);const alias=LIBRARY_GROUP_ALIASES[group.id];return alias?Object.freeze(Object.assign({},group,{sourceTaxonomyId:group.id,id:alias.id,title:alias.title})):group;}",
+              "function cleanupAliasCategorySections(){if(typeof document==='undefined')return 0;let removed=0;for(const sourceId of Object.keys(LIBRARY_GROUP_ALIASES)){const alias=LIBRARY_GROUP_ALIASES[sourceId];const canonical=document.querySelector('[data-tool-library-group=\"'+alias.id+'\"]');if(!canonical)continue;const picker=canonical.querySelector('.tool-picker')||canonical.querySelector('.lane-tabs')||canonical;Array.from(document.querySelectorAll('[data-tool-library-group=\"'+sourceId+'\"]')).forEach(node=>{if(node===canonical)return;Array.from(node.querySelectorAll('[data-open-tool]')).forEach(chip=>{const key=normalizedTool(chip.dataset&&chip.dataset.openTool||chip.textContent);if(!chipExists(canonical,key))picker.appendChild(chip.cloneNode(true));});if(node.parentNode){node.parentNode.removeChild(node);removed+=1;}});}return removed;}",
+              "function removeDuplicateCategorySection(group){if(typeof document==='undefined'||!group||!group.sourceTaxonomyId)return 0;const alias=LIBRARY_GROUP_ALIASES[group.sourceTaxonomyId];if(!alias)return 0;const canonical=document.querySelector('[data-tool-library-group=\"'+alias.id+'\"]');let removed=0;Array.from(document.querySelectorAll('[data-tool-library-group=\"'+group.sourceTaxonomyId+'\"]')).forEach(node=>{if(node===canonical)return;if(node.parentNode){node.parentNode.removeChild(node);removed+=1;}});return removed;}"
+          ]
+          insert = "\n".join(insert_lines) + "\n"
           marker = "function arr(v){return Array.isArray(v)?v:[];}"
           if 'const LIBRARY_GROUP_ALIASES=Object.freeze({' not in s:
               if marker not in s:
