@@ -22,6 +22,7 @@ function loadBuilders(){
   'data/tool-builder-inventory.js',
   'assets/tool-builder-current.js',
   'data/tool-builders.js',
+  'data/tool-builders-auth-enum-current.js',
   'assets/tool-builder-evidence-current.js',
   'data/product-hardening/tool-builder-backlog-current.js',
   'data/product-hardening/tool-builder-discovery-current.js',
@@ -33,12 +34,14 @@ const releaseCtx=loadRelease('#/tools');
 assert.strictEqual(releaseCtx.OBOL_CURRENT_RELEASE.label,'v10.18','current release should advance to v10.18');
 assert.strictEqual(releaseCtx.__OBOL_PRODUCT_HARDENING_EXTENSION_PLAN__.mode,'compact-tool-library','Tools route should keep the compact Tool Library plan');
 assert.deepStrictEqual(releaseCtx.loaded,[
+ 'data/tool-builders-auth-enum-current.js',
  'data/product-hardening/tool-builder-backlog-current.js',
  'data/product-hardening/tool-builder-discovery-current.js',
  'data/product-hardening/credential-helper-tool-builders-current.js'
-],'Tools route should load only compact current Tool Builder owners plus the credential-helper owner');
+],'Tools route should load compact current Tool Builder owners plus preserved canonical auth/enumeration builders and the credential-helper owner');
 assert(!releaseCtx.loaded.some(src=>/v9\.(?:5|6|7|8|9)\d/.test(src)),'Tools route should not inject historical v9 product-hardening fragments');
 assert(releaseCtx.OBOL_RELEASE_IDENTITY.extensionPlan('tools').sources.includes('data/product-hardening/credential-helper-tool-builders-current.js'),'Tools compact plan must include credential helpers');
+assert(releaseCtx.OBOL_RELEASE_IDENTITY.extensionPlan('tools').sources.includes('data/tool-builders-auth-enum-current.js'),'Tools compact plan must preserve canonical auth/enumeration builders');
 
 const w=loadBuilders();
 const schema=w.OBOL_TOOL_BUILDER_SCHEMA;
@@ -55,12 +58,20 @@ for(const [tool,id] of [['cewl','tb-cewl'],['crunch','tb-crunch'],['hashid','tb-
  assert(schema.get(id),id+' must register a schema-driven builder');
  assert.deepStrictEqual(Array.from(schema.validateBuilder(schema.get(id))),[],id+' must satisfy the stable schema');
 }
+for(const [tool,id] of [['hydra','tb-hydra'],['kerbrute','tb-kerbrute']]){
+ const rec=inventory.get(tool);
+ assert(rec&&rec.status==='implemented',tool+' should stay implemented through its canonical owner');
+ assert.strictEqual(rec.queueItem,id,tool+' should preserve the canonical authentication/enumeration builder id');
+ assert(schema.get(id),id+' must be registered by the canonical auth/enumeration owner');
+}
 const credentialsGroup=['hashcat','john','hydra','kerbrute','cewl','crunch','hashid','name-that-hash'];
 for(const tool of credentialsGroup){
  const rec=inventory.get(tool);
  assert(rec&&rec.status==='implemented',tool+' should not remain modeled in the Credentials and cracking group once the live Tools owners load');
 }
-assert.deepStrictEqual(helpers.tools.slice().sort(),['cewl','crunch','hashid','name-that-hash'].sort(),'credential helper owner should cover all remaining modeled Credentials and cracking tools');
+assert.deepStrictEqual(helpers.tools.slice().sort(),['cewl','crunch','hashid','name-that-hash'].sort(),'credential helper owner should cover the new remaining modeled Credentials and cracking helpers');
+assert.deepStrictEqual(helpers.preservedTools.slice().sort(),['hydra','kerbrute'].sort(),'credential helper owner should declare preserved canonical credential builders');
+assert.deepStrictEqual(helpers.preservedBuilderIds.slice().sort(),['tb-hydra','tb-kerbrute'].sort(),'credential helper owner should preserve canonical credential builder ids');
 const cewl=schema.get('tb-cewl');
 assert.throws(()=>renderer.compile(cewl,{},{}),/Authorized URL/,'CeWL must require a real URL before generating a command');
 assert.strictEqual(renderer.compile(cewl,{url:'https://target.example/'},{}),'cewl https://target.example/','CeWL default command must be the minimal supplied URL crawl');
