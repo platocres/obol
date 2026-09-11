@@ -1,3 +1,12 @@
+## v10.15 — Product-hardening release v10.15 implements the next modeled Tool Builder burn-down slice for network and host discovery and corrects the stale Tool Builder queue handoff so the active modeled-tool build is v10.15, not the old v10.09 web discovery slice
+
+- Added first-class network and host discovery builders for masscan, Rustscan, naabu, fping, and nbtscan.
+- Each builder starts from a minimum viable command populated from supplied workspace state, parsed Evidence-style target state, collected material, or safe defaults: masscan target plus ports, Rustscan target, naabu host/list mode, fping alive-host sweep/list mode, and nbtscan NetBIOS target.
+- Optional behavior such as masscan rate/interface/router/exclusions, Rustscan batch/timeout/ulimit/Nmap handoff, naabu rate/retries/JSON/output, fping retry/timeout/IPv4/list mode, and nbtscan verbosity is additive through explicit controls.
+- Added executable network discovery Evidence ingestion for open port observations, alive hosts, NetBIOS name/workgroup clues, no-hit states, partial output, and blocked/failure states.
+- Kept discovery proof conservative: scan output can prove observed hosts, ports, names, or blocked discovery, but not compromise, credential validity, service exploitability, or pivot reachability without follow-up Evidence.
+- Updated the Tool Builder queue handoff so v10.15 is the current network/host discovery burn-down slice and the remaining modeled tools stay active and descriptive.
+
 ## v10.14 — Is a product-hardening release that closes the operator scripts / LOTL track with a
 
 - **Scripts UI now reflows at any width.** The `.script-usage` rows used a fixed 64px label column,
