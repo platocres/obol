@@ -10,9 +10,9 @@ Open `#/dashboard` for the active Product Hardening Dashboard and Product Build 
 
 The README is the entrypoint and current handoff. It should stay lean, but it must keep the links future agents need when told to read the README and all linked documents. Detailed mechanics live in the canonical docs below.
 
-## Continue developing - start here
+## Continue developing (start here)
 
-Told to "read the README and keep developing"? Use this flow.
+This is the single agent quickstart. Told to "read the README and keep developing"? Use this flow.
 
 1. **Use one active product-hardening PR.** Check for an open release/product-hardening PR first. Continue it if it exists. Otherwise open one normal, non-draft PR for the work.
 2. **Read the linked docs.** Read this README, [`docs/AGENT-WORKFLOW.md`](docs/AGENT-WORKFLOW.md), [`BUILDING.md`](BUILDING.md), and the owner docs relevant to the Product Build Next item. For Tool Builder work, [`docs/TOOL-BUILDER-BUILD-QUEUE.md`](docs/TOOL-BUILDER-BUILD-QUEUE.md) is mandatory.
@@ -20,7 +20,7 @@ Told to "read the README and keep developing"? Use this flow.
 4. **Do not follow side-lane "next build" pointers unless directed.** [`docs/EXPERIENCE-REVAMP.md`](docs/EXPERIENCE-REVAMP.md) is a Claude UX feature lane. Its one-liners do not override Product Build Next unless the user explicitly asks for that UX revamp work.
 5. **Land real product progress.** Wire outputs into the live route, card, dashboard, tool, analyzer, report, or runtime surface that consumes them. For Tool Builder work, a tool is not implemented until it has minimum viable command or guided-handoff generation, real supplied/Evidence-derived prefill, additive controls, executable Evidence ingestion, proof boundaries, and conservative Next Steps movement or blocking where applicable.
 6. **Update release history.** Every product-affecting build must update [`CHANGELOG.md`](CHANGELOG.md). Versioned product-hardening releases also need `data/current-release.js`, a `docs/vX.Y.md` release doc, the current release sync, Product Build Next sync when queue state changes, and the matching release test. Docs-only clarification PRs do not need a public release bump unless they change product behavior, queue state, generated outputs, or the visible website release identity.
-7. **Keep private notes private.** Source-note mining is complete. Use notes docs as provenance and safety references unless Product Build Next explicitly reopens note-derived work. Extract the value, not the wording.
+7. **Keep private notes private.** Source-note mining is complete. Use notes docs as provenance and safety references unless Product Build Next explicitly reopens note-derived work. Extract the value, not the wording. Do not use `CHANGELOG.md` to decide what remains to be re-mined; current re-mining status lives in the Product Build Next sources and dashboard.
 8. **Prove the head.** Run the focused validators for the touched ownership area, keep generated blocks synchronized, and do not call the PR merge-ready until the exact final head is green.
 
 ## Canonical docs
