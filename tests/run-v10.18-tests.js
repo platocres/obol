@@ -13,6 +13,7 @@ function loadRelease(hash){
  vm.runInContext(read('data/current-release.js'),context,{filename:'data/current-release.js'});
  return context;
 }
+function nativeArray(value){return Array.from(value||[]);}
 function loadBuilders(){
  const sandbox={window:{},globalThis:null,navigator:{clipboard:{writeText:()=>Promise.resolve()}}};
  sandbox.globalThis=sandbox.window;
@@ -69,9 +70,9 @@ for(const tool of credentialsGroup){
  const rec=inventory.get(tool);
  assert(rec&&rec.status==='implemented',tool+' should not remain modeled in the Credentials and cracking group once the live Tools owners load');
 }
-assert.deepStrictEqual(helpers.tools.slice().sort(),['cewl','crunch','hashid','name-that-hash'].sort(),'credential helper owner should cover the new remaining modeled Credentials and cracking helpers');
-assert.deepStrictEqual(helpers.preservedTools.slice().sort(),['hydra','kerbrute'].sort(),'credential helper owner should declare preserved canonical credential builders');
-assert.deepStrictEqual(helpers.preservedBuilderIds.slice().sort(),['tb-hydra','tb-kerbrute'].sort(),'credential helper owner should preserve canonical credential builder ids');
+assert.deepStrictEqual(nativeArray(helpers.tools).sort(),['cewl','crunch','hashid','name-that-hash'].sort(),'credential helper owner should cover the new remaining modeled Credentials and cracking helpers');
+assert.deepStrictEqual(nativeArray(helpers.preservedTools).sort(),['hydra','kerbrute'].sort(),'credential helper owner should declare preserved canonical credential builders');
+assert.deepStrictEqual(nativeArray(helpers.preservedBuilderIds).sort(),['tb-hydra','tb-kerbrute'].sort(),'credential helper owner should preserve canonical credential builder ids');
 const cewl=schema.get('tb-cewl');
 assert.throws(()=>renderer.compile(cewl,{},{}),/Authorized URL/,'CeWL must require a real URL before generating a command');
 assert.strictEqual(renderer.compile(cewl,{url:'https://target.example/'},{}),'cewl https://target.example/','CeWL default command must be the minimal supplied URL crawl');
