@@ -54,7 +54,7 @@ assert.strictEqual(renderer.compile(pspy,{mode:'cleanup',binary:'/tmp/pspy64',cl
 const accesschk=schema.get('tb-accesschk');
 assert.throws(()=>renderer.compile(accesschk,{mode:'file'},{}),/Object, path, service, or principal/,'accesschk must require a reviewed object/path/principal');
 assert.strictEqual(renderer.compile(accesschk,{mode:'service',target:'Spooler',acceptEula:true,quiet:true},{}),'accesschk -accepteula -nobanner -c Spooler','accesschk service mode must compile with explicit toggles');
-assert.strictEqual(renderer.compile(accesschk,{mode:'file',target:'C:\\Program Files\\Example',recursive:true,writableOnly:true,principal:'Everyone'},{}),'accesschk -s -w Everyone "C:\\Program Files\\Example"','accesschk file mode must compile with ACL filters');
+assert.strictEqual(renderer.compile(accesschk,{mode:'file',target:'C:\\Program Files\\Example',recursive:true,writableOnly:true,principal:'Everyone'},{}),"accesschk -s -w Everyone 'C:\\Program Files\\Example'",'accesschk file mode must compile with ACL filters');
 const searchsploit=schema.get('tb-searchsploit');
 assert.throws(()=>renderer.compile(searchsploit,{mode:'search'},{}),/Search query or exploit path/,'searchsploit must require a supplied query/path');
 assert.strictEqual(renderer.compile(searchsploit,{mode:'search',query:'OpenSSH 7.2p2'},{}),"searchsploit 'OpenSSH 7.2p2'",'searchsploit default search must be minimal');
