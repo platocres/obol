@@ -68,7 +68,7 @@ This block is generated from `data/product-hardening/product-hardening-queue.js`
 **Ownership area:** `ui-ux/operator-surfaces`
 **Package dependencies:** none.
 **Package detail:** Use the Product Hardening Dashboard for full track ledgers and `data/product-hardening/work-packages.js` for the long-form package guidance.
-Recommended work-package metadata comes from `data/product-hardening/work-packages.js`.
+**Recommended work-package metadata comes from `data/product-hardening/work-packages.js`.
 
 **Highest-priority concrete live items:**
 1. **Post-mining modeled tool builder implementation backlog** — The implemented-builder audit is complete. The remaining modeled inventory is now grouped into functional Tool Library slices so agents can burn it down coherently instead of staring at a flat chip dump.
