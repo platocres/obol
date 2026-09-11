@@ -1,3 +1,10 @@
+## v10.17 — - Makes product-hardening extension loading route-aware so the Tool Library no longer loads the full historical v9 product-hardening layer stack on cache-clear visits to `#/tools`
+
+- Makes product-hardening extension loading route-aware so the Tool Library no longer loads the full historical v9 product-hardening layer stack on cache-clear visits to `#/tools`.
+- Keeps the compact current Tool Builder ownership live on Tools routes through `tool-builder-backlog-current.js` and `tool-builder-discovery-current.js`.
+- Preserves the full historical product-hardening extension list for dashboard and non-Tools routes where older product-hardening route/card behavior may still be needed until it is separately compacted.
+- Adds an explicit extension plan API so tests and future agents can tell the difference between historical release inventory and browser-live route loading.
+
 ## v10.16 — Product-hardening release v10.16 fixes the Tool Library layering regression after the modeled-tool burn-down releases. It compacts the recent Burp Suite and network/host discovery release owners into one current Tool Builder discovery owner and cleans the active Tool Builder queue so completed slices do not appear as pending work
 
 - Added `data/product-hardening/tool-builder-discovery-current.js` as the current owner for Burp Suite plus masscan, Rustscan, naabu, fping, and nbtscan.
