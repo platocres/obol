@@ -73,6 +73,7 @@ const release=Object.freeze({
  ])
 });
 const TOOL_LIBRARY_COMPACT_EXTENSIONS=Object.freeze([
+ 'data/tool-builders-auth-enum-current.js',
  'data/product-hardening/tool-builder-backlog-current.js',
  'data/product-hardening/tool-builder-discovery-current.js',
  'data/product-hardening/credential-helper-tool-builders-current.js'
