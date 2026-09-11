@@ -487,9 +487,9 @@ html.obol-fx[data-skin="matrix"] .coin{animation:obol-wire 1.8s ease-in-out infi
 .obol-pal-sub{font-family:var(--mono,monospace);font-size:11px;color:var(--dim,#8b98a9);white-space:nowrap;overflow:hidden;text-overflow:ellipsis;margin-top:2px}
 .obol-pal-hint{flex:0 0 auto;font-family:var(--mono,monospace);font-size:10px;color:var(--dim,#8b98a9);opacity:0;transition:opacity .1s}
 .obol-pal-row[aria-selected="true"] .obol-pal-hint{opacity:1}
-.obol-pal-add{flex:0 0 auto;width:22px;height:22px;border-radius:6px;border:1px solid var(--border,#2d3646);background:transparent;color:var(--dim,#8b98a9);font-size:15px;line-height:1;cursor:pointer;display:none}
-.obol-pal-row:hover .obol-pal-add,.obol-pal-row[aria-selected="true"] .obol-pal-add{display:inline-flex;align-items:center;justify-content:center}
-.obol-pal-add:hover{color:var(--fg,#d7e0ea);border-color:var(--accent,#58d68d)}
+.obol-pal-add{flex:0 0 auto;width:22px;height:22px;border-radius:6px;border:1px solid var(--border,#2d3646);background:transparent;color:var(--dim,#8b98a9);font-size:15px;line-height:1;cursor:pointer;display:inline-flex;align-items:center;justify-content:center;opacity:.5;transition:opacity .1s,color .1s,border-color .1s}
+.obol-pal-row:hover .obol-pal-add,.obol-pal-row[aria-selected="true"] .obol-pal-add{opacity:1}
+.obol-pal-add:hover{color:var(--fg,#d7e0ea);border-color:var(--accent,#58d68d);opacity:1}
 .obol-pal-empty{padding:22px 16px;text-align:center;color:var(--dim,#8b98a9);font-size:13px}
 #obol-pal-foot{flex:0 0 auto;display:flex;gap:14px;flex-wrap:wrap;padding:8px 14px;border-top:1px solid var(--border,#2d3646);
   font-family:var(--mono,monospace);font-size:10px;color:var(--dim,#8b98a9)}
@@ -930,7 +930,8 @@ function activate(i){
  close(); toast('Copied: '+firstLine(text));
 }
 function addToPlaybook(i){
- var item=ITEMS[i]; if(!item||item.kind!=='cmd')return;
+ var item=ITEMS[i]; if(!item)return;
+ if(item.kind!=='cmd'){ toast('Only commands add to the playbook — “'+firstLine(item.label)+'” is a section'); return; }
  var ok=false; try{ ok=!!(root.OBOL_PLAYBOOK&&root.OBOL_PLAYBOOK.add(item.run,item.label)); }catch(e){}
  toast(ok?'Added to playbook: '+firstLine(item.label):'Playbook unavailable');
 }
