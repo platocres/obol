@@ -40,9 +40,9 @@ This is the permanent Definition of Done for modeled-tool work. The historical n
 
 ## Current ownership hygiene
 
-Completed Tool Builder slices are not active queue items. v10.16 folds the recent Burp Suite and network/host discovery release owners into `data/product-hardening/tool-builder-discovery-current.js` so the live Tool Library no longer has to load both `burp-suite-tool-builder-v10.10.js` and `network-discovery-tool-builders-v10.15.js` as separate release layers.
+Completed Tool Builder slices are not active queue items. The current discovery owner keeps the recent Burp Suite and network/host discovery release owners folded into `data/product-hardening/tool-builder-discovery-current.js` and extends that same owner with the first AD/name-service supplemental batch without taking over legacy v10.05 tool routes.
 
-Release docs and changelog entries remain the history for the completed v10.09 web discovery/scanning slice, v10.10 Burp Suite guided GUI workflow slice, and v10.15 network and host discovery slice. The completed web slice covered WhatWeb, Nikto, httpx, wfuzz, and ZAP. Those completed slices must not be reintroduced below as active work.
+Release docs and changelog entries remain the history for the completed v10.05 credential/AD utility slice, v10.09 web discovery/scanning slice, v10.10 Burp Suite guided GUI workflow slice, and v10.15 network and host discovery slice. The completed web slice covered WhatWeb, Nikto, httpx, wfuzz, and ZAP. The legacy v10.05 tool routes for smbclient, smbmap, enum4linux-ng, and ldapsearch remain canonical and must not be shadowed by the current discovery owner. The completed current discovery owner covers masscan, Rustscan, naabu, fping, nbtscan, rpcclient, dig, nslookup, dnsrecon, snmpwalk, onesixtyone, windapsearch, and ldapdomaindump, while adding Evidence recognition for the broader AD/name-service output family. Those completed slices must not be reintroduced below as active work.
 
 ## Active Tool Builder batches
 
@@ -52,8 +52,7 @@ Implement or explicitly supersede/reject every inventory record that still repor
 
 Representative remaining groups include:
 
-- **Network and host discovery:** ping-style helpers and adjacent probe tools not covered by the current discovery owner.
-- **SMB, LDAP, DNS, SNMP, and AD enumeration:** enum4linux legacy coverage where not superseded, BloodHound collectors, rpcclient, dnsrecon, dig, nslookup, snmpwalk, onesixtyone, windapsearch, ldapdomaindump, and related directory/query tooling.
+- **Network, host, SMB, LDAP, DNS, SNMP, and AD enumeration:** adjacent probe tools not covered by v10.05 legacy routes or the current discovery owner, BloodHound collectors, enum4linux legacy coverage where not superseded by enum4linux-ng, and related directory/query tooling not already covered.
 - **Web discovery, scanning, and request helpers:** nuclei, wpscan, browser/request utilities, and any remaining web tooling not already covered by curl, ffuf, Gobuster/feroxbuster, sqlmap, WhatWeb, Nikto, httpx, wfuzz, ZAP, or the current Burp Suite guided GUI workflow.
 - **Remote execution and lateral movement:** Impacket psexec, wmiexec, smbexec, dcomexec, atexec, mssqlclient, runas/cmdkey, Windows service/task helpers, RDP/VNC clients, and PowerShell/cmd launchers.
 - **Credential capture, relay, roasting, and cracking helpers:** ntlmrelayx, mitm6, coercion tools, medusa, o365spray, hash-identification/conversion tools, John/Hashcat helper formats, and credential-routing utilities not already implemented.
