@@ -11,7 +11,7 @@
  * suppresses historical schedulers and commits current route owners last.
  *
  * Historical fragment order sha256: 40e3006d9423d669acf5869b577ecf56a6ca2ee1629c95fd0fcc5d242d2c5f27
- * Generated body sha256: 2a27682783f05894f04698aeb541f412489de987912695df937fe076759aaf05
+ * Generated body sha256: 50cab2ce248b6e331c88ceaeea2ebeb857acb75ffdb42af304ab3c40bf85a535
  * First historical fragment: assets/report-v2.js
  * Last historical fragment:  assets/app-v8.8.js
  */
@@ -2101,11 +2101,12 @@ if(__nativeMutationObserver)root.MutationObserver=__nativeMutationObserver;
 'use strict';
 (function(root){
 const release=Object.freeze({
- version:'10.0.16',
- label:'v10.16',
+ version:'10.0.17',
+ label:'v10.17',
  phase:'product-hardening',
  phaseLabel:'Product Hardening',
  orangeBaseline:'v8.8',
+ productHardeningLiveMode:'route-aware-compact-tool-library',
  productHardeningExtensions:Object.freeze([
   'data/product-hardening/credentials-auth-remining-v9.58.js',
   'data/product-hardening/proof-safety-controls-v9.58.js',
@@ -2165,10 +2166,22 @@ const release=Object.freeze({
   'data/product-hardening/post-notes-clarity-audit-v9.96.js',
   'data/product-hardening/network-position-recurrence-v9.97.js',
   'data/product-hardening/card-wrapper-retirement-queue-v9.98.js',
+  'data/product-hardening/route-layer-retirement-current.js',
   'data/product-hardening/tool-builder-backlog-current.js',
   'data/product-hardening/tool-builder-discovery-current.js'
  ])
 });
+const TOOL_LIBRARY_COMPACT_EXTENSIONS=Object.freeze([
+ 'data/product-hardening/tool-builder-backlog-current.js',
+ 'data/product-hardening/tool-builder-discovery-current.js'
+]);
+function routeName(){return typeof location==='undefined'?'home':((location.hash||'#/home').replace(/^#\/?/,'').split('/').filter(Boolean)[0]||'home');}
+function extensionPlan(route){
+ const current=String(route||routeName()||'home');
+ const all=Array.from(release.productHardeningExtensions||[]);
+ if(current==='tools')return Object.freeze({route:current,mode:'compact-tool-library',sources:TOOL_LIBRARY_COMPACT_EXTENSIONS.slice(),historicalDeferred:all.filter(src=>!TOOL_LIBRARY_COMPACT_EXTENSIONS.includes(src))});
+ return Object.freeze({route:current,mode:'full-product-hardening',sources:all,historicalDeferred:[]});
+}
 function stampState(target){
  if(!target||typeof target!=='object')return target;
  target.obolRelease=release.version;
@@ -2196,19 +2209,22 @@ function normalizeReportMarkdown(markdown){
 function finalizeProductHardeningExtensions(){
  const api=root.OBOL_NOTE_CARD_DISPOSITION_RECONCILIATION_API_V968;
  if(api&&typeof api.install==='function'){
-  try{api.install();root.__OBOL_PRODUCT_HARDENING_FINAL_CARD_DISPOSITION__='v10.16';}catch(_err){root.__OBOL_PRODUCT_HARDENING_FINAL_CARD_DISPOSITION_ERROR__=String(_err&&_err.message||_err);}
+  try{api.install();root.__OBOL_PRODUCT_HARDENING_FINAL_CARD_DISPOSITION__='v10.17';}catch(_err){root.__OBOL_PRODUCT_HARDENING_FINAL_CARD_DISPOSITION_ERROR__=String(_err&&_err.message||_err);}
  }
 }
-function loadProductHardeningExtensions(){
- const sources=Array.from(release.productHardeningExtensions||[]);
+function loadProductHardeningExtensions(route){
+ const plan=extensionPlan(route);
+ const sources=Array.from(plan.sources||[]);
+ root.__OBOL_PRODUCT_HARDENING_EXTENSION_PLAN__=plan;
  if(root.__OBOL_DEFER_PRODUCT_HARDENING_EXTENSIONS__){root.__OBOL_DEFERRED_PRODUCT_HARDENING_EXTENSIONS__=Object.freeze(sources.slice());return;}
- if(typeof document!=='undefined'){
+ if(typeof document!=='undefined'&&typeof document.createElement==='function'){
   let pending=sources.length;const done=()=>{pending-=1;if(pending<=0)finalizeProductHardeningExtensions();};if(!pending){finalizeProductHardeningExtensions();return;}
-  sources.forEach(src=>{if(document.querySelector('script[data-obol-extension="'+src+'"],script[data-obol-dashboard-src="'+src+'"]')){done();return;}const script=document.createElement('script');script.src=src;script.async=false;script.dataset.obolExtension=src;script.onload=done;script.onerror=done;document.head.appendChild(script);});
+  sources.forEach(src=>{if(document.querySelector&&document.querySelector('script[data-obol-extension="'+src+'"],script[data-obol-dashboard-src="'+src+'"]')){done();return;}const script=document.createElement('script');script.src=src;script.async=false;script.dataset.obolExtension=src;script.onload=done;script.onerror=done;(document.head||document.documentElement).appendChild(script);});
  }
  if(typeof module!=='undefined'&&module.exports&&typeof require==='function'){sources.forEach(src=>{try{require('./'+src.replace(/^data\//,''));}catch(_err){}});finalizeProductHardeningExtensions();}
 }
-const identity=Object.freeze({release,stampState,normalizeReportMarkdown,loadProductHardeningExtensions,finalizeProductHardeningExtensions});
+if(typeof window!=='undefined'&&window.addEventListener){window.addEventListener('hashchange',()=>{if(routeName()!=='tools')loadProductHardeningExtensions();});}
+const identity=Object.freeze({release,stampState,normalizeReportMarkdown,loadProductHardeningExtensions,finalizeProductHardeningExtensions,extensionPlan,toolLibraryCompactExtensions:TOOL_LIBRARY_COMPACT_EXTENSIONS});
 root.OBOL_CURRENT_RELEASE=release;
 root.OBOL_RELEASE_IDENTITY=identity;
 loadProductHardeningExtensions();

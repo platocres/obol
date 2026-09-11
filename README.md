@@ -4,7 +4,7 @@ Obol is a static, browser-local workspace for OSCP-style labs, Active Directory 
 
 Live site: `https://platocres.github.io/obol/`
 
-Current release: **v10.16**
+Current release: **v10.17**
 
 Open `#/dashboard` for the active Product Hardening Dashboard and Product Build Next queue.
 
@@ -24,7 +24,7 @@ Agents may be operating from Kali or from a Windows host. Obol still never execu
 6. **Use live tracking, not release narrative.** Do not use `CHANGELOG.md` to decide what remains to be re-mined. Current status lives in Product Build Next, the Product Hardening Dashboard, `data/product-hardening/source-note-clusters-current.js`, and `data/product-hardening/note-progress-current.js`.
 7. **Land and prove the work.** Wire new outputs into the actual user-visible Next Steps / Orange path surface where relevant, update stable current owners instead of adding disposable wrappers, sync generated outputs, run the focused validators for the touched ownership area, and keep the exact final head green. A tool must not be promoted to implemented merely because it renders a command or a handoff checklist: decision-relevant output must have executable Evidence ingestion, conservative proof boundaries, and Next Steps movement/blocking where applicable. Modeled tools remain modeled until a real schema-driven builder exists with minimum viable command or guided-handoff generation, supplied/Evidence-derived prefill, additive toggles, executable Evidence ingestion, and path movement or blocking where the Evidence supports it. If local shell access to GitHub fails, follow [`docs/CONNECTOR-FALLBACK.md`](docs/CONNECTOR-FALLBACK.md) and keep fixing the same PR through the connector until required checks pass.
 
-The completed broad audit item was **Post-mining Next Steps and tool-card clarity audit**. The implemented-builder audit is complete, and the recently completed Tool Builder slices are compacted into current owners instead of remaining as a stack of live release layers. The modeled Tool Builder implementation backlog remains active until every modeled inventory record is implemented, superseded, or rejected with proof. Release history for completed slices lives in `CHANGELOG.md` and the matching release document, not in the active queue. The v10.09 web discovery/scanning slice is completed-through handoff metadata for WhatWeb, Nikto, httpx, wfuzz, and ZAP, not active queue work.
+The completed broad audit item was **Post-mining Next Steps and tool-card clarity audit**. The implemented-builder audit is complete, and the recently completed Tool Builder slices are compacted into current owners instead of remaining as a stack of live release layers. The v10.09 web discovery/scanning slice is completed-through handoff metadata for WhatWeb, Nikto, httpx, wfuzz, and ZAP, not active queue work. v10.17 narrows the Tool Library route to the compact current Tool Builder extension plan so a clean-cache `#/tools` visit does not inject the full historical v9 product-hardening stack. Dashboard and non-Tools product-hardening routes still keep the full plan until their behavior is compacted and proven separately. The modeled Tool Builder implementation backlog remains active until every modeled inventory record is implemented, superseded, or rejected with proof. Release history for completed slices lives in `CHANGELOG.md` and the matching release document, not in the active queue.
 
 Product Build Next source note: This block is generated from `data/product-hardening/product-hardening-queue.js`. Do not edit it manually. Recommended work-package metadata comes from `data/product-hardening/work-packages.js`.
 
@@ -71,7 +71,7 @@ Generated from the same queue sources as the Product Hardening Dashboard. Do not
 
 **Highest-priority concrete live items:**
 1. **Post-mining modeled tool builder implementation backlog** — v10.08 completed the implemented-builder audit only. Remaining modeled inventory records still need schema-driven builders or explicit supersession/rejection with the full Tool Builder contract before this backlog can close.
-2. **Post-mining runtime and old-layer retirement audit** — Use the current-owner/equivalence/fixture lifecycle to identify old note-mining and historical layers that can be retired without changing observable behavior.
+2. **Post-mining runtime and old-layer retirement audit** — v10.17 narrows `#/tools` to the compact current Tool Builder extension plan. Dashboard and non-Tools product-hardening routes still need separate current-owner/equivalence retirement proof before this item can close.
 3. **Post-mining regression speed and coverage pass** — With the note queue closed, shorten slow historical/browser checks where proven redundant while keeping exact-head full regression and browser smoke meaningful.
 4. **Quiet service worker caching** — Improve repeat-load and offline behavior without prompting users to install anything.
 5. **IndexedDB workspace storage** — Support durable larger local workspaces, multiple engagements, and cached indexes while remaining browser-local.
@@ -84,7 +84,7 @@ Generated by `node tools/sync-product-build-next.js --write`. Verify with `node 
 
 This section is active work only. Completed Tool Builder batches are removed when they land; their history lives in `CHANGELOG.md` and release docs. The full contract remains in [`docs/TOOL-BUILDER-BUILD-QUEUE.md`](docs/TOOL-BUILDER-BUILD-QUEUE.md): start with the minimal valid command or guided third-party handoff for the selected tool/mode, fill only real collected target/material parameters, parsed Evidence/workspace parameters, or safe defaults, add every extra flag or workflow branch through explicit GUI controls, and ship executable Evidence ingestion for every decision-relevant mode. Every tool batch must ship command generation and decision-relevant Evidence behavior together. Guided third-party GUI batches, such as Burp Suite, must ship guided-handoff generation and decision-relevant Evidence behavior together.
 
-Completed slices are not active queue items. The web discovery, Burp Suite, and network/host discovery slices now live as current Tool Builder ownership plus release history. Do not re-list completed slices here just because they are still covered by regression tests.
+Completed slices are not active queue items. The web discovery, Burp Suite, network/host discovery, and AD/name-service slices now live as current Tool Builder ownership plus release history. v10.17 also prevents the Tool Library route from loading the full historical v9 product-hardening layer stack just to render Tools. Do not re-list completed slices here just because they are still covered by regression tests.
 
 Active batch:
 
