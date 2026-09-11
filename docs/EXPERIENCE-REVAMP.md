@@ -110,24 +110,29 @@ skins, and strong command organization + a multi-command builder.
 ### Build 1 — Skin Engine 🎨  `[status: DONE — 2026-09-11]`
 **What:** Ship the five-skin theme engine into real obol.
 **Why:** Highest delight-per-risk; validated visually in the showcase.
-**Shipped files (new owners, loaded last, wired directly in `index.html`):**
-- `assets/obol-themes.css` — `:root` glow/grid token defaults + `html[data-skin="matrix|crt|neon|recon"]`
+**Shipped as two inline blocks in `index.html`** (a `<style id="obol-themes">` in `<head>`
+after `writeStyles()`, and a `<script id="obol-themes-js">` at end of `<body>` after
+`writeScripts()`):
+- **CSS:** `:root` glow/grid token defaults + `html[data-skin="matrix|crt|neon|recon"]`
   overrides of the existing color tokens + additive glow on existing chrome (no-op when
   `--glow` is transparent) + decorative-layer rules + `html.obol-fx` signature motion +
   `@media(prefers-reduced-motion)` guard.
-- `assets/obol-themes.js` — injects the header skin picker + FX toggle, sets `data-skin` on
-  `<html>` before first paint, `localStorage` persistence (`obol-skin`, `obol-fx`), matrix-rain
-  canvas manager, keyboard (`1`–`5`, `[` `]`, `0`), ARIA (`aria-pressed`/`aria-checked`/menu roles),
-  switch sweep. Exposes `window.OBOL_THEMES` for later builds/tests. Fully wrapped so it can
-  never block obol boot.
-- `index.html` — one `<link>` after `writeStyles()` and one `<script>` after `writeScripts()`.
+- **JS:** injects the header skin picker + FX toggle, sets `data-skin` on `<html>` before first
+  paint, `localStorage` persistence (`obol-skin`, `obol-fx`), matrix-rain canvas manager,
+  keyboard (`1`–`5`, `[` `]`, `0`), ARIA (`aria-pressed`/`aria-checked`/menu roles), switch sweep.
+  Exposes `window.OBOL_THEMES` for later builds/tests. Fully wrapped so it can never block boot.
 
-**Integration decision (deviation from original plan):** loaded via `index.html`, **not** the
-runtime manifest. Rationale: the effective runtime stylesheet is a single `obol-current.css`
-snapshot and the manifest's lazy-group machinery is app-triggered; a direct `<link>`/`<script>`
-guarantees the skin applies at **first paint** (no flash, since the boot gate hides `body` until
-commit) and keeps the change out of the intricate manifest/validator contracts. `current-boot`
-only asserts token *presence* in `index.html`, so the additions are safe.
+**Integration decisions (deviations from original plan):**
+1. Loaded via `index.html`, **not** the runtime manifest — the effective runtime stylesheet is a
+   single generated `obol-current.css` snapshot (guarded by a style-equivalence validator) and
+   the manifest's lazy machinery is app-triggered; inline application guarantees the skin at
+   **first paint** (no flash; the boot gate hides `body` until commit) and stays out of the
+   manifest/validator contracts. `current-boot` only asserts token *presence* in `index.html`.
+2. **Inlined rather than two separate owner files** — the browser-smoke `requestBudget` proof
+   sits at ceiling for every route (targets 93, evidence 90, report/dashboard 84…), so two extra
+   file requests overflow it (`targets: 95 > 93`). Inlining adds **zero** requests, keeping the
+   consolidation proof intact without weakening it. Future builds that need their own files must
+   budget for the added requests or inline likewise.
 
 **Verified (headless Chromium + governance gates):** boot commits (`data-obol-boot="ready"`);
 default `--accent` unchanged (`#58d68d`); Ghostwire overrides apply (`--accent:#00ff66`,
