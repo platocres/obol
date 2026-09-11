@@ -4,6 +4,8 @@ const VERSION='v10.18';
 const CRED_CARD='credential-dump-proof-chain';
 const TOOLS=Object.freeze(['cewl','crunch','hashid','name-that-hash']);
 const IDS=Object.freeze(['tb-cewl','tb-crunch','tb-hashid','tb-name-that-hash']);
+const PRESERVED_TOOLS=Object.freeze(['hydra','kerbrute']);
+const PRESERVED_IDS=Object.freeze(['tb-hydra','tb-kerbrute']);
 function arr(v){return Array.isArray(v)?v:[];}
 function uniq(v){return Array.from(new Set(arr(v).filter(Boolean)));}
 function opt(value,label){return {value,label};}
@@ -102,14 +104,16 @@ function patchInventory(){
   cewl:inventoryUpdate('cewl','tb-cewl','CeWL is implemented as a target-derived wordlist builder with crawl, output, auth/cookie, proxy, and Evidence boundaries.'),
   crunch:inventoryUpdate('crunch','tb-crunch','crunch is implemented as a bounded candidate wordlist builder with explicit length, charset, pattern, output, compression, and Evidence boundaries.'),
   hashid:inventoryUpdate('hashid','tb-hashid','hashid is implemented as a hash-identification helper with Hashcat/John hint modes and Evidence-gated cracking-route boundaries.'),
-  'name-that-hash':inventoryUpdate('name-that-hash','tb-name-that-hash','name-that-hash is implemented as a ranked hash-identification helper with Evidence-gated cracking-route boundaries.')
+  'name-that-hash':inventoryUpdate('name-that-hash','tb-name-that-hash','name-that-hash is implemented as a ranked hash-identification helper with Evidence-gated cracking-route boundaries.'),
+  hydra:inventoryUpdate('hydra','tb-hydra','Hydra remains implemented through the canonical authentication/enumeration builder owner; v10.18 preserves its disposition while clearing the visible Credentials and cracking modeled bucket.'),
+  kerbrute:inventoryUpdate('kerbrute','tb-kerbrute','Kerbrute remains implemented through the canonical authentication/enumeration builder owner; v10.18 preserves its disposition while clearing the visible Credentials and cracking modeled bucket.')
  };
  const aliases=Object.freeze(Object.assign({},inv.aliases||{},{nth:'name-that-hash',namethathash:'name-that-hash','name_that_hash':'name-that-hash','name that hash':'name-that-hash'}));
  const dispositions=Object.freeze(Object.assign({},inv.dispositions,updates));
  const key=tool=>{let name=String(tool||'').trim().toLowerCase().replace(/^.*[\\/]/,'').replace(/\.exe$/,'');return aliases[name]||name;};
  const get=tool=>dispositions[key(tool)]||null;
  const all=()=>Object.values(dispositions);
- const validate=()=>{const failures=typeof inv.validate==='function'?inv.validate().slice():[];TOOLS.forEach(tool=>{if(!get(tool)||get(tool).status!=='implemented')failures.push(tool+' missing credential-helper implemented inventory disposition');});return failures;};
+ const validate=()=>{const failures=typeof inv.validate==='function'?inv.validate().slice():[];TOOLS.concat(PRESERVED_TOOLS).forEach(tool=>{if(!get(tool)||get(tool).status!=='implemented')failures.push(tool+' missing credential-helper implemented inventory disposition');});return failures;};
  root.OBOL_TOOL_BUILDER_INVENTORY=Object.freeze(Object.assign({},inv,{aliases,dispositions,key,get,all,validate}));
  return true;
 }
@@ -122,7 +126,7 @@ function registerBuilders(){
  const builders=[];
  for(const def of builderDefs()){const registered=safeRegister(schema,def);if(registered)builders.push(registered);}
  patchInventory();
- root.OBOL_CREDENTIAL_HELPER_TOOL_BUILDERS_CURRENT=Object.freeze({version:VERSION,builders:Object.freeze(builders),tools:TOOLS,patchedInventory:true,patchedEvidence:false,installedIntake:false});
+ root.OBOL_CREDENTIAL_HELPER_TOOL_BUILDERS_CURRENT=Object.freeze({version:VERSION,builders:Object.freeze(builders),tools:TOOLS,preservedTools:PRESERVED_TOOLS,preservedBuilderIds:PRESERVED_IDS,patchedInventory:true,patchedEvidence:false,installedIntake:false});
  root.__OBOL_CREDENTIAL_HELPER_TOOL_BUILDERS_CURRENT_REGISTERED__=VERSION;
  rerenderTools();
  return true;
@@ -172,7 +176,7 @@ function installIntake(){
 }
 function install(attempt){
  const a=Number(attempt||0),installedBuilder=registerBuilders(),patchedEvidence=patchEvidence(),installedIntake=installIntake();
- const api=Object.freeze(Object.assign({},root.OBOL_CREDENTIAL_HELPER_TOOL_BUILDERS_CURRENT||{},{version:VERSION,owner:'credential-helper-tool-builders-current',tools:TOOLS,builderIds:IDS,installedBuilder,patchedEvidence,installedIntake,analyzeCredentialHelper,detectCredentialHelper:helperBuilderFromText,rerenderTools}));
+ const api=Object.freeze(Object.assign({},root.OBOL_CREDENTIAL_HELPER_TOOL_BUILDERS_CURRENT||{},{version:VERSION,owner:'credential-helper-tool-builders-current',tools:TOOLS,builderIds:IDS,preservedTools:PRESERVED_TOOLS,preservedBuilderIds:PRESERVED_IDS,installedBuilder,patchedEvidence,installedIntake,analyzeCredentialHelper,detectCredentialHelper:helperBuilderFromText,rerenderTools}));
  root.OBOL_CREDENTIAL_HELPER_TOOL_BUILDERS_CURRENT=api;
  if((!installedBuilder||!patchedEvidence||!installedIntake)&&a<40&&root.setTimeout)root.setTimeout(()=>install(a+1),50);
  return api;
