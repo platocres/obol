@@ -15,7 +15,7 @@ The README is the entrypoint and current handoff. It should stay lean, but it mu
 This is the single agent quickstart. Told to "read the README and keep developing"? Use this flow.
 
 1. **Use one active product-hardening PR.** Check for an open release/product-hardening PR first. Continue it if it exists. Otherwise open one normal, non-draft PR for the work.
-2. **Read the linked docs.** Read this README, [`docs/AGENT-WORKFLOW.md`](docs/AGENT-WORKFLOW.md), [`BUILDING.md`](BUILDING.md), and the owner docs relevant to the Product Build Next item. For Tool Builder work, [`docs/TOOL-BUILDER-BUILD-QUEUE.md`](docs/TOOL-BUILDER-BUILD-QUEUE.md) is mandatory.
+2. **Read the linked docs.** Read this README, [`docs/AGENT-WORKFLOW.md`](docs/AGENT-WORKFLOW.md), [`BUILDING.md`](BUILDING.md), and the owner docs relevant to the Product Build Next item. For Tool Builder work, [`docs/TOOL-BUILDER-BUILD-QUEUE.md`](docs/TOOL-BUILDER-BUILD-QUEUE.md) and [`docs/TOOL-BUILDER-IMPLEMENTATION-STANDARD.md`](docs/TOOL-BUILDER-IMPLEMENTATION-STANDARD.md) are mandatory.
 3. **Do Product Build Next.** Start with the highest-priority Product Build Next item. The generated Product Build Next block below is the current queue authority for ChatGPT/product-hardening agents. Treat the highest-priority item as the entry point into the recommended coherent work package, not as a one-item limit. Batch only closely related live items in the same ownership area. Every item advanced or closed still needs its own acceptance criteria and proof.
 4. **Do not follow side-lane "next build" pointers unless directed.** [`docs/EXPERIENCE-REVAMP.md`](docs/EXPERIENCE-REVAMP.md) is a Claude UX feature lane. Its one-liners do not override Product Build Next unless the user explicitly asks for that UX revamp work.
 5. **Land real product progress.** Wire new outputs into the actual user-visible Next Steps / Orange path surface where relevant, or into the live route, card, dashboard, tool, analyzer, report, or runtime surface that consumes them. Every tool batch must ship command generation and decision-relevant Evidence behavior together. For Tool Builder work, a tool is not implemented until it has minimum viable command or guided-handoff generation, real supplied/Evidence-derived prefill, additive controls, executable Evidence ingestion, proof boundaries, and conservative Next Steps movement or blocking where applicable.
@@ -33,6 +33,8 @@ The completed broad audit item was **Post-mining Next Steps and tool-card clarit
 - [`docs/TEST-GOVERNANCE.md`](docs/TEST-GOVERNANCE.md) - required checks, browser smoke, historical contracts, and test-update rules.
 - [`docs/PRODUCT-HARDENING.md`](docs/PRODUCT-HARDENING.md) - active product-hardening vision, tracks, work-package rules, and Definition of Done.
 - [`docs/TOOL-BUILDER-BUILD-QUEUE.md`](docs/TOOL-BUILDER-BUILD-QUEUE.md) - active Tool Builder backlog sequence and the permanent command, Evidence, proof, and Next Steps contract.
+- [`docs/TOOL-BUILDER-IMPLEMENTATION-STANDARD.md`](docs/TOOL-BUILDER-IMPLEMENTATION-STANDARD.md) - reusable-plumbing / bespoke-profile standard for faster Tool Builder implementation without generic tool smearing.
+- [`docs/TOOL-BUILDER-INVENTORY-ORGANIZATION.md`](docs/TOOL-BUILDER-INVENTORY-ORGANIZATION.md) - operator-first Tool Builder taxonomy and placement rules for modeled and implemented tools.
 - [`docs/PROOF-CONTRACT.md`](docs/PROOF-CONTRACT.md) - conservative Evidence boundaries. Command recognition is not success.
 - [`docs/ACTIONABLE-CARD-CONTRACT.md`](docs/ACTIONABLE-CARD-CONTRACT.md) and [`docs/CARD-UI-STANDARD.md`](docs/CARD-UI-STANDARD.md) - user-visible card and operator surface standards.
 - [`docs/RAW-NOTES-LFS.md`](docs/RAW-NOTES-LFS.md), [`docs/NOTE-DERIVATION-STANDARD.md`](docs/NOTE-DERIVATION-STANDARD.md), [`docs/NOTE-MINING-RUBRIC.md`](docs/NOTE-MINING-RUBRIC.md), [`docs/NOTES-INTEGRATION.md`](docs/NOTES-INTEGRATION.md), [`docs/NOTES-IMPACT.md`](docs/NOTES-IMPACT.md), and [`docs/SOURCE-NOTE-CLUSTERING.md`](docs/SOURCE-NOTE-CLUSTERING.md) - historical notes derivation, extraction, clustering, integration, and impact rules.
@@ -94,6 +96,8 @@ For Tool Builder inventory organization work, run:
 ```bash
 node --check data/product-hardening/tool-builder-backlog-current.js
 node tests/run-tool-builder-inventory-organization-tests.js
+node tests/run-tool-builder-taxonomy-tests.js
+node tests/run-tool-builder-implementation-standard-tests.js
 ```
 
 ## GitHub Pages
