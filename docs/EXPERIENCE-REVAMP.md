@@ -409,7 +409,7 @@ asserts chips advance live + no console errors + no horizontal overflow 320→19
 `full-historical-regression`, and every `*-contracts` suite). The pending browser/gate run is done —
 this build is verified, not just implemented.
 
-### Build 6 — Palette Favorites + Copy History ⭐  `[status: SPEC — proposed 2026-09-11]`
+### Build 6 — Palette Favorites + Copy History ⭐  `[status: DONE — verified 2026-09-11; branch claude/relaxed-cannon-3g71ch]`
 
 **Why this is the next build.** With Builds 1–5 shipped, obol has matched or beaten every big-ticket
 RedConsole idea (§3.2): Ctrl+K search (B2), Playbook `.sh` (B3), Cred Matrix + retarget (B4),
@@ -458,6 +458,34 @@ payoff, and obol already carries authored `note` content on commands). Adding a 
 directly onto in-app command *cards* (RedConsole's "add from any section") is a larger, renderer-
 touching change and stays out of Build 6 — the palette is obol's cross-surface command entry point.
 
+**As shipped (extends the two Build 2 inline blocks in `index.html`):**
+- **★ toggle on every command row** (`.obol-pal-star`, `aria-pressed`, keyboard-activatable — the
+  dialog keydown handler now yields Enter/Space to focused row buttons so ★/`+` toggle instead of
+  copying). Toggling updates the star **in place** (no list reshuffle / scroll jump) and toasts.
+- **Favorites** persist in `localStorage['obol-fav-cmds']`, keyed by the command's `run` string
+  (engagement-independent). On an **empty query** a **★ Favorites** group leads the palette; on a
+  **query**, favorites get a **+2000 score boost** so a matching favorite floats to the top.
+- **Recent / copy history** persist in `localStorage['obol-cmd-history']` (bounded ring, 15,
+  most-recent-first). Every palette **copy** (Enter) and **playbook add** (⇧↵/`+`) records the
+  command; a **Recent** group shows under Favorites on an empty query.
+- **Cross-group de-dup** so a command shows once, in its highest group (Favorites ▸ Recent ▸
+  Commands). **Clear** lives in the palette **footer** (`#obol-pal-clear-hist`), shown only when
+  history is non-empty — decoupled from the Recent group's visibility so it's reachable even when all
+  recents are favorited (this is the one deviation from the "clear on the Recent header" sketch; the
+  footer is the robust home). Empties Recent only; favorites untouched.
+- Exposes `window.OBOL_PALETTE.favorites()` / `.history()` / `.clearHistory()` for tests. Inline,
+  **zero added requests**, IIFE + try/catch, theme-aware via obol tokens.
+
+**Verified (headless Chromium, this session):** a 12-check functional suite passes — API exposed;
+empty palette shows no Favorites/Recent until seeded; copy records to history and a Recent group
+appears; ★ toggles in place (`aria-pressed`+glyph) and persists **across reload**; Favorites group
+leads on empty query; **favorite floats to the top of query results** (separately confirmed); footer
+**clear** is visible only with history, empties Recent only, and hides after; Enter on a focused ★
+toggles the favorite without copying/closing; **zero console errors**. All five gates pass
+(`validate-{current-boot,responsive-layout,asset-references,accessibility-contract,runtime-loading}`);
+no new horizontal overflow (the pre-existing 320px `obol-kc-strip` overflow is unchanged, palette
+open or closed). _CI re-runs `browser-smoke` + the `*-contracts` suites on the PR._
+
 ---
 
 ## 5 · Status tracker
@@ -470,7 +498,7 @@ touching change and stays out of Build 6 — the palette is obol's cross-surface
 | 3 | Playbook Builder | ✅ done (+ fix) | branch `claude/adoring-gates-p6ln8a`; fix on `claude/relaxed-cannon-3g71ch` | ⛓ header launcher + slide-in drawer; add via palette (+ / ⇧↵); reorder/remove; runnable logged `.sh`; per-engagement persistence; no overflow 320→1920. **2026-09-11 fix:** add-flow discoverability — ⇧↵ on a nav row now gives feedback instead of failing silently; palette `+` always visible (was hover-only, invisible on touch). Verified headless + 5 gates |
 | 4 | Cred Reuse Matrix + retarget | ✅ done | branch `claude/gallant-lovelace-70m4jl` → **PR #248 merged, CI green** | 🔑 header launcher + modal cred×host grid (✓/ADM/✗/·); one-click retarget of cred/host/cell via app inputs; ranked rows; roving-tabindex keyboard grid; inlined, zero added requests. All 10 CI checks green (`browser-smoke` + `*-contracts`) — browser/gate run resolved on merge |
 | 5 | Kill-Chain Milestone Spine | ✅ done | branch `claude/friendly-mayer-mzcfqs` → **PR #249 merged, CI green** | **Rescoped** from "Evidence→next-command loop" (redundant with the existing Next Steps recommender). Shipped: a header-anchored "trophy" progress spine (🎯 Target▸📡 Recon▸🔑 Creds▸🐚 Foothold▸🛡 Local Admin▸🏰 Domain Admin▸💎 Loot▸📄 Report) that reads live facts via `OBOL_CORE_V2.effectiveFacts`, advances live via a `#view` MutationObserver, pulses newly-reached chips, links to `#/path`. Inlined, zero added requests, purely additive (140 ins / 0 del). All 10 CI checks green — browser/gate run resolved on merge |
-| 6 | Palette Favorites + Copy History | 📋 spec | — (proposed) | The one un-borrowed RedConsole per-command cluster: ★ favorites + copy/recent history, layered onto the ⌘K palette (Build 2) as `localStorage` read-models. Zero added requests; per-command notes and card-level `+` explicitly out of scope. See §4 Build 6 |
+| 6 | Palette Favorites + Copy History | ✅ done | branch `claude/relaxed-cannon-3g71ch` | The one un-borrowed RedConsole per-command cluster: ★ favorites + copy/recent history, layered onto the ⌘K palette (Build 2) as `localStorage` read-models. Favorites lead the palette + boost query results; Recent (bounded 15) records every copy/add; footer clear; keyboard ★ toggle; persists across reload. Inline, zero added requests. Verified headless (12/12 + boost) + 5 gates green |
 
 ---
 
@@ -483,7 +511,10 @@ Give Claude any of these:
 - `Review docs/EXPERIENCE-REVAMP.md and start Build 3 (Playbook Builder).`
 - `Review docs/EXPERIENCE-REVAMP.md and start Build 4 (Cred Matrix).`
 - `Review docs/EXPERIENCE-REVAMP.md and start Build 5 (Kill-Chain Milestone Spine).`
-- **`Review docs/EXPERIENCE-REVAMP.md and start Build 6 (Palette Favorites + Copy History).`**  ← the next build
+- `Review docs/EXPERIENCE-REVAMP.md and start Build 6 (Palette Favorites + Copy History).`
+
+_All six planned builds are shipped. Further work would be net-new scope (e.g. card-level add-to-
+playbook / favorites, or per-command operator notes) — propose a Build 7 before starting._
 
 ---
 

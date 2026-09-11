@@ -474,7 +474,10 @@ html.obol-fx[data-skin="matrix"] .coin{animation:obol-wire 1.8s ease-in-out infi
 #obol-pal-input::placeholder{color:var(--dim,#8b98a9)}
 #obol-pal-list{overflow-y:auto;overscroll-behavior:contain;padding:6px;min-height:0}
 .obol-pal-grp{font-family:var(--mono,monospace);font-size:10px;letter-spacing:2px;text-transform:uppercase;
-  color:var(--dim,#8b98a9);padding:10px 12px 5px}
+  color:var(--dim,#8b98a9);padding:10px 12px 5px;display:flex;align-items:center;justify-content:space-between;gap:10px}
+#obol-pal-clear-hist{margin-left:auto;font-family:var(--mono,monospace);font-size:10px;letter-spacing:1px;
+  color:var(--dim,#8b98a9);background:transparent;border:1px solid var(--border,#2d3646);border-radius:999px;padding:2px 9px;cursor:pointer}
+#obol-pal-clear-hist:hover{color:var(--fg,#d7e0ea);border-color:var(--danger,#e05c5c)}
 .obol-pal-row{display:flex;align-items:center;gap:11px;padding:9px 12px;border-radius:8px;cursor:pointer;border:1px solid transparent}
 .obol-pal-row[aria-selected="true"]{background:var(--panel2,#1c2330);border-color:var(--accent,#58d68d)}
 .obol-pal-kind{flex:0 0 auto;font-family:var(--mono,monospace);font-size:9px;letter-spacing:1px;text-transform:uppercase;
@@ -490,6 +493,10 @@ html.obol-fx[data-skin="matrix"] .coin{animation:obol-wire 1.8s ease-in-out infi
 .obol-pal-add{flex:0 0 auto;width:22px;height:22px;border-radius:6px;border:1px solid var(--border,#2d3646);background:transparent;color:var(--dim,#8b98a9);font-size:15px;line-height:1;cursor:pointer;display:inline-flex;align-items:center;justify-content:center;opacity:.5;transition:opacity .1s,color .1s,border-color .1s}
 .obol-pal-row:hover .obol-pal-add,.obol-pal-row[aria-selected="true"] .obol-pal-add{opacity:1}
 .obol-pal-add:hover{color:var(--fg,#d7e0ea);border-color:var(--accent,#58d68d);opacity:1}
+.obol-pal-star{flex:0 0 auto;width:22px;height:22px;border-radius:6px;border:1px solid transparent;background:transparent;color:var(--dim,#8b98a9);font-size:14px;line-height:1;cursor:pointer;display:inline-flex;align-items:center;justify-content:center;opacity:.5;transition:opacity .1s,color .1s}
+.obol-pal-row:hover .obol-pal-star,.obol-pal-row[aria-selected="true"] .obol-pal-star{opacity:1}
+.obol-pal-star[aria-pressed="true"]{color:var(--accent2,#e8b54a);opacity:1}
+.obol-pal-star:hover{color:var(--accent2,#e8b54a);opacity:1}
 .obol-pal-empty{padding:22px 16px;text-align:center;color:var(--dim,#8b98a9);font-size:13px}
 #obol-pal-foot{flex:0 0 auto;display:flex;gap:14px;flex-wrap:wrap;padding:8px 14px;border-top:1px solid var(--border,#2d3646);
   font-family:var(--mono,monospace);font-size:10px;color:var(--dim,#8b98a9)}
@@ -860,6 +867,25 @@ function fill(run){
  return String(run).replace(/{{(\w+)}}/g,function(match,k){var v=m[k.toLowerCase()];return (v!=null&&v!=='')?v:match;});
 }
 
+/* ---- Build 6: favorites + copy history (localStorage read-models, engagement-independent) ---- */
+var LS_FAV='obol-fav-cmds', LS_HIST='obol-cmd-history', HIST_MAX=15;
+function sig(item){ return (item&&item.run)?String(item.run):''; }
+function readJSON(k,dflt){ try{ var raw=root.localStorage.getItem(k); return raw?JSON.parse(raw):dflt; }catch(e){ return dflt; } }
+function writeJSON(k,v){ try{ root.localStorage.setItem(k,JSON.stringify(v)); }catch(e){} }
+function favMap(){ var m=readJSON(LS_FAV,{}); return (m&&typeof m==='object'&&!Array.isArray(m))?m:{}; }
+function isFav(item){ var s=sig(item); return !!(s&&favMap()[s]); }
+function toggleFav(item){ if(!item||item.kind!=='cmd')return false; var s=sig(item); if(!s)return false;
+ var m=favMap(); if(m[s]){ delete m[s]; } else { m[s]={run:item.run,label:item.label,sub:item.sub||''}; } writeJSON(LS_FAV,m); return !!m[s]; }
+function toEntry(e){ return {kind:'cmd',label:e.label||'command',sub:e.sub||'',run:e.run,
+ text:((e.label||'')+' '+(e.sub||'')+' '+(e.run||'')).toLowerCase()}; }
+function favEntries(){ var m=favMap(),out=[]; for(var s in m){ if(Object.prototype.hasOwnProperty.call(m,s)&&m[s]&&m[s].run){ var it=toEntry(m[s]); it.fav=true; out.push(it); } } return out; }
+function histList(){ var a=readJSON(LS_HIST,[]); return Array.isArray(a)?a.filter(function(e){return e&&e.run;}):[]; }
+function histEntries(){ return histList().map(toEntry); }
+function recordHistory(item){ if(!item||item.kind!=='cmd'||!item.run)return;
+ var a=histList().filter(function(e){return e.run!==item.run;}); a.unshift({run:item.run,label:item.label,sub:item.sub||''});
+ if(a.length>HIST_MAX)a.length=HIST_MAX; writeJSON(LS_HIST,a); }
+function clearHistory(){ writeJSON(LS_HIST,[]); }
+
 /* ---- scoring: all query tokens must appear; prefix + earliness bonus ---- */
 function score(text,tokens){
  if(!tokens.length)return 0;
@@ -875,29 +901,47 @@ function rowHtml(item,flatIdx){
  var kindLabel=item.kind==='nav'?'go':'cmd';
  var sub=item.kind==='nav'?item.sub:(item.sub+(item.run?'  ·  '+firstLine(item.run):''));
  var hint=item.kind==='nav'?'go →':'copy';
+ var starOn=item.kind==='cmd'&&isFav(item);
+ var starBtn=item.kind==='cmd'?'<button class="obol-pal-star" type="button" data-star="'+flatIdx+'" aria-pressed="'+(starOn?'true':'false')+'" title="'+(starOn?'Unfavorite':'Favorite')+'" aria-label="Toggle favorite">'+(starOn?'★':'☆')+'</button>':'';
  var addBtn=item.kind==='cmd'?'<button class="obol-pal-add" type="button" data-add="'+flatIdx+'" title="Add to playbook" aria-label="Add to playbook">+</button>':'';
  return '<div class="obol-pal-row" role="option" data-i="'+flatIdx+'" aria-selected="false">'+
   '<span class="obol-pal-kind '+kindLabel+'">'+kindLabel+'</span>'+
   '<span class="obol-pal-main"><span class="obol-pal-title">'+esc(item.label)+'</span>'+
   '<span class="obol-pal-sub">'+esc(sub)+'</span></span>'+
-  addBtn+'<span class="obol-pal-hint">'+hint+'</span></div>';
+  starBtn+addBtn+'<span class="obol-pal-hint">'+hint+'</span></div>';
 }
 function render(q){
  q=(q||'').trim().toLowerCase();
  var tokens=q?q.split(/\s+/):[];
- function rank(entries,cap){
+ function rank(entries,cap,boostFav){
   var scored=[];
-  for(var i=0;i<entries.length;i++){var sc=score(entries[i].text,tokens);if(isFinite(sc))scored.push({e:entries[i],sc:sc,i:i});}
+  for(var i=0;i<entries.length;i++){var sc=score(entries[i].text,tokens);if(!isFinite(sc))continue;if(boostFav&&entries[i].fav)sc+=2000;scored.push({e:entries[i],sc:sc,i:i});}
   scored.sort(function(a,b){return b.sc-a.sc || a.i-b.i;});
   return scored.slice(0,cap).map(function(x){return x.e;});
  }
+ /* Build the group list. Favorites + Recent lead on an empty query; a query folds
+    favorites up via a score boost. Commands are marked fav-state for the boost + star. */
+ var groups=[];
+ if(!q){
+  var favs=favEntries(); if(favs.length)groups.push({label:'★ Favorites',items:favs.slice(0,12)});
+  var recents=histEntries(); if(recents.length)groups.push({label:'Recent',items:recents});
+ }
  var navs=rank(navEntries(),8);
- var cmds=rank(cmdEntries(), q?60:10);
- ITEMS=navs.concat(cmds);
- if(!ITEMS.length){ list.innerHTML='<div class="obol-pal-empty">No matches for “'+esc(q)+'”.</div>'; active=-1; return; }
- var html='',flat=0;
- if(navs.length){ html+='<div class="obol-pal-grp">Go to</div>'; navs.forEach(function(it){html+=rowHtml(it,flat++);}); }
- if(cmds.length){ html+='<div class="obol-pal-grp">Commands'+(q?'':' · start typing to search all')+'</div>'; cmds.forEach(function(it){html+=rowHtml(it,flat++);}); }
+ if(navs.length)groups.push({label:'Go to',items:navs});
+ var allCmds=cmdEntries();
+ if(q){ var fm=favMap(); allCmds.forEach(function(c){ if(c.run&&fm[c.run])c.fav=true; }); }
+ var cmds=rank(allCmds, q?60:10, true);
+ if(cmds.length)groups.push({label:'Commands'+(q?'':' · start typing to search all'),items:cmds});
+
+ /* flatten with cross-group de-dup (a command shows once, in its highest group) */
+ ITEMS=[]; var html='',flat=0,any=false,seen={};
+ groups.forEach(function(g){
+  var items=g.items.filter(function(it){ if(it.kind!=='cmd')return true; if(seen[it.run])return false; seen[it.run]=1; return true; });
+  if(!items.length)return; any=true;
+  html+='<div class="obol-pal-grp"><span>'+esc(g.label)+'</span></div>';
+  items.forEach(function(it){ ITEMS.push(it); html+=rowHtml(it,flat++); });
+ });
+ if(!any){ list.innerHTML='<div class="obol-pal-empty">No matches for “'+esc(q)+'”.</div>'; active=-1; return; }
  list.innerHTML=html;
  list.querySelectorAll('.obol-pal-row').forEach(function(r){
   r.addEventListener('mousemove',function(){setActive(+r.dataset.i);});
@@ -907,6 +951,13 @@ function render(q){
   b.addEventListener('mousedown',function(e){e.stopPropagation();});
   b.addEventListener('click',function(e){e.stopPropagation();addToPlaybook(+b.dataset.add);});
  });
+ list.querySelectorAll('.obol-pal-star').forEach(function(b){
+  b.addEventListener('mousedown',function(e){e.stopPropagation();});
+  b.addEventListener('click',function(e){ e.stopPropagation(); var it=ITEMS[+b.dataset.star]; if(!it)return;
+   var on=toggleFav(it); it.fav=on; b.setAttribute('aria-pressed',on?'true':'false'); b.textContent=on?'★':'☆'; b.title=on?'Unfavorite':'Favorite';
+   toast(on?'Favorited: '+firstLine(it.label):'Unfavorited: '+firstLine(it.label)); });
+ });
+ var ch=doc.getElementById('obol-pal-clear-hist'); if(ch)ch.hidden=!histList().length;
  active=0; paint();
 }
 function paint(){
@@ -927,12 +978,14 @@ function activate(i){
  if(item.kind==='nav'){ close(); root.location.hash=item.sub; return; }
  var text=fill(item.run);
  try{ (root.navigator.clipboard&&root.navigator.clipboard.writeText(text)); }catch(e){}
+ recordHistory(item);
  close(); toast('Copied: '+firstLine(text));
 }
 function addToPlaybook(i){
  var item=ITEMS[i]; if(!item)return;
  if(item.kind!=='cmd'){ toast('Only commands add to the playbook — “'+firstLine(item.label)+'” is a section'); return; }
  var ok=false; try{ ok=!!(root.OBOL_PLAYBOOK&&root.OBOL_PLAYBOOK.add(item.run,item.label)); }catch(e){}
+ if(ok)recordHistory(item);
  toast(ok?'Added to playbook: '+firstLine(item.label):'Playbook unavailable');
 }
 
@@ -961,14 +1014,19 @@ function build(){
  el.innerHTML='<div id="obol-pal-panel">'+
   '<input id="obol-pal-input" role="combobox" aria-controls="obol-pal-list" aria-expanded="true" aria-autocomplete="list" autocomplete="off" spellcheck="false" placeholder="Search commands, or jump to a section…">'+
   '<div id="obol-pal-list" role="listbox" aria-label="Results"></div>'+
-  '<div id="obol-pal-foot"><span><kbd>↑</kbd><kbd>↓</kbd> move</span><span><kbd>↵</kbd> copy / go</span><span><kbd>⇧↵</kbd> playbook</span><span><kbd>esc</kbd> close</span></div>'+
+  '<div id="obol-pal-foot"><span><kbd>↑</kbd><kbd>↓</kbd> move</span><span><kbd>↵</kbd> copy / go</span><span><kbd>⇧↵</kbd> playbook</span><span><kbd>☆</kbd> favorite</span><span><kbd>esc</kbd> close</span><button id="obol-pal-clear-hist" type="button" title="Clear recent commands" hidden>clear recent</button></div>'+
  '</div>';
  doc.body.appendChild(el);
  toastEl=doc.createElement('div'); toastEl.id='obol-pal-toast'; toastEl.setAttribute('role','status'); toastEl.setAttribute('aria-live','polite'); doc.body.appendChild(toastEl);
  input=doc.getElementById('obol-pal-input'); list=doc.getElementById('obol-pal-list');
  input.addEventListener('input',function(){render(input.value);});
+ var ch=doc.getElementById('obol-pal-clear-hist');
+ if(ch)ch.addEventListener('click',function(e){ e.preventDefault(); clearHistory(); render(input.value); toast('Recent cleared'); input.focus(); });
  el.addEventListener('mousedown',function(e){ if(e.target===el)close(); });
  el.addEventListener('keydown',function(e){
+  /* let the row's ★/+/clear buttons handle their own activation keys */
+  var onBtn=e.target&&e.target.tagName==='BUTTON';
+  if(onBtn&&(e.key==='Enter'||e.key===' '||e.key==='Spacebar')){ return; }
   if(e.key==='ArrowDown'){e.preventDefault();move(1);}
   else if(e.key==='ArrowUp'){e.preventDefault();move(-1);}
   else if(e.key==='Enter'){e.preventDefault();if(active>=0){e.shiftKey?addToPlaybook(active):activate(active);}}
@@ -985,7 +1043,8 @@ doc.addEventListener('click',function(e){
  if(t){ e.preventDefault(); e.stopImmediatePropagation(); open(); }
 },true);
 
-root.OBOL_PALETTE=Object.freeze({open:open,close:close,toggle:toggle});
+root.OBOL_PALETTE=Object.freeze({open:open,close:close,toggle:toggle,
+ favorites:function(){return favMap();}, history:function(){return histList();}, clearHistory:clearHistory});
 })(window);
 </script>
 <!-- Playbook Builder behavior (Build 3): inlined for zero added requests. Chains commands into a runnable, logged .sh; persists per engagement. -->
