@@ -73,7 +73,7 @@ This block is generated from `data/product-hardening/product-hardening-queue.js`
 **Recommended work-package metadata comes from `data/product-hardening/work-packages.js`.
 
 **Highest-priority concrete live items:**
-1. **Post-mining modeled tool builder implementation backlog** — The implemented-builder audit is complete. The remaining modeled inventory is now grouped into functional Tool Library slices so agents can burn it down coherently instead of staring at a flat chip dump.
+1. **Post-mining modeled tool builder implementation backlog** — The implemented-builder audit is complete. The remaining modeled inventory now appears inside the normal operator Tool Library categories with status badges intact, so agents can burn it down coherently without creating a fake residual inventory category.
 2. **Post-mining runtime and old-layer retirement audit** — The Tool Library route now uses the compact current Tool Builder extension plan. Dashboard and non-Tools product-hardening routes still need separate current-owner/equivalence retirement proof before this item can close.
 3. **Post-mining regression speed and coverage pass** — With the note queue closed, shorten slow historical/browser checks where proven redundant while keeping exact-head full regression and browser smoke meaningful.
 4. **Quiet service worker caching** — Improve repeat-load and offline behavior without prompting users to install anything.
