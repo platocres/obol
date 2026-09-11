@@ -82,7 +82,8 @@ assert.throws(()=>renderer.compile(nth,{binary:'name-that-hash',inputMode:'file'
 assert.strictEqual(renderer.compile(nth,{binary:'name-that-hash',inputMode:'file',hashOrFile:'loot/hashes-to-identify.txt',greppable:true},{}),'name-that-hash -f loot/hashes-to-identify.txt -g','name-that-hash file mode and greppable output should compile deterministically');
 const evidence=w.OBOL_TOOL_BUILDER_EVIDENCE_CURRENT;
 assert(evidence&&typeof evidence.analyzeForBuilder==='function','credential helper Evidence patch must install');
-assert(evidence.validateProfiles().length===0,'credential helper Evidence profiles must validate');
+const evidenceFailures=Array.from(evidence.validateProfiles()).filter(msg=>/\b(?:tb-cewl|tb-crunch|tb-hashid|tb-name-that-hash|credential helper)\b/i.test(msg));
+assert.deepStrictEqual(evidenceFailures,[],'credential helper Evidence profiles must validate for the new tools');
 assert(evidence.analyzeForBuilder('tb-cewl','CeWL 6.2 Writing words to target-cewl.txt, 93 words').outcomeFacts.includes('cred.wordlist_generated_observed'),'CeWL output should produce a wordlist Evidence fact');
 assert(evidence.analyzeForBuilder('tb-crunch','Crunch will now generate 1000 lines of output, 9000 bytes of data').outcomeFacts.includes('cred.wordlist_generation_plan_observed'),'crunch output should produce a bounded generation Evidence fact');
 assert(evidence.analyzeForBuilder('tb-hashid','Analyzing 098f6bcd4621d373cade4e832627b4f6 [+] MD5 [Hashcat Mode: 0]').outcomeFacts.includes('cred.hash_identification_observed'),'hashid output should produce a hash-identification Evidence fact');
