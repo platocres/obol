@@ -17,7 +17,16 @@ function loadBuilders(){
  const sandbox={window:{},globalThis:null,navigator:{clipboard:{writeText:()=>Promise.resolve()}}};
  sandbox.globalThis=sandbox.window;
  vm.createContext(sandbox);
- for(const rel of ['data/tool-builder-schema.js','data/tool-builder-inventory.js','assets/tool-builder-current.js','data/tool-builders.js','assets/tool-builder-evidence-current.js','data/product-hardening/credential-helper-tool-builders-current.js'])vm.runInContext(read(rel),sandbox,{filename:rel});
+ for(const rel of [
+  'data/tool-builder-schema.js',
+  'data/tool-builder-inventory.js',
+  'assets/tool-builder-current.js',
+  'data/tool-builders.js',
+  'assets/tool-builder-evidence-current.js',
+  'data/product-hardening/tool-builder-backlog-current.js',
+  'data/product-hardening/tool-builder-discovery-current.js',
+  'data/product-hardening/credential-helper-tool-builders-current.js'
+ ])vm.runInContext(read(rel),sandbox,{filename:rel});
  return sandbox.window;
 }
 const releaseCtx=loadRelease('#/tools');
@@ -48,7 +57,7 @@ for(const [tool,id] of [['cewl','tb-cewl'],['crunch','tb-crunch'],['hashid','tb-
 const credentialsGroup=['hashcat','john','hydra','kerbrute','cewl','crunch','hashid','name-that-hash'];
 for(const tool of credentialsGroup){
  const rec=inventory.get(tool);
- assert(rec&&rec.status==='implemented',tool+' should not remain modeled in the Credentials and cracking group');
+ assert(rec&&rec.status==='implemented',tool+' should not remain modeled in the Credentials and cracking group once the live Tools owners load');
 }
 assert.deepStrictEqual(helpers.tools.slice().sort(),['cewl','crunch','hashid','name-that-hash'].sort(),'credential helper owner should cover all remaining modeled Credentials and cracking tools');
 const cewl=schema.get('tb-cewl');
