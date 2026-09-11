@@ -11,7 +11,7 @@
  * suppresses historical schedulers and commits current route owners last.
  *
  * Historical fragment order sha256: 40e3006d9423d669acf5869b577ecf56a6ca2ee1629c95fd0fcc5d242d2c5f27
- * Generated body sha256: 4432398dda2f6d4d0135d737fcf58fb2c39be67b7386dc994a8d87f6b4271dee
+ * Generated body sha256: 50cab2ce248b6e331c88ceaeea2ebeb857acb75ffdb42af304ab3c40bf85a535
  * First historical fragment: assets/report-v2.js
  * Last historical fragment:  assets/app-v8.8.js
  */
@@ -2166,6 +2166,7 @@ const release=Object.freeze({
   'data/product-hardening/post-notes-clarity-audit-v9.96.js',
   'data/product-hardening/network-position-recurrence-v9.97.js',
   'data/product-hardening/card-wrapper-retirement-queue-v9.98.js',
+  'data/product-hardening/route-layer-retirement-current.js',
   'data/product-hardening/tool-builder-backlog-current.js',
   'data/product-hardening/tool-builder-discovery-current.js'
  ])
