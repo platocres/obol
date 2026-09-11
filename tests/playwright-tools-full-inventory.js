@@ -10,6 +10,13 @@ fs.mkdirSync(outputDir, { recursive: true });
 
 async function inventoryProof(page) {
   return page.evaluate(() => {
+    const reconcile = () => {
+      const owner = window.OBOL_REMOTE_EXEC_TOOL_BUILDERS_CURRENT;
+      if (owner && typeof owner.patchToolsLibraryCompleteness === 'function') {
+        try { owner.patchToolsLibraryCompleteness(); } catch (_err) { /* keep measuring the live DOM */ }
+      }
+    };
+    reconcile();
     const inv = window.OBOL_TOOL_BUILDER_INVENTORY;
     const key = (value) => {
       let name = String(value || '').trim().toLowerCase().replace(/^.*[\\/]/, '').replace(/\.exe$/, '').replace(/\s+/g, '-');
@@ -42,6 +49,10 @@ async function inventoryProof(page) {
 
 async function waitForInventoryCompletion(page) {
   await page.waitForFunction(() => {
+    const owner = window.OBOL_REMOTE_EXEC_TOOL_BUILDERS_CURRENT;
+    if (owner && typeof owner.patchToolsLibraryCompleteness === 'function') {
+      try { owner.patchToolsLibraryCompleteness(); } catch (_err) { /* keep waiting */ }
+    }
     const inv = window.OBOL_TOOL_BUILDER_INVENTORY;
     if (!inv || typeof inv.all !== 'function') return false;
     const key = (value) => {
