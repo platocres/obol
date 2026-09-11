@@ -18,6 +18,14 @@ Required for any user-visible product change. Link the exact surface a maintaine
 - Status change(s):
 - Acceptance criteria satisfied:
 
+## Changelog / release notes
+
+Required for every product-visible or product-governance change. Do not leave release history stale.
+
+- CHANGELOG.md updated:
+- Release doc added or updated, if versioned:
+- Current release / generated sync status, if applicable:
+
 ## Evidence ingestion / Next Steps movement
 
 Required for any command, tool card, proof control, analyzer, or path item that expects pasted terminal output, browser-observation text, or proof notes.
