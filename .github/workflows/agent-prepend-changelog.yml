@@ -10,12 +10,11 @@ permissions:
 
 jobs:
   prepend:
-    if: github.actor != 'github-actions[bot]'
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
         with:
-          ref: ${{ github.ref }}
+          ref: agent/tool-builder-inventory-handoff-cleanup
       - name: Prepend changelog entry and remove temporary workflow
         run: |
           python3 - <<'PY'
