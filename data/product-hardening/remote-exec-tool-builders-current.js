@@ -101,8 +101,10 @@ function installIntake(){
  intake.__remoteExecToolBuilderCurrent=VERSION;
  return true;
 }
-function escHtml(v){return String(v==null?'':v).replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));}
-function inventoryKey(value){const inv=root.OBOL_TOOL_BUILDER_INVENTORY;let name=String(value||'').trim().toLowerCase().replace(/^.*[\\/]/,'').replace(/\.exe$/,'').replace(/\s+/g,'-');if(inv&&typeof inv.key==='function')try{return inv.key(name)||name;}catch(_err){}return name;}
+function escHtml(v){return String(v==null?'':v).replace(/[&<>\"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','\"':'&quot;',"'":'&#39;'}[c]));}
+function rawInventoryKey(value){return String(value||'').trim().toLowerCase().replace(/^.*[\\/]/,'').replace(/\.exe$/,'').replace(/\s+/g,'-');}
+function routeInventoryKey(value){const inv=root.OBOL_TOOL_BUILDER_INVENTORY;const name=rawInventoryKey(value);if(inv&&typeof inv.key==='function')try{return rawInventoryKey(inv.key(name)||name);}catch(_err){}return name;}
+function inventoryKey(value){return rawInventoryKey(value);}
 function inventoryLabel(tool){const raw=String(tool||'tool');const special={'nxc':'NetExec / nxc','netexec':'NetExec / nxc','evilwinrm':'Evil-WinRM','evil-winrm':'Evil-WinRM','winpeas':'winPEAS','linpeas':'linPEAS','msfconsole':'msfconsole','msfvenom':'msfvenom','wfuzz':'wfuzz','ffuf':'ffuf','httpx':'httpx','hashid':'hashid','cewl':'cewl'};if(special[raw])return special[raw];return raw.replace(/[-_]+/g,' ').replace(/\b\w/g,c=>c.toUpperCase()).replace(/\bImpacket\b/g,'Impacket').replace(/\bAd\b/g,'AD').replace(/\bSmb\b/g,'SMB').replace(/\bRdp\b/g,'RDP').replace(/\bDns\b/g,'DNS').replace(/\bHttp\b/g,'HTTP').replace(/\bNtlm\b/g,'NTLM');}
 function inventoryBadge(record){const status=record&&record.status;if(status==='implemented')return'<span class="badge done">implemented builder</span>';if(status==='modeled')return'<span class="badge tried">modeled</span>';if(status==='superseded')return'<span class="badge new">superseded</span>';if(status==='rejected')return'<span class="badge blocked">rejected</span>';return'<span class="badge new">inventory</span>';}
 function libraryVisibleTools(){if(typeof document==='undefined')return [];return Array.from(document.querySelectorAll('#tool-groups [data-open-tool],#tool-groups [data-inventory-open]')).map(node=>node.getAttribute('data-open-tool')||node.getAttribute('data-inventory-open')||'').filter(Boolean);}
@@ -122,7 +124,7 @@ function patchToolsLibraryCompleteness(){
  if(typeof document==='undefined')return false;const parts=routeParts();if(parts[0]!=='tools'||(parts[1]&&parts[1]!=='__library'))return false;const host=document.querySelector('#tool-groups');if(!host)return false;
  Array.from(host.querySelectorAll('[data-inventory-complete]')).forEach(node=>node.remove());const groups=inventoryCompletionGroups(libraryVisibleTools());if(!groups.length){root.__OBOL_TOOLS_LIBRARY_INVENTORY_COMPLETE__=VERSION;return true;}
  const wrap=document.createElement('div');wrap.dataset.inventoryCompletenessOwner=VERSION;wrap.innerHTML=groups.map(inventoryGroupHtml).join('');host.appendChild(wrap);
- wrap.querySelectorAll('[data-inventory-open]').forEach(node=>{node.onclick=()=>{root.location.hash='#/tools/'+encodeURIComponent(node.getAttribute('data-inventory-open')||'');};});
+ wrap.querySelectorAll('[data-inventory-open]').forEach(node=>{node.onclick=()=>{root.location.hash='#/tools/'+encodeURIComponent(routeInventoryKey(node.getAttribute('data-inventory-open')||''));};});
  root.__OBOL_TOOLS_LIBRARY_INVENTORY_COMPLETE__=VERSION;root.__OBOL_TOOLS_LIBRARY_INVENTORY_COMPLETE_COUNT__=groups.reduce((n,g)=>n+g.records.length,0);return true;
 }
 function scheduleToolsLibraryCompleteness(){if(typeof document==='undefined')return false;for(const ms of [0,80,240,800,1600,3200,5200])root.setTimeout&&root.setTimeout(patchToolsLibraryCompleteness,ms);patchToolsLibraryCompleteness();return true;}
@@ -132,7 +134,7 @@ function registerBuilders(){
  const builders=[];for(const def of builderDefs()){const registered=safeRegister(schema,def);if(registered)builders.push(registered);}
  const patchedInventory=patchInventory();const patchedEvidence=patchEvidence();const installedIntake=installIntake();
  const patchedToolLibraryCompleteness=scheduleToolsLibraryCompleteness();
- root.OBOL_REMOTE_EXEC_TOOL_BUILDERS_CURRENT=Object.freeze({version:VERSION,builders:Object.freeze(builders),tools:TOOLS,builderIds:IDS,patchedInventory,patchedEvidence,installedIntake,pathCardId:REMOTE_CARD,patchedToolLibraryCompleteness,inventoryKey,inventoryCompletionGroups,patchToolsLibraryCompleteness});
+ root.OBOL_REMOTE_EXEC_TOOL_BUILDERS_CURRENT=Object.freeze({version:VERSION,builders:Object.freeze(builders),tools:TOOLS,builderIds:IDS,patchedInventory,patchedEvidence,installedIntake,pathCardId:REMOTE_CARD,patchedToolLibraryCompleteness,inventoryKey,rawInventoryKey,routeInventoryKey,inventoryCompletionGroups,patchToolsLibraryCompleteness});
  root.__OBOL_REMOTE_EXEC_TOOL_BUILDERS_CURRENT_REGISTERED__=VERSION;
  rerenderTools();
  scheduleToolsLibraryCompleteness();
