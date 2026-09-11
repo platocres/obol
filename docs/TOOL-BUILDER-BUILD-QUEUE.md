@@ -69,7 +69,7 @@ Acceptance for each promoted tool:
 - Optional flags, modes, filters, output paths, cleanup, and riskier behaviors are explicit GUI controls or toggles.
 - Missing required values stay missing instead of being replaced with fake runnable placeholders.
 - Evidence ingestion recognizes the tool's decision-relevant output, including success, failure, partial, blocked, inconclusive, and cleanup states.
-- Evidence can move, block, re-arm, or deprioritize Next Steps path only when the parsed output actually proves that move.
+- Evidence can move, block, re-arm, or deprioritize the Next Steps path only when the parsed output actually proves that move.
 - The tool has clear proof boundaries and report/cleanup guidance.
 - Regression fixtures prove command or handoff generation, prefill behavior, placeholder refusal, Evidence ingestion, and Path movement where applicable.
 
