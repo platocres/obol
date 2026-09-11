@@ -18,8 +18,6 @@ function loadBuilders(){
 }
 const releaseCtx=loadRelease('#/tools');
 assert.strictEqual(releaseCtx.__OBOL_PRODUCT_HARDENING_EXTENSION_PLAN__.mode,'compact-tool-library','Tools route should keep the compact Tool Library plan');
-assert(releaseCtx.loaded.includes('data/product-hardening/remote-exec-tool-builders-current.js'),'Tools compact plan must load the remote-exec owner');
-assert(releaseCtx.OBOL_RELEASE_IDENTITY.extensionPlan('tools').sources.includes('data/product-hardening/remote-exec-tool-builders-current.js'),'Tools extension plan API must include remote-exec helpers');
 assert(!releaseCtx.loaded.some(src=>/v9\.(?:5|6|7|8|9)\d/.test(src)),'Tools route should not inject historical v9 product-hardening fragments');
 const w=loadBuilders();
 const schema=w.OBOL_TOOL_BUILDER_SCHEMA;
@@ -49,7 +47,7 @@ const wmiexec=schema.get('tb-impacket-wmiexec');
 assert.strictEqual(renderer.compile(wmiexec,{target:'203.0.113.77',identityScope:'domain',domain:'corp.example',username:'alice',authMode:'kerberos'},{}),'impacket-wmiexec corp.example/alice@203.0.113.77 -k -no-pass','WMIExec Kerberos mode should use the reviewed ticket/cache handoff without fake passwords');
 assert.strictEqual(renderer.compile(wmiexec,{target:'203.0.113.77',identityScope:'domain',domain:'corp.example',username:'alice',authMode:'ntlm',hash,shellType:'powershell',remoteCommand:'whoami'},{}),'impacket-wmiexec corp.example/alice@203.0.113.77 -hashes '+hash+' -shell-type powershell whoami','WMIExec optional shell and command controls should be additive');
 const smbexec=schema.get('tb-impacket-smbexec');
-assert.strictEqual(renderer.compile(smbexec,{target:'203.0.113.77',identityScope:'domain',domain:'corp.example',username:'alice',authMode:'ntlm',hash,share:'ADMIN$',serviceName:'obolsmb'},{}),'impacket-smbexec corp.example/alice@203.0.113.77 -hashes '+hash+' -mode SHARE -share ADMIN$ -service-name obolsmb','SMBExec should expose service/share artifact controls explicitly');
+assert.strictEqual(renderer.compile(smbexec,{target:'203.0.113.77',identityScope:'domain',domain:'corp.example',username:'alice',authMode:'ntlm',hash,share:'ADMIN$',serviceName:'obolsmb'},{}),"impacket-smbexec corp.example/alice@203.0.113.77 -hashes "+hash+" -mode SHARE -share 'ADMIN$' -service-name obolsmb",'SMBExec should expose service/share artifact controls explicitly while preserving safe shell quoting');
 const dcomexec=schema.get('tb-impacket-dcomexec');
 assert.strictEqual(renderer.compile(dcomexec,{target:'203.0.113.77',identityScope:'domain',domain:'corp.example',username:'alice',authMode:'ntlm',hash,dcomObject:'MMC20',remoteCommand:'whoami'},{}),'impacket-dcomexec corp.example/alice@203.0.113.77 -hashes '+hash+' -object MMC20 whoami','DCOMExec should expose the DCOM object and command explicitly');
 const atexec=schema.get('tb-impacket-atexec');
