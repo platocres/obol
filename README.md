@@ -4,7 +4,7 @@ Obol is a static, browser-local workspace for OSCP-style labs, Active Directory 
 
 Live site: `https://platocres.github.io/obol/`
 
-Current release: **v10.18**
+Current release: **v10.20**
 
 Open `#/dashboard` for the active Product Hardening Dashboard and Product Build Next queue.
 
@@ -50,8 +50,8 @@ Obol remains a website the user can visit and use: no backend, account system, t
 Generated from the same queue sources as the Product Hardening Dashboard. Do not edit this block manually.
 
 **Current product-hardening queue:** 227/658 complete (35%), 9 concrete queued, 9 modeled/standing items.
-**Private notes source:** [`https://github.com/platocres/obol-source-notes/tree/main/sources/raw`](https://github.com/platocres/obol-source-notes/tree/main/sources/raw) - 556 notes and 1326 embedded resources accounted.
-**Private review packets:** `platocres/obol-source-notes@agent/review-packets:data/review-packets/manifest.json` - 556/556 notes, 29 packets, 0 truncated.
+**Private notes source:** [`https://github.com/platocres/obol-source-notes/tree/main/sources/raw`](https://github.com/platocres/obol-source-notes/tree/main/sources/raw) — 556 notes and 1326 embedded resources accounted.
+**Private review packets:** `platocres/obol-source-notes@agent/review-packets:data/review-packets/manifest.json` — 556/556 notes, 29 packets, 0 truncated.
 **Complete source packet proof:** 556/556 notes in 29 complete-text packets, 0 truncated, 8,725,188 cleaned text chars.
 **Raw source proof:** workflow run 33877189291 verified HTB ENEX 194,191,214 bytes and OffSec PEN-200 ENEX 110,367,324 bytes before packet extraction.
 **Runtime consolidation:** 5 operator startup requests, down from 286 (98% fewer).
@@ -60,18 +60,18 @@ Generated from the same queue sources as the Product Hardening Dashboard. Do not
 **Source re-mining status:** 556/556 full-spectrum re-mined; 0 old-rubric-only notes remain.
 **Source-note cluster status:** source-note mining complete; no pending cluster review items remain.
 
-**Recommended work package:** **Post-notes Operator UI Clarity** - 1 concrete live item / 6 tracked.
+**Recommended work package:** **Post-notes Operator UI Clarity** — 1 concrete live item / 6 tracked.
 **Next concrete entry:** **Post-mining modeled tool builder implementation backlog**
 **Ownership area:** `ui-ux/operator-surfaces`
 **Package dependencies:** none.
 **Package detail:** Use the Product Hardening Dashboard for full track ledgers and `data/product-hardening/work-packages.js` for the long-form package guidance.
 
 **Highest-priority concrete live items:**
-1. **Post-mining modeled tool builder implementation backlog** - The implemented-builder audit is complete. Remaining modeled inventory records still need schema-driven builders or explicit supersession/rejection with the full Tool Builder contract before this backlog can close.
-2. **Post-mining runtime and old-layer retirement audit** - The Tool Library route now uses the compact current Tool Builder extension plan. Dashboard and non-Tools product-hardening routes still need separate current-owner/equivalence retirement proof before this item can close.
-3. **Post-mining regression speed and coverage pass** - With the note queue closed, shorten slow historical/browser checks where proven redundant while keeping exact-head full regression and browser smoke meaningful.
-4. **Quiet service worker caching** - Improve repeat-load and offline behavior without prompting users to install anything.
-5. **IndexedDB workspace storage** - Support durable larger local workspaces, multiple engagements, and cached indexes while remaining browser-local.
+1. **Post-mining modeled tool builder implementation backlog** — The implemented-builder audit is complete. The remaining modeled inventory is now grouped into functional Tool Library slices so agents can burn it down coherently instead of staring at a flat chip dump.
+2. **Post-mining runtime and old-layer retirement audit** — The Tool Library route now uses the compact current Tool Builder extension plan. Dashboard and non-Tools product-hardening routes still need separate current-owner/equivalence retirement proof before this item can close.
+3. **Post-mining regression speed and coverage pass** — With the note queue closed, shorten slow historical/browser checks where proven redundant while keeping exact-head full regression and browser smoke meaningful.
+4. **Quiet service worker caching** — Improve repeat-load and offline behavior without prompting users to install anything.
+5. **IndexedDB workspace storage** — Support durable larger local workspaces, multiple engagements, and cached indexes while remaining browser-local.
 
 **Queue automation:** `data/product-hardening/product-hardening-queue.js`, `data/product-hardening/build-next-queue-hygiene-current.js`, `data/product-hardening/note-progress-current.js`, `data/product-hardening/source-note-clusters-current.js`, and `data/product-hardening/work-packages.js` are the queue owners. The dashboard and this README projection consume those same sources.
 Generated by `node tools/sync-product-build-next.js --write`. Verify with `node tools/sync-product-build-next.js --check`.
