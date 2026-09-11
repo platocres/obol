@@ -13,7 +13,7 @@ for(const rel of ['data/tool-builder-inventory.js','data/product-hardening/tool-
 }
 const api=sandbox.window.OBOL_TOOL_BUILDER_IMPLEMENTATION_AUDIT_CURRENT;
 assert(api,'Tool Builder backlog current owner should expose the audit API');
-assert.strictEqual(api.version,'v10.19','inventory organization owner should advertise the current grouping build');
+assert.strictEqual(api.version,'v10.20','inventory organization owner should advertise the current grouping build');
 const groups=Array.from(api.modeledInventoryGroups());
 const byId=Object.fromEntries(groups.map(group=>[group.id,Array.from(group.tools)]));
 assert(byId['ad-kerberos']&&byId['ad-kerberos'].includes('bloodhound-cypher'),'AD/Kerberos slice should capture BloodHound/AD tooling');
