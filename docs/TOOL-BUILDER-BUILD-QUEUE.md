@@ -1,6 +1,6 @@
 # Tool Builder Build Queue
 
-This file is the active Tool Builder build queue, not release history. Completed release batches must be removed as they land. Release history belongs in `CHANGELOG.md` and the matching `docs/vX.Y.md` release document.
+This file is the active Tool Builder build queue, not release history. Completed release batches must be removed as they land. Release history belongs in `CHANGELOG.md` and the matching release documentation.
 
 ## Queue lifecycle rule
 
@@ -46,7 +46,9 @@ v10.17 is a route-loading cleanup, not another Tool Builder implementation slice
 
 v10.18 adds a compact credential-helper current owner for CeWL, crunch, hashid, and name-that-hash. That slice is complete-through metadata only; it does not close the full modeled-tool backlog.
 
-Release docs and changelog entries remain the history for the completed v10.05 credential/AD utility slice, v10.09 web discovery/scanning slice, v10.10 Burp Suite guided GUI workflow slice, v10.15 network and host discovery slice, v10.16 current discovery-owner compaction, v10.17 Tool Library route-loading cleanup, and v10.18 credential-helper slice. The completed web slice covered WhatWeb, Nikto, httpx, wfuzz, and ZAP. The legacy v10.05 tool routes for smbclient, smbmap, enum4linux-ng, and ldapsearch remain canonical and must not be shadowed by the current discovery owner. The completed current discovery owner covers masscan, Rustscan, naabu, fping, nbtscan, rpcclient, dig, nslookup, dnsrecon, snmpwalk, onesixtyone, windapsearch, and ldapdomaindump, while adding Evidence recognition for the broader AD/name-service output family. The credential-helper modeled-tool slice covers CeWL, crunch, hashid, and name-that-hash. Those completed slices must not be reintroduced below as active work.
+v10.19 adds a compact privilege-helper current owner for pspy, accesschk, and searchsploit while preserving the existing canonical linpeas and winPEAS helper builders. That slice is complete-through metadata only; it does not close the full modeled-tool backlog.
+
+Release docs and changelog entries remain the history for completed formal releases. The completed web slice covered WhatWeb, Nikto, httpx, wfuzz, and ZAP. The legacy v10.05 tool routes for smbclient, smbmap, enum4linux-ng, and ldapsearch remain canonical and must not be shadowed by the current discovery owner. The completed current discovery owner covers masscan, Rustscan, naabu, fping, nbtscan, rpcclient, dig, nslookup, dnsrecon, snmpwalk, onesixtyone, windapsearch, and ldapdomaindump, while adding Evidence recognition for the broader AD/name-service output family. The credential-helper modeled-tool slice covers CeWL, crunch, hashid, and name-that-hash. The privilege-helper modeled-tool slice covers pspy, accesschk, and searchsploit. Those completed slices must not be reintroduced below as active work.
 
 ## Active Tool Builder batches
 
@@ -61,7 +63,7 @@ Representative remaining groups include:
 - **Remote execution and lateral movement:** Impacket psexec, wmiexec, smbexec, dcomexec, atexec, mssqlclient, runas/cmdkey, Windows service/task helpers, RDP/VNC clients, and PowerShell/cmd launchers.
 - **Credential capture, relay, roasting, and cracking helpers:** ntlmrelayx, mitm6, coercion tools, medusa, o365spray, hash-conversion tools, John/Hashcat helper formats, and credential-routing utilities not already implemented.
 - **Tunneling, pivoting, and transport helpers:** SSH/plink/chisel follow-through where inventory still reports modeled, sshuttle, socat, proxychains, rpivot, ptunnel-ng, socks-over-RDP, dnscat2, and transport cleanup/check commands.
-- **Privilege-escalation and local-enumeration helpers:** pspy, searchsploit, PE/PowerShell/Linux helper scripts, systeminfo/wesng, sudo, icacls/accesschk, procmon/procdump, GodPotato/fodhelper/UAC/service-path helpers, and local exploit proof boundaries.
+- **Privilege-escalation and local-enumeration helpers:** remaining PE/PowerShell/Linux helper scripts, systeminfo/wesng, sudo, icacls, procmon/procdump, GodPotato/fodhelper/UAC/service-path helpers, and local exploit proof boundaries not already covered by linpeas, winPEAS, pspy, accesschk, or searchsploit.
 - **Cloud, container, database, and service-specific tooling:** aws, awslocal, kubectl, docker/lxc, mysql, psql, redis-cli, odat, IPMI tooling, and service-specific enumeration/abuse utilities.
 - **Exploit PoC and CVE helpers:** named CVE scripts and PoC wrappers must be modeled as controlled operator-reviewed builders with strong proof boundaries, not as magic exploit execution.
 

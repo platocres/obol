@@ -44,17 +44,18 @@ fs.mkdirSync(outputDir, { recursive: true });
 // current Tools-home reclaim guard, the v10.15 network discovery builder
 // plus network Evidence/profile patch on tool-bearing and dashboard/current
 // routes, the current-owner supplemental AD/name-service builder coverage,
-// and the v10.18 credential-helper current owner.
+// the v10.18 credential-helper current owner, and the v10.19 privilege-helper
+// current owner.
 // The retired v9.77 why-now route stabilizer is intentionally no longer counted
 // as a browser runtime request. These budgets still fail loudly if the historical
 // fragment chain leaks back into loading.
 const routes = [
-  { id: 'home', hash: '#/home', marker: /Home/i, requestBudget: 84 },
-  { id: 'targets', hash: '#/boxes', marker: /target/i, requestBudget: 94 },
-  { id: 'evidence', hash: '#/intake', marker: /evidence/i, requestBudget: 91 },
+  { id: 'home', hash: '#/home', marker: /Home/i, requestBudget: 85 },
+  { id: 'targets', hash: '#/boxes', marker: /target/i, requestBudget: 95 },
+  { id: 'evidence', hash: '#/intake', marker: /evidence/i, requestBudget: 92 },
   { id: 'next-steps', hash: '#/path', marker: /(next|path|recommend)/i, requestBudget: 91 },
-  { id: 'report', hash: '#/report', marker: /report/i, requestBudget: 85 },
-  { id: 'dashboard', hash: '#/dashboard', marker: /Product Hardening/i, currentDashboard: true, settleMs: 5200, requestBudget: 85 }
+  { id: 'report', hash: '#/report', marker: /report/i, requestBudget: 86 },
+  { id: 'dashboard', hash: '#/dashboard', marker: /Product Hardening/i, currentDashboard: true, settleMs: 5200, requestBudget: 86 }
 ];
 const HISTORICAL_FRAGMENT = /\/(?:assets|data)\/(?:core|app|intake|report|nmap|review|methodology|orange-fidelity|project-model|dashboard|source-delivery|obol)-v[\d.]+[^/]*$/;
 const METHODOLOGY_FILLER = /fills an unresolved methodology gap|methodology gap/i;
