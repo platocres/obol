@@ -7,6 +7,7 @@ This file is the active Tool Builder build queue, not release history. Completed
 - The first unfinished batch in this file must always be the next active Tool Builder batch.
 - A batch that satisfies its acceptance proof is removed from this file and from the README active queue in the same PR that completes it.
 - Do not retain completed version headings as context, milestones, or historical reference. Use `CHANGELOG.md` and release docs for that purpose.
+- Do not assign version numbers to future work. Plan with named ownership areas and coherent slices, then let the actual release label be recorded after the work lands.
 - Focused release regression must fail when the just-completed batch or any older completed Tool Builder batch remains in the active queue.
 - The Product Build Next/dashboard projection must describe only remaining Tool Builder work. Completed tool families may be mentioned only as completed-through metadata, never as pending scope.
 - When a Tool Builder slice lands as a versioned release owner, the next cleanup/consolidation pass must either fold it into a stable current owner or explicitly justify why it stays live. The Tool Library must not accumulate an unbounded stack of versioned builder layers.
@@ -32,23 +33,21 @@ For every implemented builder:
 - Output from a guided third-party workflow returns through Evidence. Handoff generation is activity, not proof.
 - Every builder mode that can produce decision-relevant output must name what the operator can paste back, what facts may be extracted, what remains only a lead, and what positive, negative, blocked, partial, or inconclusive output means.
 - Evidence ingestion must be executable product behavior, not only prose in the builder. The tool must either have a dedicated analyzer/parser or cite an existing shared analyzer whose fixtures prove that tool/mode is actually recognized.
-- Parsed output may advance, block, re-arm, or deprioritize Next Steps only from supported Evidence. Merely recognizing a command line, banner, listener startup, tool invocation, GUI workflow step, Scanner alert, proxy capture, or request replay must not manufacture access, compromise, reachability, credential validity, exploitability, or privilege.
+- Parsed output may advance, block, re-arm, or deprioritize Next Steps only from supported Evidence. Merely recognizing a command line, banner, listener startup, tool invocation, GUI workflow step, Scanner alert, proxy capture, request replay, or helper finding must not manufacture access, compromise, reachability, credential validity, exploitability, or privilege.
 - When a tool is primarily a launcher, listener, transfer helper, transport, or third-party GUI handoff, its Evidence contract must still recognize the useful state it owns, such as listener bound, client connected, file transferred, route/interface created, proxy capture, request/response captured, scanner issue recorded, manual verification completed, or failure reason. Any deeper downstream fact must remain gated on the appropriate independent Evidence.
 - An inventory record must not be promoted to `implemented` until command generation, live Tools rendering, Evidence ingestion, Next Steps handoff where applicable, cleanup/proof boundaries, and regression fixtures all exist. Third-party GUI tools satisfy the command-generation part of this rule with guided handoff generation instead of fake GUI automation.
 
-This is the permanent Definition of Done for modeled-tool work. The historical note-mining rubric already required terminal-output analyzers, Evidence expectations, and Path movement. v10.08 completed the **Implemented-tool Evidence and cross-surface audit**, but it did not close the full modeled-tool backlog because many inventory records still remain `modeled`.
+This is the permanent Definition of Done for modeled-tool work. The **Implemented-tool Evidence and cross-surface audit** is complete, but it did not close the full modeled-tool backlog because many inventory records still remain `modeled`.
 
 ## Current ownership hygiene
 
-Completed Tool Builder slices are not active queue items. The current discovery owner keeps the recent Burp Suite and network/host discovery release owners folded into `data/product-hardening/tool-builder-discovery-current.js` and extends that same owner with the first AD/name-service supplemental batch without taking over legacy v10.05 tool routes.
+Completed Tool Builder slices are not active queue items. Current owners keep recently completed builder families folded into stable non-versioned files instead of leaving disposable release-specific layers live.
 
-v10.17 is a route-loading cleanup, not another Tool Builder implementation slice. The Tool Library route now uses the compact product-hardening extension plan and should load the current Tool Builder ownership it needs instead of the full historical v9 product-hardening stack. Dashboard and non-Tools product-hardening routes still keep the full plan until their behavior is compacted and proven separately.
+The Tool Library route uses the compact product-hardening extension plan and should load the current Tool Builder ownership it needs instead of the full historical product-hardening stack. Dashboard and non-Tools product-hardening routes still keep the full plan until their behavior is compacted and proven separately.
 
-v10.18 adds a compact credential-helper current owner for CeWL, crunch, hashid, and name-that-hash. That slice is complete-through metadata only; it does not close the full modeled-tool backlog.
+The credential-helper current owner covers CeWL, crunch, hashid, and name-that-hash. The privilege-helper current owner covers pspy, accesschk, and searchsploit. The remote-exec current owner covers Impacket PsExec, WMIExec, SMBExec, DCOMExec, and ATExec. These are complete-through metadata only; they do not close the full modeled-tool backlog.
 
-v10.19 adds a compact privilege-helper current owner for pspy, accesschk, and searchsploit while preserving the existing canonical linpeas and winPEAS helper builders. That slice is complete-through metadata only; it does not close the full modeled-tool backlog.
-
-Release docs and changelog entries remain the history for completed formal releases. The completed web slice covered WhatWeb, Nikto, httpx, wfuzz, and ZAP. The legacy v10.05 tool routes for smbclient, smbmap, enum4linux-ng, and ldapsearch remain canonical and must not be shadowed by the current discovery owner. The completed current discovery owner covers masscan, Rustscan, naabu, fping, nbtscan, rpcclient, dig, nslookup, dnsrecon, snmpwalk, onesixtyone, windapsearch, and ldapdomaindump, while adding Evidence recognition for the broader AD/name-service output family. The credential-helper modeled-tool slice covers CeWL, crunch, hashid, and name-that-hash. The privilege-helper modeled-tool slice covers pspy, accesschk, and searchsploit. Those completed slices must not be reintroduced below as active work.
+Release docs and changelog entries remain the history for completed formal releases. The completed web slice covered WhatWeb, Nikto, httpx, wfuzz, and ZAP. The legacy auth/enumeration tool routes for smbclient, smbmap, enum4linux-ng, and ldapsearch remain canonical and must not be shadowed by the current discovery owner. The completed current discovery owner covers masscan, Rustscan, naabu, fping, nbtscan, rpcclient, dig, nslookup, dnsrecon, snmpwalk, onesixtyone, windapsearch, and ldapdomaindump, while adding Evidence recognition for the broader AD/name-service output family. The credential-helper modeled-tool slice covers CeWL, crunch, hashid, and name-that-hash. The privilege-helper modeled-tool slice covers pspy, accesschk, and searchsploit. The remote-exec modeled-tool slice covers Impacket PsExec, WMIExec, SMBExec, DCOMExec, and ATExec. Those completed slices must not be reintroduced below as active work.
 
 ## Active Tool Builder batches
 
@@ -58,9 +57,9 @@ Implement or explicitly supersede/reject every inventory record that still repor
 
 Representative remaining groups include:
 
-- **Network, host, SMB, LDAP, DNS, SNMP, and AD enumeration:** adjacent probe tools not covered by v10.05 legacy routes or the current discovery owner, BloodHound collectors, enum4linux legacy coverage where not superseded by enum4linux-ng, and related directory/query tooling not already covered.
+- **Network, host, SMB, LDAP, DNS, SNMP, and AD enumeration:** adjacent probe tools not covered by legacy routes or the current discovery owner, BloodHound collectors, enum4linux legacy coverage where not superseded by enum4linux-ng, and related directory/query tooling not already covered.
 - **Web discovery, scanning, and request helpers:** nuclei, wpscan, browser/request utilities, and any remaining web tooling not already covered by curl, ffuf, Gobuster/feroxbuster, sqlmap, WhatWeb, Nikto, httpx, wfuzz, ZAP, or the current Burp Suite guided GUI workflow.
-- **Remote execution and lateral movement:** Impacket psexec, wmiexec, smbexec, dcomexec, atexec, mssqlclient, runas/cmdkey, Windows service/task helpers, RDP/VNC clients, and PowerShell/cmd launchers.
+- **Remote execution and lateral movement:** remaining runas/cmdkey, Windows service/task helpers, RDP/VNC clients, PowerShell/cmd launchers, MSSQL execution paths, and remote-exec utilities not already covered by the Impacket PsExec/WMIExec/SMBExec/DCOMExec/ATExec current owner.
 - **Credential capture, relay, roasting, and cracking helpers:** ntlmrelayx, mitm6, coercion tools, medusa, o365spray, hash-conversion tools, John/Hashcat helper formats, and credential-routing utilities not already implemented.
 - **Tunneling, pivoting, and transport helpers:** SSH/plink/chisel follow-through where inventory still reports modeled, sshuttle, socat, proxychains, rpivot, ptunnel-ng, socks-over-RDP, dnscat2, and transport cleanup/check commands.
 - **Privilege-escalation and local-enumeration helpers:** remaining PE/PowerShell/Linux helper scripts, systeminfo/wesng, sudo, icacls, procmon/procdump, GodPotato/fodhelper/UAC/service-path helpers, and local exploit proof boundaries not already covered by linpeas, winPEAS, pspy, accesschk, or searchsploit.
@@ -79,4 +78,4 @@ Acceptance for each promoted tool:
 - The tool has clear proof boundaries and report/cleanup guidance.
 - Regression fixtures prove command or handoff generation, prefill behavior, placeholder refusal, Evidence ingestion, and Path movement where applicable.
 
-v10.08's implemented-builder audit remains permanent and must keep passing while this remaining modeled-tool backlog is burned down.
+The implemented-builder audit remains permanent and must keep passing while this remaining modeled-tool backlog is burned down.

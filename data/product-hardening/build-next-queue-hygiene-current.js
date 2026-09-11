@@ -5,13 +5,13 @@ const workPackages=root.OBOL_PRODUCT_HARDENING_WORK_PACKAGES;
 if(!q||!Array.isArray(q.items))return;
 const noteBurnDownGateIds=Object.freeze(['notes-mechanic-backfill','notes-disposition-burn-down']);
 const completedByReleasedProof=Object.freeze({
- 'notes-remine-dashboard-schema':'v9.56 shipped re-mining dashboard and schema tracking as a current dashboard and README contract.',
- 'notes-remine-web-upload-inclusion':'v9.54-v9.55 shipped the robust web upload/inclusion re-mine as first-class card and path behavior.',
- 'notes-remine-windows-privesc':'v9.55 shipped the full Windows privilege-escalation source-mining pass as OS-scoped card/path behavior.',
- 'notes-remine-private-superseded':'v9.60 completed the private-only and superseded disposition re-mine as public-safe source-boundary mechanics.',
- 'notes-packet-web-upload-inclusion':'v9.54-v9.55 completed the web upload/inclusion packet through the current re-mining workflow.',
- 'notes-packet-windows-privesc':'v9.55 completed the Windows privilege-escalation packet through the current re-mining workflow.',
- 'notes-packet-ad-pivoting':'v9.55 completed the AD and pivoting packet through data/product-hardening/ad-pivoting-remining-v9.55.js and first-class cards.'
+ 'notes-remine-dashboard-schema':'Re-mining dashboard and schema tracking shipped as a current dashboard and README contract.',
+ 'notes-remine-web-upload-inclusion':'The robust web upload/inclusion re-mine shipped as first-class card and path behavior.',
+ 'notes-remine-windows-privesc':'The full Windows privilege-escalation source-mining pass shipped as OS-scoped card/path behavior.',
+ 'notes-remine-private-superseded':'The private-only and superseded disposition re-mine shipped as public-safe source-boundary mechanics.',
+ 'notes-packet-web-upload-inclusion':'The web upload/inclusion packet is complete through the current re-mining workflow.',
+ 'notes-packet-windows-privesc':'The Windows privilege-escalation packet is complete through the current re-mining workflow.',
+ 'notes-packet-ad-pivoting':'The AD and pivoting packet is complete through current first-class cards.'
 });
 const reminePackageIds=Object.freeze(['notes-remine-dashboard-schema','notes-remine-web-upload-inclusion','notes-remine-xss-session','notes-remine-credentials-auth','notes-remine-windows-privesc','notes-remine-linux-privesc','notes-remine-private-superseded']);
 const nextBatchDimensions=Object.freeze(['Path bindings','tool cards','GUI controls','scripts/one-liners','command templates','terminal analyzers','Evidence expectations','path movement','lessons/examples','troubleshooting','cleanup','report guidance','product mechanics','product gaps','additive Orange baseline','source-boundary proof']);
@@ -20,6 +20,21 @@ function upsert(entry){const existing=item(entry.id);if(existing){Object.assign(
 function mark(id,status,detail){const target=item(id);if(!target)return null;target.status=status;if(detail)target.detail=detail;return target;}
 function queueSort(a,b){return (Number(a.priority)||9999)-(Number(b.priority)||9999)||String(a.label||a.id).localeCompare(String(b.label||b.id));}
 function asNumber(value,fallback){const n=Number(value);return Number.isFinite(n)?n:fallback;}
+function planningText(value){
+ if(typeof value!=='string')return value;
+ return value
+  .replace(/\bv10\.08 completed the implemented-builder audit only\.\s*/g,'The implemented-builder audit is complete. ')
+  .replace(/\bv10\.17 narrows `#\/tools` to the compact current Tool Builder extension plan\.\s*/g,'The Tool Library route now uses the compact current Tool Builder extension plan. ')
+  .replace(/\bv\d+(?:\.\d+)+\s+(?:later\s+)?(?:proved|shipped|completed|adds?|covers?|narrows?|converts?|reduced|creates?)\s+/gi,'')
+  .replace(/\s{2,}/g,' ')
+  .trim();
+}
+function planningItem(entry){
+ if(!entry)return entry;
+ const out=Object.assign({},entry);
+ ['label','detail','acceptance'].forEach(key=>{if(typeof out[key]==='string')out[key]=planningText(out[key]);});
+ return out;
+}
 function clusterLedger(){const clusters=root.OBOL_SOURCE_NOTE_CLUSTERS;return clusters&&clusters.status&&clusters.status.state==='complete'?clusters:null;}
 function clusterReviewQueue(){const clusters=clusterLedger();return clusters&&Array.isArray(clusters.reviewQueue)?clusters.reviewQueue:[];}
 function noteState(){
@@ -30,19 +45,7 @@ function noteState(){
   const pending=asNumber(s.pendingSourceNotes,0);
   const reviewed=asNumber(s.reviewedSourceNotes,Math.max(0,total-pending));
   const oldRemaining=asNumber(s.oldRubricOnlyRemaining,0);
-  return Object.freeze({
-   total,
-   reviewed,
-   fullSpectrum:reviewed,
-   oldReviewed:reviewed,
-   oldRubricOnlyRemaining:oldRemaining,
-   pending,
-   clusteredPending:asNumber(s.clusteredPendingNotes,0),
-   unclusteredPending:asNumber(s.unclusteredPendingNotes,0),
-   clusterCount:asNumber(s.clusterCount,0),
-   clusterQueueActive:pending>0,
-   complete:pending===0&&oldRemaining===0
-  });
+  return Object.freeze({total,reviewed,fullSpectrum:reviewed,oldReviewed:reviewed,oldRubricOnlyRemaining:oldRemaining,pending,clusteredPending:asNumber(s.clusteredPendingNotes,0),unclusteredPending:asNumber(s.unclusteredPendingNotes,0),clusterCount:asNumber(s.clusterCount,0),clusterQueueActive:pending>0,complete:pending===0&&oldRemaining===0});
  }
  const progress=root.OBOL_PRODUCT_HARDENING_NOTE_PROGRESS||{};
  const notes=root.OBOL_NOTE_INTEGRATION||{};
@@ -57,13 +60,9 @@ function noteState(){
  return Object.freeze({total,reviewed,fullSpectrum,oldReviewed,oldRubricOnlyRemaining:computedOldRubricOnlyRemaining,pending,clusteredPending:0,unclusteredPending:pending,clusterCount:0,clusterQueueActive:false,complete:pending===0&&computedOldRubricOnlyRemaining===0});
 }
 function isStandingGate(entry){return !!(entry&&entry.standingGate);}
-function concreteItems(){return q.items.slice().sort(queueSort).filter(entry=>entry&&entry.status==='queued'&&!isStandingGate(entry));}
-function standingGates(){return noteBurnDownGateIds.map(item).filter(entry=>entry&&isStandingGate(entry)).sort(queueSort);}
-function oldRubricBatchNumber(state){
- const baseline=67;
- const completed=Math.max(0,Math.floor((Math.max(0,Number(state.fullSpectrum)||0)-baseline)/20));
- return completed+1;
-}
+function concreteItems(){return q.items.slice().sort(queueSort).filter(entry=>entry&&entry.status==='queued'&&!isStandingGate(entry)).map(planningItem);}
+function standingGates(){return noteBurnDownGateIds.map(item).filter(entry=>entry&&isStandingGate(entry)).sort(queueSort).map(planningItem);}
+function oldRubricBatchNumber(state){const baseline=67;const completed=Math.max(0,Math.floor((Math.max(0,Number(state.fullSpectrum)||0)-baseline)/20));return completed+1;}
 function batchToken(value){return String(value).padStart(3,'0');}
 function clusterBatch(state){
  const clusters=clusterLedger();
@@ -77,23 +76,8 @@ function clusterBatch(state){
  const count=asNumber(queueItem.targetCount,asNumber(queueItem.pendingCount,asNumber(cluster.pendingCount,40)));
  const label=queueItem.label||'Mine web upload and file inclusion cluster';
  const selector=queueItem.selector||('Select cluster `'+clusterId+'` from `data/product-hardening/source-note-clusters-current.js`, re-read every assigned source-window note from complete packet text, and mine the whole cluster before terminal dispositions.');
- const acceptance=queueItem.acceptance||'Ship public-safe product mechanics from the whole cluster, then disposition each note with card/analyzer/field-note/report/queue/private rationale. Do not create a new primary card unless the cluster has a complete v9.71 action spine and passes v9.72 uniqueness.';
- return Object.freeze({
-  id:nextId,
-  label,
-  gateId:'notes-disposition-burn-down',
-  sourceRoute:clusters.status.sourceRoute,
-  sourceSelector:selector,
-  targetCount:count,
-  remainingBeforeBatch:state.pending,
-  remainingAfterBatch:Math.max(0,state.pending-count),
-  requiredDimensions:nextBatchDimensions,
-  acceptance,
-  queueMode:'cluster-review',
-  clusterId,
-  clusterTitle:cluster.title||label,
-  readiness:cluster.readiness||'ready-to-mine'
- });
+ const acceptance=planningText(queueItem.acceptance||'Ship public-safe product mechanics from the whole cluster, then disposition each note with card/analyzer/field-note/report/queue/private rationale. Do not create a new primary card unless the cluster has a complete action spine and passes uniqueness proof.');
+ return Object.freeze({id:nextId,label:planningText(label),gateId:'notes-disposition-burn-down',sourceRoute:clusters.status.sourceRoute,sourceSelector:selector,targetCount:count,remainingBeforeBatch:state.pending,remainingAfterBatch:Math.max(0,state.pending-count),requiredDimensions:nextBatchDimensions,acceptance,queueMode:'cluster-review',clusterId,clusterTitle:cluster.title||label,readiness:cluster.readiness||'ready-to-mine'});
 }
 function nextNotesBatch(state){
  const sourceRoute='platocres/obol-source-notes@agent/review-packets:data/review-packets/manifest.json';
@@ -103,33 +87,11 @@ function nextNotesBatch(state){
   const size=Math.min(20,state.oldRubricOnlyRemaining);
   const batchNumber=oldRubricBatchNumber(state);
   const token=batchToken(batchNumber);
-  return Object.freeze({
-   id:'notes-batch-old-rubric-reviewed-remine-'+token,
-   label:'Old-rubric reviewed source re-mining batch '+batchNumber,
-   gateId:'notes-mechanic-backfill',
-   sourceRoute,
-   sourceSelector:'Select the next '+size+' already-reviewed notes that lack full-spectrum audit rows, using manifest/source order and excluding themes already closed by released re-mining proof.',
-   targetCount:size,
-   remainingBeforeBatch:state.oldRubricOnlyRemaining,
-   remainingAfterBatch:Math.max(0,state.oldRubricOnlyRemaining-size),
-   requiredDimensions:nextBatchDimensions,
-   acceptance:'Every selected note receives a 16-dimension re-mining audit row plus public-safe product output, covered rationale, queued product gap, or private-boundary proof. Do not advance to offline/performance work after this batch unless both note gates are complete.'
-  });
+  return Object.freeze({id:'notes-batch-old-rubric-reviewed-remine-'+token,label:'Old-rubric reviewed source re-mining batch '+batchNumber,gateId:'notes-mechanic-backfill',sourceRoute,sourceSelector:'Select the next '+size+' already-reviewed notes that lack full-spectrum audit rows, using manifest/source order and excluding themes already closed by released re-mining proof.',targetCount:size,remainingBeforeBatch:state.oldRubricOnlyRemaining,remainingAfterBatch:Math.max(0,state.oldRubricOnlyRemaining-size),requiredDimensions:nextBatchDimensions,acceptance:'Every selected note receives a 16-dimension re-mining audit row plus public-safe product output, covered rationale, queued product gap, or private-boundary proof. Do not advance to offline/performance work after this batch unless both note gates are complete.'});
  }
  if(state.pending>0){
   const size=Math.min(20,state.pending);
-  return Object.freeze({
-   id:'notes-batch-pending-disposition-001',
-   label:'Pending source-note disposition batch 1',
-   gateId:'notes-disposition-burn-down',
-   sourceRoute,
-   sourceSelector:'Select the next '+size+' pending private source notes from the complete review-packet manifest in source order.',
-   targetCount:size,
-   remainingBeforeBatch:state.pending,
-   remainingAfterBatch:Math.max(0,state.pending-size),
-   requiredDimensions:nextBatchDimensions,
-   acceptance:'Every selected note receives a terminal disposition and all useful public-safe product mechanics are added or explicitly accounted for before offline/performance work becomes next.'
-  });
+  return Object.freeze({id:'notes-batch-pending-disposition-001',label:'Pending source-note disposition batch 1',gateId:'notes-disposition-burn-down',sourceRoute,sourceSelector:'Select the next '+size+' pending private source notes from the complete review-packet manifest in source order.',targetCount:size,remainingBeforeBatch:state.pending,remainingAfterBatch:Math.max(0,state.pending-size),requiredDimensions:nextBatchDimensions,acceptance:'Every selected note receives a terminal disposition and all useful public-safe product mechanics are added or explicitly accounted for before offline/performance work becomes next.'});
  }
  return null;
 }
@@ -144,52 +106,21 @@ function addToReminePackage(){
 }
 function activateClusterReviewItem(batch,state){
  if(!batch||batch.queueMode!=='cluster-review')return;
- upsert({
-  id:batch.id,
-  track:'notes-integration',
-  status:'queued',
-  priority:87.05,
-  label:batch.label,
-  detail:'Cluster-driven notes gate: '+batch.targetCount+' pending source notes in `'+batch.clusterId+'` must be mined from complete packet text before terminal dispositions resume.',
-  acceptance:batch.acceptance,
-  queueMode:'cluster-review',
-  clusterId:batch.clusterId,
-  clusterTitle:batch.clusterTitle,
-  blockingNotesGate:true,
-  standingGate:false,
-  sourceRoute:batch.sourceRoute
- });
- if(state&&state.clusterQueueActive){
-  const stale=['notes-batch-old-rubric-reviewed-remine-003','notes-batch-pending-disposition-001'];
-  stale.forEach(id=>{const target=item(id);if(target&&target.status==='queued')target.status='complete';});
- }
+ upsert({id:batch.id,track:'notes-integration',status:'queued',priority:87.05,label:batch.label,detail:'Cluster-driven notes gate: '+batch.targetCount+' pending source notes in `'+batch.clusterId+'` must be mined from complete packet text before terminal dispositions resume.',acceptance:batch.acceptance,queueMode:'cluster-review',clusterId:batch.clusterId,clusterTitle:batch.clusterTitle,blockingNotesGate:true,standingGate:false,sourceRoute:batch.sourceRoute});
+ if(state&&state.clusterQueueActive){['notes-batch-old-rubric-reviewed-remine-003','notes-batch-pending-disposition-001'].forEach(id=>{const target=item(id);if(target&&target.status==='queued')target.status='complete';});}
 }
 function activateNotesFirstGates(state){
  const batch=nextNotesBatch(state);
  const remine=item('notes-mechanic-backfill');
  if(remine){
-  remine.priority=86.8;
-  remine.label='Re-mine all already-reviewed notes from original sources';
-  remine.blockingNotesGate=true;
-  remine.standingGate=false;
-  remine.nextNotesBatch=batch&&batch.gateId==='notes-mechanic-backfill'?batch:null;
-  remine.status=state.oldRubricOnlyRemaining>0?'queued':'complete';
-  remine.detail=state.oldRubricOnlyRemaining>0
-   ? 'Concrete notes-first gate: '+state.oldRubricOnlyRemaining+' already-reviewed old-rubric-only notes still need full-spectrum source re-mining before offline/performance work can become next.'
-   : 'Complete: all already-reviewed notes have full-spectrum re-mining coverage; continue to clustered pending-note burn-down before offline/performance work.';
+  remine.priority=86.8;remine.label='Re-mine all already-reviewed notes from original sources';remine.blockingNotesGate=true;remine.standingGate=false;remine.nextNotesBatch=batch&&batch.gateId==='notes-mechanic-backfill'?batch:null;remine.status=state.oldRubricOnlyRemaining>0?'queued':'complete';
+  remine.detail=state.oldRubricOnlyRemaining>0?'Concrete notes-first gate: '+state.oldRubricOnlyRemaining+' already-reviewed old-rubric-only notes still need full-spectrum source re-mining before offline/performance work can become next.':'Complete: all already-reviewed notes have full-spectrum re-mining coverage; continue to clustered pending-note burn-down before offline/performance work.';
   remine.acceptance='No offline/performance queue item may appear before this gate while old-rubric-only reviewed notes remain.';
  }
  const burn=item('notes-disposition-burn-down');
  if(burn){
-  burn.priority=87.9;
-  burn.label='Burn down all 556 note dispositions';
-  burn.blockingNotesGate=true;
-  burn.standingGate=false;
-  burn.nextNotesBatch=batch&&batch.gateId==='notes-disposition-burn-down'?batch:null;
-  burn.status=state.pending>0?'queued':'complete';
-  burn.detail=state.pending>0
-   ? (state.clusterQueueActive?'Concrete notes-first gate: '+state.pending+' private source notes remain pending and are now organized into '+state.clusterCount+' cluster review items; mine the active cluster queue before terminal dispositions continue.':'Concrete notes-first gate: '+state.pending+' private source notes still need disposition/mining before offline/performance work can become next.')
-   : 'Complete: all private source notes have been dispositioned/mined.';
+  burn.priority=87.9;burn.label='Burn down all 556 note dispositions';burn.blockingNotesGate=true;burn.standingGate=false;burn.nextNotesBatch=batch&&batch.gateId==='notes-disposition-burn-down'?batch:null;burn.status=state.pending>0?'queued':'complete';
+  burn.detail=state.pending>0?(state.clusterQueueActive?'Concrete notes-first gate: '+state.pending+' private source notes remain pending and are now organized into '+state.clusterCount+' cluster review items; mine the active cluster queue before terminal dispositions continue.':'Concrete notes-first gate: '+state.pending+' private source notes still need disposition/mining before offline/performance work can become next.'):'Complete: all private source notes have been dispositioned/mined.';
   burn.acceptance='No offline/performance queue item may appear before this gate while any source notes remain pending.';
  }
  activateClusterReviewItem(batch,state);
@@ -207,10 +138,7 @@ q.concreteBuildNext=function(limit){return concreteItems().slice(0,limit||8);};
 q.buildNext=function(limit){return q.concreteBuildNext(limit);};
 q.validateQueueHygiene=function(){
  const failures=[];
- for(const id of Object.keys(completedByReleasedProof)){
-  const target=item(id);
-  if(target&&target.status==='queued')failures.push(id+' still appears queued after released proof marked it complete');
- }
+ for(const id of Object.keys(completedByReleasedProof)){const target=item(id);if(target&&target.status==='queued')failures.push(id+' still appears queued after released proof marked it complete');}
  const currentState=noteState();
  const next=q.concreteBuildNext(12);
  const nextIds=next.map(entry=>entry.id);
@@ -240,11 +168,8 @@ q.validateQueueHygiene=function(){
   if(clusterActive&&/^notes-batch-(old-rubric-reviewed-remine|pending-disposition)/.test(entry.id))failures.push('blind note batch leaked into concrete Build Next while cluster queue is active: '+entry.id);
  }
  if(clusterLedger()&&!clusterActive)failures.push('source-note cluster ledger is complete but Build Next did not expose a cluster-review next notes batch');
- if(originalBuildNext&&originalBuildNext(20).some(entry=>entry&&entry.id==='notes-packet-ad-pivoting')){
-  const ad=item('notes-packet-ad-pivoting');
-  if(ad&&ad.status==='queued')failures.push('base queue still exposes AD/pivoting as queued before hygiene');
- }
+ if(originalBuildNext&&originalBuildNext(20).some(entry=>entry&&entry.id==='notes-packet-ad-pivoting')){const ad=item('notes-packet-ad-pivoting');if(ad&&ad.status==='queued')failures.push('base queue still exposes AD/pivoting as queued before hygiene');}
  return failures;
 };
-root.OBOL_PRODUCT_HARDENING_QUEUE_HYGIENE=Object.freeze({schemaVersion:'1.4.1',noteBurnDownGateIds,completedByReleasedProof,reminePackageIds,notesFirstGate:q.notesFirstGate,nextNotesBatch:q.nextNotesBatch,sourceNoteClusterReviewQueue:clusterReviewQueue(),concreteBuildNext:q.concreteBuildNext,standingBuildGates:q.standingBuildGates,validate:q.validateQueueHygiene});
+root.OBOL_PRODUCT_HARDENING_QUEUE_HYGIENE=Object.freeze({schemaVersion:'1.4.2',noteBurnDownGateIds,completedByReleasedProof,reminePackageIds,notesFirstGate:q.notesFirstGate,nextNotesBatch:q.nextNotesBatch,sourceNoteClusterReviewQueue:clusterReviewQueue(),concreteBuildNext:q.concreteBuildNext,standingBuildGates:q.standingBuildGates,planningText,validate:q.validateQueueHygiene});
 })(typeof window!=='undefined'?window:globalThis);
