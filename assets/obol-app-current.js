@@ -11,7 +11,7 @@
  * suppresses historical schedulers and commits current route owners last.
  *
  * Historical fragment order sha256: 40e3006d9423d669acf5869b577ecf56a6ca2ee1629c95fd0fcc5d242d2c5f27
- * Generated body sha256: d959b84be26e7621abb90f00487ec89f6f29c3a35077902722ba5cee9f0505e9
+ * Generated body sha256: 13fee5eb02c3efc585b9334536c4b0412f4c7a5a18535687aca0d4022f3c7d6f
  * First historical fragment: assets/report-v2.js
  * Last historical fragment:  assets/app-v8.8.js
  */
@@ -2172,8 +2172,9 @@ const release=Object.freeze({
   'data/product-hardening/credential-helper-tool-builders-current.js'
  ])
 });
+const AUTH_ENUM_SOURCE='data/tool-builders-auth-enum-current.js';
 const TOOL_LIBRARY_COMPACT_EXTENSIONS=Object.freeze([
- 'data/tool-builders-auth-enum-current.js',
+ AUTH_ENUM_SOURCE,
  'data/product-hardening/tool-builder-backlog-current.js',
  'data/product-hardening/tool-builder-discovery-current.js',
  'data/product-hardening/credential-helper-tool-builders-current.js'
@@ -2215,6 +2216,28 @@ function finalizeProductHardeningExtensions(){
   try{api.install();root.__OBOL_PRODUCT_HARDENING_FINAL_CARD_DISPOSITION__='v10.18';}catch(_err){root.__OBOL_PRODUCT_HARDENING_FINAL_CARD_DISPOSITION_ERROR__=String(_err&&_err.message||_err);}
  }
 }
+function schemaReady(){const schema=root.OBOL_TOOL_BUILDER_SCHEMA;return !!(schema&&typeof schema.register==='function');}
+function authEnumReady(){
+ const schema=root.OBOL_TOOL_BUILDER_SCHEMA;
+ if(!schema||typeof schema.get!=='function')return false;
+ try{return !!(schema.get('tb-hydra')&&schema.get('tb-kerbrute'));}catch(_err){return false;}
+}
+function shouldSkipSource(src){return src===AUTH_ENUM_SOURCE&&authEnumReady();}
+function appendExtensionSource(src,done){
+ if(typeof document==='undefined'||typeof document.createElement!=='function'){done();return;}
+ if(document.querySelector&&document.querySelector('script[data-obol-extension="'+src+'"],script[data-obol-dashboard-src="'+src+'"]')){done();return;}
+ const script=document.createElement('script');script.src=src;script.async=false;script.dataset.obolExtension=src;script.onload=done;script.onerror=done;(document.head||document.documentElement).appendChild(script);
+}
+function loadExtensionSource(src,done,attempt){
+ const tries=Number(attempt||0);
+ if(shouldSkipSource(src)){done();return;}
+ if(src===AUTH_ENUM_SOURCE&&!schemaReady()){
+  if(root.setTimeout&&tries<40){root.setTimeout(()=>loadExtensionSource(src,done,tries+1),50);return;}
+  root.__OBOL_AUTH_ENUM_COMPACT_LOAD_ERROR__='Tool Builder schema unavailable for compact auth/enumeration owner';
+  done();return;
+ }
+ appendExtensionSource(src,done);
+}
 function loadProductHardeningExtensions(route){
  const plan=extensionPlan(route);
  const sources=Array.from(plan.sources||[]);
@@ -2222,7 +2245,7 @@ function loadProductHardeningExtensions(route){
  if(root.__OBOL_DEFER_PRODUCT_HARDENING_EXTENSIONS__){root.__OBOL_DEFERRED_PRODUCT_HARDENING_EXTENSIONS__=Object.freeze(sources.slice());return;}
  if(typeof document!=='undefined'&&typeof document.createElement==='function'){
   let pending=sources.length;const done=()=>{pending-=1;if(pending<=0)finalizeProductHardeningExtensions();};if(!pending){finalizeProductHardeningExtensions();return;}
-  sources.forEach(src=>{if(document.querySelector&&document.querySelector('script[data-obol-extension="'+src+'"],script[data-obol-dashboard-src="'+src+'"]')){done();return;}const script=document.createElement('script');script.src=src;script.async=false;script.dataset.obolExtension=src;script.onload=done;script.onerror=done;(document.head||document.documentElement).appendChild(script);});
+  sources.forEach(src=>loadExtensionSource(src,done,0));
  }
  if(typeof module!=='undefined'&&module.exports&&typeof require==='function'){sources.forEach(src=>{try{require('./'+src.replace(/^data\//,''));}catch(_err){}});finalizeProductHardeningExtensions();}
 }
