@@ -66,6 +66,7 @@ const release=Object.freeze({
   'data/product-hardening/post-notes-clarity-audit-v9.96.js',
   'data/product-hardening/network-position-recurrence-v9.97.js',
   'data/product-hardening/card-wrapper-retirement-queue-v9.98.js',
+  'data/product-hardening/route-layer-retirement-current.js',
   'data/product-hardening/tool-builder-backlog-current.js',
   'data/product-hardening/tool-builder-discovery-current.js'
  ])
