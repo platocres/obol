@@ -45,10 +45,17 @@ for(const [tool,id] of [['cewl','tb-cewl'],['crunch','tb-crunch'],['hashid','tb-
  assert(schema.get(id),id+' must register a schema-driven builder');
  assert.deepStrictEqual(Array.from(schema.validateBuilder(schema.get(id))),[],id+' must satisfy the stable schema');
 }
+const credentialsGroup=['hashcat','john','hydra','kerbrute','cewl','crunch','hashid','name-that-hash'];
+for(const tool of credentialsGroup){
+ const rec=inventory.get(tool);
+ assert(rec&&rec.status==='implemented',tool+' should not remain modeled in the Credentials and cracking group');
+}
+assert.deepStrictEqual(helpers.tools.slice().sort(),['cewl','crunch','hashid','name-that-hash'].sort(),'credential helper owner should cover all remaining modeled Credentials and cracking tools');
 const cewl=schema.get('tb-cewl');
 assert.throws(()=>renderer.compile(cewl,{},{}),/Authorized URL/,'CeWL must require a real URL before generating a command');
 assert.strictEqual(renderer.compile(cewl,{url:'https://target.example/'},{}),'cewl https://target.example/','CeWL default command must be the minimal supplied URL crawl');
 assert.strictEqual(renderer.compile(cewl,{url:'https://target.example/',depth:'2',output:'wordlists/target.txt'},{}),'cewl https://target.example/ -d 2 -w wordlists/target.txt','CeWL optional depth/output controls must be additive');
+assert.strictEqual(renderer.compile(cewl,{url:'https://target.example/',authMode:'basic',username:'alice',password:'CorrectHorseBatteryStaple!'},{}),"cewl https://target.example/ --auth 'alice:CorrectHorseBatteryStaple!'",'CeWL Basic auth must be explicit and quoted as user-supplied material');
 const crunch=schema.get('tb-crunch');
 assert.throws(()=>renderer.compile(crunch,{maxLength:'8'},{}),/Minimum length/,'crunch must require deliberate length bounds');
 assert.strictEqual(renderer.compile(crunch,{minLength:'8',maxLength:'8'},{}),'crunch 8 8','crunch default command must be the minimal explicit range');
@@ -57,9 +64,12 @@ const sampleHash='098f6bcd4621d373cade4e832627b4f6';
 const hashid=schema.get('tb-hashid');
 assert.throws(()=>renderer.compile(hashid,{inputMode:'hash'},{}),/Hash string/,'hashid must require supplied hash material');
 assert.strictEqual(renderer.compile(hashid,{inputMode:'hash',hash:sampleHash,hashcatMode:true,johnMode:true},{}),'hashid -m -j '+sampleHash,'hashid should emit mode hints only when toggled');
+assert.throws(()=>renderer.compile(hashid,{inputMode:'file',hashOrFile:'hashes.txt'},{}),/Hash file/,'hashid must not let fake hashes.txt satisfy file mode');
+assert.strictEqual(renderer.compile(hashid,{inputMode:'file',hashOrFile:'loot/hashes-to-identify.txt',extended:true},{}),'hashid -f loot/hashes-to-identify.txt -e','hashid file mode should require a deliberate path');
 const nth=schema.get('tb-name-that-hash');
 assert.strictEqual(renderer.compile(nth,{binary:'nth',inputMode:'hash',hash:sampleHash},{}),'nth -t '+sampleHash,'name-that-hash should default to the nth command for a supplied hash');
-assert.strictEqual(renderer.compile(nth,{binary:'name-that-hash',inputMode:'file',hashFile:'hashes.txt',greppable:true},{}),'name-that-hash -f hashes.txt -g','name-that-hash file mode and greppable output should compile deterministically');
+assert.throws(()=>renderer.compile(nth,{binary:'name-that-hash',inputMode:'file',hashOrFile:'hashes.txt'},{}),/Hash file/,'name-that-hash must not let fake hashes.txt satisfy file mode');
+assert.strictEqual(renderer.compile(nth,{binary:'name-that-hash',inputMode:'file',hashOrFile:'loot/hashes-to-identify.txt',greppable:true},{}),'name-that-hash -f loot/hashes-to-identify.txt -g','name-that-hash file mode and greppable output should compile deterministically');
 const evidence=w.OBOL_TOOL_BUILDER_EVIDENCE_CURRENT;
 assert(evidence&&typeof evidence.analyzeForBuilder==='function','credential helper Evidence patch must install');
 assert(evidence.validateProfiles().length===0,'credential helper Evidence profiles must validate');
