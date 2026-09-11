@@ -150,7 +150,7 @@ function repairToolsRoute(){
 }
 function routeToTool(value){if(!value)return;root.location.hash='#/tools/'+encodeURIComponent(value);}
 function escHtml(v){return text(v).replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));}
-function bindInventoryCard(card){arr(card&&card.querySelectorAll?card.querySelectorAll('[data-open-tool]'):[]).forEach(node=>{node.onclick=()=>routeToTool(node.dataset.openTool);});}
+function bindInventoryCard(card){Array.from(card&&card.querySelectorAll?card.querySelectorAll('[data-open-tool]'):[]).forEach(node=>{node.onclick=()=>routeToTool(node.dataset.openTool);});}
 function groupExistingChips(chips){
  const grouped=new Map();
  for(const group of INVENTORY_GROUPS)grouped.set(group.id,{id:group.id,title:group.title,chips:[]});
