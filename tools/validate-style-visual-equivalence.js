@@ -70,8 +70,11 @@ async function waitForToolsFullInventory(page){
   const visible=new Set(nodes.map(node=>key(node.getAttribute('data-open-tool')||node.getAttribute('data-inventory-open')||'')).filter(Boolean));
   const all=Array.from(new Set(inv.all().map(record=>key(record&&record.tool)).filter(Boolean)));
   const hidden=all.filter(tool=>!visible.has(tool));
-  window.__OBOL_STYLE_TOOLS_FULL_INVENTORY_READY__={allCount:all.length,visibleCount:visible.size,hidden};
-  return all.length>0&&hidden.length===0&&visible.has(key('impacket-psexec'))&&/psexec/i.test(document.body&&document.body.innerText||'');
+  const text=document.body&&document.body.innerText||'';
+  const generated=!!document.querySelector('#tool-groups [data-inventory-complete]');
+  const generatedRawAliases=/crackmapexec|enum4linuxng|ligolo-agent|ligolo-proxy/i.test(text);
+  window.__OBOL_STYLE_TOOLS_FULL_INVENTORY_READY__={allCount:all.length,visibleCount:visible.size,hidden,generated,generatedRawAliases};
+  return all.length>0&&hidden.length===0&&generated&&generatedRawAliases&&visible.has(key('impacket-psexec'))&&/psexec/i.test(text);
  },null,{timeout:30000});
 }
 
