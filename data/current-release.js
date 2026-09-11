@@ -70,8 +70,7 @@ const release=Object.freeze({
   'data/product-hardening/tool-builder-backlog-current.js',
   'data/product-hardening/tool-builder-discovery-current.js',
   'data/product-hardening/credential-helper-tool-builders-current.js',
-  'data/product-hardening/privesc-helper-tool-builders-current.js',
-  'data/product-hardening/remote-exec-tool-builders-current.js'
+  'data/product-hardening/privesc-helper-tool-builders-current.js'
  ])
 });
 const AUTH_ENUM_SOURCE='data/tool-builders-auth-enum-current.js';
@@ -80,8 +79,7 @@ const TOOL_LIBRARY_COMPACT_EXTENSIONS=Object.freeze([
  'data/product-hardening/tool-builder-backlog-current.js',
  'data/product-hardening/tool-builder-discovery-current.js',
  'data/product-hardening/credential-helper-tool-builders-current.js',
- 'data/product-hardening/privesc-helper-tool-builders-current.js',
- 'data/product-hardening/remote-exec-tool-builders-current.js'
+ 'data/product-hardening/privesc-helper-tool-builders-current.js'
 ]);
 function routeName(){return typeof location==='undefined'?'home':((location.hash||'#/home').replace(/^#\/?/,'').split('/').filter(Boolean)[0]||'home');}
 function extensionPlan(route){
