@@ -38,7 +38,7 @@ const readme=fs.readFileSync(path.join(root,'README.md'),'utf8');
 assert(readme.includes('recently completed Tool Builder slices are compacted into current owners'),'README should preserve current-owner Tool Builder handoff');
 assert(readme.includes('v10.17 narrows the Tool Library route to the compact current Tool Builder extension plan'),'README should describe the v10.17 route-layer queue handoff');
 assert(readme.includes('Dashboard and non-Tools product-hardening routes still keep the full plan until their behavior is compacted and proven separately'),'README should keep remaining runtime compaction scope honest');
-assert(readme.includes('v10.17 also prevents the Tool Library route from loading the full historical v9 product-hardening layer stack'),'README Tool Builder queue should call out the visible layer fix');
+assert(readme.includes('clean-cache `#/tools` visit does not inject the full historical v9 product-hardening stack')||readme.includes('v10.17 also prevents the Tool Library route from loading the full historical v9 product-hardening layer stack'),'README Tool Builder queue should call out the visible layer fix');
 const queue=fs.readFileSync(path.join(root,'docs/TOOL-BUILDER-BUILD-QUEUE.md'),'utf8');
 assert(queue.includes('The Tool Library must not accumulate an unbounded stack of versioned builder layers'),'queue should keep live-layer hygiene rule');
 assert(queue.includes('v10.17 is a route-loading cleanup, not another Tool Builder implementation slice'),'queue should mark v10.17 as runtime cleanup, not tool implementation');
