@@ -19,8 +19,8 @@ async function inventoryProof(page) {
       return name;
     };
     const text = document.body && document.body.innerText || '';
-    const visibleNodes = Array.from(document.querySelectorAll('#tool-body [data-open-tool],#tool-groups [data-open-tool]'));
-    const visible = Array.from(new Set(visibleNodes.map((node) => key(node.getAttribute('data-open-tool') || '')).filter(Boolean))).sort();
+    const visibleNodes = Array.from(document.querySelectorAll('#tool-body [data-open-tool],#tool-body [data-inventory-open],#tool-groups [data-open-tool],#tool-groups [data-inventory-open]'));
+    const visible = Array.from(new Set(visibleNodes.map((node) => key(node.getAttribute('data-open-tool') || node.getAttribute('data-inventory-open') || '')).filter(Boolean))).sort();
     const all = inv && typeof inv.all === 'function' ? Array.from(new Set(inv.all().map((record) => key(record && record.tool)).filter(Boolean))).sort() : [];
     const hidden = all.filter((tool) => !visible.includes(tool));
     const psexecKey = key('impacket-psexec');
@@ -51,7 +51,7 @@ async function waitForInventoryCompletion(page) {
       }
       return name;
     };
-    const visible = new Set(Array.from(document.querySelectorAll('#tool-body [data-open-tool],#tool-groups [data-open-tool]')).map((node) => key(node.getAttribute('data-open-tool') || '')).filter(Boolean));
+    const visible = new Set(Array.from(document.querySelectorAll('#tool-body [data-open-tool],#tool-body [data-inventory-open],#tool-groups [data-open-tool],#tool-groups [data-inventory-open]')).map((node) => key(node.getAttribute('data-open-tool') || node.getAttribute('data-inventory-open') || '')).filter(Boolean));
     const all = Array.from(new Set(inv.all().map((record) => key(record && record.tool)).filter(Boolean)));
     const hidden = all.filter((tool) => !visible.has(tool));
     window.__OBOL_FULL_TOOLS_INVENTORY_BROWSER_PROOF__ = { allCount: all.length, visibleCount: visible.size, hidden, hasPsexec: visible.has(key('impacket-psexec')) || visible.has(key('psexec')) };
