@@ -15,11 +15,16 @@ assert(/^v10\./.test(releaseSandbox.OBOL_CURRENT_RELEASE.label),'current release
 assert.strictEqual(releaseSandbox.OBOL_RELEASE_IDENTITY.extensionPlan('tools').mode,'compact-tool-library','Tools route should keep compact Tool Library loading');
 const inventoryTest=run(['tests/run-tool-builder-inventory-organization-tests.js']);
 assert(inventoryTest.includes('Tool Builder inventory organization regression passed.'),'inventory organization regression should pass');
+const taxonomyTest=run(['tests/run-tool-builder-taxonomy-tests.js']);
+assert(taxonomyTest.includes('Tool Builder operator taxonomy regression passed.'),'operator taxonomy regression should pass');
+const standardTest=run(['tests/run-tool-builder-implementation-standard-tests.js']);
+assert(standardTest.includes('Tool Builder implementation standard regression passed.'),'implementation standard regression should pass');
 const docs=read('docs/v10.20.md');
 assert(docs.includes('## What changed'),'release doc should carry authored changelog source bullets');
 assert(docs.includes('one flat chip wall into functional implementation slices'),'release doc should describe the v10.20 Tools surface change');
 const readme=read('README.md');
 assert(readme.includes('[`docs/TOOL-BUILDER-BUILD-QUEUE.md`](docs/TOOL-BUILDER-BUILD-QUEUE.md)'),'README should retain the Tool Builder queue doc link');
+assert(readme.includes('[`docs/TOOL-BUILDER-IMPLEMENTATION-STANDARD.md`](docs/TOOL-BUILDER-IMPLEMENTATION-STANDARD.md)'),'README should retain the implementation standard link');
 assert(readme.includes('[`CHANGELOG.md`](CHANGELOG.md)'),'README should retain the changelog link');
 assert(!readme.includes('## Tool Builder implementation queue'),'README should not duplicate the detailed Tool Builder queue section');
 assert(readme.includes('Every product-affecting build must update [`CHANGELOG.md`](CHANGELOG.md).'),'README should state the changelog rule directly');
