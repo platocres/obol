@@ -1,3 +1,11 @@
+## v10.18 — - Implements the next compact modeled-tool burn-down slice for CeWL, crunch, hashid, and name-that-hash
+
+- Implements the next compact modeled-tool burn-down slice for CeWL, crunch, hashid, and name-that-hash.
+- Adds a stable current owner, `data/product-hardening/credential-helper-tool-builders-current.js`, instead of restoring disposable release-specific Tool Library layers.
+- Promotes CeWL and crunch from modeled inventory into schema-driven wordlist helper builders.
+- Promotes hashid and name-that-hash from modeled inventory into schema-driven hash-identification helper builders.
+- Adds conservative Evidence recognition for target-derived wordlists, bounded generation plans, hash-identification candidates, inconclusive output, blocked/failure states, and partial helper output.
+
 ## v10.17 — - Makes product-hardening extension loading route-aware so the Tool Library no longer loads the full historical v9 product-hardening layer stack on cache-clear visits to `#/tools`
 
 - Makes product-hardening extension loading route-aware so the Tool Library no longer loads the full historical v9 product-hardening layer stack on cache-clear visits to `#/tools`.
