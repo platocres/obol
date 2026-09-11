@@ -1,0 +1,74 @@
+name: Agent patch remote completeness stability
+
+on:
+  push:
+    branches:
+      - tool-builder-taxonomy-standard
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+jobs:
+  patch-remote-completeness:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout branch
+        uses: actions/checkout@v4
+        with:
+          ref: tool-builder-taxonomy-standard
+          fetch-depth: 0
+      - name: Patch remote-exec inventory completeness idempotence
+        run: |
+          python3 - <<'PY'
+          from pathlib import Path
+          path = Path('data/product-hardening/remote-exec-tool-builders-current.js')
+          s = path.read_text()
+          old = """function inventoryGroupHtml(group){return'<section class=\"card\" data-inventory-complete=\"'+escHtml(group.id)+'\"><div class=\"card-body\"><h3>'+escHtml(group.title)+'</h3><p class=\"hint\">This section is generated from the full Tool Builder inventory so modeled or implemented records do not silently disappear from Tools. Select a modeled tool for its backlog handoff, or an implemented tool for its builder when one exists.</p><div class=\"lane-tabs tool-picker\">'+arr(group.records).map(record=>'<span class=\"lane-tab\" data-open-tool=\"'+escHtml(record.tool)+'\" data-inventory-open=\"'+escHtml(record.tool)+'\">'+inventoryBadge(record)+' '+escHtml(inventoryLabel(record.tool))+'</span>').join('')+'</div></div></section>';}
+function patchToolsLibraryCompleteness(){
+ if(typeof document==='undefined')return false;const parts=routeParts();if(parts[0]!=='tools'||(parts[1]&&parts[1]!=='__library'))return false;const host=document.querySelector('#tool-groups');if(!host)return false;
+ Array.from(host.querySelectorAll('[data-inventory-complete]')).forEach(node=>node.remove());const groups=inventoryCompletionGroups(libraryVisibleTools());if(!groups.length){root.__OBOL_TOOLS_LIBRARY_INVENTORY_COMPLETE__=VERSION;return true;}
+ const wrap=document.createElement('div');wrap.dataset.inventoryCompletenessOwner=VERSION;wrap.innerHTML=groups.map(inventoryGroupHtml).join('');host.appendChild(wrap);
+ wrap.querySelectorAll('[data-inventory-open]').forEach(node=>{node.onclick=()=>{root.location.hash='#/tools/'+encodeURIComponent(routeInventoryKey(node.getAttribute('data-inventory-open')||''));};});
+ root.__OBOL_TOOLS_LIBRARY_INVENTORY_COMPLETE__=VERSION;root.__OBOL_TOOLS_LIBRARY_INVENTORY_COMPLETE_COUNT__=groups.reduce((n,g)=>n+g.records.length,0);return true;
+}
+"""
+          new = """function inventoryGroupHtml(group){return'<section class=\"card\" data-inventory-complete=\"'+escHtml(group.id)+'\"><div class=\"card-body\"><h3>'+escHtml(group.title)+'</h3><p class=\"hint\">This section is generated from the full Tool Builder inventory so modeled or implemented records do not silently disappear from Tools. Select a modeled tool for its backlog handoff, or an implemented tool for its builder when one exists.</p><div class=\"lane-tabs tool-picker\">'+arr(group.records).map(record=>'<span class=\"lane-tab\" data-open-tool=\"'+escHtml(record.tool)+'\" data-inventory-open=\"'+escHtml(record.tool)+'\">'+inventoryBadge(record)+' '+escHtml(inventoryLabel(record.tool))+'</span>').join('')+'</div></div></section>';}
+function libraryBaseVisibleTools(){if(typeof document==='undefined')return [];return Array.from(document.querySelectorAll('#tool-groups [data-open-tool],#tool-groups [data-inventory-open]')).filter(node=>!node.closest('[data-inventory-completeness-owner]')&&!node.closest('[data-inventory-complete]')).map(node=>node.getAttribute('data-open-tool')||node.getAttribute('data-inventory-open')||'').filter(Boolean);}
+function inventoryCompletenessSignature(groups){return arr(groups).map(group=>group.id+':'+arr(group.tools).map(inventoryKey).sort().join(',')).join('|');}
+function bindInventoryCompleteness(wrap){wrap.querySelectorAll('[data-inventory-open]').forEach(node=>{node.onclick=()=>{root.location.hash='#/tools/'+encodeURIComponent(routeInventoryKey(node.getAttribute('data-inventory-open')||''));};});}
+function removeInventoryCompleteness(host){Array.from(host.querySelectorAll('[data-inventory-completeness-owner]')).forEach(node=>node.remove());Array.from(host.querySelectorAll('[data-inventory-complete]')).forEach(node=>{if(!node.closest('[data-inventory-completeness-owner]'))node.remove();});}
+function patchToolsLibraryCompleteness(){
+ if(typeof document==='undefined')return false;const parts=routeParts();if(parts[0]!=='tools'||(parts[1]&&parts[1]!=='__library'))return false;const host=document.querySelector('#tool-groups');if(!host)return false;
+ const groups=inventoryCompletionGroups(libraryBaseVisibleTools());const signature=inventoryCompletenessSignature(groups);const count=groups.reduce((n,g)=>n+g.records.length,0);const existing=host.querySelector('[data-inventory-completeness-owner=\"'+VERSION+'\"]');
+ if(existing&&existing.dataset.inventoryCompletenessSignature===signature){bindInventoryCompleteness(existing);root.__OBOL_TOOLS_LIBRARY_INVENTORY_COMPLETE__=VERSION;root.__OBOL_TOOLS_LIBRARY_INVENTORY_COMPLETE_COUNT__=count;root.__OBOL_TOOLS_LIBRARY_INVENTORY_COMPLETE_STABLE__=true;return true;}
+ removeInventoryCompleteness(host);if(!groups.length){root.__OBOL_TOOLS_LIBRARY_INVENTORY_COMPLETE__=VERSION;root.__OBOL_TOOLS_LIBRARY_INVENTORY_COMPLETE_COUNT__=0;root.__OBOL_TOOLS_LIBRARY_INVENTORY_COMPLETE_STABLE__=true;return true;}
+ const wrap=document.createElement('div');wrap.dataset.inventoryCompletenessOwner=VERSION;wrap.dataset.inventoryCompletenessSignature=signature;wrap.innerHTML=groups.map(inventoryGroupHtml).join('');host.appendChild(wrap);bindInventoryCompleteness(wrap);
+ root.__OBOL_TOOLS_LIBRARY_INVENTORY_COMPLETE__=VERSION;root.__OBOL_TOOLS_LIBRARY_INVENTORY_COMPLETE_COUNT__=count;root.__OBOL_TOOLS_LIBRARY_INVENTORY_COMPLETE_STABLE__=true;return true;
+}
+"""
+          if old not in s:
+              raise SystemExit('remote completeness function target not found')
+          s = s.replace(old, new, 1)
+          path.write_text(s)
+          PY
+      - name: Remove temporary workflow
+        run: rm -f .github/workflows/agent-patch-remote-completeness.yml
+      - name: Validate targeted files
+        run: |
+          node --check data/product-hardening/remote-exec-tool-builders-current.js
+          node --check data/product-hardening/tool-builder-backlog-current.js
+          node tests/run-tool-builder-taxonomy-tests.js
+          node tests/run-tool-builder-inventory-organization-tests.js
+          node tests/run-v10.20-tests.js
+      - name: Commit patch
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          if git diff --quiet; then
+            echo "No changes to commit"
+            exit 0
+          fi
+          git add data/product-hardening/remote-exec-tool-builders-current.js .github/workflows/agent-patch-remote-completeness.yml
+          git commit -m "Stabilize generated Tools inventory completeness"
+          git push origin HEAD:tool-builder-taxonomy-standard
