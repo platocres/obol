@@ -56,6 +56,21 @@ async function waitForDomStable(page,timeoutMs){
  throw new Error('DOM did not settle before stylesheet comparison');
 }
 
+async function waitForRouteReady(page,route){
+ if(route.id==='dashboard'){
+  await page.waitForSelector('[data-product-dashboard-owner="current"]',{state:'visible',timeout:15000});
+  return;
+ }
+ if(route.id==='tools'){
+  await page.waitForFunction(()=>{
+   const inv=window.OBOL_TOOL_BUILDER_INVENTORY;
+   const complete=window.__OBOL_TOOLS_LIBRARY_INVENTORY_COMPLETE__;
+   const text=document.body&&document.body.innerText||'';
+   return !!(inv&&typeof inv.all==='function'&&complete&&/psexec/i.test(text));
+  },null,{timeout:15000});
+ }
+}
+
 async function captureSnapshot(page){
  return page.evaluate(()=>{
   const round=value=>Math.round(Number(value||0)*10)/10;
@@ -93,7 +108,7 @@ async function capturePair(browser){
    await page.goto(baseUrl+route.hash,{waitUntil:'domcontentloaded',timeout:30000});
    await page.waitForSelector('#view',{state:'visible',timeout:15000});
    await page.waitForFunction(()=>{const view=document.querySelector('#view');return !!(view&&view.innerText&&view.innerText.trim().length>20);},null,{timeout:15000});
-   if(route.id==='dashboard')await page.waitForSelector('[data-product-dashboard-owner="current"]',{state:'visible',timeout:15000});
+   await waitForRouteReady(page,route);
    await settle(page,route.settleMs||settleMs);
    const domBefore=await waitForDomStable(page,12000);
    const current=await captureSnapshot(page);
@@ -132,7 +147,7 @@ function firstDifference(a,b,pathName){
  }
  if(typeof a==='object'){
   const keys=[...new Set([...Object.keys(a),...Object.keys(b)])].sort();
-  for(const key of keys){const diff=firstDifference(a[key],b[key],pathName+'.'+key);if(diff)return diff;}
+  for(const key of keys){const diff=firstDifference(a[key],b,key?pathName+'.'+key:pathName);if(diff)return diff;}
   return null;
  }
  return pathName+': historical='+JSON.stringify(a)+' current='+JSON.stringify(b);
