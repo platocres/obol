@@ -631,6 +631,41 @@ td.obol-cm-cell.st-untested .obol-cm-chip{color:var(--dim,#8b98a9);font-weight:4
 }
 @media(prefers-reduced-motion:reduce){#obol-cm-toast{transition:none}}
 </style>
+<style id="obol-killchain">
+/* Build 5 — Kill-Chain Milestone Spine. A slim, always-visible strip under the header that
+   reads the live engagement facts and lights up milestones as the operator climbs the chain.
+   Additive, theme-aware via obol tokens, zero added requests. */
+#obol-kc{display:flex;align-items:center;width:100%;box-sizing:border-box;padding:5px 14px;background:var(--panel2,#1c2330);border-bottom:1px solid var(--border,#2d3646);overflow-x:auto;overscroll-behavior-x:contain;-webkit-overflow-scrolling:touch;scrollbar-width:thin}
+#obol-kc::-webkit-scrollbar{height:5px}
+#obol-kc::-webkit-scrollbar-thumb{background:var(--border,#2d3646);border-radius:3px}
+#obol-kc .obol-kc-strip{display:flex;align-items:center;gap:0;text-decoration:none;color:inherit;min-width:max-content;border-radius:6px}
+#obol-kc .obol-kc-strip:focus-visible{outline:2px solid var(--accent,#58d68d);outline-offset:2px}
+#obol-kc .obol-kc-title{font-family:var(--mono,monospace);font-size:9px;letter-spacing:1.5px;text-transform:uppercase;color:var(--dim,#8b98a9);margin-right:8px;flex:0 0 auto}
+#obol-kc .obol-kc-count{font-family:var(--mono,monospace);font-size:10px;color:var(--accent,#58d68d);border:1px solid var(--accent,#58d68d);border-radius:999px;padding:1px 7px;margin-right:10px;flex:0 0 auto}
+#obol-kc .obol-kc-nodes{display:flex;align-items:center;gap:0}
+.obol-kc-node{display:inline-flex;align-items:center;gap:5px;padding:3px 9px;border-radius:999px;border:1px solid transparent;font:600 11px/1 -apple-system,'Segoe UI',Roboto,sans-serif;white-space:nowrap;color:var(--dim,#8b98a9);flex:0 0 auto;transition:color .2s ease,border-color .2s ease,background .2s ease}
+.obol-kc-node .ic{font-size:12px;line-height:1;filter:grayscale(1);opacity:.55;transition:filter .2s ease,opacity .2s ease}
+.obol-kc-node.done{color:var(--accent,#58d68d)}
+.obol-kc-node.done .ic{filter:none;opacity:1}
+.obol-kc-node.next{color:var(--fg,#d7e0ea);border-color:var(--accent,#58d68d);background:color-mix(in srgb,var(--accent,#58d68d) 12%,transparent);box-shadow:0 0 8px var(--glow-soft,transparent)}
+.obol-kc-node.next .ic{opacity:.9}
+#obol-kc .obol-kc-strip:hover .obol-kc-title{color:var(--fg,#d7e0ea)}
+#obol-kc .obol-kc-strip:hover .obol-kc-node.done{color:var(--accent,#58d68d);filter:brightness(1.12)}
+.obol-kc-sep{width:14px;height:2px;background:var(--border,#2d3646);flex:0 0 auto;border-radius:2px;margin:0 1px;transition:background .2s ease}
+.obol-kc-sep.done{background:var(--accent,#58d68d)}
+@keyframes obol-kc-pop{0%{transform:scale(1)}35%{transform:scale(1.2)}100%{transform:scale(1)}}
+.obol-kc-node.just-done{animation:obol-kc-pop .5s ease}
+.obol-kc-sr{position:absolute;width:1px;height:1px;padding:0;margin:-1px;overflow:hidden;clip:rect(0 0 0 0);white-space:nowrap;border:0}
+@media(max-width:640px){
+  #obol-kc{padding:5px 10px}
+  #obol-kc .obol-kc-title{display:none}
+  .obol-kc-node .nm{display:none}
+  .obol-kc-node{padding:3px 6px}
+  .obol-kc-node.next .nm{display:inline}
+  .obol-kc-sep{width:9px}
+}
+@media(prefers-reduced-motion:reduce){.obol-kc-node.just-done{animation:none}.obol-kc-node,.obol-kc-node .ic,.obol-kc-sep{transition:none}}
+</style>
 </head>
 <body>
 <header>
@@ -1336,6 +1371,111 @@ function install(){ try{ buildButton(); }catch(e){} }
 if(doc.readyState==='loading')doc.addEventListener('DOMContentLoaded',install,{once:true}); else install();
 try{ root.addEventListener('storage',function(e){ if(e&&e.key===LS_STATE)updateBadge(); }); }catch(e){}
 root.OBOL_CRED_MATRIX=Object.freeze({ open:open, close:close, toggle:toggle, refresh:function(){updateBadge();if(isOpen())render();}, retargetCred:onCred, retargetHost:onHost });
+})(window);
+</script>
+<!-- Build 5 — Kill-Chain Milestone Spine behavior. Reads the live engagement facts
+     (via OBOL_CORE_V2 when present, raw fact ids otherwise) and advances a header-anchored
+     progress spine as milestones are reached. IIFE-wrapped so it can never block boot. -->
+<script id="obol-kc-js">
+'use strict';
+(function(root){
+var doc=root.document; if(!doc) return;
+var LS_STATE='obol-state-v2';
+function esc(s){return String(s==null?'':s).replace(/[&<>"]/g,function(c){return {'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c];});}
+
+/* Ordered kill-chain milestones. Each `facts` list is any-of; `state` is a fallback signal read
+   from the raw workspace. Every fact id below is a real id produced by obol's methodology/intake. */
+var MILES=[
+ {key:'target',    ic:'🎯', label:'Target',       hint:'A scope or working host is defined.',                         facts:['scope.defined'], state:function(st){return !!(st&&((st.hosts&&st.hosts.length)||(st.params&&st.params.target)));}},
+ {key:'recon',     ic:'📡', label:'Recon',        hint:'Initial scanning / service enumeration has landed.',          facts:['scan.initial']},
+ {key:'creds',     ic:'🔑', label:'Creds',        hint:'Credential material has been captured or validated.',         facts:['credential.available','credential.plaintext','credential.ntlm_hash','credential.certificate','credential.candidate'], state:function(st){return !!(st&&st.credentials&&st.credentials.length);}},
+ {key:'foothold',  ic:'🐚', label:'Foothold',     hint:'A shell (Linux, Windows, or web) has been established.',      facts:['foothold.linux','foothold.windows','foothold.webshell']},
+ {key:'localadmin',ic:'🛡', label:'Local Admin',  hint:'Local admin / root / SYSTEM on a host.',                      facts:['access.admin','access.root','access.system','access.web_admin']},
+ {key:'da',        ic:'🏰', label:'Domain Admin', hint:'Domain Admin, DCSync rights, or NTDS reached.',               facts:['objective.domain_admin','ad.dcsync_rights_or_replication_observed','loot.ntds']},
+ {key:'loot',      ic:'💎', label:'Loot',         hint:'Secrets / files collected (NTDS, LSASS, files).',             facts:['loot.ntds','loot.lsass','loot.files']},
+ {key:'report',    ic:'📄', label:'Report',       hint:'Report readiness checks pass.',                               facts:['report.ready']}
+];
+
+function readState(){ try{ var raw=root.localStorage.getItem(LS_STATE); return raw?JSON.parse(raw):null; }catch(e){ return null; } }
+/* Prefer context-scoped facts via core; fall back to raw engagement-wide fact ids. */
+function factSet(st){
+ var C=root.OBOL_CORE_V2;
+ if(C&&typeof C.effectiveFacts==='function'&&st){
+  try{
+   var ctx=(typeof C.normalizeContext==='function')?C.normalizeContext(st,st.activeContext):st.activeContext;
+   var s=C.effectiveFacts(st,ctx);
+   if(s&&typeof s.has==='function')return s;
+  }catch(e){}
+ }
+ try{ return new Set((st&&st.facts||[]).map(function(r){return r&&r.id;})); }catch(e){ return new Set(); }
+}
+function met(m,fs,st){
+ if(m.facts&&m.facts.some(function(f){return fs.has(f);}))return true;
+ if(m.state){ try{ if(m.state(st))return true; }catch(e){} }
+ return false;
+}
+
+var prevDone=null; // null until the first render; used to detect newly-reached milestones for the pulse
+function render(){
+ var strip=doc.getElementById('obol-kc'); if(!strip)return;
+ var nodesEl=strip.querySelector('.obol-kc-nodes'), countEl=strip.querySelector('.obol-kc-count'), linkEl=strip.querySelector('.obol-kc-strip'), liveEl=doc.getElementById('obol-kc-live');
+ if(!nodesEl||!countEl||!linkEl)return;
+ var st=readState(), fs=factSet(st);
+ var done=MILES.map(function(m){return met(m,fs,st);});
+ var count=0,lastDone=-1; done.forEach(function(d,i){ if(d){count++;lastDone=i;} });
+ var nextIdx=done.indexOf(false); // nearest unmet milestone
+ var firstRender=(prevDone===null);
+ var newlyReached=-1;
+
+ var html='';
+ MILES.forEach(function(m,i){
+  if(i)html+='<span class="obol-kc-sep'+(done[i-1]?' done':'')+'"></span>';
+  var isNew=done[i]&&!firstRender&&prevDone&&!prevDone[i];
+  if(isNew&&newlyReached<0)newlyReached=i;
+  var cls='obol-kc-node'+(done[i]?' done':'')+(i===nextIdx?' next':'')+(isNew?' just-done':'');
+  html+='<span class="'+cls+'" data-key="'+m.key+'" title="'+esc(m.label+' — '+m.hint)+'"><span class="ic" aria-hidden="true">'+m.ic+'</span><span class="nm">'+esc(m.label)+'</span></span>';
+ });
+ nodesEl.innerHTML=html;
+ countEl.textContent=count+'/'+MILES.length;
+
+ var reached=lastDone>=0?MILES[lastDone].label:'none yet';
+ var nextLabel=nextIdx<0?'chain complete':MILES[nextIdx].label;
+ linkEl.setAttribute('aria-label','Engagement kill chain: '+count+' of '+MILES.length+' milestones reached'
+   +(lastDone>=0?', furthest reached '+reached:'')
+   +(nextIdx>=0?', next up '+nextLabel:', chain complete')+'. Open Next Steps.');
+
+ if(newlyReached>=0&&liveEl)liveEl.textContent='Milestone reached: '+MILES[newlyReached].label;
+ prevDone=done;
+}
+
+function build(){
+ if(doc.getElementById('obol-kc'))return true;
+ var header=doc.querySelector('header'); if(!header)return false;
+ var bar=doc.createElement('div'); bar.id='obol-kc'; bar.setAttribute('role','navigation'); bar.setAttribute('aria-label','Engagement kill chain');
+ bar.innerHTML='<a class="obol-kc-strip" href="#/path"><span class="obol-kc-title">Kill chain</span><span class="obol-kc-count">0/'+MILES.length+'</span><span class="obol-kc-nodes"></span></a><span id="obol-kc-live" class="obol-kc-sr" aria-live="polite"></span>';
+ header.parentNode.insertBefore(bar, header.nextSibling);
+ return true;
+}
+
+function debounce(fn,ms){ var t; return function(){ root.clearTimeout(t); t=root.setTimeout(fn,ms); }; }
+
+function install(){
+ try{
+  if(!build())return;
+  prevDone=null; render(); // seed prevDone from the current state without pulsing
+  var deb=debounce(render,120);
+  // route() rewrites #view on every fact/outcome/parse mutation, so observing it catches
+  // in-tab evidence changes without a manual refresh.
+  var view=doc.getElementById('view');
+  if(view&&root.MutationObserver){ try{ new root.MutationObserver(deb).observe(view,{childList:true,subtree:true}); }catch(e){} }
+  var facts=doc.getElementById('facts-list');
+  if(facts&&root.MutationObserver){ try{ new root.MutationObserver(deb).observe(facts,{childList:true,subtree:true}); }catch(e){} }
+  try{ root.addEventListener('hashchange',deb); }catch(e){}
+  try{ root.addEventListener('storage',function(e){ if(e&&e.key===LS_STATE)deb(); }); }catch(e){}
+ }catch(e){}
+}
+if(doc.readyState==='loading')doc.addEventListener('DOMContentLoaded',install,{once:true}); else install();
+root.OBOL_KILLCHAIN=Object.freeze({ refresh:render, milestones:MILES.map(function(m){return m.key;}) });
 })(window);
 </script>
 </body>

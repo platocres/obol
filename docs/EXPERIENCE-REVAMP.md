@@ -288,12 +288,101 @@ no horizontal overflow 320→1920px.)_
 cells visually distinct ✓; keyboard-operable cells ✓ (all satisfied by the implementation; pending
 the browser execution noted above).
 
-### Build 5 — Evidence → Kill-Chain → Next-Command Loop  `[status: planned]`
-**What:** Wire the flow so parsing evidence visibly advances the kill chain and lights up the next
-recommended command — closing RedConsole's Variables→Loot→Plan→Report loop.
-**Why:** Biggest UX payoff; makes the tool feel alive. Do last (touches the most surfaces).
-**Acceptance:** logging a fact/parse result advances the relevant phase chip and surfaces the next
-step without a manual refresh; no regressions to intake/path/report.
+### Build 5 — Kill-Chain Milestone Spine  `[status: DONE (impl) — RESCOPED + shipped 2026-09-11; browser/gate execution pending]`
+
+**⚠️ Rescope note (why the original Build 5 was dropped).** The original Build 5 —
+"Evidence → Kill-Chain → Next-Command Loop" — was **redundant with obol's existing Next Steps
+platform** and has been replaced by the smaller, non-overlapping build below. In plain terms: the
+original plan was to build a feature that watches your evidence and recommends the next command,
+but obol *already does that*. Re-derived from the current code:
+- **Next Steps (`#/path`, `assets/operator-route-current.js`) is already the evidence-ranked
+  recommender.** It reads `C.nextStepsOverview34(state, LANES, ctx())` and renders a **"Best next
+  move"** panel, a **Live Map** graph whose edges *are* the kill chain (technique → unlocks), a
+  **blockers** tile, and exam-safe script proposals.
+- **The evidence→next-step loop is already wired.** In `assets/obol-app-current.js`, logging a fact
+  (`addFact`), recording an outcome (`recordActivity`), a quick observation, or a parse all end in
+  `save(); renderAll(); route();`. The legacy path view even renders a *"newly unlocked by your
+  latest evidence"* delta. So "parse evidence → the next thing lights up" is a capability the
+  codebase already has.
+- **A phase spine already exists too** — `PHASE_ORDER` in `obol-app-current.js` drives the lane
+  tabs, and `#/map` ("Methodology Map") is a lifecycle board over those phases with coverage bars.
+- **§3.2 of this doc already said as much:** *"obol already has seeds of several: … path/next-steps
+  (=attack plan)."* The original Build 5 would have re-implemented that.
+
+**What (rescoped):** Build the one RedConsole idea obol is genuinely missing — a **stateful
+kill-chain milestone spine**: a compact, always-visible strip of "trophy" chips that fill in as the
+engagement climbs the chain. Shipped nodes (each backed by a real obol fact id): **🎯 Target ▸
+📡 Recon ▸ 🔑 Creds ▸ 🐚 Foothold ▸ 🛡 Local Admin ▸ 🏰 Domain Admin ▸ 💎 Loot ▸ 📄 Report**.
+obol today tells you *what to do next* (Next Steps) and *how much you've covered* (Map's coverage
+%), but it never shows *how far up the chain you are*. This adds exactly that — a sense of progress
+and momentum — without adding a second recommender. (Node labels generalized from the original
+sketch — "Recon"/"Foothold" instead of "User list"/"Shell" — so the chain reads for both AD and
+standalone-box engagements.)
+
+**Why:** It's the "makes the tool feel alive" payoff the original Build 5 was reaching for, but
+**additive to Next Steps instead of duplicating it.** Highest remaining delight; small surface area.
+
+**Approach (keep it a read-model, not a new engine):**
+- **Derive milestone state from the *same* `nextStepsOverview34` model** (and/or the existing facts
+  in `state`) that Next Steps already computes — the spine is a *view* of state obol already tracks
+  (e.g. facts like `credential.available`, `foothold.*`, `access.admin`, `access.system`,
+  `ad.domain_known`). No new scoring engine, no second source of truth.
+- **Ship it as a header element**, in the pattern Builds 1–4 established (skin picker, ⛓ Playbook,
+  🔑 Creds) — so the progress is felt from **any** surface (Intake, cards, Report), not only when
+  you're parked on `#/path`. This is the part the Path route alone can't do, since Path only
+  re-paints on its own timers/clicks.
+- **Inline, additive, zero added requests** — a `<style id="obol-killchain">` + `<script
+  id="obol-kc-js">` pair in `index.html`, IIFE-wrapped with try/catch, theme-aware via obol tokens,
+  exactly like Builds 1–4 (see §7 and the request-budget rule).
+- **Optional flourish:** when a milestone ticks, surface the already-existing *"newly unlocked by
+  your latest evidence"* delta as a small toast/pulse — reusing existing logic, not inventing it.
+
+**Open item to check during the build (don't need an answer up front):** confirm whether `#/path`
+re-paints *instantly* when a fact is added from the sidebar while you're already sitting on that
+page (its `renderCurrentPath` runs on load timers + control clicks, not obviously on every
+`route()`). If it doesn't, wiring the live re-paint is part of this build's value; if it does, the
+spine is a pure additive win. Either way the milestone spine is the deliverable.
+
+**Acceptance:** a milestone spine is visible from every route (header-anchored); logging a
+fact/parse result that meets a milestone advances the corresponding chip **without a manual
+refresh**; the spine reads its state from existing evidence/`nextStepsOverview34` (no second
+recommender); inline + additive with zero added requests; keyboard-operable and theme-aware; **no
+regressions to Intake, Next Steps (`#/path`), Map, or Report.**
+
+**As shipped (two inline blocks in `index.html`):** a `<style id="obol-killchain">` in `<head>`
+after the cred-matrix style, and a `<script id="obol-kc-js">` at end of `<body>` after the
+cred-matrix script.
+- **Placement.** A slim full-width strip inserted **right after `</header>`** (before `#banner`),
+  in normal document flow — so it lives outside `#view` and shows on every route, with no fixed
+  positioning and no overlap. `overflow-x:auto` means it never causes horizontal page overflow.
+- **State read (no second engine).** Reads the live workspace from `localStorage['obol-state-v2']`
+  (never mutates it) and resolves facts through **`window.OBOL_CORE_V2.effectiveFacts(state, ctx)`**
+  when core is present (context-scoped), falling back to raw engagement-wide fact ids otherwise.
+  Milestones map to real produced fact ids: `scope.defined`, `scan.initial`, `credential.*`,
+  `foothold.*`, `access.{admin,root,system,web_admin}`, `objective.domain_admin` /
+  `ad.dcsync_rights_or_replication_observed` / `loot.ntds`, `loot.*`, `report.ready` (with
+  `state.hosts`/`state.params.target` and `state.credentials` as fallback signals for Target/Creds).
+- **Live advance.** A `MutationObserver` on `#view` (debounced) catches every in-tab evidence change
+  (obol's `addFact`/`recordActivity`/parse paths all end in `route()` → `#view` rewrite), plus
+  `hashchange` and cross-tab `storage`. A newly-reached chip briefly pulses (`prefers-reduced-motion`
+  guarded) and an `aria-live` span announces "Milestone reached: X"; the initial render seeds state
+  without pulsing so a reload doesn't fire every chip.
+- **Integration, not duplication.** The whole strip is one focusable link to `#/path` (Next Steps),
+  so the spine *shows how far you've climbed* and hands off to the existing recommender for *what to
+  do next*. Exposes `window.OBOL_KILLCHAIN` (`refresh`, `milestones`).
+- **Same additive rules as Builds 1–4:** inlined (**zero added requests**), IIFE + try/catch so it
+  can never block boot, theme-aware via tokens (verified against all five skins' `--accent`/`--dim`/
+  `--glow-soft`), keyboard-operable, `prefers-reduced-motion` honored.
+
+**Verification:** Static review complete; diff is **purely additive** (`index.html`: 140 insertions,
+0 deletions — two inline blocks only). Follows the exact IIFE / `localStorage` / DOM-driven pattern
+proven by Builds 3–4. **Static gate analysis:** the change adds no `url()`/`src` references
+(`validate-asset-references` unaffected), preserves all `index.html` boot/layout tokens
+(`validate-current-boot`, `validate-responsive-layout` — the strip is `box-sizing:border-box;
+width:100%;overflow-x:auto`, no page overflow), and adds zero requests (`playwright-smoke` budgets
+unaffected). _Re-run before merge (as with Build 4): the 5 `node tools/validate-*.js` gates +
+`tests/playwright-smoke.js`, plus a functional pass that seeds `obol-state-v2` with facts and
+asserts chips advance live + no console errors + no horizontal overflow 320→1920px._
 
 ---
 
@@ -306,7 +395,7 @@ step without a manual refresh; no regressions to intake/path/report.
 | 2 | ⌘K Command Palette | ✅ done | branch `claude/nice-wright-0u29oe` | command search + copy-with-vars; supersedes nav-only palette; responsive |
 | 3 | Playbook Builder | ✅ done | branch `claude/adoring-gates-p6ln8a` | ⛓ header launcher + slide-in drawer; add via palette (+ / ⇧↵); reorder/remove; runnable logged `.sh`; per-engagement persistence; no overflow 320→1920 |
 | 4 | Cred Reuse Matrix + retarget | 🟨 impl (browser/gate run pending) | branch `claude/gallant-lovelace-70m4jl` (PR #248) | 🔑 header launcher + modal cred×host grid (✓/ADM/✗/·); one-click retarget of cred/host/cell via app inputs; ranked rows; roving-tabindex keyboard grid; inlined, zero added requests. Static review + static gate analysis done, push verified purely additive; `node`/headless run blocked in build session — CI + gates run on the PR |
-| 5 | Evidence→kill-chain loop | ⬜ planned | — | |
+| 5 | Kill-Chain Milestone Spine | 🟨 impl (browser/gate run pending) | branch `claude/friendly-mayer-mzcfqs` | **Rescoped** from "Evidence→next-command loop" (redundant with the existing Next Steps recommender). Shipped: a header-anchored "trophy" progress spine (🎯 Target▸📡 Recon▸🔑 Creds▸🐚 Foothold▸🛡 Local Admin▸🏰 Domain Admin▸💎 Loot▸📄 Report) that reads live facts via `OBOL_CORE_V2.effectiveFacts`, advances live via a `#view` MutationObserver, pulses newly-reached chips, links to `#/path`. Inlined, zero added requests, purely additive (140 ins / 0 del). Static review + gate analysis done; CI + gates run on the PR |
 
 ---
 
@@ -318,7 +407,7 @@ Give Claude any of these:
 - `Review docs/EXPERIENCE-REVAMP.md and start Build 2 (Command Palette).`
 - `Review docs/EXPERIENCE-REVAMP.md and start Build 3 (Playbook Builder).`
 - `Review docs/EXPERIENCE-REVAMP.md and start Build 4 (Cred Matrix).`
-- **`Review docs/EXPERIENCE-REVAMP.md and start Build 5 (Evidence loop).`**  ← the next build
+- **`Review docs/EXPERIENCE-REVAMP.md and start Build 5 (Kill-Chain Milestone Spine).`**  ← the next build
 
 ---
 
