@@ -568,6 +568,69 @@ html.obol-fx[data-skin="matrix"] .coin{animation:obol-wire 1.8s ease-in-out infi
   #obol-pb-toast{transition:none}
 }
 </style>
+<!-- Cred Reuse Matrix (Build 4): credentials × hosts grid (✓/ADM/✗/·) with one-click retarget. Inlined for zero added requests; theme-aware via obol's tokens; reads the live workspace, retargets via the app's own sidebar inputs. -->
+<style id="obol-credmatrix">
+#obol-cm-btn{display:flex;align-items:center;gap:7px;cursor:pointer;background:var(--panel2);color:var(--dim);border:1px solid var(--border);border-radius:8px;padding:5px 10px;font:600 12px/1 -apple-system,'Segoe UI',Roboto,sans-serif;letter-spacing:.4px}
+#obol-cm-btn:hover{color:var(--fg);border-color:var(--accent)}
+#obol-cm-btn .ic{font-size:13px;line-height:1}
+#obol-cm-btn .ct{min-width:16px;text-align:center;font-family:var(--mono,monospace);font-size:10px;padding:1px 5px;border-radius:999px;background:var(--bg);border:1px solid var(--border);color:var(--dim)}
+#obol-cm-btn[data-count]:not([data-count="0"]) .ct{color:var(--accent);border-color:var(--accent);box-shadow:0 0 8px var(--glow-soft)}
+#obol-cm{position:fixed;inset:0;z-index:950;display:none;justify-content:center;align-items:flex-start;padding:8vh 16px 16px;background:rgba(0,0,0,.55);backdrop-filter:blur(2px)}
+#obol-cm.open{display:flex}
+#obol-cm-panel{display:flex;flex-direction:column;width:min(920px,100%);max-height:min(80vh,calc(100dvh - 96px));background:var(--panel,#161b22);color:var(--fg,#d7e0ea);border:1px solid var(--border,#2d3646);border-radius:12px;box-shadow:0 24px 60px rgba(0,0,0,.55),0 0 0 1px var(--glow-soft,transparent);overflow:hidden}
+#obol-cm-head{flex:0 0 auto;display:flex;align-items:flex-start;gap:10px;padding:14px 16px 10px;border-bottom:1px solid var(--border)}
+#obol-cm-head .sub{font-family:var(--mono,monospace);font-size:10px;color:var(--dim);letter-spacing:1.5px;text-transform:uppercase}
+#obol-cm-head h2{margin:2px 0 0;font:700 15px/1.15 -apple-system,'Segoe UI',Roboto,sans-serif;letter-spacing:.3px}
+#obol-cm-head .desc{margin:3px 0 0;font-size:11.5px;color:var(--dim);line-height:1.45;max-width:60ch}
+#obol-cm-head-main{flex:1 1 auto;min-width:0}
+#obol-cm-close{flex:0 0 auto;cursor:pointer;background:transparent;border:1px solid var(--border);border-radius:7px;color:var(--dim);padding:4px 9px;font-size:14px;line-height:1}
+#obol-cm-close:hover{color:var(--fg);border-color:var(--accent)}
+#obol-cm-legend{flex:0 0 auto;display:flex;flex-wrap:wrap;gap:6px 14px;padding:9px 16px;border-bottom:1px solid var(--border);font-family:var(--mono,monospace);font-size:10.5px;color:var(--dim)}
+#obol-cm-legend .lg{display:inline-flex;align-items:center;gap:6px}
+#obol-cm-legend .chip{display:inline-flex;align-items:center;justify-content:center;min-width:26px;height:18px;padding:0 5px;border-radius:5px;font-weight:700;font-size:10px;border:1px solid currentColor}
+.obol-cm-chip.st-adm,#obol-cm-legend .chip.st-adm{color:var(--accent2,#e8b54a)}
+.obol-cm-chip.st-ok,#obol-cm-legend .chip.st-ok{color:var(--accent,#58d68d)}
+.obol-cm-chip.st-no,#obol-cm-legend .chip.st-no{color:var(--danger,#e05c5c)}
+.obol-cm-chip.st-untested,#obol-cm-legend .chip.st-untested{color:var(--dim,#8b98a9)}
+#obol-cm-gridwrap{flex:1 1 auto;overflow:auto;overscroll-behavior:contain;min-height:0;padding:2px}
+table.obol-cm-table{border-collapse:separate;border-spacing:0;width:auto;min-width:100%;font-size:12px}
+table.obol-cm-table th,table.obol-cm-table td{border-bottom:1px solid var(--border);border-right:1px solid var(--border);padding:0;white-space:nowrap}
+table.obol-cm-table thead th{position:sticky;top:0;z-index:3;background:var(--panel2,#1c2330)}
+table.obol-cm-table th.obol-cm-corner{left:0;z-index:5;background:var(--panel2,#1c2330);font-family:var(--mono,monospace);font-size:9px;letter-spacing:1.5px;text-transform:uppercase;color:var(--dim);padding:8px 12px;text-align:left;min-width:150px}
+table.obol-cm-table tbody th.obol-cm-rowh{position:sticky;left:0;z-index:2;background:var(--panel,#161b22);text-align:left;min-width:150px;max-width:260px}
+.obol-cm-host{display:block;width:100%;cursor:pointer;background:transparent;border:0;color:var(--fg);font:600 11.5px/1.2 -apple-system,'Segoe UI',Roboto,sans-serif;padding:8px 12px;text-align:left}
+.obol-cm-host .ip{display:block;font-family:var(--mono,monospace);font-size:9.5px;color:var(--dim);font-weight:400;margin-top:2px;white-space:nowrap}
+.obol-cm-cred{display:flex;align-items:center;gap:8px;width:100%;cursor:pointer;background:transparent;border:0;color:var(--fg);padding:8px 12px;text-align:left;font:inherit}
+.obol-cm-cred .nm{min-width:0;overflow:hidden;text-overflow:ellipsis;font-weight:600;font-size:12px}
+.obol-cm-cred .ty{flex:0 0 auto;font-family:var(--mono,monospace);font-size:8.5px;letter-spacing:.5px;padding:1px 5px;border-radius:999px;border:1px solid var(--border);color:var(--dim)}
+.obol-cm-host:hover,.obol-cm-cred:hover{color:var(--accent)}
+td.obol-cm-cell{text-align:center;padding:0}
+.obol-cm-chip{display:inline-flex;align-items:center;justify-content:center;width:100%;min-height:34px;cursor:pointer;background:transparent;border:0;color:inherit;font-family:var(--mono,monospace);font-weight:700;font-size:12px;padding:6px 10px}
+td.obol-cm-cell.st-adm{background:color-mix(in srgb,var(--accent2,#e8b54a) 16%,transparent)}
+td.obol-cm-cell.st-ok{background:color-mix(in srgb,var(--accent,#58d68d) 12%,transparent)}
+td.obol-cm-cell.st-adm .obol-cm-chip{color:var(--accent2,#e8b54a)}
+td.obol-cm-cell.st-ok .obol-cm-chip{color:var(--accent,#58d68d)}
+td.obol-cm-cell.st-no .obol-cm-chip{color:var(--danger,#e05c5c)}
+td.obol-cm-cell.st-untested .obol-cm-chip{color:var(--dim,#8b98a9);font-weight:400}
+.obol-cm-host:focus-visible,.obol-cm-cred:focus-visible,.obol-cm-chip:focus-visible{outline:2px solid var(--accent,#58d68d);outline-offset:-2px}
+.obol-cm-empty{padding:34px 20px;text-align:center;color:var(--dim);font-size:13px;line-height:1.6}
+.obol-cm-empty code{font-family:var(--mono,monospace);color:var(--fg)}
+#obol-cm-toast{position:fixed;left:50%;bottom:26px;transform:translateX(-50%) translateY(10px);z-index:1001;background:var(--panel);color:var(--fg);border:1px solid var(--accent);border-radius:8px;padding:9px 15px;font:600 12.5px/1 -apple-system,'Segoe UI',Roboto,sans-serif;letter-spacing:.3px;box-shadow:0 10px 30px rgba(0,0,0,.5),0 0 18px var(--glow-soft,transparent);opacity:0;pointer-events:none;transition:opacity .18s ease,transform .18s ease}
+#obol-cm-toast.show{opacity:1;transform:translateX(-50%) translateY(0)}
+@media(max-width:620px){
+  #obol-cm-btn{position:relative;padding:5px 7px;gap:0}
+  #obol-cm-btn .lbl{display:none}
+  #obol-cm-btn .ic{font-size:12px}
+  #obol-cm-btn .ct{position:absolute;top:-5px;right:-4px;min-width:0;height:14px;padding:0 4px;font-size:9px;line-height:14px}
+  #obol-cm-btn[data-count="0"] .ct{display:none}
+}
+@media(max-width:520px){
+  #obol-cm{padding:16px 10px}
+  #obol-cm-panel{max-height:calc(100dvh - 32px)}
+  table.obol-cm-table th.obol-cm-corner,table.obol-cm-table tbody th.obol-cm-rowh{min-width:120px}
+}
+@media(prefers-reduced-motion:reduce){#obol-cm-toast{transition:none}}
+</style>
 </head>
 <body>
 <header>
@@ -1066,6 +1129,213 @@ function buildButton(){
 function install(){ try{ load(); buildButton(); }catch(e){} }
 if(doc.readyState==='loading')doc.addEventListener('DOMContentLoaded',install,{once:true}); else install();
 root.OBOL_PLAYBOOK=Object.freeze({ add:add, open:open, close:close, toggle:toggle, clear:clearAll, list:function(){return steps.slice();} });
+})(window);
+</script>
+<!-- Cred Reuse Matrix behavior (Build 4): inlined for zero added requests. Builds a credentials × hosts grid from the live workspace and one-click retargets the console via the app's own sidebar inputs. -->
+<script id="obol-cm-js">
+'use strict';
+(function(root){
+var doc=root.document; if(!doc) return;
+function esc(s){return String(s==null?'':s).replace(/[&<>"]/g,function(c){return {'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c];});}
+var LS_STATE='obol-state-v2';
+var el=null, wrapEl=null, btnEl=null, toastEl=null, lastFocus=null;
+
+/* ---- read the live workspace (never mutate it directly; retarget via the app's inputs) ---- */
+function readState(){ try{ var raw=root.localStorage.getItem(LS_STATE); return raw?JSON.parse(raw):null; }catch(e){ return null; } }
+function detectType(secret){ secret=String(secret||''); if(/^[0-9a-f]{32}$/i.test(secret))return'ntlm'; if(/\$krb5/i.test(secret))return'kerberos'; if(/^[A-Za-z0-9+/=]{40,}$/.test(secret))return'token'; return'password'; }
+var TYPE_CHIP={password:'PW',ntlm:'NT',kerberos:'KRB',token:'TOK'};
+
+/* ---- credentials: merge the rich model with legacy artifacts.creds strings ---- */
+function creds(st){
+ var out=[], seen={}, richUS={};
+ function add(c){
+  var user=String(c.username==null?c.user:c.username||'').replace(/^.*\\/,'').trim(); if(!user)return;
+  var secret=String(c.secret||''); if(!secret)return;
+  var domain=String(c.domain||'').toLowerCase();
+  var type=c.secretType||detectType(secret);
+  var k=domain+' '+user.toLowerCase()+' '+secret+' '+type;
+  if(seen[k])return; seen[k]=1;
+  out.push({username:user,domain:domain,secret:secret,secretType:type,privilege:String(c.privilege||''),validations:Array.isArray(c.validations)?c.validations:[],key:k});
+ }
+ (st&&st.credentials||[]).forEach(function(c){ add(c); richUS[String(c.username||'').replace(/^.*\\/,'').toLowerCase()+' '+String(c.secret||'')]=1; });
+ ((st&&st.artifacts&&st.artifacts.creds)||[]).forEach(function(raw){
+  var s=String(raw||''), user, secret, m=s.match(/^(\S+)\s+\((?:NT:\s*)?([0-9a-f]{32})\)$/i);
+  if(m){ user=m[1]; secret=m[2]; }
+  else { var i=s.indexOf(':'); if(i<0)return; user=s.slice(0,i); secret=s.slice(i+1); }
+  if(richUS[String(user||'').replace(/^.*\\/,'').toLowerCase()+' '+secret])return; // already covered by the rich model
+  add({username:user,secret:secret});
+ });
+ return out;
+}
+function hosts(st){ return ((st&&st.hosts)||[]).filter(function(h){ return h&&(h.ip||h.name||h.hostname); }); }
+function credLabel(c){ return (c.domain?c.domain+'\\':'')+c.username; }
+function hostLabel(h){ return h.name||h.hostname||h.ip||'host'; }
+
+/* ---- cell status: adm > ok > no > untested, from validations + host signals ---- */
+function adminHint(cred,host,val){
+ var pv=(cred.privilege||'').toLowerCase();
+ if(/admin|system|domain admin|enterprise|\bda\b|\broot\b/.test(pv))return true;
+ if(val){ var ev=((val.evidence||'')+' '+(val.service||'')).toLowerCase(); if(/pwn3d|local admin|\badmin\b|system|nt authority/.test(ev))return true; }
+ var pw=String(host.pwned||'').toLowerCase(), un=(cred.username||'').toLowerCase();
+ if(pw&&un&&pw.indexOf(un)>=0)return true;
+ return false;
+}
+function hostCredMatch(cred,host){
+ if(!Array.isArray(host.creds))return false;
+ var un=(cred.username||'').toLowerCase(); if(!un)return false;
+ return host.creds.some(function(hc){ var s=String(hc==null?'':(hc.username||hc.user||hc)).replace(/^.*\\/,'').toLowerCase(); return s&&(s===un||s.split(':')[0]===un); });
+}
+function cellStatus(cred,host){
+ var key='host:'+host.id, vals=cred.validations.filter(function(v){return v&&v.contextKey===key;});
+ var succ=vals.filter(function(v){return v.result==='success';}), fail=vals.filter(function(v){return v.result&&v.result!=='success';});
+ if(succ.length||hostCredMatch(cred,host)){
+  return (succ.some(function(v){return adminHint(cred,host,v);})||adminHint(cred,host,null))?'adm':'ok';
+ }
+ if(fail.length)return 'no';
+ return 'untested';
+}
+var GLYPH={adm:'ADM',ok:'✓',no:'✗',untested:'·'};
+var STLABEL={adm:'admin',ok:'valid',no:'failed',untested:'untested'};
+function statusRank(s){return s==='adm'?3:s==='ok'?2:s==='no'?1:0;}
+
+/* ---- retarget the console through the app's own inputs (persists + re-renders) ---- */
+function setParam(k,v){ var inp=doc.querySelector('[data-param="'+k+'"]'); if(!inp)return false; inp.value=(v==null?'':v); try{inp.dispatchEvent(new root.Event('input',{bubbles:true}));}catch(e){} return true; }
+function retargetCredParams(cred){
+ setParam('user',cred.username);
+ if(cred.domain)setParam('domain',cred.domain);
+ if(cred.secretType==='ntlm'||cred.secretType==='kerberos')setParam('hash',cred.secret);
+ else if(cred.secretType==='token')setParam('token',cred.secret);
+ else setParam('password',cred.secret);
+}
+function retargetHost(host){
+ var sel=doc.getElementById('ctx-select');
+ if(sel){ var val='host:'+host.id;
+  for(var i=0;i<sel.options.length;i++){ if(sel.options[i].value===val){ sel.value=val; try{sel.dispatchEvent(new root.Event('change',{bubbles:true}));}catch(e){} return true; } }
+ }
+ if(host.ip)setParam('target',host.ip); // fallback when the option is not present
+ return false;
+}
+function afterRetarget(msg){ close(); toast(msg); }
+function onCred(cred){ retargetCredParams(cred); afterRetarget('Retargeted console to '+credLabel(cred)); }
+function onHost(host){ retargetHost(host); afterRetarget('Retargeted to host '+hostLabel(host)); }
+function onCell(cred,host){ retargetHost(host); retargetCredParams(cred); afterRetarget(credLabel(cred)+'  →  '+hostLabel(host)); }
+
+/* ---- roving-tabindex keyboard grid: focusables carry data-r / data-c ---- */
+function focusableAt(r,c){ return wrapEl?wrapEl.querySelector('[data-r="'+r+'"][data-c="'+c+'"]'):null; }
+function setRoving(target){
+ if(!wrapEl)return;
+ wrapEl.querySelectorAll('[data-r]').forEach(function(x){x.tabIndex=-1;});
+ if(target){ target.tabIndex=0; }
+}
+function onGridKey(e){
+ var t=e.target; if(!t||t.getAttribute('data-r')==null)return;
+ var r=+t.getAttribute('data-r'), c=+t.getAttribute('data-c'), nr=r, nc=c;
+ if(e.key==='ArrowRight')nc=c+1; else if(e.key==='ArrowLeft')nc=c-1;
+ else if(e.key==='ArrowDown')nr=r+1; else if(e.key==='ArrowUp')nr=r-1;
+ else if(e.key==='Home')nc=0; else if(e.key==='End')nc=9999;
+ else return;
+ e.preventDefault();
+ var next=focusableAt(nr,nc);
+ if(!next&&(e.key==='End')){ // walk left to the last existing cell in the row
+  for(var cc=200;cc>=0&&!next;cc--)next=focusableAt(nr,cc);
+ }
+ if(next){ setRoving(next); next.focus(); }
+}
+
+/* ---- render ---- */
+function render(){
+ if(!wrapEl)return;
+ var st=readState(), CR=creds(st), HS=hosts(st);
+ if(!CR.length&&!HS.length){
+  wrapEl.innerHTML='<div class="obol-cm-empty">No credentials or hosts logged yet.<br>Ingest tool output (<code>nxc</code>, <code>secretsdump</code>, <code>hydra</code>…) on the Evidence tab, or add a host on Targets, to populate the reuse matrix.</div>';
+  return;
+ }
+ // rank creds by their strongest cell so validated/admin creds float up
+ var rows=CR.map(function(c){ var cells=HS.map(function(h){return cellStatus(c,h);}); var best=cells.reduce(function(m,s){return Math.max(m,statusRank(s));},0); return {c:c,cells:cells,best:best}; });
+ rows.sort(function(a,b){ return b.best-a.best || credLabel(a.c).localeCompare(credLabel(b.c)); });
+
+ var h='<table class="obol-cm-table" role="grid" aria-label="Credential reuse matrix"><thead><tr role="row">';
+ h+='<th class="obol-cm-corner" scope="col">cred ↓ / host →</th>';
+ HS.forEach(function(host,ci){
+  h+='<th scope="col" role="columnheader"><button type="button" class="obol-cm-host" data-r="0" data-c="'+(ci+1)+'" data-host="'+ci+'" title="Retarget console to '+esc(hostLabel(host))+'" aria-label="Retarget console to host '+esc(hostLabel(host))+(host.ip?', '+esc(host.ip):'')+'"><span class="nm">'+esc(hostLabel(host))+'</span>'+(host.ip&&host.ip!==hostLabel(host)?'<span class="ip">'+esc(host.ip)+'</span>':'')+'</button></th>';
+ });
+ h+='</tr></thead><tbody>';
+ if(!rows.length){
+  h+='<tr role="row"><th class="obol-cm-rowh" scope="row"><span style="display:block;padding:8px 12px;color:var(--dim);font-size:11.5px">No credentials yet</span></th>'+HS.map(function(){return '<td class="obol-cm-cell st-untested"><span class="obol-cm-chip st-untested">·</span></td>';}).join('')+'</tr>';
+ }
+ rows.forEach(function(row,ri){
+  var c=row.c;
+  h+='<tr role="row"><th class="obol-cm-rowh" scope="row" role="rowheader"><button type="button" class="obol-cm-cred" data-r="'+(ri+1)+'" data-c="0" data-cred="'+ri+'" title="Fill USER / PASS / HASH / DOMAIN with '+esc(credLabel(c))+'" aria-label="Retarget console to credential '+esc(credLabel(c))+'"><span class="nm">'+esc(credLabel(c))+'</span><span class="ty">'+esc(TYPE_CHIP[c.secretType]||'PW')+'</span></button></th>';
+  if(!HS.length){ h+='<td class="obol-cm-cell st-untested"><span style="display:block;padding:8px 12px;color:var(--dim);font-size:11px;white-space:normal">Add a host on the Targets tab to test reuse</span></td>'; }
+  else HS.forEach(function(host,ci){
+   var s=row.cells[ci];
+   h+='<td class="obol-cm-cell st-'+s+'"><button type="button" class="obol-cm-chip st-'+s+'" data-r="'+(ri+1)+'" data-c="'+(ci+1)+'" data-cred="'+ri+'" data-host="'+ci+'" title="'+esc(credLabel(c))+' on '+esc(hostLabel(host))+' — '+STLABEL[s]+'. Retarget here." aria-label="'+esc(credLabel(c))+' on '+esc(hostLabel(host))+', '+STLABEL[s]+'. Activate to retarget the console here.">'+GLYPH[s]+'</button></td>';
+  });
+  h+='</tr>';
+ });
+ h+='</tbody></table>';
+ wrapEl.innerHTML=h;
+
+ // wire actions off the ranked/rendered lists
+ var ORDER=rows.map(function(x){return x.c;});
+ wrapEl.querySelectorAll('.obol-cm-host').forEach(function(b){ b.addEventListener('click',function(){onHost(HS[+b.dataset.host]);}); });
+ wrapEl.querySelectorAll('.obol-cm-cred').forEach(function(b){ b.addEventListener('click',function(){onCred(ORDER[+b.dataset.cred]);}); });
+ wrapEl.querySelectorAll('.obol-cm-chip[data-cred]').forEach(function(b){ b.addEventListener('click',function(){ if(b.dataset.host!=null)onCell(ORDER[+b.dataset.cred],HS[+b.dataset.host]); }); });
+ // roving tabindex: first focusable owns the tab stop
+ var first=wrapEl.querySelector('[data-r="1"][data-c="0"]')||wrapEl.querySelector('[data-r]');
+ setRoving(first);
+}
+
+/* ---- toast ---- */
+function toast(msg){ if(!toastEl)return; toastEl.textContent=msg; toastEl.classList.add('show'); root.clearTimeout(toast._t); toast._t=root.setTimeout(function(){toastEl.classList.remove('show');},1800); }
+
+/* ---- open / close ---- */
+function isOpen(){return el&&el.classList.contains('open');}
+function open(){ if(!el)build(); updateBadge(); render(); if(isOpen())return; lastFocus=doc.activeElement; el.classList.add('open');
+ root.setTimeout(function(){ var f=wrapEl&&wrapEl.querySelector('[data-r][tabindex="0"]'); (f||doc.getElementById('obol-cm-close')||el).focus(); },0); }
+function close(){ if(!isOpen())return; el.classList.remove('open'); if(lastFocus&&doc.contains(lastFocus))try{lastFocus.focus();}catch(e){} }
+function toggle(){ isOpen()?close():open(); }
+
+/* ---- build DOM ---- */
+function build(){
+ if(doc.getElementById('obol-cm'))return;
+ el=doc.createElement('div'); el.id='obol-cm'; el.setAttribute('role','dialog'); el.setAttribute('aria-modal','true'); el.setAttribute('aria-label','Credential reuse matrix');
+ el.innerHTML=''
+  +'<div id="obol-cm-panel">'
+  + '<div id="obol-cm-head"><div id="obol-cm-head-main"><div class="sub">🔑 Cred Reuse</div><h2 id="obol-cm-title">Credential × host matrix</h2>'
+  +   '<p class="desc">Where each looted credential has been validated. Click a host or credential to retarget the console; click a cell to aim a credential at a host.</p></div>'
+  +   '<button id="obol-cm-close" type="button" aria-label="Close credential matrix">✕</button></div>'
+  + '<div id="obol-cm-legend" aria-hidden="true">'
+  +   '<span class="lg"><span class="chip st-adm">ADM</span> admin</span>'
+  +   '<span class="lg"><span class="chip st-ok">✓</span> valid</span>'
+  +   '<span class="lg"><span class="chip st-no">✗</span> rejected</span>'
+  +   '<span class="lg"><span class="chip st-untested">·</span> untested</span>'
+  + '</div>'
+  + '<div id="obol-cm-gridwrap"></div>'
+  +'</div>';
+ doc.body.appendChild(el);
+ toastEl=doc.createElement('div'); toastEl.id='obol-cm-toast'; toastEl.setAttribute('role','status'); toastEl.setAttribute('aria-live','polite'); doc.body.appendChild(toastEl);
+ wrapEl=doc.getElementById('obol-cm-gridwrap');
+ doc.getElementById('obol-cm-close').addEventListener('click',close);
+ el.addEventListener('mousedown',function(e){ if(e.target===el)close(); });
+ el.addEventListener('keydown',function(e){ if(e.key==='Escape'){e.preventDefault();close();} });
+ wrapEl.addEventListener('keydown',onGridKey);
+}
+function buildButton(){
+ var header=doc.querySelector('header'); if(!header||doc.getElementById('obol-cm-btn'))return;
+ btnEl=doc.createElement('button'); btnEl.id='obol-cm-btn'; btnEl.type='button';
+ btnEl.setAttribute('title','Cred Reuse Matrix — credentials × hosts, one-click retarget');
+ btnEl.innerHTML='<span class="ic" aria-hidden="true">🔑</span><span class="lbl">Creds</span><span class="ct">0</span>';
+ btnEl.addEventListener('click',toggle);
+ header.appendChild(btnEl); updateBadge();
+}
+function updateBadge(){ if(!btnEl)btnEl=doc.getElementById('obol-cm-btn'); if(!btnEl)return;
+ var n=creds(readState()).length; btnEl.setAttribute('data-count',String(n)); var ct=btnEl.querySelector('.ct'); if(ct)ct.textContent=n;
+ btnEl.setAttribute('aria-label','Cred reuse matrix — '+n+' credential'+(n===1?'':'s')); }
+function install(){ try{ buildButton(); }catch(e){} }
+if(doc.readyState==='loading')doc.addEventListener('DOMContentLoaded',install,{once:true}); else install();
+try{ root.addEventListener('storage',function(e){ if(e&&e.key===LS_STATE)updateBadge(); }); }catch(e){}
+root.OBOL_CRED_MATRIX=Object.freeze({ open:open, close:close, toggle:toggle, refresh:function(){updateBadge();if(isOpen())render();}, retargetCred:onCred, retargetHost:onHost });
 })(window);
 </script>
 </body>
