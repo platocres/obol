@@ -56,6 +56,38 @@ async function waitForDomStable(page,timeoutMs){
  throw new Error('DOM did not settle before stylesheet comparison');
 }
 
+async function waitForToolsFullInventory(page){
+ await page.waitForFunction(()=>{
+  const inv=window.OBOL_TOOL_BUILDER_INVENTORY;
+  if(!inv||typeof inv.all!=='function')return false;
+  const remote=window.OBOL_REMOTE_EXEC_TOOL_BUILDERS_CURRENT;
+  if(remote&&typeof remote.patchToolsLibraryCompleteness==='function'){
+   try{remote.patchToolsLibraryCompleteness();}catch(_err){}
+  }
+  const normalize=value=>String(value||'').trim().toLowerCase().replace(/^.*[\\/]/,'').replace(/\.exe$/,'').replace(/\s+/g,'-');
+  const key=value=>{let name=normalize(value);if(typeof inv.key==='function')try{name=normalize(inv.key(name)||name);}catch(_err){}return name;};
+  const nodes=Array.from(document.querySelectorAll('#tool-body [data-open-tool],#tool-body [data-inventory-open],#tool-groups [data-open-tool],#tool-groups [data-inventory-open]'));
+  const visible=new Set(nodes.map(node=>key(node.getAttribute('data-open-tool')||node.getAttribute('data-inventory-open')||'')).filter(Boolean));
+  const all=Array.from(new Set(inv.all().map(record=>key(record&&record.tool)).filter(Boolean)));
+  const hidden=all.filter(tool=>!visible.has(tool));
+  const text=document.body&&document.body.innerText||'';
+  const generated=!!document.querySelector('#tool-groups [data-inventory-complete]');
+  const generatedRawAliases=/crackmapexec|enum4linuxng|ligolo-agent|ligolo-proxy/i.test(text);
+  window.__OBOL_STYLE_TOOLS_FULL_INVENTORY_READY__={allCount:all.length,visibleCount:visible.size,hidden,generated,generatedRawAliases};
+  return all.length>0&&hidden.length===0&&generated&&generatedRawAliases&&visible.has(key('impacket-psexec'))&&/psexec/i.test(text);
+ },null,{timeout:30000});
+}
+
+async function waitForRouteReady(page,route){
+ if(route.id==='dashboard'){
+  await page.waitForSelector('[data-product-dashboard-owner="current"]',{state:'visible',timeout:15000});
+  return;
+ }
+ if(route.id==='tools'){
+  await waitForToolsFullInventory(page);
+ }
+}
+
 async function captureSnapshot(page){
  return page.evaluate(()=>{
   const round=value=>Math.round(Number(value||0)*10)/10;
@@ -93,7 +125,7 @@ async function capturePair(browser){
    await page.goto(baseUrl+route.hash,{waitUntil:'domcontentloaded',timeout:30000});
    await page.waitForSelector('#view',{state:'visible',timeout:15000});
    await page.waitForFunction(()=>{const view=document.querySelector('#view');return !!(view&&view.innerText&&view.innerText.trim().length>20);},null,{timeout:15000});
-   if(route.id==='dashboard')await page.waitForSelector('[data-product-dashboard-owner="current"]',{state:'visible',timeout:15000});
+   await waitForRouteReady(page,route);
    await settle(page,route.settleMs||settleMs);
    const domBefore=await waitForDomStable(page,12000);
    const current=await captureSnapshot(page);
