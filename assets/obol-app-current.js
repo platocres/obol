@@ -11,7 +11,7 @@
  * suppresses historical schedulers and commits current route owners last.
  *
  * Historical fragment order sha256: 40e3006d9423d669acf5869b577ecf56a6ca2ee1629c95fd0fcc5d242d2c5f27
- * Generated body sha256: 662a582c56a6787a48e53e66874f13cda26048c3ac8d0411d6703fd81064d4a6
+ * Generated body sha256: 198a86bdd93e835b8201304582669f233f0952b62ca4beca370ad2c4d0e85494
  * First historical fragment: assets/report-v2.js
  * Last historical fragment:  assets/app-v8.8.js
  */
@@ -2170,7 +2170,8 @@ const release=Object.freeze({
   'data/product-hardening/tool-builder-backlog-current.js',
   'data/product-hardening/tool-builder-discovery-current.js',
   'data/product-hardening/credential-helper-tool-builders-current.js',
-  'data/product-hardening/privesc-helper-tool-builders-current.js'
+  'data/product-hardening/privesc-helper-tool-builders-current.js',
+  'data/product-hardening/database-tool-builders-current.js'
  ])
 });
 const AUTH_ENUM_SOURCE='data/tool-builders-auth-enum-current.js';
@@ -2179,7 +2180,8 @@ const TOOL_LIBRARY_COMPACT_EXTENSIONS=Object.freeze([
  'data/product-hardening/tool-builder-backlog-current.js',
  'data/product-hardening/tool-builder-discovery-current.js',
  'data/product-hardening/credential-helper-tool-builders-current.js',
- 'data/product-hardening/privesc-helper-tool-builders-current.js'
+ 'data/product-hardening/privesc-helper-tool-builders-current.js',
+ 'data/product-hardening/database-tool-builders-current.js'
 ]);
 function routeName(){return typeof location==='undefined'?'home':((location.hash||'#/home').replace(/^#\/?/,'').split('/').filter(Boolean)[0]||'home');}
 function extensionPlan(route){

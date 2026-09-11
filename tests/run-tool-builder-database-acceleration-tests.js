@@ -1,0 +1,38 @@
+'use strict';
+const assert=require('assert');
+const fs=require('fs');
+const path=require('path');
+const vm=require('vm');
+const root=path.join(__dirname,'..');
+const read=rel=>fs.readFileSync(path.join(root,rel),'utf8');
+const sandbox={window:{},globalThis:null,location:{hash:'#/tools'},localStorage:{getItem(){return null;},setItem(){}},addEventListener(){},setTimeout(fn){fn();},setInterval(){return 1;}};
+sandbox.window=sandbox.globalThis=sandbox;
+vm.createContext(sandbox);
+['data/tool-builder-schema.js','data/tool-builder-inventory.js','assets/tool-builder-current.js','data/product-hardening/tool-builder-backlog-current.js','data/product-hardening/database-tool-builders-current.js'].forEach(file=>vm.runInContext(read(file),sandbox,{filename:file}));
+const schema=sandbox.OBOL_TOOL_BUILDER_SCHEMA;
+const runtime=sandbox.OBOL_TOOL_BUILDER;
+const inventory=sandbox.OBOL_TOOL_BUILDER_INVENTORY;
+const owner=sandbox.OBOL_DATABASE_TOOL_BUILDERS_CURRENT;
+assert(owner&&owner.version==='v10.21','database owner should register v10.21');
+for(const id of owner.builderIds){assert(schema.get(id),'missing registered builder '+id);assert(owner.profiles[id],id+' needs bespoke tool profile');}
+for(const tool of ['mysql','psql','redis-cli','odat','impacket-mssqlclient','mssql']){const record=inventory.get(tool);assert(record&&record.status==='implemented',tool+' should be implemented');}
+const ctx={target:{value:'203.0.113.77'},context:{domain:'CORP',username:'alice'},workspace:{wordlist:'/tmp/words.txt'}};
+const mysql=runtime.compile(schema.get('tb-mysql'),{mode:'query',host:'203.0.113.77',port:'3306',username:'app',authMode:'prompt',database:'appdb',sslMode:'required',query:'select version();'},ctx);
+assert(mysql.includes('mysql')&&mysql.includes('-h 203.0.113.77')&&mysql.includes('--ssl-mode=REQUIRED')&&mysql.includes("-e 'select version();'"),'mysql command should be mysql-specific');
+const psql=runtime.compile(schema.get('tb-psql'),{mode:'query',host:'203.0.113.77',port:'5432',username:'postgres',database:'postgres',sslMode:'require',query:'select current_user;'},ctx);
+assert(psql.includes('psql')&&psql.includes('sslmode=require')&&psql.includes("-c 'select current_user;'"),'psql command should use postgres connection string and -c');
+const redis=runtime.compile(schema.get('tb-redis-cli'),{action:'info',host:'203.0.113.77',port:'6379',tls:true,authMode:'password',password:'s3cret'},ctx);
+assert(redis.includes('redis-cli')&&redis.includes('--tls')&&redis.includes('-a s3cret')&&redis.endsWith('INFO'),'redis command should be redis-cli-specific');
+const odat=runtime.compile(schema.get('tb-odat'),{module:'sidguesser',host:'203.0.113.77',port:'1521',wordlist:'/tmp/oracle-sids.txt'},ctx);
+assert(odat.includes('odat.py sidguesser')&&odat.includes('-s 203.0.113.77')&&odat.includes('--sids-file /tmp/oracle-sids.txt'),'ODAT command should keep Oracle module shape');
+const mssql=runtime.compile(schema.get('tb-impacket-mssqlclient'),{target:'203.0.113.40',identityScope:'domain',domain:'CORP',username:'alice',authMode:'ntlm',hash:':ABCD1234ABCD1234ABCD1234ABCD1234',port:'1433',windowsAuth:true,query:'select @@version;'},ctx);
+assert(mssql.includes('impacket-mssqlclient')&&mssql.includes('CORP/alice@203.0.113.40')&&mssql.includes('-windows-auth')&&mssql.includes('-hashes'),'mssqlclient command should keep Impacket auth shape');
+assert.notStrictEqual(owner.profiles['tb-mysql'].whyChooseThisTool,owner.profiles['tb-psql'].whyChooseThisTool,'database profiles must not be generic clones');
+assert(owner.profiles['tb-redis-cli'].curatedModes.includes('PING'),'redis profile should retain Redis-specific modes');
+const ok=owner.databaseResult('tb-redis-cli','redis-cli -h 203.0.113.77 PING\nPONG');
+assert(ok.outcomeFacts.includes('database.query_result_observed')&&ok.state==='positive','Redis PONG should be positive database Evidence');
+const fail=owner.databaseResult('tb-psql','psql: error: password authentication failed for user "postgres"');
+assert(fail.outcomeFacts.includes('database.authentication_failure_observed')&&fail.state==='negative','psql auth failure should be negative Evidence');
+const modeled=sandbox.OBOL_TOOL_BUILDER_IMPLEMENTATION_AUDIT_CURRENT.modeledRecords().map(r=>r.tool);
+for(const tool of ['mysql','psql','redis-cli','odat','impacket-mssqlclient'])assert(!modeled.includes(tool),tool+' should leave the modeled backlog');
+console.log('Tool Builder database acceleration validation passed.');
