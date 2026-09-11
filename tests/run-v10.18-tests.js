@@ -7,7 +7,7 @@ const cp=require('child_process');
 const root=path.join(__dirname,'..');
 const read=rel=>fs.readFileSync(path.join(root,rel),'utf8');
 function loadRelease(hash){
- const context={console,globalThis:null,window:null,location:{hash},document:{head:{appendChild(node){context.loaded.push(node.src);if(typeof node.onload==='function')node.onload();}},documentElement:{appendChild(node){context.loaded.push(node.src);if(typeof node.onload==='function')node.onload();}},createElement(tag){return {tagName:String(tag||'script').toUpperCase(),dataset:{},setAttribute(name,value){this[name]=String(value);}};},querySelector(){return null;}},loaded:[]};
+ const context={console,globalThis:null,window:null,location:{hash},OBOL_TOOL_BUILDER_SCHEMA:{register(){},get(){return null;}},document:{head:{appendChild(node){context.loaded.push(node.src);if(typeof node.onload==='function')node.onload();}},documentElement:{appendChild(node){context.loaded.push(node.src);if(typeof node.onload==='function')node.onload();}},createElement(tag){return {tagName:String(tag||'script').toUpperCase(),dataset:{},setAttribute(name,value){this[name]=String(value);}};},querySelector(){return null;}},loaded:[]};
  context.globalThis=context;context.window=context;context.addEventListener=function(){};
  vm.createContext(context);
  vm.runInContext(read('data/current-release.js'),context,{filename:'data/current-release.js'});
