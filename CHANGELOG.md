@@ -1,3 +1,12 @@
+## v10.16 — Product-hardening release v10.16 fixes the Tool Library layering regression after the modeled-tool burn-down releases. It compacts the recent Burp Suite and network/host discovery release owners into one current Tool Builder discovery owner and cleans the active Tool Builder queue so completed slices do not appear as pending work
+
+- Added `data/product-hardening/tool-builder-discovery-current.js` as the current owner for Burp Suite plus masscan, Rustscan, naabu, fping, and nbtscan.
+- Removed `data/product-hardening/burp-suite-tool-builder-v10.10.js` and `data/product-hardening/network-discovery-tool-builders-v10.15.js` from the live `data/current-release.js` extension list so the Tool Library no longer loads those release layers as part of normal startup.
+- Kept Burp Suite as a first-class guided third-party GUI workflow with proxy setup, target scope, sitemap capture, Repeater, Intruder, Scanner triage, raw request/response import handoff, payload-position discipline, payload processing notes, grep/extract markers, scope/rate boundaries, and Burp Evidence ingestion.
+- Kept masscan, Rustscan, naabu, fping, and nbtscan as implemented network/host discovery builders with minimum viable command generation, supplied/Evidence-derived prefill, additive controls, placeholder refusal, and network discovery Evidence ingestion.
+- Cleaned the README Tool Builder queue and canonical Tool Builder queue doc so completed slices are not listed as active queue items and v10.15 is not described as the next modeled-tool build after it has merged.
+- Added a current-owner hygiene rule: modeled-tool release slices must be folded into stable current owners or explicitly justified instead of accumulating live versioned Tool Library layers.
+
 ## v10.15 — Product-hardening release v10.15 implements the next modeled Tool Builder burn-down slice for network and host discovery and corrects the stale Tool Builder queue handoff so the active modeled-tool build is v10.15, not the old v10.09 web discovery slice
 
 - Added first-class network and host discovery builders for masscan, Rustscan, naabu, fping, and nbtscan.
