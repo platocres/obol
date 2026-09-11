@@ -155,14 +155,31 @@ first paint; focus rings + forced-colors still pass; picker is keyboard-operable
 **Notes:** set `data-skin` on `<html>` (not a wrapper) so all layers inherit tokens. Rain canvas
 is `position:fixed;z-index:0;pointer-events:none`, sized to viewport, cleared when inactive.
 
-### Build 2 — ⌘K Command Palette  `[status: planned]`
-**What:** Global fuzzy search over commands/tools/routes; Enter copies (with variable
-substitution) or navigates.
-**Why:** Single highest ergonomic payoff; mostly independent of everything else.
-**Files:** `assets/command-palette.css` + `assets/command-palette.js` (owner), indexing obol's
-existing tool/command data. Launcher: `Ctrl/⌘+K`; header affordance.
-**Acceptance:** opens/closes with keyboard, traps focus, fuzzy-ranks results, Enter copies the
-RHOST/LHOST-filled command and toasts, Esc restores focus, screen-reader labeled.
+### Build 2 — ⌘K Command Palette  `[status: DONE — 2026-09-11]`
+**What:** Command-aware ⌘K palette: fuzzy search across obol's full command library + nav,
+Enter copies the command with `{{var}}` placeholders filled, or jumps to a section.
+**Why:** Single highest ergonomic payoff (RedConsole's core move).
+**Key discovery:** obol already had a **nav-only** Ctrl+K palette (`openPalette30`, in
+`obol-app-current.js`) that searches pages/workspace but cannot search or copy commands. Build 2
+**supersedes** it rather than duplicating: a capture-phase `keydown` handler intercepts Ctrl/⌘+K
+before the old bubble-phase handler (and a capture-phase click handler re-points the
+`#quick-open30`/`#home-search30` triggers), so only the new palette opens.
+**Shipped inline in `index.html`** (`<style id="obol-palette">` + `<script id="obol-pal-js">`),
+zero added requests, theme-aware via obol tokens:
+- Indexes **nav** (`header nav a[href^="#"]`) + **commands** from `window.OBOL_LANES`
+  (27 lanes → 1404 commands) and `window.OBOL_SCRIPTS` (lazy-loaded via
+  `OBOL_RUNTIME_LOADER.loadGroup('toolReferenceData')` on open).
+- **Variable substitution** reads live sidebar `[data-param]` inputs and fills `{{key}}`
+  placeholders on copy (unmatched placeholders are left visible).
+- Keyboard: `↑`/`↓` select, `Enter` copy/navigate, `Esc` close; `role=dialog`/`listbox`/`option`
+  + `aria-selected`; toast on copy; exposes `window.OBOL_PALETTE`.
+**Verified (headless Chromium):** Ctrl+K opens the new palette and the old one stays suppressed;
+nav search navigates; command search returns hits (34 for "kerberoast"); copy fills `{{target}}`
+from a param input with no raw placeholder left; **responsive** — panel fits at 380/768/1440 with
+no body overflow and fits height; repo smoke passes (budget unchanged, zero console errors); all
+five workspace gates pass.
+**Scoring note:** results rank by "all query tokens present, earliest + prefix wins"; the
+no-match sentinel is `-Infinity` (filtered with `isFinite`) so negative match scores are kept.
 
 ### Build 3 — Playbook Builder ⛓  `[status: planned]`
 **What:** The multi-command chainer the owner flagged. Add commands from any surface → reorder →
@@ -195,7 +212,7 @@ step without a manual refresh; no regressions to intake/path/report.
 |---|---|---|---|---|
 | — | Interactive showcase | ✅ done | artifact v2 | 5 skins + FX toggle + motion |
 | 1 | Skin Engine | ✅ done | branch `claude/nice-wright-0u29oe` | picker + 5 skins + rain + FX; validated in-browser |
-| 2 | ⌘K Command Palette | ⬜ planned | — | |
+| 2 | ⌘K Command Palette | ✅ done | branch `claude/nice-wright-0u29oe` | command search + copy-with-vars; supersedes nav-only palette; responsive |
 | 3 | Playbook Builder | ⬜ planned | — | |
 | 4 | Cred Reuse Matrix + retarget | ⬜ planned | — | |
 | 5 | Evidence→kill-chain loop | ⬜ planned | — | |
