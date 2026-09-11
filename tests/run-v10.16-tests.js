@@ -32,7 +32,7 @@ load(ctx,[
  'data/product-hardening/tool-builder-backlog-current.js',
  'data/current-release.js'
 ]);
-assert.strictEqual(ctx.OBOL_CURRENT_RELEASE.label,'v10.16','current release authority must advance to v10.16');
+assert(/^v10\.(?:1[6-9]|[2-9]\d)$/.test(ctx.OBOL_CURRENT_RELEASE.label),'current release authority must be v10.16 or later');
 const extensions=Array.from(ctx.OBOL_CURRENT_RELEASE.productHardeningExtensions||[]);
 assert(extensions.includes('data/product-hardening/tool-builder-discovery-current.js'),'current release must load the compact discovery Tool Builder owner');
 assert(!extensions.includes('data/product-hardening/burp-suite-tool-builder-v10.10.js'),'current release must not load the old Burp release layer live');
@@ -67,7 +67,7 @@ assert(networkEvidence.outcomeFacts.includes('scan.open_port_observed'),'Network
 const auditFailures=Array.from(ctx.OBOL_TOOL_BUILDER_IMPLEMENTATION_AUDIT_CURRENT.validateImplementedBuilders());
 assert.strictEqual(auditFailures.length,0,auditFailures.join('\n'));
 const readme=read('README.md');
-assert(readme.includes('Current release: **v10.16**'),'README must identify v10.16');
+assert(/Current release: \*\*v10\.(?:1[6-9]|[2-9]\d)\*\*/.test(readme),'README must identify v10.16 or later');
 assert(readme.includes('Completed slices are not active queue items'),'README must stop listing completed slices as active queue work');
 assert(!readme.includes('Completed current burn-down slices'),'README must not retain the old completed-slices queue section');
 assert(!/The next modeled-tool build is \*\*v10\.15\*\*/.test(readme),'README must not describe v10.15 as the next build after it merged');
