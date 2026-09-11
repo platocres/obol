@@ -37,7 +37,7 @@ For every implemented builder:
 - When a tool is primarily a launcher, listener, transfer helper, transport, or third-party GUI handoff, its Evidence contract must still recognize the useful state it owns, such as listener bound, client connected, file transferred, route/interface created, proxy capture, request/response captured, scanner issue recorded, manual verification completed, or failure reason. Any deeper downstream fact must remain gated on the appropriate independent Evidence.
 - An inventory record must not be promoted to `implemented` until command generation, live Tools rendering, Evidence ingestion, Next Steps handoff where applicable, cleanup/proof boundaries, and regression fixtures all exist. Third-party GUI tools satisfy the command-generation part of this rule with guided handoff generation instead of fake GUI automation.
 
-This is the permanent Definition of Done for modeled-tool work. The implemented-builder audit is complete, but it did not close the full modeled-tool backlog because many inventory records still remain `modeled`.
+This is the permanent Definition of Done for modeled-tool work. The **Implemented-tool Evidence and cross-surface audit** is complete, but it did not close the full modeled-tool backlog because many inventory records still remain `modeled`.
 
 ## Current ownership hygiene
 
