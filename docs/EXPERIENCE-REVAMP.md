@@ -1,0 +1,180 @@
+# Obol Experience Revamp — Build Plan & Context
+
+> **Purpose of this document.** This is the working brief for a multi-build effort to
+> level up obol's aesthetics, information architecture, command ergonomics, and overall
+> UX — inspired by [`anshu19981/Pentestcheatsheet`](https://github.com/anshu19981/Pentestcheatsheet)
+> (a.k.a. "RedConsole"). Point Claude at this file to resume any build with full context.
+> **This is not the README** — the README is reserved for other tooling. Keep planning here.
+>
+> _Maintained by Claude. Last updated: 2026-09-11._
+
+---
+
+## 0 · How to use this doc
+
+- Each build below is self-contained: **what / why / files / acceptance criteria / notes**.
+- To start or resume a build, tell Claude the **one-liner** listed for it (see §6).
+- Update the **Status** table (§5) at the end of each build.
+- Decisions already locked with the owner are in §2 — don't re-litigate them without a nudge.
+
+---
+
+## 1 · Vision
+
+Turn obol from a strong-but-utilitarian operator ledger into a tool that is both **beautiful
+and faster to operate**. Two tracks:
+
+1. **Aesthetic track** — a multi-skin theme engine (cyberpunk / matrix / CRT / neon / light)
+   with glow and motion graphics. Skins are opt-in personality; the operator picks their world.
+2. **Ergonomics track** — borrow RedConsole's information architecture and command-access
+   ideas so the right command is one keystroke away, and reference becomes repeatable action.
+
+The owner likes: glowing + motion graphics, matrix/cyberpunk aesthetics, multiple selectable
+skins, and strong command organization + a multi-command builder.
+
+---
+
+## 2 · Locked decisions
+
+- **Ship all five skins** (see §4, Build 1): Obol Classic, Ghostwire, Amber Phosphor, Neon Noir, Recon Daylight.
+- **Motion = full-effect, opt-out.** Signature motion runs by default; a global **FX toggle**
+  lets operators kill it, and everything still auto-disables under `prefers-reduced-motion`.
+- **Additive architecture.** New work ships as **new owner files loaded last** (the pattern
+  `accessibility.css` already uses) — never scattered edits across the versioned history.
+- **README is off-limits** for this effort; plan and track here instead.
+
+---
+
+## 3 · Context you'll need (so you don't re-derive it)
+
+### 3.1 obol architecture (as of v10.17)
+- Single-page, offline, browser-based **offensive operator console** ("Offensive Box Operations Ledger").
+- Assets live in `assets/`. `index.html` loads a **versioned runtime manifest**
+  (`data/runtime-manifest.js` + `assets/runtime-current.js`) that writes ~75 cascading CSS
+  layers (`obol.css` → `obol-current.css`) and a long JS chain in a fixed historical order.
+- **`assets/runtime-current.js`** is the loader: `writeStyles()` / `writeScripts()`, a boot
+  guard (`armBootGuard`, 12s deadline → `data-obol-boot="failed"`), and lazy route bundles.
+- **Palette is fully tokenized** as CSS variables in `:root` (in `obol.css` and re-declared in
+  `obol-current.css`): `--bg --panel --panel2 --border --fg --dim --accent --accent2 --danger
+  --info --mono`. **This is why skins are cheap** — override tokens, touch no components.
+- **`assets/accessibility.css`** loads last as a "stable owner": focus rings, `forced-colors`
+  support, and a `prefers-reduced-motion` block that zeroes transitions/animations. Mirror this
+  loading pattern for new owners.
+- **`assets/accessibility.js`** adds ARIA roles / keyboard-button behavior via a MutationObserver.
+  New interactive controls should get `role`/`tabindex`/`aria-pressed` to match.
+- Header DOM (in `index.html`): `.brand > .coin + h1(OBOL) + .tagline`, `nav[data-nav]`,
+  `#progress` pill, `#timer`. Sidebar `#sidebar` has `#params`, `#facts-list`, `#fact-input`.
+  Main is `#view`. A good skin picker + ⌘K launcher live in the header.
+
+### 3.2 RedConsole feature inventory (the inspiration)
+- **735+ commands / 32 sections / 3 tiers**: *OSCP+ Core* (Recon, Web, API, Shells, Linux/Win
+  PrivEsc, Tunneling, File Transfer, BOF, Cloud, Pivoting, OSINT, Wireless), *Active Directory*
+  (AD Recon/Attacks/Lateral, Persistence, ADCS, Post-Exploit/Loot), *OSEP/Advanced* (Evasion,
+  Injection, C2, VBA/Office, Deserialization, Binary, Containers/K8s, LOLBAS/GTFOBins, Password,
+  Hash Cracking). Plus a **Methodology** phase spine (Setup→Recon→Foothold→PrivEsc→AD/Lateral→Loot→Reporting).
+- **Variables bar** (RHOST/LHOST/LPORT/URL/USER/PASS/DOMAIN/DC-IP/HASH) auto-fills every command.
+- **Ctrl+K instant search** across all commands.
+- **Playbook Builder (⛓)** — add commands from any section into a chain, reorder, **export a
+  logged `.sh`**. Reference → repeatable automation.
+- **Stateful Attack Plan** — detects target profile; tickable milestones (User list → Valid
+  creds → Shell → Local Admin → Domain Admin); pasting tool output into the **Loot Parser**
+  auto-advances it.
+- **Per-command**: ★ favorites, 📝 notes, ✔ done-tracking + progress bars, **copy history**.
+- **One-click cred retarget** — click a looted cred, whole console re-fills to it.
+- **Cred Reuse Matrix**, **Target Intel panel**, slide-in mobile drawer.
+- Flow spine: **Variables → Autopilot → Loot Parser → Attack Plan → Pivot Kit → Report**.
+- obol already has seeds of several: params (=variables), path/next-steps (=attack plan),
+  intake (=loot parser), report, nmap parsing, methodology, dashboard. Gains are in **wiring +
+  ergonomics**, not net-new capability.
+
+### 3.3 Interactive showcase (reference build)
+- Live 5-skin mock of obol's console: **https://claude.ai/code/artifact/968fd9bd-51ca-483c-a5ba-4b9ca2528a5a**
+- Source snapshot: `scratchpad/obol-skins.html` (ephemeral; the artifact URL is canonical).
+- Demonstrates: token-per-skin engine, header picker, FX toggle (`0`), matrix rain canvas,
+  CRT scanline-roll + flicker, neon glow-pulse, switch sweep, wordmark scramble on change,
+  auto-fill command + copy, cred reuse matrix. Use it as the visual/UX target for Build 1.
+
+---
+
+## 4 · Builds
+
+### Build 1 — Skin Engine 🎨  `[status: planned]`
+**What:** Ship the five-skin theme engine into real obol.
+**Why:** Highest delight-per-risk; validated visually in the showcase.
+**Files (new owners, loaded last via the manifest):**
+- `assets/obol-themes.css` — `:root` token defaults + `[data-skin="matrix|crt|neon|recon"]`
+  overrides + `.stage.fx` signature-motion rules + `@media(prefers-reduced-motion)` guard.
+- `assets/obol-themes.js` — inject skin picker + FX toggle into header, set `data-skin` on
+  `<html>`, `localStorage` persistence (`obol-skin`, `obol-fx`), matrix-rain canvas manager,
+  keyboard (`1`–`5`, `[` `]`, `0`), ARIA (`aria-pressed`), wordmark scramble + switch sweep.
+- Register both in `data/runtime-manifest.js` so they load after `accessibility.*`.
+**Skins & signature motion (full-effect, opt-out):**
+| Skin | Ground | Accent | Accent2 | Danger | Motion |
+|---|---|---|---|---|---|
+| Obol Classic | `#0d1117` | `#58d68d` | `#e8b54a` | `#e05c5c` | none (baseline) |
+| Ghostwire | `#000502` | `#00ff66` | `#ffffff` | `#ff2d2d` | matrix rain + coin breathe |
+| Amber Phosphor | `#0a0700` | `#ffb000` | `#ffe6b0` | `#ff5b3b` | scanline roll + flicker |
+| Neon Noir | `#0a0616` | `#ff2fb9` | `#21e6ff` | `#ff4d6a` | glow pulse + grid wash |
+| Recon Daylight | `#e9edf1` | `#0f7a52` | `#b3630b` | `#c0392b` | none (light) |
+**Acceptance:** skins switch instantly with no component-CSS edits; choice persists across
+reload; rain/glow/scanlines only run when FX on **and** motion allowed; boot guard still commits
+first paint; focus rings + forced-colors still pass; picker is keyboard-operable.
+**Notes:** set `data-skin` on `<html>` (not a wrapper) so all layers inherit tokens. Rain canvas
+is `position:fixed;z-index:0;pointer-events:none`, sized to viewport, cleared when inactive.
+
+### Build 2 — ⌘K Command Palette  `[status: planned]`
+**What:** Global fuzzy search over commands/tools/routes; Enter copies (with variable
+substitution) or navigates.
+**Why:** Single highest ergonomic payoff; mostly independent of everything else.
+**Files:** `assets/command-palette.css` + `assets/command-palette.js` (owner), indexing obol's
+existing tool/command data. Launcher: `Ctrl/⌘+K`; header affordance.
+**Acceptance:** opens/closes with keyboard, traps focus, fuzzy-ranks results, Enter copies the
+RHOST/LHOST-filled command and toasts, Esc restores focus, screen-reader labeled.
+
+### Build 3 — Playbook Builder ⛓  `[status: planned]`
+**What:** The multi-command chainer the owner flagged. Add commands from any surface → reorder →
+export an executable, logged `.sh` with variables substituted.
+**Why:** Converts obol from reference into repeatable automation; pairs with existing params.
+**Files:** `assets/playbook.css` + `assets/playbook.js` (owner). Reuse existing export/report
+plumbing where possible.
+**Acceptance:** add/remove/reorder steps; live preview with substituted variables; export downloads
+a runnable `.sh` (shebang + `set -x`/tee logging); state persists per engagement.
+
+### Build 4 — Cred Reuse Matrix + One-Click Retarget  `[status: planned]`
+**What:** Credentials × hosts grid (✓/✗/ADM); clicking a cred re-fills USER/PASS/HASH/DOMAIN and
+retargets the console. Leverages obol's fact/param/AD-pivoting model.
+**Files:** `assets/cred-matrix.css` + `assets/cred-matrix.js` (owner).
+**Acceptance:** matrix renders from logged creds/hosts; click retargets params + toasts; admin
+cells visually distinct; keyboard-operable cells.
+
+### Build 5 — Evidence → Kill-Chain → Next-Command Loop  `[status: planned]`
+**What:** Wire the flow so parsing evidence visibly advances the kill chain and lights up the next
+recommended command — closing RedConsole's Variables→Loot→Plan→Report loop.
+**Why:** Biggest UX payoff; makes the tool feel alive. Do last (touches the most surfaces).
+**Acceptance:** logging a fact/parse result advances the relevant phase chip and surfaces the next
+step without a manual refresh; no regressions to intake/path/report.
+
+---
+
+## 5 · Status tracker
+
+| # | Build | Status | Shipped in | Notes |
+|---|---|---|---|---|
+| — | Interactive showcase | ✅ done | artifact v2 | 5 skins + FX toggle + motion |
+| 1 | Skin Engine | ⬜ planned | — | next up |
+| 2 | ⌘K Command Palette | ⬜ planned | — | |
+| 3 | Playbook Builder | ⬜ planned | — | |
+| 4 | Cred Reuse Matrix + retarget | ⬜ planned | — | |
+| 5 | Evidence→kill-chain loop | ⬜ planned | — | |
+
+---
+
+## 6 · One-liner index (how to direct the next build)
+
+Give Claude any of these:
+
+- **`Review docs/EXPERIENCE-REVAMP.md and start Build 1 (Skin Engine).`**  ← the next build
+- `Review docs/EXPERIENCE-REVAMP.md and start Build 2 (Command Palette).`
+- `Review docs/EXPERIENCE-REVAMP.md and start Build 3 (Playbook Builder).`
+- `Review docs/EXPERIENCE-REVAMP.md and start Build 4 (Cred Matrix).`
+- `Review docs/EXPERIENCE-REVAMP.md and start Build 5 (Evidence loop).`
