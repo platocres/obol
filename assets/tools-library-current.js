@@ -159,7 +159,7 @@ function renderTool(tool){ensureAssets(()=>{const raw=String(tool||'__library'),
   const detailStrip='<section class="card tool-detail-strip" data-tool-detail="'+esc(k)+'"><div class="card-body"><span class="eyebrow30">'+esc(status)+' tool</span><span class="tool-route-hint">Direct route <code>#/tools/'+esc(k)+'</code> · aliases resolve here; canonical tools render once in the grouped library.</span></div></section>';
   const builderCard=builder?'<div class="tool-builder-host"><div data-current-tool-builder88></div></div>':modeledHtml(k,rec);
   const secondary='<section class="card tool-secondary" data-tool-secondary="'+esc(k)+'"><div class="card-body"><h3>Reference and accessories</h3><p class="hint">Supporting material for '+esc(toolLabel(k))+'. The builder above is the primary surface; expand a section only when you need it.</p>'
-   +'<details class="tool-secondary-block"><summary>Recommended accessories</summary>'+accessoriesHtml(k)+'</details>'
+   +'<details class="tool-secondary-block" open><summary>Recommended accessories</summary>'+accessoriesHtml(k)+'</details>'
    +'<details class="tool-secondary-block"><summary>Modes and presets reference</summary>'+modesHtml(k,builder)+'</details>'
    +'<details class="tool-secondary-block"><summary>Evidence paste-back and cross-surface sharing</summary>'+evidenceHtml(k,builder)+'</details>'
    +relatedHtml(k)

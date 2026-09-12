@@ -27,6 +27,25 @@ function validateField(field,index){
    if(!option||typeof option!=='object'||!text(option.value).trim()||!text(option.label).trim())fail(errors,'select field '+text(field.id||index)+' contains an invalid option');
   }
  }
+ // Operator-surface: clickable presets that load a value into the field.
+ if(field.presets!==undefined){
+  if(!Array.isArray(field.presets)){fail(errors,'field '+text(field.id||index)+' presets must be an array');}
+  else{
+   if(field.type==='checkbox')fail(errors,'field '+text(field.id||index)+' checkbox fields cannot declare presets');
+   const optionValues=field.type==='select'?new Set(array(field.options).map(o=>text(o&&o.value))):null;
+   field.presets.forEach((preset,pi)=>{
+    if(!preset||typeof preset!=='object'||!Object.prototype.hasOwnProperty.call(preset,'value')||!text(preset.label).trim()){fail(errors,'field '+text(field.id||index)+' preset '+pi+' requires a label and value');return;}
+    if(preset.speed&&!['fast','med','slow'].includes(preset.speed))fail(errors,'field '+text(field.id||index)+' preset '+pi+' has unsupported speed '+text(preset.speed));
+    if(optionValues&&text(preset.value)!==''&&!optionValues.has(text(preset.value)))fail(errors,'field '+text(field.id||index)+' preset '+pi+' value is not a selectable option');
+   });
+  }
+ }
+ // Operator-surface: textarea "add a line" snippets (e.g. header/cookie starters).
+ if(field.snippets!==undefined){
+  if(field.type!=='textarea')fail(errors,'field '+text(field.id||index)+' snippets are only allowed on textarea fields');
+  else if(!Array.isArray(field.snippets))fail(errors,'field '+text(field.id||index)+' snippets must be an array');
+  else field.snippets.forEach((snippet,si)=>{if(!snippet||typeof snippet!=='object'||!text(snippet.label).trim()||!text(snippet.value).trim())fail(errors,'field '+text(field.id||index)+' snippet '+si+' requires a label and value');});
+ }
  return errors;
 }
 
@@ -109,6 +128,25 @@ function validateBuilder(builder){
   if(field.requiredWhen)for(const error of validateCondition(field.requiredWhen,'field '+field.id+' requiredWhen',ids))fail(errors,error);
   if(field.visibleWhen)for(const error of validateCondition(field.visibleWhen,'field '+field.id+' visibleWhen',ids))fail(errors,error);
  });
+ // Operator-surface: ordered, plain-language field groups. Optional, but when present
+ // every referenced field must exist and belong to exactly one group.
+ if(builder.fieldGroups!==undefined){
+  if(!Array.isArray(builder.fieldGroups))fail(errors,'builder '+text(builder.id)+' fieldGroups must be an array');
+  else{
+   const grouped=new Set();
+   builder.fieldGroups.forEach((group,gi)=>{
+    if(!group||typeof group!=='object'){fail(errors,'builder '+text(builder.id)+' fieldGroup '+gi+' must be an object');return;}
+    if(!text(group.title).trim())fail(errors,'builder '+text(builder.id)+' fieldGroup '+gi+' requires a title');
+    if(!text(group.description).trim())fail(errors,'builder '+text(builder.id)+' fieldGroup '+gi+' requires a plain-language description');
+    if(!Array.isArray(group.fields)||!group.fields.length){fail(errors,'builder '+text(builder.id)+' fieldGroup '+gi+' requires a non-empty fields list');return;}
+    for(const fid of group.fields){
+     if(!ids.has(fid))fail(errors,'builder '+text(builder.id)+' fieldGroup '+gi+' references unknown field '+text(fid));
+     else if(grouped.has(fid))fail(errors,'builder '+text(builder.id)+' field '+text(fid)+' appears in more than one fieldGroup');
+     else grouped.add(fid);
+    }
+   });
+  }
+ }
  const credentialModes=array(builder.credentialModes);
  for(const mode of credentialModes)if(!credentialKinds.includes(mode))fail(errors,'builder '+text(builder.id)+' has unsupported credential mode '+text(mode));
  const command=builder.command;
@@ -146,7 +184,13 @@ function freezeExecutable(executable){
 }
 function freezeBuilder(builder){
  const copy={...builder};
- copy.fields=Object.freeze(array(builder.fields).map(field=>Object.freeze({...field,options:Object.freeze(array(field.options).map(o=>Object.freeze({...o}))),requiredWhen:freezeCondition(field.requiredWhen),visibleWhen:freezeCondition(field.visibleWhen)})));
+ copy.fields=Object.freeze(array(builder.fields).map(field=>{
+  const frozenField={...field,options:Object.freeze(array(field.options).map(o=>Object.freeze({...o}))),requiredWhen:freezeCondition(field.requiredWhen),visibleWhen:freezeCondition(field.visibleWhen)};
+  if(field.presets!==undefined)frozenField.presets=Object.freeze(array(field.presets).map(p=>Object.freeze({...p})));
+  if(field.snippets!==undefined)frozenField.snippets=Object.freeze(array(field.snippets).map(s=>Object.freeze({...s})));
+  return Object.freeze(frozenField);
+ }));
+ if(builder.fieldGroups!==undefined)copy.fieldGroups=Object.freeze(array(builder.fieldGroups).map(g=>Object.freeze({...g,fields:Object.freeze([...array(g.fields)])})));
  copy.credentialModes=Object.freeze(array(builder.credentialModes));
  copy.command=Object.freeze({...builder.command,executable:freezeExecutable(builder.command&&builder.command.executable),tokens:Object.freeze(array(builder.command&&builder.command.tokens).map(token=>Object.freeze({...token,choices:Object.freeze(array(token.choices).map(c=>Object.freeze({...c}))),when:freezeCondition(token.when),parts:Object.freeze(array(token.parts).map(part=>Object.freeze({...part})))})))});
  copy.evidence=Object.freeze({...builder.evidence});

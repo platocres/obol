@@ -1,5 +1,8 @@
 ## v10.20 — This product-hardening build organizes the remaining modeled Tool Builder inventory into coherent functional slices and tightens the handoff so future agents keep working the real Product Build Next queue while updating release history
 
+- Redesigned the Tool Builder operator surface with `#/tools/ffuf` as the golden reference: one consolidated card, grouped all-visible fields with plain-language descriptions, outcome-labelled mode cards, a highlighted command hero, and clickable per-field presets plus header/cookie snippet buttons.
+- Added a reusable operator-surface contract (`fieldGroups`, `field.presets`, textarea `field.snippets`) validated at registration, `docs/TOOL-BUILDER-SURFACE-STANDARD.md`, and `tests/run-tool-surface-contract-tests.js` that audits every registered builder, so future family repairs build to the same pattern.
+- Stopped the Tools route seeding fabricated lab values (`10.10.10.10`, `FUZZ.corp.local`, placeholder credentials) into builder fields; commands prefill only from real workspace state.
 - Added the Build 3 Web discovery/HTTP guidance repair so ffuf, Gobuster/Feroxbuster, curl, sqlmap, Burp Suite, WhatWeb, Nikto, httpx, wfuzz, and ZAP direct Tools routes expose visible action guidance, real presets, output interpretation, and proof boundaries.
 - Updated the generic Tool Builder renderer to consume owner-profile guidance and render preset buttons on the Tools page instead of leaving repaired guidance invisible.
 

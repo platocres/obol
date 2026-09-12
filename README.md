@@ -34,6 +34,7 @@ The completed broad audit item was **Post-mining Next Steps and tool-card clarit
 - [`docs/PRODUCT-HARDENING.md`](docs/PRODUCT-HARDENING.md) - active product-hardening vision, tracks, work-package rules, and Definition of Done.
 - [`docs/TOOL-BUILDER-BUILD-QUEUE.md`](docs/TOOL-BUILDER-BUILD-QUEUE.md) - active Tool Builder backlog sequence and the permanent command, Evidence, proof, and Next Steps contract.
 - [`docs/TOOL-BUILDER-IMPLEMENTATION-STANDARD.md`](docs/TOOL-BUILDER-IMPLEMENTATION-STANDARD.md) - reusable-plumbing / bespoke-profile standard for faster Tool Builder implementation without generic tool smearing.
+- [`docs/TOOL-BUILDER-SURFACE-STANDARD.md`](docs/TOOL-BUILDER-SURFACE-STANDARD.md) - required operator-surface look and feel (grouped fields, clickable presets, header snippets, mode cards); `tb-ffuf` is the golden reference and `tests/run-tool-surface-contract-tests.js` is the gate.
 - [`docs/TOOL-BUILDER-OPERATOR-GUIDANCE-AUDIT.md`](docs/TOOL-BUILDER-OPERATOR-GUIDANCE-AUDIT.md) - mandatory repair/audit handoff for implemented builders that lack meaningful operator guidance, real presets, database action paths, and mobile-safe UX.
 - [`docs/TOOL-BUILDER-IMPLEMENTED-AUDIT-LEDGER.md`](docs/TOOL-BUILDER-IMPLEMENTED-AUDIT-LEDGER.md) - Build 2 pass/fail ledger for currently implemented builders and the next family repair batches.
 - [`docs/TOOL-BUILDER-INVENTORY-ORGANIZATION.md`](docs/TOOL-BUILDER-INVENTORY-ORGANIZATION.md) - operator-first Tool Builder taxonomy and placement rules for modeled and implemented tools.
