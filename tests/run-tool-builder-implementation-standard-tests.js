@@ -11,6 +11,9 @@ assert(doc.includes('Bespoke profile required for every implemented tool'),'stan
 assert(doc.includes('ffuf'),'standard should call out neighboring tools that must not smear together');
 assert(doc.includes('impacket-secretsdump'),'standard should distinguish Impacket tools by purpose');
 assert(doc.includes('no live Tools route category is named after backlog state'),'standard should ban backlog-state categories in the live Tools route');
+assert(doc.includes('Direct-route command generation policy'),'standard should include the no-proof-gating command generation policy');
+assert(doc.includes('Do not proof-gate command generation'),'standard should explicitly preserve Brandon\'s Tools-page rule');
+assert(doc.includes('Evidence gates proof claims and Next Steps movement after the operator runs the command'),'standard should put proof gating after execution and Evidence paste-back');
 const taxonomy=read('docs/TOOL-BUILDER-INVENTORY-ORGANIZATION.md');
 assert(taxonomy.includes('The Tools route uses one operator taxonomy'),'taxonomy doc should forbid a second live taxonomy');
 assert(taxonomy.includes('Databases'),'taxonomy doc should split databases from cloud/containers');
