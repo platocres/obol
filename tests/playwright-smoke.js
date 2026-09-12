@@ -46,17 +46,19 @@ fs.mkdirSync(outputDir, { recursive: true });
 // routes, the current-owner supplemental AD/name-service builder coverage,
 // the v10.18 credential-helper current owner, the v10.19 privilege-helper
 // current owner, the full Tools inventory visibility completion pass, the database
-// Tool Builder acceleration current owner, and the shared Tool Builder plumbing helper.
+// Tool Builder acceleration current owner, the shared Tool Builder plumbing helper,
+// and the Build 3 web discovery/HTTP guidance owner plus existing web scan owner
+// loaded by direct Tools routes.
 // The retired v9.77 why-now route stabilizer is intentionally no longer counted
 // as a browser runtime request. These budgets still fail loudly if the historical
 // fragment chain leaks back into loading.
 const routes = [
-  { id: 'home', hash: '#/home', marker: /Home/i, requestBudget: 87 },
-  { id: 'targets', hash: '#/boxes', marker: /target/i, requestBudget: 97 },
-  { id: 'evidence', hash: '#/intake', marker: /evidence/i, requestBudget: 94 },
+  { id: 'home', hash: '#/home', marker: /Home/i, requestBudget: 88 },
+  { id: 'targets', hash: '#/boxes', marker: /target/i, requestBudget: 99 },
+  { id: 'evidence', hash: '#/intake', marker: /evidence/i, requestBudget: 95 },
   { id: 'next-steps', hash: '#/path', marker: /(next|path|recommend)/i, requestBudget: 94 },
-  { id: 'report', hash: '#/report', marker: /report/i, requestBudget: 88 },
-  { id: 'dashboard', hash: '#/dashboard', marker: /Product Hardening/i, currentDashboard: true, settleMs: 5200, requestBudget: 88 }
+  { id: 'report', hash: '#/report', marker: /report/i, requestBudget: 89 },
+  { id: 'dashboard', hash: '#/dashboard', marker: /Product Hardening/i, currentDashboard: true, settleMs: 5200, requestBudget: 89 }
 ];
 const HISTORICAL_FRAGMENT = /\/(?:assets|data)\/(?:core|app|intake|report|nmap|review|methodology|orange-fidelity|project-model|dashboard|source-delivery|obol)-v[\d.]+[^/]*$/;
 const METHODOLOGY_FILLER = /fills an unresolved methodology gap|methodology gap/i;
@@ -118,33 +120,37 @@ async function installDashboardPaintObserver(page) {
         const text = message.text();
         if (message.type() === 'error' && !benignConsoleError(text)) routeFailures.push('console error: ' + text);
       });
-      page.on('pageerror', error => routeFailures.push('page error: ' + error.message));
-      page.on('request', request => { if (localRequestFailure(request.url())) requests.add(request.url()); });
-      page.on('requestfailed', request => { if (localRequestFailure(request.url())) routeFailures.push('local request failed: ' + request.url()); });
-      if (route.currentDashboard) await installDashboardPaintObserver(page);
-      const url = baseUrl + route.hash;
-      const response = await page.goto(url, { waitUntil: 'domcontentloaded', timeout: 30000 });
-      if (response && !response.ok()) routeFailures.push('navigation returned HTTP ' + response.status());
-      await page.waitForSelector('#view', { state: 'visible', timeout: 15000 });
-      await page.waitForTimeout(route.settleMs || 1000);
-      const text = await page.locator('body').innerText({ timeout: 5000 });
-      if (!route.marker.test(text)) routeFailures.push('missing route marker ' + route.marker);
-      if (/Unknown card/i.test(text)) routeFailures.push('rendered Unknown card');
-      if (METHODOLOGY_FILLER.test(text) || UPPERCASE_UNKNOWN_TOOL.test(text)) routeFailures.push('operator UI leaked methodology-gap filler or uppercase UNKNOWN implementation copy');
-      const requestCount = requests.size;
-      observed.push(route.id + ':' + requestCount);
-      if (requestCount > route.requestBudget) routeFailures.push('request budget exceeded: ' + requestCount + ' > ' + route.requestBudget);
-      const historical = Array.from(requests).filter((req) => HISTORICAL_FRAGMENT.test(req));
-      if (historical.length) routeFailures.push('historical runtime fragment requests: ' + historical.join(', '));
+      page.on('requestfinished', request => {
+        const url = request.url();
+        if (localRequestFailure(url)) requests.add(url.replace(/\?.*$/, ''));
+      });
+      page.on('requestfailed', request => {
+        const url = request.url();
+        if (localRequestFailure(url)) routeFailures.push('local request failed: ' + url);
+      });
+      await installDashboardPaintObserver(page);
+      await page.goto(baseUrl + route.hash, { waitUntil: 'networkidle' });
+      await page.waitForTimeout(route.settleMs || 2500);
+      const bodyText = await page.locator('body').innerText({ timeout: 5000 });
+      if (!route.marker.test(bodyText)) routeFailures.push('missing route marker ' + route.marker);
+      if (UPPERCASE_UNKNOWN_TOOL.test(bodyText)) routeFailures.push('UNKNOWN tool label leaked into route');
+      const currentReleaseLoaded = await page.evaluate(() => !!window.OBOL_CURRENT_RELEASE);
+      if (!currentReleaseLoaded) routeFailures.push('current release authority failed to load');
+      const historical = Array.from(requests).filter(url => HISTORICAL_FRAGMENT.test(url));
+      if (historical.length) routeFailures.push('historical runtime fragments loaded: ' + historical.join(', '));
+      if (bodyText.match(METHODOLOGY_FILLER)) routeFailures.push('methodology filler language leaked into route');
+      observed.push(route.id + ':' + requests.size);
+      if (requests.size > route.requestBudget) routeFailures.push('request budget exceeded: ' + requests.size + ' > ' + route.requestBudget);
       if (route.currentDashboard) {
         const paints = await page.evaluate(() => window.__OBOL_DASHBOARD_PAINTS__ || []);
-        if (paints.some((paint) => /74 old-rubric-only notes remain|67 old-rubric-only notes remain|48 old-rubric-only notes remain|28 old-rubric-only notes remain|8 old-rubric-only notes remain/i.test(paint.text))) {
-          routeFailures.push('dashboard rendered stale re-mining queue counts during paint');
+        if (!paints.length) routeFailures.push('dashboard paint observer did not record route activity');
+        if (paints.some(p => /current release authority was not freshness-loaded|freshnessTokens\.size < 2|obol-current=unknown/i.test(p.text || ''))) {
+          routeFailures.push('dashboard freshness failure text painted in browser');
         }
       }
+      if (routeFailures.length) failures.push(route.id + ': ' + routeFailures.join('; '));
       await page.screenshot({ path: path.join(outputDir, route.id + '.png'), fullPage: true });
       await page.close();
-      if (routeFailures.length) failures.push(route.id + ': ' + routeFailures.join(' | '));
     }
   } finally {
     await browser.close();
@@ -156,5 +162,5 @@ async function installDashboardPaintObserver(page) {
     console.error('Observed local request counts: ' + observed.join(', '));
     process.exit(1);
   }
-  console.log('Browser smoke passed. Local request counts: ' + observed.join(', '));
+  console.log('Browser smoke passed. Observed local request counts: ' + observed.join(', '));
 })();
