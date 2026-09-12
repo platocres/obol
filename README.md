@@ -12,7 +12,7 @@ The README is the entrypoint and current handoff. It should stay lean, but it mu
 
 ## Continue developing (start here)
 
-This is the single agent quickstart. Told to "read the README and keep developing"? Use this flow.
+This is the single agent quickstart. Told to "read the README and keep developing"? Use this flow. Coding agents also enter through [AGENTS.md](AGENTS.md) or [CLAUDE.md](CLAUDE.md), which point to the same workflow.
 
 1. **Use one active product-hardening PR.** Check for an open release/product-hardening PR first. Continue it if it exists. Otherwise open one normal, non-draft PR for the work.
 2. **Read the linked docs.** Read this README, [`docs/AGENT-WORKFLOW.md`](docs/AGENT-WORKFLOW.md), [`BUILDING.md`](BUILDING.md), and the owner docs relevant to the Product Build Next item. For Tool Builder work, [`docs/TOOL-BUILDER-BUILD-QUEUE.md`](docs/TOOL-BUILDER-BUILD-QUEUE.md), [`docs/TOOL-BUILDER-IMPLEMENTATION-STANDARD.md`](docs/TOOL-BUILDER-IMPLEMENTATION-STANDARD.md), [`docs/TOOL-BUILDER-OPERATOR-GUIDANCE-AUDIT.md`](docs/TOOL-BUILDER-OPERATOR-GUIDANCE-AUDIT.md), and [`docs/TOOL-BUILDER-IMPLEMENTED-AUDIT-LEDGER.md`](docs/TOOL-BUILDER-IMPLEMENTED-AUDIT-LEDGER.md) are mandatory.
@@ -39,7 +39,7 @@ The completed broad audit item was **Post-mining Next Steps and tool-card clarit
 - [`docs/TOOL-BUILDER-INVENTORY-ORGANIZATION.md`](docs/TOOL-BUILDER-INVENTORY-ORGANIZATION.md) - operator-first Tool Builder taxonomy and placement rules for modeled and implemented tools.
 - [`docs/PROOF-CONTRACT.md`](docs/PROOF-CONTRACT.md) - conservative Evidence boundaries. Command recognition is not success.
 - [`docs/ACTIONABLE-CARD-CONTRACT.md`](docs/ACTIONABLE-CARD-CONTRACT.md) and [`docs/CARD-UI-STANDARD.md`](docs/CARD-UI-STANDARD.md) - user-visible card and operator surface standards.
-- [`docs/RAW-NOTES-LFS.md`](docs/RAW-NOTES-LFS.md), [`docs/NOTE-DERIVATION-STANDARD.md`](docs/NOTE-DERIVATION-STANDARD.md), [`docs/NOTE-MINING-RUBRIC.md`](docs/NOTE-MINING-RUBRIC.md), [`docs/NOTES-INTEGRATION.md`](docs/NOTES-INTEGRATION.md), [`docs/NOTES-IMPACT.md`](docs/NOTES-IMPACT.md), and [`docs/SOURCE-NOTE-CLUSTERING.md`](docs/SOURCE-NOTE-CLUSTERING.md) - historical notes derivation, extraction, clustering, integration, and impact rules.
+- [`docs/NOTE-MINING-WORKFLOW.md`](docs/NOTE-MINING-WORKFLOW.md), [`docs/RAW-NOTES-LFS.md`](docs/RAW-NOTES-LFS.md), [`docs/NOTE-DERIVATION-STANDARD.md`](docs/NOTE-DERIVATION-STANDARD.md), [`docs/NOTE-MINING-RUBRIC.md`](docs/NOTE-MINING-RUBRIC.md), [`docs/NOTES-INTEGRATION.md`](docs/NOTES-INTEGRATION.md), [`docs/NOTES-IMPACT.md`](docs/NOTES-IMPACT.md), and [`docs/SOURCE-NOTE-CLUSTERING.md`](docs/SOURCE-NOTE-CLUSTERING.md) - historical notes derivation, extraction, clustering, integration, and impact rules.
 - [`docs/ARCHITECTURE.md`](docs/ARCHITECTURE.md), [`docs/RUNTIME-COMPACTION.md`](docs/RUNTIME-COMPACTION.md), [`docs/UX-QUALITY.md`](docs/UX-QUALITY.md), [`docs/NORTH-STAR.md`](docs/NORTH-STAR.md), and [`docs/ORANGE-SOURCE-DEPTH.md`](docs/ORANGE-SOURCE-DEPTH.md) - architecture, runtime, UX, and completed Orange baseline context.
 - [`docs/EXPERIENCE-REVAMP.md`](docs/EXPERIENCE-REVAMP.md) - Claude UX revamp planning only; not the ChatGPT/product-hardening queue authority unless explicitly requested.
 - [`CHANGELOG.md`](CHANGELOG.md) - release and product-visible change history.
@@ -91,7 +91,7 @@ Open `index.html` in a browser. No server or package install is required. Use `#
 
 ## Validation
 
-Use `node tools/scope-check.js` as the focused inner-loop gate during development. [`BUILDING.md`](BUILDING.md) owns preflight, full-regression, and exact-head merge-readiness rules. CI owns the complete historical regression chain on explicit full-regression heads and `main`.
+Run the changed behavior's focused tests during development; [`docs/TEST-GOVERNANCE.md`](docs/TEST-GOVERNANCE.md) maps ownership areas to regression phases. `node tools/scope-check.js` remains a broad local fallback. Use `node tools/sync-generated.js --check` to check generated artifacts, and explicit `--write` to regenerate after editing their sources. Every PR runs the complete regression and browser gates; [`BUILDING.md`](BUILDING.md) owns release and final-head merge-readiness rules.
 
 For Tool Builder inventory organization work, run:
 

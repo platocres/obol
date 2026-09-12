@@ -139,17 +139,14 @@ The desired replacement is not another stack of versioned compatibility shims. H
 
 ## Test tiers
 
-Development should use the smallest test set that proves the current work package.
+[TEST-GOVERNANCE.md](TEST-GOVERNANCE.md) owns the current check policy and phase
+map. Run focused behavior tests locally; `node tools/run-historical-contracts.js --phase v5-v8-runtime` selects the existing runtime phase. Every normal PR runs
+all regression phases and the browser proof workflow, with no commit marker required.
+`node tools/sync-generated.js --check` checks generated projections before pushing.
 
-- `node tools/scope-check.js` is the focused v9.29/current-work-package check.
-- release smoke remains the ordinary release-branch push gate.
-- preflight remains the coherent current-release gate and includes Dashboard compatibility equivalence plus the hard retirement assertion.
-- `node tools/run-historical-contracts.js` is the named complete historical regression gate used for final release confidence.
-- `.github/workflows/browser-smoke.yml` runs the real Chromium route smoke and uploads screenshots for the six primary surfaces.
-
-CI delegates the complete ready-PR/main/release-final preservation chain to the named historical runner. Browser smoke is a separate user-visible runtime gate because a static historical assertion cannot prove route paint order, console cleanliness, local asset loading, or real rendered composition.
-
-The complete historical runner is intentionally expensive. It should protect final/current behavior and historical contracts, not be the default inner-loop command for every small edit.
+Browser proof remains separate because static assertions cannot prove route paint
+order, console cleanliness, asset loading, or rendered composition. Complete
+regression is required on the final PR head, not on every small local edit.
 
 ## Test retirement
 

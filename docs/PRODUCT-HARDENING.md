@@ -195,8 +195,8 @@ Historical regression suites are preservation boundaries, not README-layout lock
 9. Update each product-hardening queue item independently when its disposition changes.
 10. Add or update each changed item's acceptance criteria, validation commands, proof files, and item-specific tests.
 11. Stop package expansion when the next item materially changes architectural context, migration risk, ownership, or test strategy. Do not batch unrelated work for item-count optics.
-12. When the product release changes, update `data/current-release.js` and synchronize README with `node tools/sync-current-release.js --write`.
-13. Sync Product Build Next and the work-package projection with `node tools/sync-product-build-next.js --write`.
+12. Follow the release checklist in `BUILDING.md`, including authored release notes and changelog history when the product release changes.
+13. Run `node tools/sync-generated.js --write`, inspect the generated diff, and run `node tools/sync-generated.js --check`.
 14. Run the required validation from `BUILDING.md`.
 15. Keep the coherent package in the one active release PR and do not merge until the exact final head and PR required checks are green.
 
@@ -208,32 +208,21 @@ The notes ledger must account for all 556 staged notes through explicit terminal
 
 ## Validation
 
-Use `BUILDING.md` as the source of truth for the full release gate. Product-hardening-specific checks include:
+[BUILDING.md](../BUILDING.md) owns release readiness and
+[TEST-GOVERNANCE.md](TEST-GOVERNANCE.md) owns the current CI gates and local phase
+map. The release narratives above describe their original implementation context;
+they do not override today's checks or Product Build Next.
+
+For queue work, run the item-specific tests plus:
 
 ```bash
-node tools/validate-historical-tests.js
 node tools/validate-product-hardening-queue.js
-node tools/validate-current-release.js
-node tools/validate-version-identity.js
-node tools/validate-accessibility-contract.js
-node tools/sync-current-styles.js --check
-node tools/validate-runtime-manifest.js
-node tools/validate-asset-references.js
-node tools/sync-current-release.js --check
-node tools/sync-product-build-next.js --check
-node tools/validate-open-pr-uniqueness.js
-node tests/run-v9.0-tests.js
-node tests/run-v9.1-tests.js
-node tests/run-v9.1.1-tests.js
-node tests/run-v9.2-tests.js
-node tests/run-v9.3-tests.js
-node tests/run-v9.4-tests.js
-node tests/run-v9.5-tests.js
-node tests/run-v9.6-tests.js
-node tests/run-v9.7-tests.js
+node tools/sync-generated.js --check
 ```
 
-These checks do not replace smoke, preflight, release-contract validation, or the complete historical chain. They add the phase-specific governance needed for v9 product hardening.
+Every normal PR runs the complete regression phases and browser proof. The named
+phase runner owns test selection; do not reconstruct a checklist of obsolete
+per-release suites from this document's historical sections.
 
 ## Single-paint metric correction (v9.46)
 

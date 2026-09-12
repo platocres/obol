@@ -42,7 +42,18 @@ fetch_file(path="README.md", ref="release/obol-vX.Y", start_line=1, end_line=1)
 
 Then fetch the content ranges needed to reconstruct the complete replacement. Do not submit partial file contents to `update_file`; that will truncate the file.
 
-For generated files, prefer the repo's sync scripts when a local clone works. When a local clone does not work, use CI logs from the generated-sync phase as the source of truth for what is out of sync, patch the generated projection carefully, and run the PR checks again.
+For generated files, fetch the complete required sources into a local working tree
+through the connector, then run `node tools/sync-generated.js --write` and `--check`
+there. Shell network failure does not prevent local generation. Upload the complete
+resulting files, preferably as one Git tree/commit based on the verified branch head.
+Review the source and generated diff together. Do not manually patch compiled bundles
+or create temporary CI scripts that rewrite source text by guessed markers.
+
+If local execution itself is unavailable, the existing release-branch synchronization
+workflow can regenerate artifacts on supported `release/obol-*` branches. Inspect its
+logs and resulting commit, then verify required checks belong to that new head. If
+no supported execution path exists, report that concrete blocker and retain the PR's
+unfinished status; a hand-authored generated file is not equivalent proof.
 
 ## Private notes and Git LFS
 

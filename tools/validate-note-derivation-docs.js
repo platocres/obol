@@ -36,6 +36,7 @@ for(const rel of [
  'README.md',
  'BUILDING.md',
  'docs/AGENT-WORKFLOW.md',
+ 'docs/NOTE-MINING-WORKFLOW.md',
  'docs/PRODUCT-HARDENING.md',
  'docs/RAW-NOTES-LFS.md',
  'docs/NOTE-DERIVATION-STANDARD.md',
@@ -68,30 +69,32 @@ requireText('docs/NOTE-MINING-RUBRIC.md','confirmation that reusable educational
 
 requireText('docs/AGENT-WORKFLOW.md','This is the detailed, do-this-now workflow for an agent told to "read the README and keep developing."');
 requireText('docs/AGENT-WORKFLOW.md','The README keeps a short **Continue developing (start here)** summary; this document holds the full mechanics so the README can stay lean.');
-requireText('docs/AGENT-WORKFLOW.md','## 4. Mine, then use it in the same pass');
-requireText('docs/AGENT-WORKFLOW.md','public-safe useful finding');
-requireText('docs/AGENT-WORKFLOW.md','attach the finding to an existing Next Steps item');
-requireText('docs/AGENT-WORKFLOW.md','create a new gated Next Steps item');
-requireText('docs/AGENT-WORKFLOW.md','only after analyzing where it belongs in the lab path');
-requireText('docs/AGENT-WORKFLOW.md','Do not merely append a card to a broad lane');
-requireText('docs/AGENT-WORKFLOW.md','which existing cards should precede it');
-requireText('docs/AGENT-WORKFLOW.md','which neighboring cards it should sit beside');
-requireText('docs/AGENT-WORKFLOW.md','which later cards it should unlock or inform');
-requireText('docs/AGENT-WORKFLOW.md','A new mined card is not complete until the PR proves where it appears in the path');
-requireText('docs/AGENT-WORKFLOW.md','A dynamically inserted or current-owner card must also be inspectable from its direct route');
-requireText('docs/AGENT-WORKFLOW.md','the user-visible card route still renders `Unknown card`');
-requireText('docs/AGENT-WORKFLOW.md','User-visible cards must stay operator-facing');
-requireText('docs/AGENT-WORKFLOW.md','Do not render implementation artifacts');
-requireText('docs/AGENT-WORKFLOW.md','owner names, runtime plumbing, route fallback explanations, startup index details, dashboard accounting notes, source-mining provenance');
-requireText('docs/AGENT-WORKFLOW.md','when to use this, what evidence gates it, what commands/checks to run, what success looks like, how failure routes, what it produces, and what detection/reporting caveats matter');
-requireText('docs/AGENT-WORKFLOW.md','A generic panel on `#/path` is not enough');
-requireText('docs/AGENT-WORKFLOW.md','broad-lane append cards');
-requireText('docs/AGENT-WORKFLOW.md','Queued is not a successful resting state');
-requireText('docs/AGENT-WORKFLOW.md','we mine, then we take what we mined and use it');
-requireAnyText('docs/AGENT-WORKFLOW.md',['## 4. Derive the value, do not copy the expression','## 5. Derive the value, do not copy the expression']);
-requireText('docs/AGENT-WORKFLOW.md','Use the private notes as source knowledge, not public text.');
-requireText('docs/AGENT-WORKFLOW.md','Mark an item `private-only` only for the raw/private substance that cannot be safely published, not for the durable lesson that can be rewritten.');
-requireText('docs/AGENT-WORKFLOW.md','`CHANGELOG.md` is release narrative only. Current re-mining status lives in `data/product-hardening/note-progress-current.js`');
+requireText('docs/AGENT-WORKFLOW.md','[NOTE-MINING-WORKFLOW.md](NOTE-MINING-WORKFLOW.md)');
+requireText('docs/NOTE-MINING-WORKFLOW.md','Source-note mining is complete.');
+requireText('docs/NOTE-MINING-WORKFLOW.md','## 4. Mine, then use it in the same pass');
+requireText('docs/NOTE-MINING-WORKFLOW.md','public-safe useful finding');
+requireText('docs/NOTE-MINING-WORKFLOW.md','attach the finding to an existing Next Steps item');
+requireText('docs/NOTE-MINING-WORKFLOW.md','create a new gated Next Steps item');
+requireText('docs/NOTE-MINING-WORKFLOW.md','only after analyzing where it belongs in the lab path');
+requireText('docs/NOTE-MINING-WORKFLOW.md','Do not merely append a card to a broad lane');
+requireText('docs/NOTE-MINING-WORKFLOW.md','which existing cards should precede it');
+requireText('docs/NOTE-MINING-WORKFLOW.md','which neighboring cards it should sit beside');
+requireText('docs/NOTE-MINING-WORKFLOW.md','which later cards it should unlock or inform');
+requireText('docs/NOTE-MINING-WORKFLOW.md','A new mined card is not complete until the PR proves where it appears in the path');
+requireText('docs/NOTE-MINING-WORKFLOW.md','A dynamically inserted or current-owner card must also be inspectable from its direct route');
+requireText('docs/NOTE-MINING-WORKFLOW.md','the user-visible card route still renders `Unknown card`');
+requireText('docs/NOTE-MINING-WORKFLOW.md','User-visible cards must stay operator-facing');
+requireText('docs/NOTE-MINING-WORKFLOW.md','Do not render implementation artifacts');
+requireText('docs/NOTE-MINING-WORKFLOW.md','owner names, runtime plumbing, route fallback explanations, startup index details, dashboard accounting notes, source-mining provenance');
+requireText('docs/NOTE-MINING-WORKFLOW.md','when to use this, what evidence gates it, what commands/checks to run, what success looks like, how failure routes, what it produces, and what detection/reporting caveats matter');
+requireText('docs/NOTE-MINING-WORKFLOW.md','A generic panel on `#/path` is not enough');
+requireText('docs/NOTE-MINING-WORKFLOW.md','broad-lane append cards');
+requireText('docs/NOTE-MINING-WORKFLOW.md','Queued is not a successful resting state');
+requireText('docs/NOTE-MINING-WORKFLOW.md','we mine, then we take what we mined and use it');
+requireAnyText('docs/NOTE-MINING-WORKFLOW.md',['## 4. Derive the value, do not copy the expression','## 5. Derive the value, do not copy the expression']);
+requireText('docs/NOTE-MINING-WORKFLOW.md','Use the private notes as source knowledge, not public text.');
+requireText('docs/NOTE-MINING-WORKFLOW.md','Mark an item `private-only` only for the raw/private substance that cannot be safely published, not for the durable lesson that can be rewritten.');
+requireText('docs/NOTE-MINING-WORKFLOW.md','`CHANGELOG.md` is release narrative only. Current re-mining status lives in `data/product-hardening/note-progress-current.js`');
 
 requireText('docs/NOTES-IMPACT.md','The derivation rule is: extract the educational value fully, then re-author the public output into Obol-owned form.');
 requireText('docs/NOTES-IMPACT.md','This does not excuse discarding reusable educational value that can be re-authored safely.');

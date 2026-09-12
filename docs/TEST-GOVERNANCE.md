@@ -45,10 +45,10 @@ properties:
 
 There is no per-release replay of old README wording, old queue ids, or old
 workflow shapes. When the current release advances, update the current-release
-test (`tests/run-v<version>-tests.js`) and the queue owners in place, and prune
-the previous release's test rather than accumulating a fossil suite for every
-version. Never add product junk, hidden UI copy, fake cards, fake queue
-entries, or read-time content injection to keep a stale assertion alive - fix
+test (`tests/run-v<version>-tests.js`) and the queue owners. Move useful behavioral
+assertions into current-owner suites before removing an older release-shaped test.
+Do not delete regression coverage solely because a newer version exists. Never add
+product junk, hidden UI copy, fake cards, fake queue entries, or read-time content injection to keep a stale assertion alive - fix
 or delete the stale assertion instead.
 
 ## Main checks are after-merge confirmation
@@ -59,3 +59,34 @@ what the PR already proved; they are not the first place a regression should
 appear. That is why `.github/workflows/tests.yml` runs only on main, schedule,
 and manual dispatch - never on pull requests or release branches - so PRs show
 the two real gates instead of duplicate rows.
+
+## Local phase selection
+
+Start with the focused test for the changed behavior. When broader ownership-area
+proof is needed, select the existing CI phase; phase names are compatibility labels,
+not instructions to replay those historical product versions.
+
+```bash
+node tools/run-historical-contracts.js --phase quality-preservation
+node tools/sync-generated.js --check
+```
+
+| Phase | Ownership area |
+| --- | --- |
+| `syntax` | All JavaScript parsing |
+| `legacy-core` | Core state, report, and redaction behavior |
+| `v5-v8-runtime` | Runtime, boot, equivalence, and styles |
+| `v9-early-product` | Cards, routes, UI, accessibility, and builder platform |
+| `v9-mid-product` | Notes integration, derivation, and placement |
+| `v9-current-product` | Current product behavior, release, queue, and identity |
+| `quality-preservation` | Development workflow, PR governance, and release contracts |
+| `generated-sync` | All generated projections through `tools/sync-generated.js --check` |
+
+`tools/scope-check.js` remains a broad local fallback. It is not a substitute for
+identifying and running the test that directly protects a change. Local selection
+never reduces the required PR gates, and no commit marker is needed to run them.
+
+`tests/run-agent-workflow-tests.js` covers synchronization sequencing, read-only
+checks, stale outputs, write-mode failure handling, invalid CLI arguments, and
+agent entrypoint links. Documentation is authored; no sync script rewrites
+`BUILDING.md` to force historical wording back into the current instructions.

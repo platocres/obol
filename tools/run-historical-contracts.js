@@ -24,10 +24,10 @@ const PHASE_TASKS=Object.freeze({
   ['tests/run-v10.02-tests.js'],['tests/run-v10.03-tests.js'],['tests/run-v10.04-tests.js'],['tests/run-v10.05-tests.js'],['tests/run-v10.06-tests.js'],['tests/run-v10.07-tests.js'],['tests/run-v10.08-tests.js'],['tests/run-v10.09-tests.js'],['tests/run-v10.10-tests.js'],['tests/run-v10.11-tests.js'],['tests/run-v10.12-tests.js'],['tests/run-v10.13-tests.js'],['tests/run-v10.14-tests.js'],['tests/run-v10.15-tests.js'],['tests/run-v10.16-tests.js'],['tests/run-v10.17-tests.js'],['tests/run-v10.18-tests.js'],['tests/run-v10.19-tests.js'],['tests/run-v10.20-tests.js'],['tests/run-tool-builder-database-acceleration-tests.js'],['tests/run-tool-builder-web-guidance-repair-tests.js'],['tests/run-notes-batch-selector-tests.js'],['tools/validate-current-release.js'],['tools/validate-product-hardening-queue.js'],['tools/validate-version-identity.js'],['tools/validate-live-integration-done-gate.js']
  ],
  'quality-preservation':[
-  ['tools/validate-pr-test-governance.js'],['tools/validate-release-pr.js'],['tools/validate-release-quality.js'],['tools/validate-readme-history-ownership.js'],['tools/validate-open-pr-uniqueness.js']
+  ['tests/run-agent-workflow-tests.js'],['tools/validate-pr-test-governance.js'],['tools/validate-release-pr.js'],['tools/validate-release-quality.js'],['tools/validate-readme-history-ownership.js'],['tools/validate-open-pr-uniqueness.js']
  ],
  'generated-sync':[
-  ['tools/sync-readme-build-next.js','--check'],['tools/sync-product-build-next.js','--check'],['tools/sync-current-release.js','--check'],['tools/sync-core-current.js','--check'],['tools/sync-release-docs.js','--check'],['tools/sync-current-changelog.js','--check']
+  ['tools/sync-generated.js','--check']
  ]
 });
 function runPhase(phase){if(phase==='syntax')syntax();else{const list=PHASE_TASKS[phase];if(!list)throw new Error('unknown regression phase: '+phase);for(const task of list)run(task);}console.log('Regression phase passed: '+phase);}
