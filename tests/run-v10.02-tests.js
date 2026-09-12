@@ -102,7 +102,7 @@ assert.strictEqual(visualItem.followUpItem, 'post-notes-tool-builder-implementat
 assert(Array.isArray(visualItem.screenshots) && visualItem.screenshots.length >= 8, 'visual density queue item must list screenshot targets');
 assert.strictEqual(visual.status, 'complete', 'visual density marker must be complete');
 assert.strictEqual(visual.browserProof, 'tests/playwright-visual-density.js', 'visual density marker must point at browser proof');
-assert.strictEqual(visual.toolBacklogNext, true, 'visual proof must keep pointing to the modeled-tool backlog handoff');
+assert.strictEqual(visual.nextItem, 'post-notes-tool-builder-implementation-backlog', 'visual proof must keep declaring the modeled-tool backlog as its follow-up item');
 assert.strictEqual(visual.requestBudgetNeutral, true, 'visual-density proof ledger should be request-neutral');
 const backlogItem = queue.items.find((item) => item.id === 'post-notes-tool-builder-implementation-backlog');
 assert(backlogItem, 'modeled tool builder backlog queue item missing');
@@ -116,22 +116,23 @@ const backlogClosedInReadme = readme.includes('No active Tool Builder implementa
 const next = queue.buildNext(5).map((item) => item.id);
 assert(!next.includes('post-notes-visual-density-regression-pass'), 'visual density item should not remain in Build Next after closure');
 if (!backlogClosedInReadme) {
-  assert.strictEqual(next[0], 'post-notes-tool-builder-implementation-backlog', 'Build Next must advance to modeled tool builder implementation backlog until it is completed');
+  assert.strictEqual(next[0], 'tb-surface-web', 'Build Next must lead with the concrete Tool Builder operator-surface family repair');
+  assert(next.includes('tb-surface-credentials'), 'Build Next must surface the concrete per-family repair items');
 }
 const qaTrack = queue.tracks.find((track) => track.id === 'testing-qa');
 assert(qaTrack && qaTrack.complete >= 8, 'testing/QA track completion should preserve visual density proof');
 const packages = qroot.OBOL_PRODUCT_HARDENING_WORK_PACKAGES;
 const recommendation = packages && packages.recommend(queue);
 if (!backlogClosedInReadme) {
-  assert(recommendation && recommendation.entryItem.id === 'post-notes-tool-builder-implementation-backlog', 'recommended work package should enter the modeled-tool backlog while it remains queued');
-  assert(Array.isArray(recommendation.liveItems) && recommendation.liveItems.length >= 1, 'recommended package should include live tool-builder work while the backlog remains queued');
+  assert(recommendation && recommendation.entryItem.id === 'tb-surface-web', 'recommended work package should enter the Tool Builder operator-surface family repair while it remains queued');
+  assert(Array.isArray(recommendation.liveItems) && recommendation.liveItems.length >= 1, 'recommended package should include live tool-builder work while the family repair remains queued');
 }
 
 assert(readme.includes('Current release: **' + currentAuthority.label + '**'), 'README must sync to the current release authority');
 assert(!readme.includes('**Next concrete entry:** **Post-mining visual density regression pass**'), 'README should not leave visual density as the next concrete item');
 if (!backlogClosedInReadme) {
-  assert(readme.includes('**Next concrete entry:** **Post-mining modeled tool builder implementation backlog**'), 'README Build Next should advance to modeled tool builder implementation backlog while it remains queued');
-  assert(readme.includes('**Recommended work package:** **Post-notes Operator UI Clarity**'), 'README must keep the user-facing post-notes clarity handoff while tool-builder work remains queued');
+  assert(readme.includes('**Next concrete entry:** **Bring the Web discovery/HTTP builder family to the operator-surface standard**'), 'README Build Next should lead with the concrete Tool Builder operator-surface family repair');
+  assert(readme.includes('**Recommended work package:** **Tool Builder Operator-Surface Family Repair**'), 'README must surface the Tool Builder operator-surface family repair package while it remains queued');
 } else {
   assert(readme.includes('No active Tool Builder implementation batches remain'), 'README must record that the Tool Builder implementation backlog closed once later releases complete it');
   assert(readme.includes('**Next concrete entry:**') && !readme.includes('**Next concrete entry:** **Post-mining modeled tool builder implementation backlog**'), 'README Build Next should move past the modeled-tool backlog once it closes');

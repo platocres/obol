@@ -90,9 +90,44 @@ const john=schema.register({
 });
 
 const ffuf=schema.register({
- id:'tb-ffuf',tool:'ffuf',title:'ffuf content discovery',summary:'Build a content or virtual-host fuzzing command with explicit URL, wordlist, recursion, extensions, filters, matchers, headers, concurrency, and output controls.',executionContext:'kali',credentialModes:['cookie-token'],
- fields:[{id:'action',label:'Fuzzing action',type:'select',default:'content',options:[{value:'content',label:'Content/path fuzz'},{value:'vhost',label:'Virtual-host fuzz'},{value:'recursion',label:'Recursive content sweep'}]},{id:'url',label:'URL containing FUZZ',type:'text',required:true,autofill:'target.value',placeholder:'http://10.10.10.10/FUZZ',help:'Place FUZZ where ffuf should substitute the wordlist entry.'},{id:'wordlist',label:'Wordlist',type:'path',required:true,autofill:'workspace.wordlist',default:'/usr/share/seclists/Discovery/Web-Content/raft-small-words.txt'},{id:'extensions',label:'Extensions (-e)',type:'text',placeholder:'.php,.txt,.bak'},{id:'recursion',label:'Enable recursion',type:'checkbox'},{id:'recursionDepth',label:'Recursion depth',type:'number',placeholder:'2',visibleWhen:{field:'recursion',truthy:true}},{id:'matchCodes',label:'Match status codes (-mc)',type:'text',placeholder:'200,204,301,302,307,401,403'},{id:'filterCodes',label:'Filter status codes (-fc)',type:'text',placeholder:'404'},{id:'filterSize',label:'Filter response size (-fs)',type:'text',placeholder:'0,4242'},{id:'filterWords',label:'Filter response words (-fw)',type:'text',placeholder:'12'},{id:'headers',label:'Headers (one per line)',type:'textarea',placeholder:'Host: FUZZ.corp.local\nAuthorization: Bearer TOKEN',help:'Each non-empty line becomes its own -H argument.'},{id:'threads',label:'Threads (-t)',type:'number',placeholder:'40'},{id:'rate',label:'Rate limit requests/sec',type:'number',placeholder:'100'},{id:'output',label:'Output file',type:'path',placeholder:'ffuf.json'}],
- command:{executable:'ffuf',tokens:[{kind:'choice',field:'action',choices:[{value:'content',arg:''},{value:'vhost',arg:''},{value:'recursion',arg:''}]},{kind:'field',field:'url',flag:'-u'},{kind:'field',field:'wordlist',flag:'-w'},{kind:'field',field:'extensions',flag:'-e'},{kind:'toggle',field:'recursion',flag:'-recursion'},{kind:'field',field:'recursionDepth',flag:'-recursion-depth',when:{field:'recursion',truthy:true}},{kind:'field',field:'matchCodes',flag:'-mc'},{kind:'field',field:'filterCodes',flag:'-fc'},{kind:'field',field:'filterSize',flag:'-fs'},{kind:'field',field:'filterWords',flag:'-fw'},{kind:'repeat',field:'headers',flag:'-H',split:'lines'},{kind:'field',field:'threads',flag:'-t'},{kind:'field',field:'rate',flag:'-rate'},{kind:'field',field:'output',flag:'-o'}]},
+ id:'tb-ffuf',tool:'ffuf',title:'ffuf content discovery',summary:'Fuzz the FUZZ position to find hidden pages, files, and virtual hosts. Pick an action, load a wordlist, tune filters, and run the generated command yourself.',executionContext:'kali',credentialModes:['cookie-token'],
+ // Golden-reference operator surface. fieldGroups + per-field presets + textarea snippets
+ // are the pattern every implemented builder should follow (see docs/TOOL-BUILDER-SURFACE-STANDARD.md).
+ fieldGroups:[
+  {title:'Target',description:'The address ffuf hammers. Type FUZZ where each wordlist entry should be inserted — in the path for hidden pages, or in the Host header for virtual hosts.',fields:['url']},
+  {title:'Wordlist & extensions',description:'The list of names ffuf tries at the FUZZ spot, plus any file extensions to append. Load a list below — start small, go bigger only if a run comes up empty.',fields:['wordlist','extensions','recursion','recursionDepth']},
+  {title:'Filters & matchers',description:'ffuf makes thousands of requests. These decide which responses are real hits and which are background noise. Auto-calibrate learns the "not found" pattern for you.',fields:['matchCodes','filterCodes','filterSize','filterWords','autoCalibration']},
+  {title:'Login & request headers',description:'Use this when the pages you are after sit behind a login, or you need to pose as a specific site. Add a session cookie or token to fuzz as a logged-in user, or set a Host header to target a virtual host.',fields:['headers']},
+  {title:'Speed & output',description:'How hard ffuf hits the target and where results are saved. Turn the rate down to stay quiet or inside a scope limit.',fields:['threads','rate','output']}
+ ],
+ fields:[
+  {id:'action',label:'Fuzzing action',type:'select',default:'content',options:[{value:'content',label:'Hidden pages & files'},{value:'vhost',label:'Virtual hosts'},{value:'recursion',label:'Recursive sweep'}]},
+  {id:'url',label:'Target URL',type:'text',required:true,autofill:'target.value',placeholder:'http://target/FUZZ',help:'Place the literal FUZZ keyword at the injection point.'},
+  {id:'wordlist',label:'Wordlist',type:'path',required:true,autofill:'workspace.wordlist',default:'/usr/share/seclists/Discovery/Web-Content/raft-small-words.txt',presets:[
+   {label:'common',value:'/usr/share/wordlists/dirb/common.txt',speed:'fast'},
+   {label:'raft dirs',value:'/usr/share/seclists/Discovery/Web-Content/raft-medium-directories.txt',speed:'med'},
+   {label:'raft files',value:'/usr/share/seclists/Discovery/Web-Content/raft-medium-files.txt',speed:'med'},
+   {label:'raft large',value:'/usr/share/seclists/Discovery/Web-Content/raft-large-directories.txt',speed:'slow'}
+  ]},
+  {id:'extensions',label:'Extensions (-e)',type:'text',placeholder:'none',presets:[{label:'none',value:''},{label:'.php,.txt',value:'.php,.txt'},{label:'web + bak',value:'.php,.html,.txt,.bak'},{label:'asp(x)',value:'.asp,.aspx'}]},
+  {id:'recursion',label:'Recurse into found folders',type:'checkbox',help:'-recursion · widens scope and request count.'},
+  {id:'recursionDepth',label:'Recursion depth',type:'number',placeholder:'2',visibleWhen:{field:'recursion',truthy:true}},
+  {id:'autoCalibration',label:'Auto-calibrate baseline noise (-ac)',type:'checkbox',help:'Learns the site’s “not found” response so junk hits get filtered automatically. Recommended.'},
+  {id:'matchCodes',label:'Match status codes (-mc)',type:'text',placeholder:'all',presets:[{label:'all',value:''},{label:'200,301,302',value:'200,301,302'},{label:'interesting',value:'200,204,301,302,307,401,403'}]},
+  {id:'filterCodes',label:'Filter status codes (-fc)',type:'text',placeholder:'none',presets:[{label:'404',value:'404'},{label:'404,403',value:'404,403'},{label:'none',value:''}]},
+  {id:'filterSize',label:'Filter response size (-fs)',type:'text',placeholder:'e.g. 4242'},
+  {id:'filterWords',label:'Filter response words (-fw)',type:'text',placeholder:'e.g. 12'},
+  {id:'headers',label:'Headers & cookies',type:'textarea',placeholder:'No custom headers. Add a cookie or token above if the target needs a login.',help:'Each non-empty line becomes its own -H argument.',snippets:[
+   {label:'+ Session cookie',value:'Cookie: session=REPLACE_ME'},
+   {label:'+ Bearer token',value:'Authorization: Bearer REPLACE_ME'},
+   {label:'+ Host override',value:'Host: FUZZ.target.local'},
+   {label:'+ User-Agent',value:'User-Agent: Mozilla/5.0'}
+  ]},
+  {id:'threads',label:'Threads (-t)',type:'number',placeholder:'40',presets:[{label:'10 · quiet',value:'10'},{label:'40 · default',value:'40'},{label:'100 · fast',value:'100'}]},
+  {id:'rate',label:'Rate limit / sec (-rate)',type:'number',placeholder:'unlimited',presets:[{label:'unlimited',value:''},{label:'100',value:'100'},{label:'20 · gentle',value:'20'}]},
+  {id:'output',label:'Output file (-o)',type:'path',placeholder:'ffuf.json'}
+ ],
+ command:{executable:'ffuf',tokens:[{kind:'choice',field:'action',choices:[{value:'content',arg:''},{value:'vhost',arg:''},{value:'recursion',arg:''}]},{kind:'field',field:'url',flag:'-u'},{kind:'field',field:'wordlist',flag:'-w'},{kind:'field',field:'extensions',flag:'-e'},{kind:'toggle',field:'recursion',flag:'-recursion'},{kind:'field',field:'recursionDepth',flag:'-recursion-depth',when:{field:'recursion',truthy:true}},{kind:'toggle',field:'autoCalibration',flag:'-ac'},{kind:'field',field:'matchCodes',flag:'-mc'},{kind:'field',field:'filterCodes',flag:'-fc'},{kind:'field',field:'filterSize',flag:'-fs'},{kind:'field',field:'filterWords',flag:'-fw'},{kind:'repeat',field:'headers',flag:'-H',split:'lines'},{kind:'field',field:'threads',flag:'-t'},{kind:'field',field:'rate',flag:'-rate'},{kind:'field',field:'output',flag:'-o'}]},
  evidence:{expectation:'Return ffuf result rows or the saved output showing distinct discovered paths/hosts and their response metadata.',proofBoundary:'A generated ffuf command, request count, or manual success does not prove a path or virtual host exists. Reviewed response results are the Evidence boundary.'},manualOutcome:{supported:true,boundary:'The operator may record whether fuzzing found candidates, exhausted the list, was filtered incorrectly, failed, or was skipped; report claims still require reviewed result Evidence.'},reportLineage:{activity:true,evidenceRequiredForProof:true,secretFields:['headers']}
 });
 

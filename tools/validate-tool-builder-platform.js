@@ -60,7 +60,7 @@ const command=renderer.compile(fixture,{ports:'80,443',udp:true,speed:'fast'},{t
 assert.strictEqual(command,'nmap -sV -sU -T4 -p 80,443 10.10.10.10','generic compiler must combine literals, toggles, choices, fields, and context autofill deterministically');
 assert.strictEqual(renderer.shellQuote("space and 'quote'"),"'space and '\\''quote'\\'''",'shell quoting must preserve operator-provided text without execution');
 const html=renderer.html(fixture,{target:{ip:'10.10.10.10'}},{speed:'normal'});
-for(const token of ['data-tool-builder="fixture-network-scan"','aria-live="polite"','Generated command','minimal valid command','Obol generates this command for you to review and run yourself','Evidence and report boundary','type="password"'])assert(html.includes(token),'generic renderer missing '+token);
+for(const token of ['data-tool-builder="fixture-network-scan"','aria-live="polite"','tb-command','minimal valid command','it never executes commands','Evidence and report boundary','type="password"'])assert(html.includes(token),'generic renderer missing '+token);
 const invalid={...fixture,id:'fixture-auto-run',execute:true};
 assert(schema.validateBuilder(invalid).some(error=>error.includes('forbidden execution field')),'schema must reject automatic execution hooks');
 

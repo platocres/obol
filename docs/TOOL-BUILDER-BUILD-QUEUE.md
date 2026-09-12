@@ -92,10 +92,19 @@ The Web discovery and HTTP family is complete after Build 3. Continue repairing 
 
 Use `OBOL_TOOL_BUILDER_IMPLEMENTED_AUDIT_CURRENT.nextRepairBatches()` as the source of truth. The next expected family is credential/auth/cracking, followed by AD/SMB/remote-access tooling, network/service enumeration, privilege escalation/local enumeration, and any remaining implemented builders.
 
+Every repaired tool must meet the operator-surface standard in
+[`docs/TOOL-BUILDER-SURFACE-STANDARD.md`](TOOL-BUILDER-SURFACE-STANDARD.md): grouped
+all-visible fields with plain-language descriptions, clickable per-field presets,
+textarea header/cookie snippets, and outcome-labelled mode cards. `tb-ffuf` in
+`data/tool-builders.js` is the golden reference to copy, and
+`node tests/run-tool-surface-contract-tests.js` is the gate that audits every builder.
+
 Acceptance for each family repair:
 
 - Every implemented builder in the family has direct-route operator guidance.
 - Human-readable action presets map to real command-generation controls.
+- Fields carry `presets` for their common values and header/cookie textareas carry `snippets`.
+- Fields are organized into `fieldGroups` with plain-language, operator-facing descriptions.
 - Risky/noisy/high-impact actions are risk-labeled and proof-boundary labeled, but not proof-gated.
 - Output interpretation explains success, failure, blocked, partial, and inconclusive states.
 - Evidence ingestion remains executable product behavior.

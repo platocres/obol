@@ -5,6 +5,11 @@ function applyCurrentReleaseCompletions(){return root.OBOL_PRODUCT_HARDENING;}
 
 const packages=[
  {
+  id:'tool-builder-surface-family-repair',title:'Tool Builder Operator-Surface Family Repair',priority:'high',ownershipArea:'tool-builder/operator-surface',
+  itemIds:['tb-surface-web','tb-surface-credentials','tb-surface-ad-smb','tb-surface-network','tb-surface-privesc'],dependencies:[],relatedItems:['tb-card-tool-presentation','post-notes-tool-builder-implementation-backlog'],parallelSafe:true,recommendedBatch:true,
+  guidance:'Bring every implemented Tool Builder up to docs/TOOL-BUILDER-SURFACE-STANDARD.md, one family at a time, using tb-ffuf in data/tool-builders.js as the golden reference (grouped all-visible fields, per-field presets, header/cookie snippets, outcome mode cards). Families are independent and safe to build in parallel; prove each with node tests/run-tool-surface-contract-tests.js. Finish the implemented families before promoting the remaining modeled tools.'
+ },
+ {
   id:'asset-integrity-browser-smoke',title:'Asset Integrity Foundation',priority:'critical',ownershipArea:'asset-loading/browser-smoke',
   itemIds:['cc-asset-validation','qa-asset-test'],dependencies:[],relatedItems:['qa-playwright-smoke','runtime-data-manifest'],parallelSafe:false,recommendedBatch:true,
   guidance:'Keep static asset-reference correctness and its contract test together; full browser smoke now sits with dashboard runtime retirement because it gates physical removal of historical live layers.'

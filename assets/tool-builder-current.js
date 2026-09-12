@@ -15,14 +15,6 @@ function effectiveBuilder(builder){
   tokens.splice(urlIndex>=0?urlIndex:tokens.length,0,{kind:'toggle',field:'pathAsIs',flag:'--path-as-is'});
   changed=true;
  }
- if(builder.id==='tb-ffuf'&&!fields.some(field=>field.id==='autoCalibration')){
-  const calibrationField={id:'autoCalibration',label:'Auto-calibrate baseline noise (-ac)',type:'checkbox',help:'Ask ffuf to establish recurring baseline responses before widening filters. Review the calibration and distinct result rows instead of treating request volume as proof.'};
-  const matchIndex=fields.findIndex(field=>field.id==='matchCodes');
-  fields.splice(matchIndex>=0?matchIndex:fields.length,0,calibrationField);
-  const matchTokenIndex=tokens.findIndex(token=>token.field==='matchCodes');
-  tokens.splice(matchTokenIndex>=0?matchTokenIndex:tokens.length,0,{kind:'toggle',field:'autoCalibration',flag:'-ac'});
-  changed=true;
- }
  const profile=ownerProfileFor(builder.id);
  const operatorGuide=(builder&&builder.operatorGuide)||(profile&&profile.operatorGuide)||null;
  if(changed||operatorGuide){const copy={...builder,fields,command:{...builder.command,tokens}};if(operatorGuide)copy.operatorGuide=operatorGuide;return copy;}
@@ -190,7 +182,86 @@ function fieldControl(builderId,field,value){
  const inputType=field.type==='secret'?'password':field.type==='number'?'number':'text';
  return '<label for="'+esc(id)+'">'+esc(field.label)+'</label><input type="'+inputType+'"'+common+' value="'+esc(value==null?'':value)+'"'+(field.placeholder?' placeholder="'+esc(field.placeholder)+'"':'')+' autocomplete="'+(field.type==='secret'?'off':'on')+'">'+(field.help?'<small class="hint">'+esc(field.help)+'</small>':'');
 }
-function renderOperatorGuide(builder,values){const guide=builder&&builder.operatorGuide;if(!guide)return'';const starts=Array.isArray(guide.startHere)?guide.startHere:[];const actions=Array.isArray(guide.actions)?guide.actions:[];const field=guide.actionField||'action';const current=values&&values[field];const startHtml=starts.length?'<ul class="tool-builder-start-here">'+starts.map(item=>'<li>'+esc(item)+'</li>').join('')+'</ul>':'';const buttons=actions.length?'<div class="tool-builder-action-presets" data-tool-builder-action-presets="'+esc(field)+'">'+actions.map(action=>'<button type="button" class="lane-tab tool-builder-action-preset'+(String(action.value)===String(current)?' active':'')+'" data-tool-builder-preset-field="'+esc(field)+'" data-tool-builder-preset="'+esc(action.value)+'"><b>'+esc(action.label||action.value)+'</b><span>'+esc(action.risk||'normal')+'</span></button>').join('')+'</div>':'';const active=actions.find(action=>String(action.value)===String(current))||actions[0]||null;const activeHtml=active?'<div class="tool-builder-action-context"><p class="hint"><b>Use when:</b> '+esc(active.useWhen||'')+'</p><p class="hint"><b>Requires:</b> '+esc(active.requires||'')+'</p><p class="hint"><b>What it can prove:</b> '+esc(active.proves||'')+'</p><p class="hint"><b>What it does not prove:</b> '+esc(active.notProve||'')+'</p><p class="hint"><b>Paste back:</b> '+esc(active.evidence||'')+'</p><p class="hint"><b>Next:</b> '+esc(active.next||'')+'</p></div>':'';return '<section class="tool-builder-guide" data-tool-builder-guide="'+esc(builder.id)+'"><h4>Action guide</h4><p class="hint">'+esc(guide.summary||'')+'</p>'+startHtml+buttons+activeHtml+'</section>';}
+function guideActionField(builder){const g=builder&&builder.operatorGuide;return g&&g.actionField?g.actionField:null;}
+function presetsHtml(field){
+ const presets=Array.isArray(field.presets)?field.presets:[];
+ if(!presets.length)return'';
+ return '<div class="tb-presets" data-presets-for="'+esc(field.id)+'"><span class="tb-chip-label">Load:</span>'+presets.map(p=>{
+  const spd=p.speed?'<span class="tb-spd '+esc(p.speed)+'">'+esc(p.speed)+'</span>':'';
+  return '<button type="button" class="tb-preset" data-tool-builder-preset-field="'+esc(field.id)+'" data-tool-builder-preset="'+esc(p.value)+'">'+spd+esc(p.label)+'</button>';
+ }).join('')+'</div>';
+}
+function snippetsHtml(field){
+ const snippets=Array.isArray(field.snippets)?field.snippets:[];
+ if(!snippets.length)return'';
+ return '<div class="tb-snippets" data-snippets-for="'+esc(field.id)+'"><span class="tb-chip-label">Add:</span>'+snippets.map(s=>'<button type="button" class="tb-snippet" data-tool-builder-snippet-field="'+esc(field.id)+'" data-tool-builder-snippet="'+esc(s.value)+'">'+esc(s.label)+'</button>').join('')+'</div>';
+}
+function fieldRowHtml(builder,field,resolved,hiddenActionId){
+ const hidden=(field.visibleWhen&&!conditionMatches(field.visibleWhen,resolved))||field.id===hiddenActionId;
+ const wide=field.type==='textarea'||field.wide===true;
+ return '<div class="param-row tool-builder-field tb-field'+(wide?' tb-wide':'')+'" data-field-id="'+esc(field.id)+'" data-field-type="'+esc(field.type)+'"'+(hidden?' hidden':'')+'>'+
+  fieldControl(builder.id,field,resolved[field.id])+snippetsHtml(field)+presetsHtml(field)+'</div>';
+}
+function groupsFor(builder,excludeId){
+ const fields=(builder.fields||[]).filter(f=>f&&f.id!==excludeId);
+ const byId={};fields.forEach(f=>{byId[f.id]=f;});
+ if(Array.isArray(builder.fieldGroups)&&builder.fieldGroups.length){
+  const groups=builder.fieldGroups.map(g=>({title:g.title,description:g.description,fields:(g.fields||[]).map(id=>byId[id]).filter(Boolean)})).filter(g=>g.fields.length);
+  const claimed=new Set();builder.fieldGroups.forEach(g=>(g.fields||[]).forEach(id=>claimed.add(id)));
+  const leftovers=fields.filter(f=>!claimed.has(f.id));
+  if(leftovers.length)groups.push({title:'More options',description:'Additional flags and output controls.',fields:leftovers});
+  return groups;
+ }
+ return [{title:'',description:'',fields:fields}];
+}
+function formHtml(builder,resolved,hiddenActionId){
+ const hiddenAction=hiddenActionId?(builder.fields||[]).find(f=>f.id===hiddenActionId):null;
+ const hiddenControl=hiddenAction?'<div class="param-row tool-builder-field" data-field-id="'+esc(hiddenAction.id)+'" data-field-type="'+esc(hiddenAction.type)+'" hidden>'+fieldControl(builder.id,hiddenAction,resolved[hiddenAction.id])+'</div>':'';
+ const groups=groupsFor(builder,hiddenActionId).map(group=>{
+  const rows=group.fields.map(f=>fieldRowHtml(builder,f,resolved,hiddenActionId)).join('');
+  if(!group.title)return '<div class="tb-group-body tb-ungrouped">'+rows+'</div>';
+  return '<section class="tb-group"><div class="tb-group-head"><h4>'+esc(group.title)+'</h4><p>'+esc(group.description)+'</p></div><div class="tb-group-body">'+rows+'</div></section>';
+ }).join('');
+ return '<form class="tool-builder-form" novalidate>'+hiddenControl+groups+'</form>';
+}
+function renderModeSelector(builder,values){
+ const guide=builder&&builder.operatorGuide;const actions=guide&&Array.isArray(guide.actions)?guide.actions:[];
+ if(!actions.length)return'';
+ const field=guide.actionField||'action';const current=values&&values[field];
+ const cards=actions.map(a=>{
+  const active=String(a.value)===String(current);const risk=esc(a.risk||'normal');
+  return '<button type="button" class="tb-mode'+(active?' active':'')+'" data-tool-builder-preset-field="'+esc(field)+'" data-tool-builder-preset="'+esc(a.value)+'" aria-pressed="'+(active?'true':'false')+'"><span class="tb-mode-top"><b>'+esc(a.label||a.value)+'</b><span class="tool-risk" data-risk="'+risk+'">'+risk+'</span></span><small>'+esc(a.useWhen||'')+'</small></button>';
+ }).join('');
+ const active=actions.find(a=>String(a.value)===String(current))||actions[0];
+ const ctx=active?'<p class="tb-mode-ctx"><b>Use when</b> '+esc(active.useWhen||'')+' <b>Requires</b> '+esc(active.requires||'')+'</p>':'';
+ return '<section class="tb-modes-wrap" data-tool-builder-modes="'+esc(builder.id)+'"><span class="tb-eyebrow">Step 1 · Pick an action</span><div class="tb-modes">'+cards+'</div>'+ctx+'</section>';
+}
+function renderReadingOutput(builder,values){
+ const guide=builder&&builder.operatorGuide;const actions=guide&&Array.isArray(guide.actions)?guide.actions:[];
+ if(!actions.length)return'';
+ const field=guide.actionField||'action';const current=values&&values[field];
+ const active=actions.find(a=>String(a.value)===String(current))||actions[0];if(!active)return'';
+ return '<section class="tb-read-wrap"><span class="tb-eyebrow">Reading the output</span><div class="tb-read"><div class="tb-read-cell proves"><div class="h">Proves</div><p>'+esc(active.proves||'')+'</p></div><div class="tb-read-cell not"><div class="h">Doesn\'t prove</div><p>'+esc(active.notProve||'')+'</p></div><div class="tb-read-cell paste"><div class="h">Paste back</div><p>'+esc(active.evidence||'')+'</p></div></div></section>';
+}
+function missingHint(builder,resolved){
+ const missing=validateRequired(builder,resolved);
+ if(missing.length)return 'Missing required fields: '+missing.join(', ');
+ return 'Complete required fields to generate a command.';
+}
+function highlightCommand(cmd){
+ return String(cmd).split(' ').map((tok,i)=>{
+  if(tok==='')return'';
+  const cls=i===0?'tb-exe':/^-/.test(tok)?'tb-flag':'tb-arg';
+  if(/FUZZ/.test(tok))return tok.split(/(FUZZ)/).map(part=>part==='FUZZ'?'<span class="tb-fuzz">FUZZ</span>':part?'<span class="'+cls+'">'+esc(part)+'</span>':'').join('');
+  return '<span class="'+cls+'">'+esc(tok)+'</span>';
+ }).join(' ');
+}
+function commandHtml(builder,resolved,context){
+ let preview='',valid=true;
+ try{preview=compile(builder,resolved,context);}catch(err){valid=false;}
+ const body=valid?highlightCommand(preview):'<span class="tb-cmd-empty">'+esc(missingHint(builder,resolved))+'</span>';
+ return '<section class="cmd-block tool-builder-preview tb-command" aria-live="polite"><div class="tb-command-head"><span class="tb-command-lbl"><span class="tb-dot"></span>Generated command</span><button type="button" class="copy-btn tool-builder-copy">Copy</button></div><code data-valid="'+(valid?'true':'false')+'">'+body+'</code><p class="tb-command-foot note">Obol builds the minimal valid command for the selected action and only adds flags through the controls you choose. Review and run it yourself in an authorized environment; it never executes commands. Paste output back into Evidence.</p></section>';
+}
 function html(builder,context,values){
  builder=effectiveBuilder(builder);
  const s=schema();
@@ -198,14 +269,14 @@ function html(builder,context,values){
  const errors=s.validateBuilder(builder);
  if(errors.length)throw new Error(errors.join('; '));
  const resolved=normalizeValues(builder,values,context);
- const creds=(builder.credentialModes||[]).length?'<p class="hint tool-builder-credential-modes">Credential modes: '+builder.credentialModes.map(esc).join(' · ')+'</p>':'';
- const fields=(builder.fields||[]).map(field=>'<div class="param-row tool-builder-field" data-field-id="'+esc(field.id)+'" data-field-type="'+esc(field.type)+'"'+(field.visibleWhen&&!conditionMatches(field.visibleWhen,resolved)?' hidden':'')+'>'+fieldControl(builder.id,field,resolved[field.id])+'</div>').join('');
- let preview='';try{preview=compile(builder,resolved,context);}catch(err){preview='Complete required fields to generate a command.';}
+ const hiddenActionId=guideActionField(builder);
  return '<section class="card tool-builder-current" data-tool-builder="'+esc(builder.id)+'" data-tool="'+esc(builder.tool)+'"><div class="card-body">'+
-  '<div class="tool-builder-head"><div><span class="eyebrow30">Tool Builder</span><h3>'+esc(builder.title)+'</h3><p class="hint">'+esc(builder.summary)+'</p></div><span class="badge">'+esc(builder.executionContext||'any')+'</span></div>'+creds+renderOperatorGuide(builder,resolved)+
-  '<form class="tool-builder-form" novalidate>'+fields+'</form>'+ 
-  '<div class="cmd-block tool-builder-preview" aria-live="polite"><span class="tool">Generated command</span><code>'+esc(preview)+'</code><button type="button" class="copy-btn tool-builder-copy">Copy</button><p class="note">Obol starts from the minimal valid command for the selected tool/mode and only adds flags through collected parameters or explicit GUI controls. Obol generates this command for you to review and run yourself; it does not execute commands.</p></div>'+ 
-  '<details class="tool-builder-proof"><summary>Evidence and report boundary</summary><p class="hint"><b>Expected Evidence:</b> '+esc(builder.evidence.expectation)+'</p><p class="hint"><b>Proof boundary:</b> '+esc(builder.evidence.proofBoundary)+'</p><p class="hint"><b>Manual outcome:</b> '+esc(builder.manualOutcome.boundary)+'</p></details>'+ 
+  '<div class="tool-builder-head"><div><span class="eyebrow30">Tool Builder</span><h3>'+esc(builder.title)+'</h3><p class="hint">'+esc(builder.summary)+'</p></div><span class="badge tool-exec-badge" title="Recommended run environment">'+esc(builder.executionContext||'any')+'</span></div>'+
+  renderModeSelector(builder,resolved)+
+  commandHtml(builder,resolved,context)+
+  formHtml(builder,resolved,hiddenActionId)+
+  renderReadingOutput(builder,resolved)+
+  '<details class="tool-builder-proof"><summary>Evidence and report boundary</summary><p class="hint"><b>Expected Evidence:</b> '+esc(builder.evidence.expectation)+'</p><p class="hint"><b>Proof boundary:</b> '+esc(builder.evidence.proofBoundary)+'</p><p class="hint"><b>Manual outcome:</b> '+esc(builder.manualOutcome.boundary)+'</p></details>'+
   '</div></section>';
 }
 function collect(form,builder){
@@ -217,31 +288,45 @@ function collect(form,builder){
  }
  return out;
 }
-function applyVisibility(form,builder,values){
+function applyVisibility(form,builder,values,hiddenActionId){
  if(!form)return;
  for(const field of builder.fields||[]){
   const row=form.querySelector('[data-field-id="'+field.id+'"]');
-  if(row)row.hidden=!!field.visibleWhen&&!conditionMatches(field.visibleWhen,values);
+  if(!row)continue;
+  row.hidden=field.id===hiddenActionId||(!!field.visibleWhen&&!conditionMatches(field.visibleWhen,values));
  }
+}
+function syncGuide(shell,builder,values){
+ const guide=builder&&builder.operatorGuide;const actions=guide&&Array.isArray(guide.actions)?guide.actions:[];
+ if(!shell||!actions.length)return;
+ const field=guide.actionField||'action';const current=values&&values[field];
+ shell.querySelectorAll('.tb-mode').forEach(card=>{const on=String(card.dataset.toolBuilderPreset)===String(current);card.classList.toggle('active',on);card.setAttribute('aria-pressed',on?'true':'false');});
+ const active=actions.find(a=>String(a.value)===String(current))||actions[0];if(!active)return;
+ const ctx=shell.querySelector('.tb-mode-ctx');if(ctx)ctx.innerHTML='<b>Use when</b> '+esc(active.useWhen||'')+' <b>Requires</b> '+esc(active.requires||'');
+ const cells=shell.querySelectorAll('.tb-read-cell p');if(cells.length>=3){cells[0].textContent=active.proves||'';cells[1].textContent=active.notProve||'';cells[2].textContent=active.evidence||'';}
 }
 function mount(container,builder,context,values){
  builder=effectiveBuilder(builder);
  if(!container)throw new Error('Tool Builder mount requires a container');
  container.innerHTML=html(builder,context,values);
+ const hiddenActionId=guideActionField(builder);
  const shell=container.querySelector('[data-tool-builder="'+builder.id+'"]')||container.firstElementChild;
  const form=shell&&shell.querySelector('.tool-builder-form');
  const code=shell&&shell.querySelector('.tool-builder-preview code');
  const copy=shell&&shell.querySelector('.tool-builder-copy');
  const presets=shell?Array.from(shell.querySelectorAll('[data-tool-builder-preset]')):[];
+ const snippets=shell?Array.from(shell.querySelectorAll('[data-tool-builder-snippet]')):[];
  function refresh(){
   if(!form||!code)return;
-  const current=collect(form,builder);applyVisibility(form,builder,current);
-  try{code.textContent=compile(builder,current,context);code.dataset.valid='true';}
-  catch(err){code.textContent=err.message;code.dataset.valid='false';}
+  const current=collect(form,builder);applyVisibility(form,builder,current,hiddenActionId);
+  try{const cmd=compile(builder,current,context);code.dataset.valid='true';code.innerHTML=highlightCommand(cmd);}
+  catch(err){code.dataset.valid='false';code.innerHTML='<span class="tb-cmd-empty">'+esc(missingHint(builder,current))+'</span>';}
+  syncGuide(shell,builder,current);
  }
  if(form)form.addEventListener('input',refresh);
  if(form)form.addEventListener('change',refresh);
  presets.forEach(button=>button.addEventListener('click',()=>{if(!form)return;const field=button.dataset.toolBuilderPresetField||'action';const value=button.dataset.toolBuilderPreset;const el=form.elements&&form.elements.namedItem(field);if(!el)return;el.value=value;try{el.dispatchEvent(new Event('change',{bubbles:true}));}catch(_err){}refresh();}));
+ snippets.forEach(button=>button.addEventListener('click',()=>{if(!form)return;const field=button.dataset.toolBuilderSnippetField;const value=button.dataset.toolBuilderSnippet;const el=form.elements&&form.elements.namedItem(field);if(!el)return;el.value=(String(el.value).trim()?String(el.value).replace(/\s+$/,'')+'\n':'')+value;try{el.focus();el.dispatchEvent(new Event('input',{bubbles:true}));}catch(_err){}refresh();}));
  if(copy)copy.addEventListener('click',()=>{
   if(!code||code.dataset.valid==='false')return;
   const value=code.textContent||'';

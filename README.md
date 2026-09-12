@@ -23,7 +23,7 @@ This is the single agent quickstart. Told to "read the README and keep developin
 7. **Keep private notes private.** Source-note mining is complete. Use notes docs as provenance and safety references unless Product Build Next explicitly reopens note-derived work. Extract the value, not the wording. Do not use `CHANGELOG.md` to decide what remains to be re-mined. Current re-mining status lives in the Product Build Next sources and dashboard.
 8. **Prove the head.** Run the focused validators for the touched ownership area, keep generated blocks synchronized, and do not call the PR merge-ready until the exact final head is green.
 
-The completed broad audit item was **Post-mining Next Steps and tool-card clarity audit**. The **Implemented-tool Evidence and cross-surface audit** is complete, and the database operator-guidance repair, implemented-builder audit ledger, and Web discovery/HTTP family repair are complete. The next Tool Builder work is the remaining family repair queue in [`docs/TOOL-BUILDER-IMPLEMENTED-AUDIT-LEDGER.md`](docs/TOOL-BUILDER-IMPLEMENTED-AUDIT-LEDGER.md), starting with credential/auth/cracking builders. Do not proof-gate command generation on direct Tools routes. The **Remaining modeled tool implementation backlog.** remains active after those repairs until each modeled tool is implemented through the full Tool Builder contract or explicitly dispositioned with proof.
+The completed broad audit item was **Post-mining Next Steps and tool-card clarity audit**. The **Implemented-tool Evidence and cross-surface audit** is complete, and `tb-ffuf` is now the golden reference for the **operator-surface standard** in [`docs/TOOL-BUILDER-SURFACE-STANDARD.md`](docs/TOOL-BUILDER-SURFACE-STANDARD.md): grouped all-visible fields with plain-language descriptions, clickable per-field presets, header/cookie snippets, and outcome-labelled mode cards, proven by `tests/run-tool-surface-contract-tests.js`. The next Tool Builder work is the operator-surface family repair — bring every implemented builder up to that standard by copying `tb-ffuf` in `data/tool-builders.js`. The generated Product Build Next block below leads with these per-family repairs (web, then credentials/auth/cracking, AD/SMB, network, privesc). Do not proof-gate command generation on direct Tools routes. The **Remaining modeled tool implementation backlog.** remains active after those repairs until each modeled tool is implemented through the full Tool Builder contract or explicitly dispositioned with proof.
 
 ## Canonical docs
 
@@ -34,6 +34,7 @@ The completed broad audit item was **Post-mining Next Steps and tool-card clarit
 - [`docs/PRODUCT-HARDENING.md`](docs/PRODUCT-HARDENING.md) - active product-hardening vision, tracks, work-package rules, and Definition of Done.
 - [`docs/TOOL-BUILDER-BUILD-QUEUE.md`](docs/TOOL-BUILDER-BUILD-QUEUE.md) - active Tool Builder backlog sequence and the permanent command, Evidence, proof, and Next Steps contract.
 - [`docs/TOOL-BUILDER-IMPLEMENTATION-STANDARD.md`](docs/TOOL-BUILDER-IMPLEMENTATION-STANDARD.md) - reusable-plumbing / bespoke-profile standard for faster Tool Builder implementation without generic tool smearing.
+- [`docs/TOOL-BUILDER-SURFACE-STANDARD.md`](docs/TOOL-BUILDER-SURFACE-STANDARD.md) - required operator-surface look and feel (grouped fields, clickable presets, header snippets, mode cards); `tb-ffuf` is the golden reference and `tests/run-tool-surface-contract-tests.js` is the gate.
 - [`docs/TOOL-BUILDER-OPERATOR-GUIDANCE-AUDIT.md`](docs/TOOL-BUILDER-OPERATOR-GUIDANCE-AUDIT.md) - mandatory repair/audit handoff for implemented builders that lack meaningful operator guidance, real presets, database action paths, and mobile-safe UX.
 - [`docs/TOOL-BUILDER-IMPLEMENTED-AUDIT-LEDGER.md`](docs/TOOL-BUILDER-IMPLEMENTED-AUDIT-LEDGER.md) - Build 2 pass/fail ledger for currently implemented builders and the next family repair batches.
 - [`docs/TOOL-BUILDER-INVENTORY-ORGANIZATION.md`](docs/TOOL-BUILDER-INVENTORY-ORGANIZATION.md) - operator-first Tool Builder taxonomy and placement rules for modeled and implemented tools.
@@ -56,7 +57,7 @@ Obol remains a website the user can visit and use: no backend, account system, t
 Generated from the same queue sources as the Product Hardening Dashboard. Do not edit this block manually.
 This block is generated from `data/product-hardening/product-hardening-queue.js`. Do not edit it manually.
 
-**Current product-hardening queue:** 227/658 complete (35%), 9 concrete queued, 9 modeled/standing items.
+**Current product-hardening queue:** 227/663 complete (35%), 15 concrete queued, 9 modeled/standing items.
 **Private notes source:** [`https://github.com/platocres/obol-source-notes/tree/main/sources/raw`](https://github.com/platocres/obol-source-notes/tree/main/sources/raw) — 556 notes and 1326 embedded resources accounted.
 **Private review packets:** `platocres/obol-source-notes@agent/review-packets:data/review-packets/manifest.json` — 556/556 notes, 29 packets, 0 truncated.
 **Complete source packet proof:** 556/556 notes in 29 complete-text packets, 0 truncated, 8,725,188 cleaned text chars.
@@ -67,19 +68,19 @@ This block is generated from `data/product-hardening/product-hardening-queue.js`
 **Source re-mining status:** 556/556 full-spectrum re-mined; 0 old-rubric-only notes remain.
 **Source-note cluster status:** source-note mining complete; no pending cluster review items remain.
 
-**Recommended work package:** **Post-notes Operator UI Clarity** — 1 concrete live item / 6 tracked.
-**Next concrete entry:** **Post-mining modeled tool builder implementation backlog**
-**Ownership area:** `ui-ux/operator-surfaces`
+**Recommended work package:** **Tool Builder Operator-Surface Family Repair** — 5 concrete live items / 5 tracked.
+**Next concrete entry:** **Bring the Web discovery/HTTP builder family to the operator-surface standard**
+**Ownership area:** `tool-builder/operator-surface`
 **Package dependencies:** none.
 **Package detail:** Use the Product Hardening Dashboard for full track ledgers and `data/product-hardening/work-packages.js` for the long-form package guidance.
 **Recommended work-package metadata comes from `data/product-hardening/work-packages.js`.
 
 **Highest-priority concrete live items:**
-1. **Post-mining modeled tool builder implementation backlog** — The implemented-builder audit is complete. The remaining modeled inventory now appears inside the normal operator Tool Library categories with status badges intact, so agents can burn it down coherently without creating a fake residual inventory category.
-2. **Post-mining runtime and old-layer retirement audit** — The Tool Library route now uses the compact current Tool Builder extension plan. Dashboard and non-Tools product-hardening routes still need separate current-owner/equivalence retirement proof before this item can close.
-3. **Post-mining regression speed and coverage pass** — With the note queue closed, shorten slow historical/browser checks where proven redundant while keeping exact-head full regression and browser smoke meaningful.
-4. **Quiet service worker caching** — Improve repeat-load and offline behavior without prompting users to install anything.
-5. **IndexedDB workspace storage** — Support durable larger local workspaces, multiple engagements, and cached indexes while remaining browser-local.
+1. **Bring the Web discovery/HTTP builder family to the operator-surface standard** — ffuf is done and is the golden reference (tb-ffuf in data/tool-builders.js). Give gobuster/feroxbuster, curl, sqlmap, WhatWeb, Nikto, httpx, wfuzz, and ZAP the same surface: grouped all-visible fields with plain-language descriptions, clickable per-field presets, header/cookie snippets, and outcome-labelled mode cards. Follow docs/TOOL-BUILDER-SURFACE-STANDARD.md and prove with tests/run-tool-surface-contract-tests.js.
+2. **Bring the credentials/auth/cracking builder family to the operator-surface standard** — Apply the ffuf surface pattern to Hashcat, John, Hydra, Kerbrute, the Impacket AS-REP/Kerberoast/secretsdump builders, and NetExec credential modes: grouped fields, presets (hash modes, wordlists, spray lists), paste snippets where relevant, and outcome mode cards. Follow docs/TOOL-BUILDER-SURFACE-STANDARD.md.
+3. **Bring the AD/SMB/remote-access builder family to the operator-surface standard** — Apply the surface pattern to smbclient, smbmap, enum4linux-ng, ldapsearch, rpcclient, Evil-WinRM, Certipy, and the Impacket exec builders (psexec/wmiexec/smbexec/dcomexec/atexec). Follow docs/TOOL-BUILDER-SURFACE-STANDARD.md.
+4. **Bring the network/service enumeration builder family to the operator-surface standard** — Apply the surface pattern to Nmap, masscan, Rustscan, naabu, fping, nbtscan, dig/dnsrecon/nslookup, snmpwalk, and onesixtyone. Follow docs/TOOL-BUILDER-SURFACE-STANDARD.md.
+5. **Bring the privesc/local-enumeration builder family to the operator-surface standard** — Apply the surface pattern to linPEAS, winPEAS, pspy, accesschk, and searchsploit. Follow docs/TOOL-BUILDER-SURFACE-STANDARD.md.
 
 **Queue automation:** `data/product-hardening/product-hardening-queue.js`, `data/product-hardening/build-next-queue-hygiene-current.js`, `data/product-hardening/note-progress-current.js`, `data/product-hardening/source-note-clusters-current.js`, and `data/product-hardening/work-packages.js` are the queue owners. The dashboard and this README projection consume those same sources.
 Generated by `node tools/sync-product-build-next.js --write`. Verify with `node tools/sync-product-build-next.js --check`.

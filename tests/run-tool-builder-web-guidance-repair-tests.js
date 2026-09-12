@@ -33,8 +33,8 @@ for(const id of owner.builderIds){
 const ffuf=schema.get('tb-ffuf');
 assert(ffuf.fields.some(f=>f.id==='action'&&f.type==='select'),'ffuf should have an action selector for presets');
 const ffufHtml=runtime.html(ffuf,{target:{value:'http://example.test/FUZZ'},context:{},workspace:{wordlist:'words.txt'}},{action:'vhost',url:'http://FUZZ.example.test/',wordlist:'words.txt'});
-assert(ffufHtml.includes('data-tool-builder-preset')&&ffufHtml.includes('Action guide'),'generic renderer should show preset buttons and guidance');
-assert(ffufHtml.includes('What it can prove')&&ffufHtml.includes('What it does not prove'),'guidance should teach proof boundaries on the Tools route');
+assert(ffufHtml.includes('data-tool-builder-preset')&&ffufHtml.includes('tb-modes')&&ffufHtml.includes('tb-mode-ctx'),'renderer should show mode-card presets and their use-when guidance');
+assert(ffufHtml.includes('tb-read')&&ffufHtml.includes('Proves')&&ffufHtml.includes("Doesn't prove"),'guidance should teach proof boundaries (Proves / Doesn\'t prove) on the Tools route');
 const curl=runtime.effectiveBuilder(schema.get('tb-curl'));
 assert((curl.operatorGuide.actions||[]).some(a=>a.value==='DELETE'&&a.risk==='dangerous'),'curl should label destructive method testing as dangerous while still selectable');
 const sqlmap=runtime.effectiveBuilder(schema.get('tb-sqlmap'));

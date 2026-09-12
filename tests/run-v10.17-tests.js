@@ -36,7 +36,7 @@ assert(dashboard.__OBOL_DEFERRED_PRODUCT_HARDENING_EXTENSIONS__.length>20,'Dashb
 assert(Array.from(dashboard.__OBOL_DEFERRED_PRODUCT_HARDENING_EXTENSIONS__).includes('data/product-hardening/tool-builder-discovery-current.js'),'Full plan should keep current discovery owner');
 const readme=fs.readFileSync(path.join(root,'README.md'),'utf8');
 assert(readme.includes('docs/TOOL-BUILDER-BUILD-QUEUE.md'),'README should link to the canonical Tool Builder handoff');
-assert(readme.includes('Post-mining runtime and old-layer retirement audit'),'README Product Build Next should keep remaining runtime compaction scope honest');
+assert(readme.includes('operator-surface standard'),'README Product Build Next should lead with the concrete Tool Builder operator-surface family repair');
 assert(readme.includes('Do not follow side-lane "next build" pointers unless directed'),'README should explicitly keep side-lane planning from overriding Product Build Next');
 const queue=fs.readFileSync(path.join(root,'docs/TOOL-BUILDER-BUILD-QUEUE.md'),'utf8');
 assert(queue.includes('Current ownership hygiene'),'queue should preserve current-owner Tool Builder handoff');
