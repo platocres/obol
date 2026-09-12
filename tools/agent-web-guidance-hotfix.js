@@ -1,0 +1,11 @@
+'use strict';
+const fs=require('fs');
+const p='tools/agent-web-guidance-patch.js';
+let s=fs.readFileSync(p,'utf8');
+const start="const guideMarker=`'</div><span class=\"badge\">'+esc(builder.executionContext||'any')+'</span></div>'+creds+`;";
+const old=start+"\nif(!s.includes('renderOperatorGuide(builder,resolved)+')){if(!s.includes(guideMarker))die('missing html guide insertion marker');s=s.replace(guideMarker,guideMarker+'renderOperatorGuide(builder,resolved)+');}";
+const replacement="if(!s.includes('renderOperatorGuide(builder,resolved)+')){const htmlStart=s.indexOf('function html(builder,context,values){');const formIndex=s.indexOf(\"'<form class=\",htmlStart);const credsIndex=s.lastIndexOf('+creds+',formIndex);if(htmlStart<0||formIndex<0||credsIndex<0)die('missing html guide insertion window');const insertAt=credsIndex+'+creds+'.length;s=s.slice(0,insertAt)+'renderOperatorGuide(builder,resolved)+'+s.slice(insertAt);}";
+if(!s.includes(old))throw new Error('hotfix could not find brittle renderer marker block');
+s=s.replace(old,replacement);
+fs.writeFileSync(p,s);
+console.log('patched web guidance patcher to use index-based renderer insertion');
