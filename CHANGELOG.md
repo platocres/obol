@@ -1,8 +1,7 @@
-## v10.20
+## v10.20 — This product-hardening build organizes the remaining modeled Tool Builder inventory into coherent functional slices and tightens the handoff so future agents keep working the real Product Build Next queue while updating release history
 
 - Added the Build 2 implemented-builder audit ledger so currently registered implemented builders are grouped into pass/fail repair families, with database builders passing and older implemented builders failing visibly until their direct-route guidance is repaired.
 - Clarified that direct Tools routes must not proof-gate command generation; Evidence gates proof claims and Next Steps movement after execution, not action selection or command preview generation.
- — This product-hardening build organizes the remaining modeled Tool Builder inventory into coherent functional slices and tightens the handoff so future agents keep working the real Product Build Next queue while updating release history
 
 - Reorganized the live Tools route's remaining Tool Builder inventory from one flat chip wall into functional implementation slices while keeping every real tool selectable.
 - Exposed grouped modeled inventory through `OBOL_TOOL_BUILDER_IMPLEMENTATION_AUDIT_CURRENT.activeBatches()` and `auditSnapshot()` so future agents can burn down coherent tool families instead of random one-offs.
