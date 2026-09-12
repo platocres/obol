@@ -6,20 +6,12 @@ on:
       - 'release/obol-*'
     paths:
       - '.github/workflows/sync-release-artifacts.yml'
-      - 'BUILDING.md'
-      - 'data/current-release.js'
-      - 'data/runtime-manifest.js'
-      - 'data/product-hardening/**'
+      - 'data/**'
+      - 'assets/**'
       - 'docs/v*.md'
-      - 'tools/sync-current-release.js'
-      - 'tools/sync-current-changelog.js'
-      - 'tools/sync-release-docs.js'
-      - 'tools/sync-app-current.js'
-      - 'tools/sync-product-build-next.js'
-      - 'assets/app-v*.js'
-      - 'assets/report-v*.js'
-      - 'assets/workflow-current.js'
-      - 'assets/operator-route-current.js'
+      - 'tools/sync-*.js'
+      - 'tools/style-cascade-current.js'
+      - 'tools/current-runtime.js'
 
 permissions:
   contents: write
@@ -38,15 +30,12 @@ jobs:
       - name: Set up Node
         uses: actions/setup-node@v4
         with:
-          node-version: '20'
+          node-version: '24'
 
       - name: Synchronize generated release artifacts
         run: |
-          node tools/sync-current-release.js --write
-          node tools/sync-app-current.js --write
-          node tools/sync-current-changelog.js --write
-          node tools/sync-release-docs.js --write
-          node tools/sync-product-build-next.js --write
+          node tools/sync-generated.js --write
+          node tools/sync-generated.js --check
 
       - name: Commit generated artifacts
         shell: bash
@@ -54,7 +43,11 @@ jobs:
           set -euo pipefail
           git config user.name "github-actions[bot]"
           git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
-          git add README.md index.html assets/obol-app-current.js CHANGELOG.md BUILDING.md
+          git add README.md index.html CHANGELOG.md \
+            assets/obol-domain-current.js assets/obol-core-current.js \
+            assets/obol-app-current.js assets/obol-evidence-current.js \
+            assets/obol-nmap-current.js assets/obol-report-overlays-current.js \
+            assets/obol-tool-reference-current.js assets/obol-current.css
           if git diff --cached --quiet; then
             echo "Generated release artifacts already current."
             exit 0
