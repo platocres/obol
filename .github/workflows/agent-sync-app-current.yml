@@ -1,0 +1,38 @@
+name: Agent sync app current bundle
+
+on:
+  push:
+    branches:
+      - tool-builder-web-guidance-repair
+
+permissions:
+  contents: write
+
+jobs:
+  sync:
+    if: github.actor != 'github-actions[bot]'
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: tool-builder-web-guidance-repair
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 24
+      - name: Sync generated app bundle
+        run: |
+          node tools/sync-app-current.js
+          node tools/validate-runtime-bundles.js
+          node tools/run-historical-contracts.js --phase v5-v8-runtime
+      - name: Commit synced bundle and remove temp workflow
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          rm -f .github/workflows/agent-sync-app-current.yml
+          git add -A
+          if git diff --cached --quiet; then
+            echo "No sync changes to commit"
+          else
+            git commit -m "Sync app current bundle after web guidance repair"
+            git push origin tool-builder-web-guidance-repair
+          fi
