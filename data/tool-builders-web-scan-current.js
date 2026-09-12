@@ -13,6 +13,7 @@ function reg(builder){return schema.register(builder);}
 const whatweb=reg(Object.assign({
  id:'tb-whatweb',tool:'whatweb',title:'WhatWeb fingerprint builder',summary:'Fingerprint one authorized web target with a minimal WhatWeb command, then add aggression, headers, cookies, proxying, and output only through explicit controls.',executionContext:'kali',credentialModes:['cookie-token'],
  fields:[
+  {id:'action',label:'Fingerprint action',type:'select',default:'fingerprint',options:[{value:'fingerprint',label:'Fast fingerprint'},{value:'deep',label:'Deeper fingerprint'},{value:'json-output',label:'Fingerprint with JSON output'}]},
   {id:'target',label:'Authorized URL / host',type:'text',required:true,autofill:'target.value',placeholder:'http://target.example'},
   {id:'aggression',label:'Aggression',type:'select',default:'1',options:opt(['1','2','3','4'])},
   {id:'userAgent',label:'User-Agent',type:'text',placeholder:'Mozilla/5.0'},
@@ -24,6 +25,7 @@ const whatweb=reg(Object.assign({
   {id:'outputJson',label:'JSON output file',type:'path',placeholder:'scans/whatweb.json'}
  ],
  command:{executable:'whatweb',tokens:[
+  {kind:'choice',field:'action',choices:[{value:'fingerprint',arg:''},{value:'deep',arg:''},{value:'json-output',arg:''}]},
   {kind:'field',field:'aggression',flag:'-a'},
   {kind:'field',field:'userAgent',flag:'--user-agent'},
   {kind:'field',field:'header',flag:'--header'},
@@ -39,6 +41,7 @@ const whatweb=reg(Object.assign({
 const nikto=reg(Object.assign({
  id:'tb-nikto',tool:'nikto',title:'Nikto web scan builder',summary:'Run a minimal Nikto host scan first, then explicitly add SSL, port, tuning, proxy, timeout, and output controls.',executionContext:'kali',credentialModes:['cookie-token'],
  fields:[
+  {id:'action',label:'Scan action',type:'select',default:'default',options:[{value:'default',label:'Default host scan'},{value:'ssl-target',label:'SSL/alternate port scan'},{value:'focused-output',label:'Focused output capture'}]},
   {id:'host',label:'Authorized host / URL',type:'text',required:true,autofill:'target.value',placeholder:'http://target.example'},
   {id:'port',label:'Port override',type:'number',autofill:'context.port',placeholder:'8080'},
   {id:'ssl',label:'Force SSL (-ssl)',type:'checkbox'},
@@ -51,6 +54,7 @@ const nikto=reg(Object.assign({
   {id:'output',label:'Output file',type:'path',placeholder:'scans/nikto.txt'}
  ],
  command:{executable:'nikto',tokens:[
+  {kind:'choice',field:'action',choices:[{value:'default',arg:''},{value:'ssl-target',arg:''},{value:'focused-output',arg:''}]},
   {kind:'field',field:'host',flag:'-h'},
   {kind:'field',field:'port',flag:'-p'},
   {kind:'toggle',field:'ssl',flag:'-ssl'},
@@ -67,6 +71,7 @@ const nikto=reg(Object.assign({
 const httpx=reg(Object.assign({
  id:'tb-httpx',tool:'httpx',title:'httpx probe builder',summary:'Probe one URL or a supplied URL list with explicit response enrichment toggles, filters, retries, proxying, and output.',executionContext:'kali',credentialModes:['cookie-token'],
  fields:[
+  {id:'action',label:'Probe action',type:'select',default:'single',options:[{value:'single',label:'Single endpoint probe'},{value:'probe-list',label:'Probe URL list'},{value:'enriched-json',label:'Enriched JSON capture'}]},
   {id:'mode',label:'Input mode',type:'select',default:'single',options:[{value:'single',label:'Single URL / host'},{value:'list',label:'URL list file'}]},
   {id:'url',label:'Authorized URL / host',type:'text',requiredWhen:{field:'mode',equals:'single'},visibleWhen:{field:'mode',equals:'single'},autofill:'target.value',placeholder:'https://target.example'},
   {id:'inputFile',label:'Input file',type:'path',requiredWhen:{field:'mode',equals:'list'},visibleWhen:{field:'mode',equals:'list'},placeholder:'urls.txt'},
@@ -82,6 +87,7 @@ const httpx=reg(Object.assign({
   {id:'output',label:'Output file',type:'path',placeholder:'scans/httpx.txt'}
  ],
  command:{executable:'httpx',tokens:[
+  {kind:'choice',field:'action',choices:[{value:'single',arg:''},{value:'probe-list',arg:''},{value:'enriched-json',arg:''}]},
   {kind:'field',field:'url',flag:'-u',when:{field:'mode',equals:'single'}},
   {kind:'field',field:'inputFile',flag:'-l',when:{field:'mode',equals:'list'}},
   {kind:'field',field:'ports',flag:'-ports'},
@@ -100,6 +106,7 @@ const httpx=reg(Object.assign({
 const wfuzz=reg(Object.assign({
  id:'tb-wfuzz',tool:'wfuzz',title:'wfuzz content fuzz builder',summary:'Build a minimal path-fuzzing command from a real target and wordlist, then add filters, headers, cookies, proxy, recursion, and output explicitly.',executionContext:'kali',credentialModes:['cookie-token'],
  fields:[
+  {id:'action',label:'Fuzz action',type:'select',default:'path',options:[{value:'path',label:'Default path fuzz'},{value:'custom',label:'Custom FUZZ URL'},{value:'filtered',label:'Filtered result triage'}]},
   {id:'target',label:'Authorized host/IP for default path fuzzing',type:'text',requiredWhen:{field:'mode',equals:'path'},visibleWhen:{field:'mode',equals:'path'},autofill:'target.value',placeholder:'target.example'},
   {id:'mode',label:'Fuzz mode',type:'select',default:'path',options:[{value:'path',label:'Path fuzz: http://target/FUZZ'},{value:'custom',label:'Custom FUZZ URL'}]},
   {id:'url',label:'Custom URL containing FUZZ',type:'text',requiredWhen:{field:'mode',equals:'custom'},visibleWhen:{field:'mode',equals:'custom'},placeholder:'http://target/FUZZ'},
@@ -115,6 +122,7 @@ const wfuzz=reg(Object.assign({
   {id:'output',label:'Output file',type:'path',placeholder:'scans/wfuzz.txt'}
  ],
  command:{executable:'wfuzz',tokens:[
+  {kind:'choice',field:'action',choices:[{value:'path',arg:''},{value:'custom',arg:''},{value:'filtered',arg:''}]},
   {kind:'field',field:'wordlist',flag:'-w'},
   {kind:'field',field:'hideCodes',flag:'--hc'},
   {kind:'field',field:'showCodes',flag:'--sc'},
@@ -133,6 +141,7 @@ const wfuzz=reg(Object.assign({
 const zap=reg(Object.assign({
  id:'tb-zap',tool:'zap',title:'OWASP ZAP handoff builder',summary:'Build a minimal ZAP baseline or quick-scan handoff command with explicit target, output, AJAX/spider, proxy, and report controls.',executionContext:'kali',credentialModes:['cookie-token'],
  fields:[
+  {id:'action',label:'ZAP action',type:'select',default:'baseline',options:[{value:'baseline',label:'Baseline scan handoff'},{value:'quick',label:'Quick scan handoff'},{value:'report-review',label:'Report review handoff'}]},
   {id:'mode',label:'ZAP mode',type:'select',default:'baseline',options:[{value:'baseline',label:'zap-baseline.py target scan'},{value:'quick',label:'zap.sh quick scan'}]},
   {id:'target',label:'Authorized target URL',type:'text',required:true,autofill:'target.value',placeholder:'https://target.example'},
   {id:'minutes',label:'Spider minutes',type:'number',placeholder:'5',visibleWhen:{field:'mode',equals:'baseline'}},
@@ -145,6 +154,7 @@ const zap=reg(Object.assign({
   {id:'debug',label:'Debug output',type:'checkbox'}
  ],
  command:{executable:{field:'mode',choices:[{value:'baseline',command:'zap-baseline.py'},{value:'quick',command:'zap.sh'}]},tokens:[
+  {kind:'choice',field:'action',choices:[{value:'baseline',arg:''},{value:'quick',arg:''},{value:'report-review',arg:''}]},
   {kind:'field',field:'target',flag:'-t',when:{field:'mode',equals:'baseline'}},
   {kind:'field',field:'minutes',flag:'-m',when:{field:'mode',equals:'baseline'}},
   {kind:'toggle',field:'ajaxSpider',flag:'-j',when:{field:'mode',equals:'baseline'}},

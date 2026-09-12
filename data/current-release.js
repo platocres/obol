@@ -69,9 +69,11 @@ const release=Object.freeze({
   'data/product-hardening/route-layer-retirement-current.js',
   'data/product-hardening/tool-builder-backlog-current.js',
   'data/product-hardening/tool-builder-discovery-current.js',
+ 'data/product-hardening/web-tool-guidance-current.js',
   'data/product-hardening/credential-helper-tool-builders-current.js',
   'data/product-hardening/privesc-helper-tool-builders-current.js',
-  'data/product-hardening/database-tool-builders-current.js'
+  'data/product-hardening/database-tool-builders-current.js',
+  'data/product-hardening/web-tool-guidance-current.js'
  ])
 });
 const AUTH_ENUM_SOURCE='data/tool-builders-auth-enum-current.js';

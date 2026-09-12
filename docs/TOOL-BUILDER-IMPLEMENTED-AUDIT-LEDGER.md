@@ -25,6 +25,8 @@ This audit rule is intentionally stricter than the older command/Evidence contra
 
 ## Current result
 
+Build 3 repairs the Web discovery and HTTP family so ffuf, Gobuster/Feroxbuster, curl, sqlmap, Burp Suite, WhatWeb, Nikto, httpx, wfuzz, and ZAP expose visible action guidance, real preset controls, and output interpretation on direct Tools routes.
+
 Database builders pass the new operator-guidance contract after the repair build:
 
 - `tb-mysql`
@@ -107,4 +109,4 @@ Build 2 is complete when:
 
 Do not resume broad modeled-tool acceleration yet.
 
-Start Build 3 with the first failing family from the audit ledger, likely Web discovery and HTTP. Repair those implemented tool routes so they have operator guidance, real presets, meaningful action trees, output interpretation, mobile-safe UI, and proof boundaries without requiring prior Evidence to generate commands.
+Start the next build with the first remaining failing family from the audit ledger, now expected to be Credentials, cracking, and auth. Repair those implemented tool routes so they have operator guidance, real presets, meaningful action trees, output interpretation, mobile-safe UI, and proof boundaries without requiring prior Evidence to generate commands.

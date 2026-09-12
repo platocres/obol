@@ -1,5 +1,8 @@
 ## v10.20 — This product-hardening build organizes the remaining modeled Tool Builder inventory into coherent functional slices and tightens the handoff so future agents keep working the real Product Build Next queue while updating release history
 
+- Added the Build 3 Web discovery/HTTP guidance repair so ffuf, Gobuster/Feroxbuster, curl, sqlmap, Burp Suite, WhatWeb, Nikto, httpx, wfuzz, and ZAP direct Tools routes expose visible action guidance, real presets, output interpretation, and proof boundaries.
+- Updated the generic Tool Builder renderer to consume owner-profile guidance and render preset buttons on the Tools page instead of leaving repaired guidance invisible.
+
 - Added the Build 2 implemented-builder audit ledger so currently registered implemented builders are grouped into pass/fail repair families, with database builders passing and older implemented builders failing visibly until their direct-route guidance is repaired.
 - Clarified that direct Tools routes must not proof-gate command generation; Evidence gates proof claims and Next Steps movement after execution, not action selection or command preview generation.
 

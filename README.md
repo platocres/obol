@@ -23,7 +23,7 @@ This is the single agent quickstart. Told to "read the README and keep developin
 7. **Keep private notes private.** Source-note mining is complete. Use notes docs as provenance and safety references unless Product Build Next explicitly reopens note-derived work. Extract the value, not the wording. Do not use `CHANGELOG.md` to decide what remains to be re-mined. Current re-mining status lives in the Product Build Next sources and dashboard.
 8. **Prove the head.** Run the focused validators for the touched ownership area, keep generated blocks synchronized, and do not call the PR merge-ready until the exact final head is green.
 
-The completed broad audit item was **Post-mining Next Steps and tool-card clarity audit**. The **Implemented-tool Evidence and cross-surface audit** is complete, and the database operator-guidance repair is complete. The next Tool Builder work is the implemented-builder audit ledger in [`docs/TOOL-BUILDER-IMPLEMENTED-AUDIT-LEDGER.md`](docs/TOOL-BUILDER-IMPLEMENTED-AUDIT-LEDGER.md), followed by family repair batches for failing implemented builders. Do not proof-gate command generation on direct Tools routes. The **Remaining modeled tool implementation backlog.** remains active after those repairs until each modeled tool is implemented through the full Tool Builder contract or explicitly dispositioned with proof.
+The completed broad audit item was **Post-mining Next Steps and tool-card clarity audit**. The **Implemented-tool Evidence and cross-surface audit** is complete, and the database operator-guidance repair, implemented-builder audit ledger, and Web discovery/HTTP family repair are complete. The next Tool Builder work is the remaining family repair queue in [`docs/TOOL-BUILDER-IMPLEMENTED-AUDIT-LEDGER.md`](docs/TOOL-BUILDER-IMPLEMENTED-AUDIT-LEDGER.md), starting with credential/auth/cracking builders. Do not proof-gate command generation on direct Tools routes. The **Remaining modeled tool implementation backlog.** remains active after those repairs until each modeled tool is implemented through the full Tool Builder contract or explicitly dispositioned with proof.
 
 ## Canonical docs
 
@@ -107,6 +107,7 @@ For implemented Tool Builder audit ledger work, run:
 ```bash
 node --check data/product-hardening/tool-builder-implemented-audit-current.js
 node tests/run-tool-builder-implemented-audit-ledger-tests.js
+node tests/run-tool-builder-web-guidance-repair-tests.js
 ```
 
 ## GitHub Pages

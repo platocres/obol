@@ -12,7 +12,7 @@ This file is the active Tool Builder build queue, not release history. Completed
 - The Product Build Next/dashboard projection must describe only remaining Tool Builder work. Completed tool families may be mentioned only as completed-through metadata, never as pending scope.
 - When a Tool Builder slice lands as a versioned release owner, the next cleanup/consolidation pass must either fold it into a stable current owner or explicitly justify why it stays live. The Tool Library must not accumulate an unbounded stack of versioned builder layers.
 
-The **Implemented-tool Evidence and cross-surface audit** is complete. Brandon's later direct inspection found a newer direct-route operator-guidance failure pattern, and the database family repair has now landed. The active work is the implemented-builder audit ledger and then family repairs for failing implemented builders.
+The **Implemented-tool Evidence and cross-surface audit** is complete. Brandon's later direct inspection found a newer direct-route operator-guidance failure pattern, and the database family repair, implemented-builder audit ledger, and Web discovery/HTTP repair have now landed. The active work is the remaining family repairs for failing implemented builders.
 
 The implementation rule is strict:
 
@@ -88,9 +88,9 @@ Acceptance for this batch:
 
 ### Family repair batches from implemented audit ledger
 
-After the ledger lands, repair failing implemented builders by family before resuming broad modeled-tool acceleration.
+The Web discovery and HTTP family is complete after Build 3. Continue repairing failing implemented builders by family before resuming broad modeled-tool acceleration.
 
-Use `OBOL_TOOL_BUILDER_IMPLEMENTED_AUDIT_CURRENT.nextRepairBatches()` as the source of truth. The expected first family is Web discovery and HTTP, followed by credential/auth/cracking, AD/SMB/remote-access tooling, network/service enumeration, privilege escalation/local enumeration, and any remaining implemented builders.
+Use `OBOL_TOOL_BUILDER_IMPLEMENTED_AUDIT_CURRENT.nextRepairBatches()` as the source of truth. The next expected family is credential/auth/cracking, followed by AD/SMB/remote-access tooling, network/service enumeration, privilege escalation/local enumeration, and any remaining implemented builders.
 
 Acceptance for each family repair:
 

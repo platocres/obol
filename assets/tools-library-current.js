@@ -5,8 +5,10 @@ const TOOL_VALUES_KEY='obol-tools-library-v10.01';
 const TOOL_BUILDER_ASSETS=Object.freeze(['data/tool-builder-schema.js','data/tool-builder-inventory.js','assets/tool-builder-current.js','data/tool-builders.js']);
 const TOOL_BUILDER_OWNER_ASSETS=Object.freeze([
  'data/tool-builders-auth-enum-current.js',
+ 'data/tool-builders-web-scan-current.js',
  'data/product-hardening/tool-builder-backlog-current.js',
  'data/product-hardening/tool-builder-discovery-current.js',
+ 'data/product-hardening/web-tool-guidance-current.js',
  'data/product-hardening/credential-helper-tool-builders-current.js',
  'data/product-hardening/privesc-helper-tool-builders-current.js',
  'data/product-hardening/remote-exec-tool-builders-current.js'
