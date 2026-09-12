@@ -21,7 +21,7 @@ jobs:
           node-version: 24
       - name: Sync generated app bundle
         run: |
-          node tools/sync-app-current.js
+          node tools/sync-app-current.js --write
           node tools/validate-runtime-bundles.js
           node tools/run-historical-contracts.js --phase v5-v8-runtime
       - name: Commit synced bundle and remove temp workflow
