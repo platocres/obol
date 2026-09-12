@@ -23,9 +23,7 @@ jobs:
           p=Path('CHANGELOG.md')
           s=p.read_text()
           marker='## v10.20'
-          bullets='''- Added the Build 2 implemented-builder audit ledger so currently registered implemented builders are grouped into pass/fail repair families, with database builders passing and older implemented builders failing visibly until their direct-route guidance is repaired.
-- Clarified that direct Tools routes must not proof-gate command generation; Evidence gates proof claims and Next Steps movement after execution, not action selection or command preview generation.
-'''
+          bullets="- Added the Build 2 implemented-builder audit ledger so currently registered implemented builders are grouped into pass/fail repair families, with database builders passing and older implemented builders failing visibly until their direct-route guidance is repaired.\n- Clarified that direct Tools routes must not proof-gate command generation; Evidence gates proof claims and Next Steps movement after execution, not action selection or command preview generation.\n"
           if 'Build 2 implemented-builder audit ledger' not in s:
               if marker not in s:
                   raise SystemExit('v10.20 heading not found')
