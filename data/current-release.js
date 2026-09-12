@@ -1,8 +1,8 @@
 'use strict';
 (function(root){
 const release=Object.freeze({
- version:'10.0.20',
- label:'v10.20',
+ version:'10.0.21',
+ label:'v10.21',
  phase:'product-hardening',
  phaseLabel:'Product Hardening',
  orangeBaseline:'v8.8',
@@ -119,7 +119,7 @@ function normalizeReportMarkdown(markdown){
 function finalizeProductHardeningExtensions(){
  const api=root.OBOL_NOTE_CARD_DISPOSITION_RECONCILIATION_API_V968;
  if(api&&typeof api.install==='function'){
-  try{api.install();root.__OBOL_PRODUCT_HARDENING_FINAL_CARD_DISPOSITION__='v10.20';}catch(_err){root.__OBOL_PRODUCT_HARDENING_FINAL_CARD_DISPOSITION_ERROR__=String(_err&&_err.message||_err);}
+  try{api.install();root.__OBOL_PRODUCT_HARDENING_FINAL_CARD_DISPOSITION__='v10.21';}catch(_err){root.__OBOL_PRODUCT_HARDENING_FINAL_CARD_DISPOSITION_ERROR__=String(_err&&_err.message||_err);}
  }
 }
 function schemaReady(){const schema=root.OBOL_TOOL_BUILDER_SCHEMA;return !!(schema&&typeof schema.register==='function');}

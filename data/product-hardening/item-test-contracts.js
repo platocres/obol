@@ -161,6 +161,11 @@ const contracts={
   validationCommands:['node tools/validate-tool-builder-platform.js','node tests/run-v9.15-tests.js'],
   proofFiles:['data/tool-builders.js','data/tool-builder-schema.js','data/tool-builder-inventory.js','assets/tool-builder-current.js','assets/app-v8.8.js','tools/validate-tool-builder-platform.js','tests/run-v9.15-tests.js','docs/TOOL-BUILDER-COVERAGE.md','docs/v9.15.md']
  },
+ 'tb-surface-web':{
+  acceptance:['Every implemented Web discovery / HTTP builder — gobuster/feroxbuster, curl, sqlmap, WhatWeb, Nikto, httpx, wfuzz, ZAP, and the Burp Suite guided-workflow builder — matches the tb-ffuf operator-surface standard: grouped, all-visible fieldGroups with plain-language descriptions covering every non-action field, clickable per-field presets, add-a-header snippets on line-split header textareas, and the outcome-labelled mode cards, Reading-the-output row, and honest missing-field state that the family guidance owner injects. No builder leaves fields in an ad-hoc "More options" wall, and no fabricated lab value is seeded as a real command value. tests/run-tool-surface-contract-tests.js enforces the full standard across the whole family, not just ffuf.'],
+  validationCommands:['node tests/run-tool-surface-contract-tests.js','node tools/run-historical-contracts.js --phase v9-current-product','node tests/run-v10.21-tests.js'],
+  proofFiles:['data/tool-builders.js','data/tool-builders-web-scan-current.js','data/product-hardening/tool-builder-discovery-current.js','data/product-hardening/web-tool-guidance-current.js','assets/tool-builder-current.js','tests/run-tool-surface-contract-tests.js','docs/TOOL-BUILDER-SURFACE-STANDARD.md','docs/v10.21.md']
+ },
  'tb-ffuf':{
   acceptance:['Tool and relevant Card routes expose one schema-driven ffuf builder with explicit FUZZ URL, wordlist, recursion/depth, extensions, match/filter controls, repeated headers, concurrency/rate, output handling, and reviewed-response Evidence boundaries.'],
   validationCommands:['node tools/validate-tool-builder-platform.js','node tests/run-v9.14-tests.js'],

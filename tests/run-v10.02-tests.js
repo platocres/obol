@@ -115,23 +115,35 @@ const readme = read('README.md');
 const backlogClosedInReadme = readme.includes('No active Tool Builder implementation batches remain') || readme.includes('final implemented-tool Evidence and cross-surface audit closed in v10.08');
 const next = queue.buildNext(5).map((item) => item.id);
 assert(!next.includes('post-notes-visual-density-regression-pass'), 'visual density item should not remain in Build Next after closure');
+// The concrete operator-surface family repair leads Build Next until every family is complete.
+// Do not pin a single family literal: as each family (web, then credentials, ...) is finished
+// the entry advances to the next highest-priority queued family. This protects the durable
+// behaviour without freezing a completed item as the entry point.
+const surfaceFamily = ['tb-surface-web', 'tb-surface-credentials', 'tb-surface-ad-smb', 'tb-surface-network', 'tb-surface-privesc'];
 if (!backlogClosedInReadme) {
-  assert.strictEqual(next[0], 'tb-surface-web', 'Build Next must lead with the concrete Tool Builder operator-surface family repair');
-  assert(next.includes('tb-surface-credentials'), 'Build Next must surface the concrete per-family repair items');
+  const leadItem = queue.items.find((item) => item.id === next[0]);
+  assert(surfaceFamily.includes(next[0]), 'Build Next must lead with a concrete Tool Builder operator-surface family repair item');
+  assert(leadItem && leadItem.status === 'queued', 'the lead operator-surface family item must still be queued');
+  const webItem = queue.items.find((item) => item.id === 'tb-surface-web');
+  if (webItem && webItem.status === 'complete') {
+    assert.notStrictEqual(next[0], 'tb-surface-web', 'a completed family repair item must not remain the Build Next entry');
+  }
+  assert(next.some((id) => surfaceFamily.includes(id) && id !== next[0]), 'Build Next must surface the remaining per-family repair items');
 }
 const qaTrack = queue.tracks.find((track) => track.id === 'testing-qa');
 assert(qaTrack && qaTrack.complete >= 8, 'testing/QA track completion should preserve visual density proof');
 const packages = qroot.OBOL_PRODUCT_HARDENING_WORK_PACKAGES;
 const recommendation = packages && packages.recommend(queue);
 if (!backlogClosedInReadme) {
-  assert(recommendation && recommendation.entryItem.id === 'tb-surface-web', 'recommended work package should enter the Tool Builder operator-surface family repair while it remains queued');
+  assert(recommendation && surfaceFamily.includes(recommendation.entryItem.id), 'recommended work package should enter the Tool Builder operator-surface family repair at its highest-priority queued family');
   assert(Array.isArray(recommendation.liveItems) && recommendation.liveItems.length >= 1, 'recommended package should include live tool-builder work while the family repair remains queued');
 }
 
 assert(readme.includes('Current release: **' + currentAuthority.label + '**'), 'README must sync to the current release authority');
 assert(!readme.includes('**Next concrete entry:** **Post-mining visual density regression pass**'), 'README should not leave visual density as the next concrete item');
 if (!backlogClosedInReadme) {
-  assert(readme.includes('**Next concrete entry:** **Bring the Web discovery/HTTP builder family to the operator-surface standard**'), 'README Build Next should lead with the concrete Tool Builder operator-surface family repair');
+  assert(/\*\*Next concrete entry:\*\* \*\*Bring the [^*]*builder family to the operator-surface standard\*\*/.test(readme), 'README Build Next should lead with a concrete Tool Builder operator-surface family repair item');
+  assert(!readme.includes('**Next concrete entry:** **Bring the Web discovery/HTTP builder family to the operator-surface standard**'), 'the completed Web discovery/HTTP family repair should no longer be the next concrete entry');
   assert(readme.includes('**Recommended work package:** **Tool Builder Operator-Surface Family Repair**'), 'README must surface the Tool Builder operator-surface family repair package while it remains queued');
 } else {
   assert(readme.includes('No active Tool Builder implementation batches remain'), 'README must record that the Tool Builder implementation backlog closed once later releases complete it');
