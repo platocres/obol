@@ -15,7 +15,7 @@ The README is the entrypoint and current handoff. It should stay lean, but it mu
 This is the single agent quickstart. Told to "read the README and keep developing"? Use this flow.
 
 1. **Use one active product-hardening PR.** Check for an open release/product-hardening PR first. Continue it if it exists. Otherwise open one normal, non-draft PR for the work.
-2. **Read the linked docs.** Read this README, [`docs/AGENT-WORKFLOW.md`](docs/AGENT-WORKFLOW.md), [`BUILDING.md`](BUILDING.md), and the owner docs relevant to the Product Build Next item. For Tool Builder work, [`docs/TOOL-BUILDER-BUILD-QUEUE.md`](docs/TOOL-BUILDER-BUILD-QUEUE.md), [`docs/TOOL-BUILDER-IMPLEMENTATION-STANDARD.md`](docs/TOOL-BUILDER-IMPLEMENTATION-STANDARD.md), and [`docs/TOOL-BUILDER-OPERATOR-GUIDANCE-AUDIT.md`](docs/TOOL-BUILDER-OPERATOR-GUIDANCE-AUDIT.md) are mandatory.
+2. **Read the linked docs.** Read this README, [`docs/AGENT-WORKFLOW.md`](docs/AGENT-WORKFLOW.md), [`BUILDING.md`](BUILDING.md), and the owner docs relevant to the Product Build Next item. For Tool Builder work, [`docs/TOOL-BUILDER-BUILD-QUEUE.md`](docs/TOOL-BUILDER-BUILD-QUEUE.md), [`docs/TOOL-BUILDER-IMPLEMENTATION-STANDARD.md`](docs/TOOL-BUILDER-IMPLEMENTATION-STANDARD.md), [`docs/TOOL-BUILDER-OPERATOR-GUIDANCE-AUDIT.md`](docs/TOOL-BUILDER-OPERATOR-GUIDANCE-AUDIT.md), and [`docs/TOOL-BUILDER-IMPLEMENTED-AUDIT-LEDGER.md`](docs/TOOL-BUILDER-IMPLEMENTED-AUDIT-LEDGER.md) are mandatory.
 3. **Do Product Build Next.** Start with the highest-priority Product Build Next item. The generated Product Build Next block below is the current queue authority for ChatGPT/product-hardening agents. Treat the highest-priority item as the entry point into the recommended coherent work package, not as a one-item limit. Batch only closely related live items in the same ownership area. Every item advanced or closed still needs its own acceptance criteria and proof.
 4. **Do not follow side-lane "next build" pointers unless directed.** [`docs/EXPERIENCE-REVAMP.md`](docs/EXPERIENCE-REVAMP.md) is a Claude UX feature lane. Its one-liners do not override Product Build Next unless the user explicitly asks for that UX revamp work.
 5. **Land real product progress.** Wire new outputs into the actual user-visible Next Steps / Orange path surface where relevant, or into the live route, card, dashboard, tool, analyzer, report, or runtime surface that consumes them. Every tool batch must ship command generation and decision-relevant Evidence behavior together. For Tool Builder work, a tool is not implemented until it has minimum viable command or guided-handoff generation, real supplied/Evidence-derived prefill, additive controls, executable Evidence ingestion, proof boundaries, conservative Next Steps movement or blocking where applicable, and enough operator guidance for the human to know what to try next and why.
@@ -23,7 +23,7 @@ This is the single agent quickstart. Told to "read the README and keep developin
 7. **Keep private notes private.** Source-note mining is complete. Use notes docs as provenance and safety references unless Product Build Next explicitly reopens note-derived work. Extract the value, not the wording. Do not use `CHANGELOG.md` to decide what remains to be re-mined. Current re-mining status lives in the Product Build Next sources and dashboard.
 8. **Prove the head.** Run the focused validators for the touched ownership area, keep generated blocks synchronized, and do not call the PR merge-ready until the exact final head is green.
 
-The completed broad audit item was **Post-mining Next Steps and tool-card clarity audit**. The **Implemented-tool Evidence and cross-surface audit** is complete, but Brandon's direct inspection found a newer operator-guidance failure pattern. The next Tool Builder work is the implemented-builder operator-guidance audit and repair in [`docs/TOOL-BUILDER-OPERATOR-GUIDANCE-AUDIT.md`](docs/TOOL-BUILDER-OPERATOR-GUIDANCE-AUDIT.md); pause broad modeled-tool acceleration until implemented builders have real action presets, meaningful context, mobile-safe command previews, and a follow-up audit ledger. The **Remaining modeled tool implementation backlog.** remains active after that repair until each modeled tool is implemented through the full Tool Builder contract or explicitly dispositioned with proof.
+The completed broad audit item was **Post-mining Next Steps and tool-card clarity audit**. The **Implemented-tool Evidence and cross-surface audit** is complete, and the database operator-guidance repair is complete. The next Tool Builder work is the implemented-builder audit ledger in [`docs/TOOL-BUILDER-IMPLEMENTED-AUDIT-LEDGER.md`](docs/TOOL-BUILDER-IMPLEMENTED-AUDIT-LEDGER.md), followed by family repair batches for failing implemented builders. Do not proof-gate command generation on direct Tools routes. The **Remaining modeled tool implementation backlog.** remains active after those repairs until each modeled tool is implemented through the full Tool Builder contract or explicitly dispositioned with proof.
 
 ## Canonical docs
 
@@ -35,6 +35,7 @@ The completed broad audit item was **Post-mining Next Steps and tool-card clarit
 - [`docs/TOOL-BUILDER-BUILD-QUEUE.md`](docs/TOOL-BUILDER-BUILD-QUEUE.md) - active Tool Builder backlog sequence and the permanent command, Evidence, proof, and Next Steps contract.
 - [`docs/TOOL-BUILDER-IMPLEMENTATION-STANDARD.md`](docs/TOOL-BUILDER-IMPLEMENTATION-STANDARD.md) - reusable-plumbing / bespoke-profile standard for faster Tool Builder implementation without generic tool smearing.
 - [`docs/TOOL-BUILDER-OPERATOR-GUIDANCE-AUDIT.md`](docs/TOOL-BUILDER-OPERATOR-GUIDANCE-AUDIT.md) - mandatory repair/audit handoff for implemented builders that lack meaningful operator guidance, real presets, database action paths, and mobile-safe UX.
+- [`docs/TOOL-BUILDER-IMPLEMENTED-AUDIT-LEDGER.md`](docs/TOOL-BUILDER-IMPLEMENTED-AUDIT-LEDGER.md) - Build 2 pass/fail ledger for currently implemented builders and the next family repair batches.
 - [`docs/TOOL-BUILDER-INVENTORY-ORGANIZATION.md`](docs/TOOL-BUILDER-INVENTORY-ORGANIZATION.md) - operator-first Tool Builder taxonomy and placement rules for modeled and implemented tools.
 - [`docs/PROOF-CONTRACT.md`](docs/PROOF-CONTRACT.md) - conservative Evidence boundaries. Command recognition is not success.
 - [`docs/ACTIONABLE-CARD-CONTRACT.md`](docs/ACTIONABLE-CARD-CONTRACT.md) and [`docs/CARD-UI-STANDARD.md`](docs/CARD-UI-STANDARD.md) - user-visible card and operator surface standards.
@@ -99,6 +100,13 @@ node --check data/product-hardening/tool-builder-backlog-current.js
 node tests/run-tool-builder-inventory-organization-tests.js
 node tests/run-tool-builder-taxonomy-tests.js
 node tests/run-tool-builder-implementation-standard-tests.js
+```
+
+For implemented Tool Builder audit ledger work, run:
+
+```bash
+node --check data/product-hardening/tool-builder-implemented-audit-current.js
+node tests/run-tool-builder-implemented-audit-ledger-tests.js
 ```
 
 ## GitHub Pages
