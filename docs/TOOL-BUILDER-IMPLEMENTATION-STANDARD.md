@@ -58,6 +58,18 @@ A modeled tool cannot be promoted to `implemented builder` unless it has a tool-
 
 A tool profile must make the tool feel like itself. `ffuf`, `feroxbuster`, `gobuster`, and `wfuzz` may share HTTP discovery primitives, but they must not render as identical generic web-fuzzer cards. `impacket-secretsdump`, `impacket-psexec`, and `impacket-getuserspns` may share authentication controls, but their purpose, modes, output, risk, and proof boundaries are different.
 
+## Operator guidance is now part of implementation
+
+Shared plumbing and bespoke profiles are not enough if the direct Tools route still behaves like a command vending machine. An implemented builder must teach the operator what situation they are in, why this tool is appropriate, what action preset to choose, what each action proves, what it does not prove, and what output belongs in Evidence.
+
+Every future Tool Builder slice must keep this line intact:
+
+- Shared code owns mechanics.
+- Tool profiles own judgment.
+- Operator guidance owns the human decision path.
+
+A builder route fails the standard when it has fake clickable presets, non-working mode chips, empty accessory cards, raw native controls that look unfinished, legacy examples dominating the primary route, or too few meaningful actions for the real operator workflow. Database builders must explicitly cover identity, enumeration, privilege/capability checks, scoped reads, and gated database-to-OS command execution paths where the underlying database/tool supports them. See `docs/TOOL-BUILDER-OPERATOR-GUIDANCE-AUDIT.md` for the active repair queue and audit requirements.
+
 ## Tests must enforce the distinction
 
 Tool Builder tests should prove both halves of the contract:
@@ -68,10 +80,11 @@ Tool Builder tests should prove both halves of the contract:
 - no live Tools route category is named after backlog state;
 - every inventory record appears in exactly one approved operator category;
 - `implemented builder` and `modeled` status remain visible without creating a second inventory wall;
-- neighboring tools that share plumbing do not have identical profile shells.
+- neighboring tools that share plumbing do not have identical profile shells;
+- implemented routes expose operator guidance, real action presets, preset interaction behavior, Evidence interpretation, and mobile-safe command validation.
 
 ## Implementation cadence
 
 Future acceleration builds should implement tool families by plumbing reuse, but promote individual tools by profile. A good batch can ship several tools when shared primitives make that safe, but the `implemented builder` label still means the individual tool was examined and tested.
 
-The shared plumbing pilot remains provisional. Do not refactor existing good bespoke builders into the shared helper until at least two new backlog slices prove that the helper reduces work without genericizing the operator UI or weakening Evidence boundaries.
+The shared plumbing pilot remains provisional. Do not refactor existing good bespoke builders into the shared helper until at least two new backlog slices prove that the helper reduces work without genericizing the operator UI or weakening Evidence boundaries. Do not resume broad modeled-tool acceleration until the operator-guidance repair has a passing contract and the existing implemented-builder surface has an audit path.
