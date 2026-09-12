@@ -116,6 +116,7 @@ const notesIntegration = read('docs/NOTES-INTEGRATION.md');
 const hardeningDoc = read('docs/PRODUCT-HARDENING.md');
 const buildingDoc = read('BUILDING.md');
 const agentWorkflowDoc = read('docs/AGENT-WORKFLOW.md');
+const noteMiningWorkflowDoc = read('docs/NOTE-MINING-WORKFLOW.md');
 const rawNotesUrl = 'https://github.com/platocres/obol-source-notes/tree/main/sources/raw';
 if (!readme.includes('## Continue developing (start here)')) fail('README single agent quickstart is missing');
 if (!readme.includes('Open `#/dashboard` for the active Product Hardening Dashboard') && !readme.includes('Use `#/dashboard` for the active Product Hardening Dashboard')) fail('README does not direct agents to the product-hardening dashboard');
@@ -125,13 +126,15 @@ if (!/same ownership area/i.test(readme)) fail('README does not constrain batchi
 if (!/Every item advanced or closed still needs its own acceptance criteria/i.test(readme)) fail('README does not preserve atomic item-specific proof inside work packages');
 if (!readme.includes('data/product-hardening/product-hardening-queue.js')) fail('README does not name the product-hardening queue source of truth');
 if (!readme.includes('data/product-hardening/work-packages.js')) fail('README does not name the work-package source of truth');
-if (!buildingDoc.includes('## Coherent work-package burn-down') || !buildingDoc.includes('one PR -> one coherent engineering area -> potentially many queue items')) fail('BUILDING.md does not define multi-item work-package burn-down');
+// The linked owner below carries the package and atomic-proof contract. Do not
+// require BUILDING.md to repeat an old heading or slogan to keep it discoverable.
+if (!buildingDoc.includes('(docs/PRODUCT-HARDENING.md)')) fail('BUILDING.md does not link to the canonical work-package and item-proof contract');
 if (!hardeningDoc.includes('## Coherent work packages') || !hardeningDoc.includes('Work-package batching does not weaken this contract')) fail('product-hardening doc does not preserve package efficiency plus atomic proof');
 if (!readme.includes('platocres/obol-source-notes')) fail('README does not point to the private notes source repo');
 if (!readme.includes(rawNotesUrl)) fail('README does not deep-link agents to the raw notes sources directory');
 if (!readme.includes('[`' + rawNotesUrl + '`]')) fail('README does not label the raw notes source link with the exact URL');
 if (!readme.includes('**Private notes source:** [`' + rawNotesUrl + '`]')) fail('generated Product Build Next block does not expose the exact raw notes source URL');
-if (!agentWorkflowDoc.includes(rawNotesUrl)) fail('agent workflow does not deep-link agents to the raw notes sources directory');
+if (!agentWorkflowDoc.includes('(NOTE-MINING-WORKFLOW.md)') || !noteMiningWorkflowDoc.includes(rawNotesUrl)) fail('agent workflow must link the conditional notes procedure with the raw notes sources directory');
 if (!readme.includes('[`docs/NOTES-INTEGRATION.md`](docs/NOTES-INTEGRATION.md)')) fail('README does not point agents to the notes-integration boundary');
 if (!/normalized|derived/i.test(notesIntegration)) fail('notes integration doc does not preserve the normalized public-output boundary');
 if (!readme.includes('<!-- OBOL-PRODUCT-BUILD-NEXT:START -->') || !readme.includes('<!-- OBOL-PRODUCT-BUILD-NEXT:END -->')) fail('README Product Build Next markers are missing');

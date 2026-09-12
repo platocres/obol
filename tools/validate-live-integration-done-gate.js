@@ -21,6 +21,7 @@ function validateDocs(failures) {
   const doneGate = read('docs/LIVE-INTEGRATION-DONE-GATE.md');
   const gapParkingGuard = read('docs/SAME-SURFACE-GAP-PARKING-GUARD.md');
   const agentWorkflow = read('docs/AGENT-WORKFLOW.md');
+  const noteMiningWorkflow = read('docs/NOTE-MINING-WORKFLOW.md');
   const readme = read('README.md');
   const productHardening = read('docs/PRODUCT-HARDENING.md');
   const prTemplate = read('.github/pull_request_template.md');
@@ -59,11 +60,15 @@ function validateDocs(failures) {
     if (!prTemplate.includes(needle)) failures.push(`PR template missing completion gate phrase: ${needle}`);
   });
 
+  if (!agentWorkflow.includes('(NOTE-MINING-WORKFLOW.md)')) {
+    failures.push('agent workflow must link the conditional notes procedure');
+  }
+
   [
     'A new mined card is not complete until',
     'Wire note-derived tools, scripts, one-liners, analyzers, lesson boxes, command templates, and path branches into the **actual user-visible Next Steps / Orange path surface**',
   ].forEach((needle) => {
-    if (!agentWorkflow.includes(needle)) failures.push(`agent workflow missing live-integration guardrail: ${needle}`);
+    if (!noteMiningWorkflow.includes(needle)) failures.push(`conditional notes workflow missing live-integration guardrail: ${needle}`);
   });
 
   if (!readme.includes('Wire new outputs into the actual user-visible Next Steps / Orange path surface where relevant')) {
