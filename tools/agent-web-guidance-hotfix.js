@@ -17,6 +17,7 @@ const bridgePatch="if(!s.includes('__obolOwnerGuideBase')){const close=\"})(type
 const replacement=htmlPatch+'\n'+bridgePatch;
 if(!s.includes(old))throw new Error('hotfix could not find brittle renderer marker block');
 s=s.replace(old,replacement);
+s=s.replace("s=addAfter(s,\"  'data/product-hardening/database-tool-builders-current.js'\\n ])\",\"\\n  ,'data/product-hardening/web-tool-guidance-current.js'\",'release full web guidance');","s=replaceOnce(s,\"  'data/product-hardening/database-tool-builders-current.js'\\n ])\",\"  'data/product-hardening/database-tool-builders-current.js',\\n  'data/product-hardening/web-tool-guidance-current.js'\\n ])\",'release full web guidance');");
 const webRuntimeInstall=[
  "p='data/product-hardening/web-tool-guidance-current.js';s=read(p);",
  "if(!s.includes('__obolWebGuidanceBaseRuntime')){const close=\"})(typeof window!=='undefined'?window:globalThis);\";const install="+JSON.stringify([
@@ -34,4 +35,4 @@ const webRuntimeInstall=[
 if(!s.includes('OBOL_WEB_TOOL_GUIDANCE_RUNTIME_INSTALLED'))s=s.replace('for(const cmd of [',webRuntimeInstall+'for(const cmd of [');
 s=s.replace("'tools/agent-web-guidance-patch.js'])","'tools/agent-web-guidance-patch.js','tools/agent-web-guidance-hotfix.js'])");
 fs.writeFileSync(p,s);
-console.log('patched web guidance patcher to use index-based renderer insertion and owner-guidance runtime install');
+console.log('patched web guidance patcher to use index-based renderer insertion, owner runtime install, and valid release list insertion');
