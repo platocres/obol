@@ -13,7 +13,7 @@ const bridgeSource=[
  "function __obolMountWithOwnerGuide(container,builder,context,values){return __obolOwnerGuideBase.mount(container,__obolWithOwnerGuide(builder),context,values);}",
  "root.OBOL_TOOL_BUILDER=Object.freeze(Object.assign({},__obolOwnerGuideBase,{effectiveBuilder:__obolWithOwnerGuide,html:__obolHtmlWithOwnerGuide,mount:__obolMountWithOwnerGuide}));"
 ].join('\n')+'\n';
-const bridgePatch="if(!s.includes('__obolOwnerGuideBase')){const close=\")(typeof window!=='undefined'?window:globalThis);\";const bridge="+JSON.stringify(bridgeSource)+";if(!s.includes(close))die('missing tool builder export close for owner guide bridge');s=s.replace(close,bridge+close);}";
+const bridgePatch="if(!s.includes('__obolOwnerGuideBase')){const close=\"})(typeof window!=='undefined'?window:globalThis);\";const bridge="+JSON.stringify(bridgeSource)+";if(!s.includes(close))die('missing tool builder export close for owner guide bridge');s=s.replace(close,bridge+close);}";
 const replacement=htmlPatch+'\n'+bridgePatch;
 if(!s.includes(old))throw new Error('hotfix could not find brittle renderer marker block');
 s=s.replace(old,replacement);
