@@ -17,6 +17,21 @@ const bridgePatch="if(!s.includes('__obolOwnerGuideBase')){const close=\"})(type
 const replacement=htmlPatch+'\n'+bridgePatch;
 if(!s.includes(old))throw new Error('hotfix could not find brittle renderer marker block');
 s=s.replace(old,replacement);
+const webRuntimeInstall=[
+ "p='data/product-hardening/web-tool-guidance-current.js';s=read(p);",
+ "if(!s.includes('__obolWebGuidanceBaseRuntime')){const close=\"})(typeof window!=='undefined'?window:globalThis);\";const install="+JSON.stringify([
+  "function __obolInstallWebGuidanceRuntime(){",
+  " const base=root.OBOL_TOOL_BUILDER;if(!base||base.__webGuidanceRepair)return false;",
+  " function withGuide(builder){const effective=base.effectiveBuilder?base.effectiveBuilder(builder):builder;const id=(effective&&effective.id)||(builder&&builder.id);const profile=profiles[id];if(profile&&profile.operatorGuide&&!effective.operatorGuide)return Object.assign({},effective,{operatorGuide:profile.operatorGuide});return effective;}",
+  " function html(builder,context,values){return base.html(withGuide(builder),context,values);}",
+  " function mount(container,builder,context,values){return base.mount(container,withGuide(builder),context,values);}",
+  " root.OBOL_TOOL_BUILDER=Object.freeze(Object.assign({},base,{effectiveBuilder:withGuide,html,mount,__webGuidanceRepair:true}));return true;",
+  "}",
+  "root.OBOL_WEB_TOOL_GUIDANCE_RUNTIME_INSTALLED=__obolInstallWebGuidanceRuntime();"
+ ].join('\n')+'\n')+";if(!s.includes(close))die('missing web guidance owner close');s=s.replace(close,install+close);}",
+ "write(p,s);"
+].join('\n')+'\n\n';
+if(!s.includes('OBOL_WEB_TOOL_GUIDANCE_RUNTIME_INSTALLED'))s=s.replace('for(const cmd of [',webRuntimeInstall+'for(const cmd of [');
 s=s.replace("'tools/agent-web-guidance-patch.js'])","'tools/agent-web-guidance-patch.js','tools/agent-web-guidance-hotfix.js'])");
 fs.writeFileSync(p,s);
-console.log('patched web guidance patcher to use index-based renderer insertion and owner-guide bridge');
+console.log('patched web guidance patcher to use index-based renderer insertion and owner-guidance runtime install');
