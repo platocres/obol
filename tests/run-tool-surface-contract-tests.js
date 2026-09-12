@@ -96,7 +96,7 @@ assert(previewText(filled).includes('ffuf -u http://10.129.44.12/FUZZ'), 'comman
 
 // honest empty state, no fabricated lab IP
 const empty = runtime.html(ffuf, { tool: 'ffuf' }, {});
-assert(/to generate the command/i.test(previewText(empty)), 'empty-context ffuf must show a missing-field state, got: ' + JSON.stringify(previewText(empty)));
+assert(/missing required fields|complete required fields to generate a command/i.test(previewText(empty)), 'empty-context ffuf must show a missing-field state, got: ' + JSON.stringify(previewText(empty)));
 assert(!/10\.10\.10\.10/.test(previewText(empty)), 'empty-context command must not contain a fabricated lab IP');
 
 // ============ UNIVERSAL BASELINE: every registered builder ============

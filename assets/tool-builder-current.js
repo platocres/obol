@@ -245,8 +245,8 @@ function renderReadingOutput(builder,values){
 }
 function missingHint(builder,resolved){
  const missing=validateRequired(builder,resolved);
- if(missing.length)return 'Add '+missing.slice(0,3).join(', ')+(missing.length>3?', …':'')+' to generate the command.';
- return 'Complete the required fields to generate a command.';
+ if(missing.length)return 'Missing required fields: '+missing.join(', ');
+ return 'Complete required fields to generate a command.';
 }
 function highlightCommand(cmd){
  return String(cmd).split(' ').map((tok,i)=>{

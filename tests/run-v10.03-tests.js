@@ -128,8 +128,9 @@ assert(!roadmap.includes('## Shell, payload, privesc, and transfer helper batch'
 const readme = read('README.md');
 for (const token of [
   'docs/TOOL-BUILDER-BUILD-QUEUE.md',
+  'docs/TOOL-BUILDER-SURFACE-STANDARD.md',
   'Product Build Next',
-  'Post-mining modeled tool builder implementation backlog',
+  'operator-surface standard',
   'a tool is not implemented until it has minimum viable command or guided-handoff generation',
   'Every product-affecting build must update [`CHANGELOG.md`](CHANGELOG.md).'
 ]) assert(readme.includes(token), 'README active tool-builder queue handoff missing ' + token);
