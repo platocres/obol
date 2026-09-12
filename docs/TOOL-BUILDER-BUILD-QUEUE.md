@@ -20,6 +20,8 @@ The implementation rule is strict:
 
 > A tool is not fully implemented merely because Obol can generate its command. Every implemented tool must also have an Evidence-ingestion contract for the decision-relevant output that tool can produce, conservative fact extraction, failure/partial-result handling, and Next Steps movement or blocking where that Evidence changes what the operator should do next.
 
+> A tool is also not fully implemented until its direct Tools route teaches the operator what situation the tool fits, which human-readable action to pick, what the generated command proves or does not prove, what risky/noisy paths require, and what output should be pasted back into Evidence. Fake clickable preset chips, empty accessory sections, raw legacy-example dumps, and command-only forms are not acceptable implemented-builder UX.
+
 ## Cross-build command and Evidence contract
 
 For every implemented builder:
@@ -52,6 +54,29 @@ The credential-helper current owner covers CeWL, crunch, hashid, and name-that-h
 Release docs and changelog entries remain the history for completed formal releases. The completed web slice covered WhatWeb, Nikto, httpx, wfuzz, and ZAP. The legacy auth/enumeration tool routes for smbclient, smbmap, enum4linux-ng, and ldapsearch remain canonical and must not be shadowed by the current discovery owner. The completed current discovery owner covers masscan, Rustscan, naabu, fping, nbtscan, rpcclient, dig, nslookup, dnsrecon, snmpwalk, onesixtyone, windapsearch, and ldapdomaindump, while adding Evidence recognition for the broader AD/name-service output family. Those completed slices must not be reintroduced below as active work.
 
 ## Active Tool Builder batches
+
+### Implemented Tool Builder operator-guidance audit and repair
+
+This is now the first active Tool Builder build before any more broad modeled-tool acceleration.
+
+Brandon inspected the database builders from the acceleration pilot and found a pattern-level failure: implemented routes existed, but the tool pages did not sufficiently teach what to do, which action to choose, why that action matters, what output proves, what output does not prove, or how database-backed command execution paths should be checked safely. The preset chips also looked clickable without changing builder state, empty accessory sections rendered, legacy examples dominated the page, and mobile command validation text collided with the command-preview label.
+
+Read [`docs/TOOL-BUILDER-OPERATOR-GUIDANCE-AUDIT.md`](TOOL-BUILDER-OPERATOR-GUIDANCE-AUDIT.md) before building. That document is the handoff for this repair and contains the database-specific action paths, UI expectations, test requirements, and follow-up audit sequence.
+
+Acceptance for this batch:
+
+- Implemented builders have an operator-guidance contract, not just command generation.
+- Direct tool routes explain when to use the tool, what to try first, which action preset to pick, what output proves, what remains unproved, and what Evidence to paste back.
+- Action presets are real controls that mutate builder state and command previews, or they are restyled as non-clickable explanatory summaries.
+- Database builders get meaningful human-readable action presets for identity, listing, table/schema navigation, privilege/capability checks, scoped reads, and gated database-to-OS command execution paths where the database/tool supports them.
+- Risky actions such as `COPY PROGRAM`, `xp_cmdshell`, Redis write/persistence paths, MySQL UDF/plugin paths, and Oracle scheduler/external-job style paths are explicit, gated, and proof-boundary labeled.
+- Empty accessories do not render.
+- Legacy examples are collapsed below guidance and never dominate the primary direct-tool route.
+- Mobile command preview and missing-field states do not collide visually.
+- Regression tests fail any implemented builder that lacks operator guidance, real presets, preset interaction behavior, Evidence interpretation, and mobile-safe command validation.
+- A follow-up implemented-builder audit ledger is created or queued so Brandon does not have to inspect every currently implemented tool manually.
+
+Do not resume new modeled-tool promotion until this guidance/preset/mobile contract is in place and the existing implemented-builder surface has an audit path.
 
 ### Remaining modeled tool implementation backlog
 
