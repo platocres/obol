@@ -46,7 +46,7 @@ A modeled tool cannot be promoted to `implemented builder` unless it has a tool-
 - required inputs;
 - useful modes and presets;
 - curated optional controls;
-- dangerous, noisy, or situational controls that should be hidden, gated, or explained;
+- dangerous, noisy, or situational controls that should be risk-labeled or explained;
 - minimum viable command or guided handoff;
 - Evidence success patterns;
 - Evidence failure, blocked, partial, and inconclusive patterns;
@@ -68,7 +68,15 @@ Every future Tool Builder slice must keep this line intact:
 - Tool profiles own judgment.
 - Operator guidance owns the human decision path.
 
-A builder route fails the standard when it has fake clickable presets, non-working mode chips, empty accessory cards, raw native controls that look unfinished, legacy examples dominating the primary route, or too few meaningful actions for the real operator workflow. Database builders must explicitly cover identity, enumeration, privilege/capability checks, scoped reads, and gated database-to-OS command execution paths where the underlying database/tool supports them. See `docs/TOOL-BUILDER-OPERATOR-GUIDANCE-AUDIT.md` for the active repair queue and audit requirements.
+A builder route fails the standard when it has fake clickable presets, non-working mode chips, empty accessory cards, raw native controls that look unfinished, legacy examples dominating the primary route, or too few meaningful actions for the real operator workflow. Database builders must explicitly cover identity, enumeration, privilege/capability checks, scoped reads, and risk-labeled database-to-OS command execution paths where the underlying database/tool supports them. See `docs/TOOL-BUILDER-OPERATOR-GUIDANCE-AUDIT.md` for the active repair queue and audit requirements.
+
+## Direct-route command generation policy
+
+Implemented Tool Builder routes are decision and command-generation surfaces. Do not proof-gate command generation.
+
+Only missing command-construction inputs may invalidate the command preview. A command that needs a target, URL, username, password, hash, ticket, certificate, database, table, file path, listener, callback, or operator-supplied command text may stay incomplete until that value exists. The page must not require prior Evidence or proof before a human can select an action and generate a command.
+
+Risk labels, privilege prerequisites, impact notes, and proof boundaries guide the decision. Evidence gates proof claims and Next Steps movement after the operator runs the command and pastes output back.
 
 ## Tests must enforce the distinction
 
@@ -81,7 +89,7 @@ Tool Builder tests should prove both halves of the contract:
 - every inventory record appears in exactly one approved operator category;
 - `implemented builder` and `modeled` status remain visible without creating a second inventory wall;
 - neighboring tools that share plumbing do not have identical profile shells;
-- implemented routes expose operator guidance, real action presets, preset interaction behavior, Evidence interpretation, and mobile-safe command validation.
+- implemented routes expose operator guidance, real action presets, preset interaction behavior, Evidence interpretation, no proof-gating command-generation language, and mobile-safe command validation.
 
 ## Implementation cadence
 

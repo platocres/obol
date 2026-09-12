@@ -12,6 +12,8 @@ This file is the active Tool Builder build queue, not release history. Completed
 - The Product Build Next/dashboard projection must describe only remaining Tool Builder work. Completed tool families may be mentioned only as completed-through metadata, never as pending scope.
 - When a Tool Builder slice lands as a versioned release owner, the next cleanup/consolidation pass must either fold it into a stable current owner or explicitly justify why it stays live. The Tool Library must not accumulate an unbounded stack of versioned builder layers.
 
+The **Implemented-tool Evidence and cross-surface audit** is complete. Brandon's later direct inspection found a newer direct-route operator-guidance failure pattern, and the database family repair has now landed. The active work is the implemented-builder audit ledger and then family repairs for failing implemented builders.
+
 The implementation rule is strict:
 
 > Every implemented builder starts from the minimal valid command for the selected tool and mode, populated only with real collected target/material parameters, parsed Evidence/workspace parameters, or safe tool defaults. GUI fields and toggles may add flags, modes, filters, output handling, credentials, and escalation options onto that base. They must not manufacture fake credentials, placeholder hashes, fake targets, or kitchen-sink commands.
@@ -20,7 +22,15 @@ The implementation rule is strict:
 
 > A tool is not fully implemented merely because Obol can generate its command. Every implemented tool must also have an Evidence-ingestion contract for the decision-relevant output that tool can produce, conservative fact extraction, failure/partial-result handling, and Next Steps movement or blocking where that Evidence changes what the operator should do next.
 
-> A tool is also not fully implemented until its direct Tools route teaches the operator what situation the tool fits, which human-readable action to pick, what the generated command proves or does not prove, what risky/noisy paths require, and what output should be pasted back into Evidence. Fake clickable preset chips, empty accessory sections, raw legacy-example dumps, and command-only forms are not acceptable implemented-builder UX.
+> A tool is also not fully implemented until its direct Tools route teaches the operator what situation the tool fits, which human-readable action to pick, what output proves, what output does not prove, what risky/noisy paths require, and what output should be pasted back into Evidence. Fake clickable preset chips, empty accessory sections, raw legacy-example dumps, and command-only forms are not acceptable implemented-builder UX.
+
+## Direct-route command generation rule
+
+Do not proof-gate command generation.
+
+The Tools route is a decision and command-generation surface. Only missing command-construction inputs may invalidate a preview. Missing host, URL, username, password, hash, ticket, database, table, file path, listener, callback, or operator-supplied command text can block generation because the command cannot be constructed without it.
+
+Prior Evidence must not be required before the human can select an action and generate a command. Risk labels, impact notes, privilege prerequisites, and proof boundaries explain what the action may do and how to interpret output. Evidence gates proof claims and Next Steps movement after the operator runs the command and pastes output back.
 
 ## Cross-build command and Evidence contract
 
@@ -55,32 +65,48 @@ Release docs and changelog entries remain the history for completed formal relea
 
 ## Active Tool Builder batches
 
-### Implemented Tool Builder operator-guidance audit and repair
+### Implemented Tool Builder audit ledger
 
-This is now the first active Tool Builder build before any more broad modeled-tool acceleration.
+This is now the first active Tool Builder batch after the database operator-guidance repair.
 
-Brandon inspected the database builders from the acceleration pilot and found a pattern-level failure: implemented routes existed, but the tool pages did not sufficiently teach what to do, which action to choose, why that action matters, what output proves, what output does not prove, or how database-backed command execution paths should be checked safely. The preset chips also looked clickable without changing builder state, empty accessory sections rendered, legacy examples dominated the page, and mobile command validation text collided with the command-preview label.
+Build 1 repaired the database family. Build 2 audits every currently registered implemented builder against the new operator-guidance, preset, Evidence-interpretation, proof-boundary, and mobile/direct-route usability contract.
 
-Read [`docs/TOOL-BUILDER-OPERATOR-GUIDANCE-AUDIT.md`](TOOL-BUILDER-OPERATOR-GUIDANCE-AUDIT.md) before building. That document is the handoff for this repair and contains the database-specific action paths, UI expectations, test requirements, and follow-up audit sequence.
+Read [`docs/TOOL-BUILDER-IMPLEMENTED-AUDIT-LEDGER.md`](TOOL-BUILDER-IMPLEMENTED-AUDIT-LEDGER.md) and [`docs/TOOL-BUILDER-OPERATOR-GUIDANCE-AUDIT.md`](TOOL-BUILDER-OPERATOR-GUIDANCE-AUDIT.md) before building.
+
+Do not proof-gate command generation. Direct Tools routes are decision and command-generation surfaces. Only missing command-construction inputs may invalidate a preview. Evidence gates proof claims and Next Steps movement after the human runs a command and pastes the output back.
 
 Acceptance for this batch:
 
-- Implemented builders have an operator-guidance contract, not just command generation.
-- Direct tool routes explain when to use the tool, what to try first, which action preset to pick, what output proves, what remains unproved, and what Evidence to paste back.
-- Action presets are real controls that mutate builder state and command previews, or they are restyled as non-clickable explanatory summaries.
-- Database builders get meaningful human-readable action presets for identity, listing, table/schema navigation, privilege/capability checks, scoped reads, and gated database-to-OS command execution paths where the database/tool supports them.
-- Risky actions such as `COPY PROGRAM`, `xp_cmdshell`, Redis write/persistence paths, MySQL UDF/plugin paths, and Oracle scheduler/external-job style paths are explicit, gated, and proof-boundary labeled.
-- Empty accessories do not render.
-- Legacy examples are collapsed below guidance and never dominate the primary direct-tool route.
-- Mobile command preview and missing-field states do not collide visually.
-- Regression tests fail any implemented builder that lacks operator guidance, real presets, preset interaction behavior, Evidence interpretation, and mobile-safe command validation.
-- A follow-up implemented-builder audit ledger is created or queued so Brandon does not have to inspect every currently implemented tool manually.
+- Add a runtime audit owner for all registered implemented builders.
+- Create a pass/fail ledger that Brandon can inspect instead of manually critiquing every route.
+- Database builders pass the guidance/action contract after the repair.
+- Older implemented builders that still lack operator guidance fail visibly and are grouped by repair family.
+- The ledger records missing operator guidance, missing action presets, weak output interpretation, missing profiles, proof-gating language, and other contract failures.
+- The next repair family is made obvious through `nextRepairBatches()`.
+- Tests prove the ledger covers every registered implemented builder.
+- Tests prove database command-exec paths generate commands without prior Evidence/proof gates while still preserving proof boundaries.
 
-Do not resume new modeled-tool promotion until this guidance/preset/mobile contract is in place and the existing implemented-builder surface has an audit path.
+### Family repair batches from implemented audit ledger
+
+After the ledger lands, repair failing implemented builders by family before resuming broad modeled-tool acceleration.
+
+Use `OBOL_TOOL_BUILDER_IMPLEMENTED_AUDIT_CURRENT.nextRepairBatches()` as the source of truth. The expected first family is Web discovery and HTTP, followed by credential/auth/cracking, AD/SMB/remote-access tooling, network/service enumeration, privilege escalation/local enumeration, and any remaining implemented builders.
+
+Acceptance for each family repair:
+
+- Every implemented builder in the family has direct-route operator guidance.
+- Human-readable action presets map to real command-generation controls.
+- Risky/noisy/high-impact actions are risk-labeled and proof-boundary labeled, but not proof-gated.
+- Output interpretation explains success, failure, blocked, partial, and inconclusive states.
+- Evidence ingestion remains executable product behavior.
+- Mobile command previews and missing-field states remain readable.
+- The implemented-builder audit ledger moves the repaired family from failing to passing.
+
+Do not resume new modeled-tool promotion until the implemented-builder audit ledger exists and the failing implemented families have a clear repair path.
 
 ### Remaining modeled tool implementation backlog
 
-Implement or explicitly supersede/reject every inventory record that still reports `modeled`. Do not mark a tool `implemented` just because it has prose, appears on a card, or can be approximated by a generic command snippet.
+Post-mining modeled tool builder implementation backlog remains active after the implemented-builder repairs. Implement or explicitly supersede/reject every inventory record that still reports `modeled`. Do not mark a tool `implemented` just because it has prose, appears on a card, or can be approximated by a generic command snippet.
 
 Representative remaining groups include:
 

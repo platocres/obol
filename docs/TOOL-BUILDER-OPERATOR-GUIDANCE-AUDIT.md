@@ -19,11 +19,31 @@ The failure pattern was not limited to one database tool. It exposed a contract 
 
 Brandon should not have to critique every tool by hand. Treat this as a pattern-level blocker.
 
+## Command generation is not proof-gated
+
+The direct Tools route is a decision and command-generation surface. It must not require existing Evidence or proof before a human can select an action and generate a command.
+
+Only missing command-construction inputs may invalidate the preview. For example, a command that needs a host, database, table, file path, username, hash, ticket, listener, or callback may stay incomplete until that specific value exists. The page must not block an action because Obol has not already proven the prerequisite.
+
+Risk labels, impact notes, privilege prerequisites, and proof boundaries are still required. They explain what the command may do, what privileges usually matter, and how to interpret the output after the operator runs it. Evidence gates proof claims and Next Steps movement, not command generation.
+
+Use this language in the product:
+
+- "Risk note" instead of "Risk gate".
+- "Requires" or "Usually requires" instead of "blocked until proven".
+- "Generated command is not proof" instead of "command is evidence-gated".
+- "Paste output back into Evidence to prove or refute the claim" instead of "Evidence required before generating this action".
+
 ## Immediate queue rule
 
 Do not continue broad modeled-tool acceleration until implemented builders have an operator-guidance contract and the current implemented builders are audited against it.
 
-The next Tool Builder work should be a repair and audit sequence, not another tool-count sprint.
+The Tool Builder sequence is:
+
+1. Database operator-guidance repair, working presets, database action trees, command-exec/capability paths, mobile UI cleanup, contract tests, and documentation in the same build.
+2. Implemented-builder audit ledger against the new contract.
+3. Family repair batches for any failing existing implemented builders.
+4. Resume modeled-tool acceleration only after implemented builders stop failing the guidance/preset/mobile contract.
 
 ## Required implemented-builder contract
 
@@ -37,7 +57,7 @@ An implemented builder must answer these questions before it counts as done:
 - What inputs are required, and why?
 - What output proves success, failure, blocked, partial, or inconclusive state?
 - What does the output not prove?
-- What risky or noisy actions exist, and what preconditions gate them?
+- What risky or noisy actions exist, and what prerequisites or preconditions matter?
 - What should be pasted back into Evidence?
 - How can that Evidence move, block, re-arm, or deprioritize Next Steps?
 - What cleanup or report notes should the operator keep?
@@ -61,9 +81,9 @@ Expected action presets should include, at minimum:
 - Show role privileges.
 - Check superuser or server-program privilege.
 - Check `COPY PROGRAM` capability.
-- Generate a gated `COPY PROGRAM` command-execution probe.
+- Generate a clearly labeled `COPY PROGRAM` command-execution probe.
 
-The command-execution path must explain that it runs from the database server context, requires server-side program execution privilege, and should begin with small proof commands such as identity or hostname checks before any shell attempt.
+The command-execution path must explain that it runs from the database server context, usually requires server-side program execution privilege, and should begin with small proof commands such as identity or hostname checks before any shell attempt. The command should still be selectable and generatable from the Tools page when required command fields are present.
 
 ### MySQL / MariaDB / `mysql`
 
@@ -77,10 +97,10 @@ Expected action presets should include, at minimum:
 - Show grants.
 - Check FILE privilege.
 - Check `secure_file_priv`.
-- Try a gated `LOAD_FILE` read.
+- Try a clearly labeled `LOAD_FILE` read.
 - Assess UDF/plugin command-execution preconditions without pretending command execution is automatic.
 
-The command-execution path must explain that MySQL OS command execution usually depends on privileges and server/plugin filesystem conditions, not merely a normal SQL prompt.
+The command-execution path must explain that MySQL OS command execution usually depends on privileges and server/plugin filesystem conditions, not merely a normal SQL prompt. The builder should guide capability checks before impact claims, without proof-gating command generation.
 
 ### MSSQL / `impacket-mssqlclient`
 
@@ -92,11 +112,11 @@ Expected action presets should include, at minimum:
 - Run one scoped query.
 - Check server role and sysadmin state.
 - Check `xp_cmdshell` status.
-- Generate a gated enable-`xp_cmdshell` command.
-- Generate a gated `xp_cmdshell whoami` probe.
-- Generate a gated custom `xp_cmdshell` command.
+- Generate an enable-`xp_cmdshell` command.
+- Generate an `xp_cmdshell whoami` probe.
+- Generate a custom `xp_cmdshell` command.
 
-The dangerous path must be explicit and evidence-gated. Generated `xp_cmdshell` text is not proof of OS command execution until output is pasted back and parsed.
+The impactful path must be explicit, risk-labeled, and proof-boundary labeled. Generated `xp_cmdshell` text is not proof of OS command execution until output is pasted back and parsed, but the direct tool route should not require existing Evidence before generating the selected command.
 
 ### Redis / `redis-cli`
 
@@ -110,7 +130,7 @@ Expected action presets should include, at minimum:
 - `CONFIG GET dir` and `dbfilename` checks.
 - Write/persistence risk assessment with explicit proof boundaries.
 
-Dangerous write/persistence paths should be separated from normal enumeration and should not imply host compromise without independent Evidence.
+Dangerous write/persistence paths should be separated from normal enumeration and should not imply host compromise without independent Evidence. CONFIG/write actions may be risk-labeled and explained, but not proof-gated.
 
 ### Oracle / `odat`
 
@@ -125,7 +145,7 @@ Expected action presets should include, at minimum:
 
 ## UI repair expectations
 
-The direct Tools route must be changed so implemented builders are usable on mobile and desktop:
+The direct Tools route must be usable on mobile and desktop:
 
 - Replace fake preset chips with real controls that change builder state, or render them as non-clickable summaries.
 - Add a Start here or What are you trying to learn section above the form.
@@ -134,6 +154,7 @@ The direct Tools route must be changed so implemented builders are usable on mob
 - Fix command-preview wrapping so validation text never collides with labels.
 - Style selects and checkboxes so they fit the Obol surface instead of raw browser defaults.
 - Use mined-note knowledge as rewritten context and instruction, not private source text or rote copied note fragments.
+- Do not make Evidence state a prerequisite for generating a command. Evidence is required to prove what happened after the human runs it.
 
 ## Required tests
 
@@ -144,15 +165,8 @@ Add tests before calling the repair done:
 - A mobile visual/layout test for command-preview validation wrapping.
 - A regression that proves empty accessory sections do not render.
 - A regression that proves legacy examples are collapsed below guidance.
-- Database-specific tests that prove privilege/capability/command-exec action presets exist with proof boundaries.
+- Database-specific tests that prove privilege, capability, and command-exec action presets exist with proof boundaries and without proof-gating command generation.
 - Evidence tests for the new database action outputs, including success, failure, blocked, partial, and inconclusive states.
-
-## Recommended build sequence
-
-1. Tool direct-route usability repair and database operator guidance repair.
-2. Implemented-builder audit ledger against the new contract.
-3. Family repair batches for any failing existing implemented builders.
-4. Resume modeled-tool acceleration only after implemented builders stop failing the guidance/preset/mobile contract.
 
 ## Non-goals
 
@@ -162,5 +176,6 @@ Add tests before calling the repair done:
 - Do not create generic database mega-tools that smear together distinct tools.
 - Do not claim database command execution from generated commands alone.
 - Do not turn Obol into an automatic executor.
+- Do not require Evidence or prior proof before a human can generate a command from the Tools page.
 
 Obol remains browser-local and human-run. The tool builder should make the operator's next decision obvious, generate the selected command or handoff, and require pasted Evidence before proving anything.
