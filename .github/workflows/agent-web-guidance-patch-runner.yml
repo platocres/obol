@@ -20,7 +20,9 @@ jobs:
         with:
           node-version: 24
       - name: Apply web guidance patch
-        run: node tools/agent-web-guidance-patch.js
+        run: |
+          node tools/agent-web-guidance-hotfix.js
+          node tools/agent-web-guidance-patch.js
       - name: Commit patched files
         run: |
           git config user.name "github-actions[bot]"
