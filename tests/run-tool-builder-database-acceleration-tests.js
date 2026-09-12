@@ -8,12 +8,14 @@ const read=rel=>fs.readFileSync(path.join(root,rel),'utf8');
 const sandbox={window:{},globalThis:null,location:{hash:'#/tools'},localStorage:{getItem(){return null;},setItem(){}},addEventListener(){},setTimeout(fn){fn();},setInterval(){return 1;}};
 sandbox.window=sandbox.globalThis=sandbox;
 vm.createContext(sandbox);
-['data/tool-builder-schema.js','data/tool-builder-inventory.js','assets/tool-builder-current.js','data/product-hardening/tool-builder-backlog-current.js','data/product-hardening/database-tool-builders-current.js'].forEach(file=>vm.runInContext(read(file),sandbox,{filename:file}));
+['data/tool-builder-schema.js','data/tool-builder-inventory.js','assets/tool-builder-current.js','data/product-hardening/tool-builder-backlog-current.js','data/product-hardening/tool-builder-shared-plumbing-current.js','data/product-hardening/database-tool-builders-current.js'].forEach(file=>vm.runInContext(read(file),sandbox,{filename:file}));
 const schema=sandbox.OBOL_TOOL_BUILDER_SCHEMA;
 const runtime=sandbox.OBOL_TOOL_BUILDER;
 const inventory=sandbox.OBOL_TOOL_BUILDER_INVENTORY;
 const owner=sandbox.OBOL_DATABASE_TOOL_BUILDERS_CURRENT;
-assert(owner&&owner.version==='v10.21','database owner should register v10.21');
+assert(sandbox.OBOL_TOOL_BUILDER_SHARED_PLUMBING_CURRENT,'shared Tool Builder plumbing should load before database owner');
+assert(owner&&owner.version==='v10.20-database-acceleration','database owner should register as a v10.20 follow-up owner, not a fake future release');
+assert.strictEqual(owner.sharedPlumbingVersion,sandbox.OBOL_TOOL_BUILDER_SHARED_PLUMBING_CURRENT.version,'database owner should report the shared plumbing version it used');
 for(const id of owner.builderIds){assert(schema.get(id),'missing registered builder '+id);assert(owner.profiles[id],id+' needs bespoke tool profile');}
 for(const tool of ['mysql','psql','redis-cli','odat','impacket-mssqlclient','mssql']){const record=inventory.get(tool);assert(record&&record.status==='implemented',tool+' should be implemented');}
 const ctx={target:{value:'203.0.113.77'},context:{domain:'CORP',username:'alice'},workspace:{wordlist:'/tmp/words.txt'}};

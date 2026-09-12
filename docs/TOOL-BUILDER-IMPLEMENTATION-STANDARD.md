@@ -24,6 +24,18 @@ Agents should reuse or create common primitives for boring repeated mechanics:
 
 These primitives are implementation aids. They are not user-facing replacement categories.
 
+## Shared mechanics owner
+
+Shared mechanics are owned by `data/product-hardening/tool-builder-shared-plumbing-current.js`.
+
+New acceleration slices should call that helper for repeated mechanics such as schema registration, duplicate-safe builder install, inventory disposition patching, Evidence profile wrapping, intake wrapping, redaction, conservative state selection, Tools route refresh, and audit-queue refresh.
+
+The split is strict:
+
+> Shared code owns mechanics. Tool profiles own judgment.
+
+A slice may add small local adapters for its subject area, such as database-specific profile defaults or analyzer patterns, but it must not clone the shared owner into another near-identical `common()`, `safeRegister()`, `patchInventory()`, `patchEvidence()`, `installIntake()`, `redact()`, or `stateFrom()` block.
+
 ## Bespoke profile required for every implemented tool
 
 A modeled tool cannot be promoted to `implemented builder` unless it has a tool-specific profile covering:
@@ -52,6 +64,7 @@ Tool Builder tests should prove both halves of the contract:
 
 - shared primitives work consistently across tools;
 - each implemented tool exposes distinct identity, curated controls, Evidence expectations, and proof boundaries;
+- acceleration slices call the shared mechanics owner instead of copy-pasting the same registration, inventory, Evidence, intake, redaction, and state-selection plumbing;
 - no live Tools route category is named after backlog state;
 - every inventory record appears in exactly one approved operator category;
 - `implemented builder` and `modeled` status remain visible without creating a second inventory wall;
@@ -60,3 +73,5 @@ Tool Builder tests should prove both halves of the contract:
 ## Implementation cadence
 
 Future acceleration builds should implement tool families by plumbing reuse, but promote individual tools by profile. A good batch can ship several tools when shared primitives make that safe, but the `implemented builder` label still means the individual tool was examined and tested.
+
+The shared plumbing pilot remains provisional. Do not refactor existing good bespoke builders into the shared helper until at least two new backlog slices prove that the helper reduces work without genericizing the operator UI or weakening Evidence boundaries.
