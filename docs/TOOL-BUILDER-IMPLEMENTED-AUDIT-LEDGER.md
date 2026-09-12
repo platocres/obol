@@ -21,6 +21,8 @@ Every registered implemented builder is audited against the operator-guidance co
 
 Only missing command-construction inputs may invalidate a command preview. Evidence gates proof claims and Next Steps movement after the operator runs the command and pastes output back.
 
+This audit rule is intentionally stricter than the older command/Evidence contract so old implemented builders fail visibly until their family repair lands.
+
 ## Current result
 
 Database builders pass the new operator-guidance contract after the repair build:
