@@ -46,7 +46,7 @@ assert(owner.profiles['tb-psql'].operatorGuide.actions.some(a=>a.value==='copyPr
 assert(owner.profiles['tb-impacket-mssqlclient'].operatorGuide.actions.some(a=>a.value==='xpWhoami'&&a.risk==='dangerous'),'mssql profile should expose a gated xp_cmdshell proof path');
 const ok=owner.databaseResult('tb-redis-cli','redis-cli -h 203.0.113.77 PING\nPONG');
 assert(ok.outcomeFacts.includes('database.query_result_observed')&&ok.state==='positive','Redis PONG should be positive database Evidence');
-const cap=owner.databaseResult('tb-impacket-mssqlclient','SQL> EXEC xp_cmdshell ''whoami'';\nnt service\\mssqlserver');
+const cap=owner.databaseResult('tb-impacket-mssqlclient',"SQL> EXEC xp_cmdshell 'whoami';\nnt service\\mssqlserver");
 assert(cap.outcomeFacts.includes('database.capability_observed'),'xp_cmdshell output should be recognized as capability Evidence');
 const fail=owner.databaseResult('tb-psql','psql: error: password authentication failed for user "postgres"');
 assert(fail.outcomeFacts.includes('database.authentication_failure_observed')&&fail.state==='negative','psql auth failure should be negative Evidence');
