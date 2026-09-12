@@ -1,6 +1,7 @@
 'use strict';
 (function(root){
 function schema(){return root.OBOL_TOOL_BUILDER_SCHEMA||null;}
+function ownerProfileFor(builderId){const keys=Object.keys(root||{});for(const key of keys){const owner=root[key];if(owner&&owner.profiles&&owner.profiles[builderId])return owner.profiles[builderId];}return null;}
 function effectiveBuilder(builder){
  if(!builder)return builder;
  let fields=Array.from(builder.fields||[]).map(field=>({...field}));
@@ -22,7 +23,10 @@ function effectiveBuilder(builder){
   tokens.splice(matchTokenIndex>=0?matchTokenIndex:tokens.length,0,{kind:'toggle',field:'autoCalibration',flag:'-ac'});
   changed=true;
  }
- return changed?{...builder,fields,command:{...builder.command,tokens}}:builder;
+ const profile=ownerProfileFor(builder.id);
+ const operatorGuide=(builder&&builder.operatorGuide)||(profile&&profile.operatorGuide)||null;
+ if(changed||operatorGuide){const copy={...builder,fields,command:{...builder.command,tokens}};if(operatorGuide)copy.operatorGuide=operatorGuide;return copy;}
+ return builder;
 }
 function esc(v){return String(v==null?'':v).replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));}
 function shellQuote(v){
@@ -186,6 +190,7 @@ function fieldControl(builderId,field,value){
  const inputType=field.type==='secret'?'password':field.type==='number'?'number':'text';
  return '<label for="'+esc(id)+'">'+esc(field.label)+'</label><input type="'+inputType+'"'+common+' value="'+esc(value==null?'':value)+'"'+(field.placeholder?' placeholder="'+esc(field.placeholder)+'"':'')+' autocomplete="'+(field.type==='secret'?'off':'on')+'">'+(field.help?'<small class="hint">'+esc(field.help)+'</small>':'');
 }
+function renderOperatorGuide(builder,values){const guide=builder&&builder.operatorGuide;if(!guide)return'';const starts=Array.isArray(guide.startHere)?guide.startHere:[];const actions=Array.isArray(guide.actions)?guide.actions:[];const field=guide.actionField||'action';const current=values&&values[field];const startHtml=starts.length?'<ul class="tool-builder-start-here">'+starts.map(item=>'<li>'+esc(item)+'</li>').join('')+'</ul>':'';const buttons=actions.length?'<div class="tool-builder-action-presets" data-tool-builder-action-presets="'+esc(field)+'">'+actions.map(action=>'<button type="button" class="lane-tab tool-builder-action-preset'+(String(action.value)===String(current)?' active':'')+'" data-tool-builder-preset-field="'+esc(field)+'" data-tool-builder-preset="'+esc(action.value)+'"><b>'+esc(action.label||action.value)+'</b><span>'+esc(action.risk||'normal')+'</span></button>').join('')+'</div>':'';const active=actions.find(action=>String(action.value)===String(current))||actions[0]||null;const activeHtml=active?'<div class="tool-builder-action-context"><p class="hint"><b>Use when:</b> '+esc(active.useWhen||'')+'</p><p class="hint"><b>Requires:</b> '+esc(active.requires||'')+'</p><p class="hint"><b>What it can prove:</b> '+esc(active.proves||'')+'</p><p class="hint"><b>What it does not prove:</b> '+esc(active.notProve||'')+'</p><p class="hint"><b>Paste back:</b> '+esc(active.evidence||'')+'</p><p class="hint"><b>Next:</b> '+esc(active.next||'')+'</p></div>':'';return '<section class="tool-builder-guide" data-tool-builder-guide="'+esc(builder.id)+'"><h4>Action guide</h4><p class="hint">'+esc(guide.summary||'')+'</p>'+startHtml+buttons+activeHtml+'</section>';}
 function html(builder,context,values){
  builder=effectiveBuilder(builder);
  const s=schema();
@@ -197,7 +202,7 @@ function html(builder,context,values){
  const fields=(builder.fields||[]).map(field=>'<div class="param-row tool-builder-field" data-field-id="'+esc(field.id)+'" data-field-type="'+esc(field.type)+'"'+(field.visibleWhen&&!conditionMatches(field.visibleWhen,resolved)?' hidden':'')+'>'+fieldControl(builder.id,field,resolved[field.id])+'</div>').join('');
  let preview='';try{preview=compile(builder,resolved,context);}catch(err){preview='Complete required fields to generate a command.';}
  return '<section class="card tool-builder-current" data-tool-builder="'+esc(builder.id)+'" data-tool="'+esc(builder.tool)+'"><div class="card-body">'+
-  '<div class="tool-builder-head"><div><span class="eyebrow30">Tool Builder</span><h3>'+esc(builder.title)+'</h3><p class="hint">'+esc(builder.summary)+'</p></div><span class="badge">'+esc(builder.executionContext||'any')+'</span></div>'+creds+
+  '<div class="tool-builder-head"><div><span class="eyebrow30">Tool Builder</span><h3>'+esc(builder.title)+'</h3><p class="hint">'+esc(builder.summary)+'</p></div><span class="badge">'+esc(builder.executionContext||'any')+'</span></div>'+creds+renderOperatorGuide(builder,resolved)+
   '<form class="tool-builder-form" novalidate>'+fields+'</form>'+ 
   '<div class="cmd-block tool-builder-preview" aria-live="polite"><span class="tool">Generated command</span><code>'+esc(preview)+'</code><button type="button" class="copy-btn tool-builder-copy">Copy</button><p class="note">Obol starts from the minimal valid command for the selected tool/mode and only adds flags through collected parameters or explicit GUI controls. Obol generates this command for you to review and run yourself; it does not execute commands.</p></div>'+ 
   '<details class="tool-builder-proof"><summary>Evidence and report boundary</summary><p class="hint"><b>Expected Evidence:</b> '+esc(builder.evidence.expectation)+'</p><p class="hint"><b>Proof boundary:</b> '+esc(builder.evidence.proofBoundary)+'</p><p class="hint"><b>Manual outcome:</b> '+esc(builder.manualOutcome.boundary)+'</p></details>'+ 
@@ -227,6 +232,7 @@ function mount(container,builder,context,values){
  const form=shell&&shell.querySelector('.tool-builder-form');
  const code=shell&&shell.querySelector('.tool-builder-preview code');
  const copy=shell&&shell.querySelector('.tool-builder-copy');
+ const presets=shell?Array.from(shell.querySelectorAll('[data-tool-builder-preset]')):[];
  function refresh(){
   if(!form||!code)return;
   const current=collect(form,builder);applyVisibility(form,builder,current);
@@ -235,6 +241,7 @@ function mount(container,builder,context,values){
  }
  if(form)form.addEventListener('input',refresh);
  if(form)form.addEventListener('change',refresh);
+ presets.forEach(button=>button.addEventListener('click',()=>{if(!form)return;const field=button.dataset.toolBuilderPresetField||'action';const value=button.dataset.toolBuilderPreset;const el=form.elements&&form.elements.namedItem(field);if(!el)return;el.value=value;try{el.dispatchEvent(new Event('change',{bubbles:true}));}catch(_err){}refresh();}));
  if(copy)copy.addEventListener('click',()=>{
   if(!code||code.dataset.valid==='false')return;
   const value=code.textContent||'';
@@ -244,4 +251,10 @@ function mount(container,builder,context,values){
  return{shell,form,refresh,get command(){return code?code.textContent:'';},get values(){return collect(form,builder);}};
 }
 root.OBOL_TOOL_BUILDER=Object.freeze({version:'1.3.0',effectiveBuilder,shellQuote,truthy,conditionMatches,commandExecutable,compile,html,mount,collect,normalizeValues,scrubGeneratedPlaceholders,minimalDefaultToken});
+const __obolOwnerGuideBase=root.OBOL_TOOL_BUILDER;
+function __obolOwnerGuideProfile(builderId){const keys=Object.keys(root||{});for(const key of keys){const owner=root[key];if(owner&&owner.profiles&&owner.profiles[builderId])return owner.profiles[builderId];}return null;}
+function __obolWithOwnerGuide(builder){const effective=__obolOwnerGuideBase.effectiveBuilder(builder)||builder;const id=(effective&&effective.id)||(builder&&builder.id);const profile=__obolOwnerGuideProfile(id);if(profile&&profile.operatorGuide&&!effective.operatorGuide)return {...effective,operatorGuide:profile.operatorGuide};return effective;}
+function __obolHtmlWithOwnerGuide(builder,context,values){return __obolOwnerGuideBase.html(__obolWithOwnerGuide(builder),context,values);}
+function __obolMountWithOwnerGuide(container,builder,context,values){return __obolOwnerGuideBase.mount(container,__obolWithOwnerGuide(builder),context,values);}
+root.OBOL_TOOL_BUILDER=Object.freeze(Object.assign({},__obolOwnerGuideBase,{effectiveBuilder:__obolWithOwnerGuide,html:__obolHtmlWithOwnerGuide,mount:__obolMountWithOwnerGuide}));
 })(typeof window!=='undefined'?window:globalThis);

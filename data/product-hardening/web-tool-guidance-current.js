@@ -20,4 +20,12 @@ const CONFIG=freeze({
 });
 const profiles={};IDS.forEach(id=>{profiles[id]=profile(CONFIG[id]);});
 root.OBOL_WEB_TOOL_GUIDANCE_CURRENT=freeze({version:VERSION,family:'web-discovery-http',builderIds:IDS,profiles:freeze(profiles),repairBuild:'Build 3',commandGenerationSurface:'decision-and-command-generation'});
+function __obolInstallWebGuidanceRuntime(){
+ const base=root.OBOL_TOOL_BUILDER;if(!base||base.__webGuidanceRepair)return false;
+ function withGuide(builder){const effective=base.effectiveBuilder?base.effectiveBuilder(builder):builder;const id=(effective&&effective.id)||(builder&&builder.id);const profile=profiles[id];if(profile&&profile.operatorGuide&&!effective.operatorGuide)return Object.assign({},effective,{operatorGuide:profile.operatorGuide});return effective;}
+ function html(builder,context,values){return base.html(withGuide(builder),context,values);}
+ function mount(container,builder,context,values){return base.mount(container,withGuide(builder),context,values);}
+ root.OBOL_TOOL_BUILDER=Object.freeze(Object.assign({},base,{effectiveBuilder:withGuide,html,mount,__webGuidanceRepair:true}));return true;
+}
+root.OBOL_WEB_TOOL_GUIDANCE_RUNTIME_INSTALLED=__obolInstallWebGuidanceRuntime();
 })(typeof window!=='undefined'?window:globalThis);
