@@ -6,6 +6,7 @@ function effectiveBuilder(builder){
  if(!builder)return builder;
  let fields=Array.from(builder.fields||[]).map(field=>({...field}));
  let tokens=Array.from(builder.command&&builder.command.tokens||[]).map(token=>({...token}));
+ let fieldGroups=null;
  let changed=false;
  if(builder.id==='tb-curl'&&!fields.some(field=>field.id==='pathAsIs')){
   const pathField={id:'pathAsIs',label:'Preserve URL path (--path-as-is)',type:'checkbox',help:'Keep dot-segments and encoded path structure intact instead of letting curl normalize the request path. Useful when testing traversal or path-resolution behavior.'};
@@ -13,11 +14,20 @@ function effectiveBuilder(builder){
   fields.splice(followIndex>=0?followIndex:fields.length,0,pathField);
   const urlIndex=tokens.findIndex(token=>token.kind==='field'&&token.field==='url');
   tokens.splice(urlIndex>=0?urlIndex:tokens.length,0,{kind:'toggle',field:'pathAsIs',flag:'--path-as-is'});
+  // Keep the dynamically-added field inside a group so it never falls into an ad-hoc
+  // "More options" wall (mirrors the field splice; the operator-surface standard groups
+  // every visible field). It sits next to the other TLS/redirect toggles.
+  if(Array.isArray(builder.fieldGroups)&&builder.fieldGroups.length){
+   fieldGroups=builder.fieldGroups.map(group=>({...group,fields:Array.from(group.fields||[])}));
+   const host=fieldGroups.find(group=>group.fields.includes('followRedirects'))||fieldGroups[fieldGroups.length-1];
+   const at=host.fields.indexOf('followRedirects');
+   host.fields.splice(at>=0?at:host.fields.length,0,'pathAsIs');
+  }
   changed=true;
  }
  const profile=ownerProfileFor(builder.id);
  const operatorGuide=(builder&&builder.operatorGuide)||(profile&&profile.operatorGuide)||null;
- if(changed||operatorGuide){const copy={...builder,fields,command:{...builder.command,tokens}};if(operatorGuide)copy.operatorGuide=operatorGuide;return copy;}
+ if(changed||operatorGuide){const copy={...builder,fields,command:{...builder.command,tokens}};if(fieldGroups)copy.fieldGroups=fieldGroups;if(operatorGuide)copy.operatorGuide=operatorGuide;return copy;}
  return builder;
 }
 function esc(v){return String(v==null?'':v).replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));}
