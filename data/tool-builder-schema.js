@@ -27,7 +27,6 @@ function validateField(field,index){
    if(!option||typeof option!=='object'||!text(option.value).trim()||!text(option.label).trim())fail(errors,'select field '+text(field.id||index)+' contains an invalid option');
   }
  }
- // Operator-surface: clickable presets that load a value into the field.
  if(field.presets!==undefined){
   if(!Array.isArray(field.presets)){fail(errors,'field '+text(field.id||index)+' presets must be an array');}
   else{
@@ -40,7 +39,6 @@ function validateField(field,index){
    });
   }
  }
- // Operator-surface: textarea "add a line" snippets (e.g. header/cookie starters).
  if(field.snippets!==undefined){
   if(field.type!=='textarea')fail(errors,'field '+text(field.id||index)+' snippets are only allowed on textarea fields');
   else if(!Array.isArray(field.snippets))fail(errors,'field '+text(field.id||index)+' snippets must be an array');
@@ -128,8 +126,6 @@ function validateBuilder(builder){
   if(field.requiredWhen)for(const error of validateCondition(field.requiredWhen,'field '+field.id+' requiredWhen',ids))fail(errors,error);
   if(field.visibleWhen)for(const error of validateCondition(field.visibleWhen,'field '+field.id+' visibleWhen',ids))fail(errors,error);
  });
- // Operator-surface: ordered, plain-language field groups. Optional, but when present
- // every referenced field must exist and belong to exactly one group.
  if(builder.fieldGroups!==undefined){
   if(!Array.isArray(builder.fieldGroups))fail(errors,'builder '+text(builder.id)+' fieldGroups must be an array');
   else{
@@ -207,6 +203,14 @@ function register(builder){
  registry.set(frozen.id,frozen);
  return frozen;
 }
+function replace(builder){
+ const errors=validateBuilder(builder);
+ if(errors.length)throw new Error('Invalid Tool Builder '+text(builder&&builder.id)+': '+errors.join('; '));
+ if(!registry.has(builder.id))throw new Error('Cannot replace unknown Tool Builder id: '+builder.id);
+ const frozen=freezeBuilder(builder);
+ registry.set(frozen.id,frozen);
+ return frozen;
+}
 function get(id){return registry.get(id)||null;}
 function all(){return Array.from(registry.values());}
 function clear(){registry.clear();}
@@ -228,6 +232,6 @@ function autofill(builder,context,values){
 
 root.OBOL_TOOL_BUILDER_SCHEMA=Object.freeze({
  schemaVersion:'1.0.0',fieldTypes,credentialKinds,executionContexts,autofillKeys,dispositionStatuses,
- validateBuilder,register,get,all,clear,autofill
+ validateBuilder,register,replace,get,all,clear,autofill
 });
 })(typeof window!=='undefined'?window:globalThis);
