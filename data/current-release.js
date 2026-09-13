@@ -147,7 +147,12 @@ function authEnumReady(){
 function shouldSkipSource(src){return src===AUTH_ENUM_SOURCE&&authEnumReady();}
 function appendExtensionSource(src,done){
  if(typeof document==='undefined'||typeof document.createElement!=='function'){done();return;}
- if(document.querySelector&&document.querySelector('script[data-obol-extension="'+src+'"],script[data-obol-dashboard-src="'+src+'"]')){done();return;}
+ // Dedup against every tag that could already be loading this source, not just the ones this
+ // loader tagged. tool-builders-auth-enum-current.js is also loaded by the runtime loader's
+ // loadTunnelBuilders (via appendScripts, which tags data-obol-runtime and matches on src),
+ // so match a plain script[src] too. Without this, the two loaders race and the source can be
+ // appended twice, re-running its schema.register(...) and throwing "Duplicate Tool Builder id".
+ if(document.querySelector&&document.querySelector('script[data-obol-extension="'+src+'"],script[data-obol-dashboard-src="'+src+'"],script[src="'+src+'"]')){done();return;}
  const script=document.createElement('script');script.src=src;script.async=false;script.dataset.obolExtension=src;script.onload=done;script.onerror=done;(document.head||document.documentElement).appendChild(script);
 }
 function loadExtensionSource(src,done,attempt){
