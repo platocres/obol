@@ -183,4 +183,4 @@ for (const fabricated of ["'10.10.10.10'", 'http://10.10.10.10/FUZZ', "'Password
   assert(!libSource.includes(fabricated), 'Tools library must not seed fabricated values: ' + fabricated);
 }
 
-console.log('Tool Builder operator-surface contract passed.');
+console.log('Tool Builder operator-surface contract validation passed.');
