@@ -70,6 +70,22 @@ If a gate is inconvenient, fix the builder — do not weaken the assertion. A pa
 structural test over a tool that cannot build a command is the exact trap this guide
 names.
 
+## When you ship a family as a release, the PR body is a gate too
+
+`validate-release-pr.js --repo-only` (what you run locally) checks the repository
+artifacts but **not** the pull-request description. CI runs the full check, which reads
+the PR body from the event payload and, for a product-hardening release, requires these
+exact `##` section headings: **Summary**, **README handoff**, **Product-hardening
+queue**, **Validation added**, and **Compatibility** (see `BUILDING.md`). Two
+consequences that waste a cycle if you miss them:
+
+- Write those sections into the PR description on the first push. A body that only has,
+  say, "Summary" and "Validation" fails CI even though every code gate is green.
+- The validator reads the body from the **push-time event payload**, so editing the
+  description after the fact and re-running the failed job does not help — the re-run
+  replays the old payload. The corrected body only takes effect on the next real push
+  (a `synchronize` event). Get the body right before you push, not after.
+
 ## Do not mark a queue item complete until the head proves it
 
 `tb-surface-*` items are not done when the surface renders. They are done when the whole
