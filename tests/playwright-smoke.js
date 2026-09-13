@@ -50,16 +50,17 @@ fs.mkdirSync(outputDir, { recursive: true });
 // the Build 3 web discovery/HTTP guidance owner plus existing web scan owner
 // loaded by direct Tools routes, the v10.22 credential/auth schema-record
 // surface owner loaded by current product-hardening routes, and the v10.24
-// AD/SMB/remote-access analyzer owner loaded by Evidence routes.
+// remote-exec plus AD/SMB/remote-access schema/Evidence owners loaded by
+// compact Tools, Evidence, and current product-hardening routes.
 // The retired v9.77 why-now route stabilizer is intentionally no longer counted
 // as a browser runtime request. These budgets still fail loudly if the historical
 // fragment chain leaks back into loading.
 const routes = [
-  { id: 'home', hash: '#/home', marker: /Home/i, requestBudget: 88 },
-  { id: 'targets', hash: '#/boxes', marker: /target/i, requestBudget: 99 },
-  { id: 'evidence', hash: '#/intake', marker: /evidence/i, requestBudget: 97 }, // +1 for data/product-hardening/ad-smb-remote-guidance-current.js (AD/SMB Evidence ingestion, v10.24)
-  { id: 'next-steps', hash: '#/path', marker: /(next|path|recommend)/i, requestBudget: 95 },
-  { id: 'report', hash: '#/report', marker: /report/i, requestBudget: 89 },
+  { id: 'home', hash: '#/home', marker: /Home/i, requestBudget: 90 },
+  { id: 'targets', hash: '#/boxes', marker: /target/i, requestBudget: 100 },
+  { id: 'evidence', hash: '#/intake', marker: /evidence/i, requestBudget: 98 }, // +1 for data/product-hardening/ad-smb-remote-guidance-current.js (AD/SMB Evidence ingestion, v10.24)
+  { id: 'next-steps', hash: '#/path', marker: /(next|path|recommend)/i, requestBudget: 96 },
+  { id: 'report', hash: '#/report', marker: /report/i, requestBudget: 91 },
   { id: 'dashboard', hash: '#/dashboard', marker: /Product Hardening/i, currentDashboard: true, settleMs: 5200, requestBudget: 89 }
 ];
 const HISTORICAL_FRAGMENT = /\/(?:assets|data)\/(?:core|app|intake|report|nmap|review|methodology|orange-fidelity|project-model|dashboard|source-delivery|obol)-v[\d.]+[^/]*$/;
