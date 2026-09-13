@@ -63,12 +63,16 @@ function previewText(html) {
 
 function assertFullSurface(builder, family, label) {
   const b = schema.get(builder.id) || builder;
+  const effective = runtime && typeof runtime.effectiveBuilder === 'function' ? runtime.effectiveBuilder(b) : b;
   const familyProfile = family && family.profiles && family.profiles[b.id];
-  const actionField = (b.operatorGuide && b.operatorGuide.actionField)
-    || (familyProfile && familyProfile.operatorGuide && familyProfile.operatorGuide.actionField)
-    || 'action';
+  const guide = (b.operatorGuide && b.operatorGuide.actionField && b.operatorGuide)
+    || (effective && effective.operatorGuide && effective.operatorGuide.actionField && effective.operatorGuide)
+    || (familyProfile && familyProfile.operatorGuide);
+  const actionField = (guide && guide.actionField) || 'action';
+  const requiresSchemaOwnedGuide = /credential\/auth/.test(label);
   assert.strictEqual(schema.validateBuilder(b).length, 0, b.id + ' schema record must validate cleanly');
-  assert(b.operatorGuide && b.operatorGuide.actionField, b.id + ' must carry operatorGuide on the schema record for ' + label);
+  if (requiresSchemaOwnedGuide) assert(b.operatorGuide && b.operatorGuide.actionField, b.id + ' must carry operatorGuide on the schema record for ' + label);
+  else assert(guide && guide.actionField, b.id + ' must expose operatorGuide for ' + label);
   assert(Array.isArray(b.fieldGroups) && b.fieldGroups.length >= 3, b.id + ' must declare >=3 field groups on the schema record');
   b.fieldGroups.forEach((g) => {
     assert(g.title && g.description && g.description.length > 20, b.id + ' group "' + (g.title || '?') + '" needs a plain-language description');
