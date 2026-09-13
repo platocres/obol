@@ -11,7 +11,7 @@
  * suppresses historical schedulers and commits current route owners last.
  *
  * Historical fragment order sha256: 40e3006d9423d669acf5869b577ecf56a6ca2ee1629c95fd0fcc5d242d2c5f27
- * Generated body sha256: 1396a52748ddc44b4242461cfa0030e06c0a46f731058f1fe188750a5e9b32c3
+ * Generated body sha256: a403c3be3706d25632fc3e44b000fc90ec414e6fe48624e1af345f6406851213
  * First historical fragment: assets/report-v2.js
  * Last historical fragment:  assets/app-v8.8.js
  */
@@ -2101,12 +2101,12 @@ if(__nativeMutationObserver)root.MutationObserver=__nativeMutationObserver;
 'use strict';
 (function(root){
 const release=Object.freeze({
- version:'10.0.21',
- label:'v10.21',
+ version:'10.0.22',
+ label:'v10.22',
  phase:'product-hardening',
  phaseLabel:'Product Hardening',
  orangeBaseline:'v8.8',
- productHardeningLiveMode:'route-aware-compact-tool-library',
+ productHardeningLiveMode:'credential-auth-schema-surface-repair',
  productHardeningExtensions:Object.freeze([
   'data/product-hardening/credentials-auth-remining-v9.58.js',
   'data/product-hardening/proof-safety-controls-v9.58.js',
@@ -2169,8 +2169,9 @@ const release=Object.freeze({
   'data/product-hardening/route-layer-retirement-current.js',
   'data/product-hardening/tool-builder-backlog-current.js',
   'data/product-hardening/tool-builder-discovery-current.js',
- 'data/product-hardening/web-tool-guidance-current.js',
+  'data/product-hardening/web-tool-guidance-current.js',
   'data/product-hardening/credential-helper-tool-builders-current.js',
+  'data/product-hardening/credential-auth-guidance-current.js',
   'data/product-hardening/privesc-helper-tool-builders-current.js',
   'data/product-hardening/database-tool-builders-current.js',
   'data/product-hardening/web-tool-guidance-current.js'
@@ -2182,6 +2183,7 @@ const TOOL_LIBRARY_COMPACT_EXTENSIONS=Object.freeze([
  'data/product-hardening/tool-builder-backlog-current.js',
  'data/product-hardening/tool-builder-discovery-current.js',
  'data/product-hardening/credential-helper-tool-builders-current.js',
+ 'data/product-hardening/credential-auth-guidance-current.js',
  'data/product-hardening/privesc-helper-tool-builders-current.js',
  'data/product-hardening/database-tool-builders-current.js'
 ]);
@@ -2216,11 +2218,25 @@ function normalizeReportMarkdown(markdown){
  }
  return lines.join('\n');
 }
+function rerenderToolsRoute(){
+ if(routeName()!=='tools'||typeof document==='undefined')return false;
+ const owner=root.OBOL_TOOLS_LIBRARY_CURRENT;
+ if(!owner)return false;
+ const parts=String(location&&location.hash||'').replace(/^#\/?/,'').split('/').filter(Boolean);
+ try{
+  if(typeof owner.renderTool==='function')owner.renderTool(parts[1]||'__library');
+  else if(typeof owner.render==='function')owner.render();
+  else return false;
+  root.__OBOL_PRODUCT_HARDENING_TOOLS_RERENDERED__=release.label;
+  return true;
+ }catch(err){root.__OBOL_PRODUCT_HARDENING_TOOLS_RERENDER_ERROR__=String(err&&err.message||err);return false;}
+}
 function finalizeProductHardeningExtensions(){
  const api=root.OBOL_NOTE_CARD_DISPOSITION_RECONCILIATION_API_V968;
  if(api&&typeof api.install==='function'){
-  try{api.install();root.__OBOL_PRODUCT_HARDENING_FINAL_CARD_DISPOSITION__='v10.21';}catch(_err){root.__OBOL_PRODUCT_HARDENING_FINAL_CARD_DISPOSITION_ERROR__=String(_err&&_err.message||_err);}
+  try{api.install();root.__OBOL_PRODUCT_HARDENING_FINAL_CARD_DISPOSITION__='v10.22';}catch(_err){root.__OBOL_PRODUCT_HARDENING_FINAL_CARD_DISPOSITION_ERROR__=String(_err&&_err.message||_err);}
  }
+ rerenderToolsRoute();
 }
 function schemaReady(){const schema=root.OBOL_TOOL_BUILDER_SCHEMA;return !!(schema&&typeof schema.register==='function');}
 function authEnumReady(){
@@ -2250,13 +2266,21 @@ function loadProductHardeningExtensions(route){
  root.__OBOL_PRODUCT_HARDENING_EXTENSION_PLAN__=plan;
  if(root.__OBOL_DEFER_PRODUCT_HARDENING_EXTENSIONS__){root.__OBOL_DEFERRED_PRODUCT_HARDENING_EXTENSIONS__=Object.freeze(sources.slice());return;}
  if(typeof document!=='undefined'&&typeof document.createElement==='function'){
-  let pending=sources.length;const done=()=>{pending-=1;if(pending<=0)finalizeProductHardeningExtensions();};if(!pending){finalizeProductHardeningExtensions();return;}
-  sources.forEach(src=>loadExtensionSource(src,done,0));
+  if(plan.mode==='compact-tool-library'){
+   let index=0;
+   const next=()=>{if(index>=sources.length){finalizeProductHardeningExtensions();return;}loadExtensionSource(sources[index++],next,0);};
+   next();
+  }else{
+   let pending=sources.length;
+   const done=()=>{pending-=1;if(pending<=0)finalizeProductHardeningExtensions();};
+   if(!pending){finalizeProductHardeningExtensions();return;}
+   sources.forEach(src=>loadExtensionSource(src,done,0));
+  }
  }
  if(typeof module!=='undefined'&&module.exports&&typeof require==='function'){sources.forEach(src=>{try{require('./'+src.replace(/^data\//,''));}catch(_err){}});finalizeProductHardeningExtensions();}
 }
 if(typeof window!=='undefined'&&window.addEventListener){window.addEventListener('hashchange',()=>{if(routeName()!=='tools')loadProductHardeningExtensions();});}
-const identity=Object.freeze({release,stampState,normalizeReportMarkdown,loadProductHardeningExtensions,finalizeProductHardeningExtensions,extensionPlan,toolLibraryCompactExtensions:TOOL_LIBRARY_COMPACT_EXTENSIONS});
+const identity=Object.freeze({release,stampState,normalizeReportMarkdown,loadProductHardeningExtensions,finalizeProductHardeningExtensions,extensionPlan,toolLibraryCompactExtensions:TOOL_LIBRARY_COMPACT_EXTENSIONS,rerenderToolsRoute});
 root.OBOL_CURRENT_RELEASE=release;
 root.OBOL_RELEASE_IDENTITY=identity;
 loadProductHardeningExtensions();

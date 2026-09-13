@@ -1,3 +1,13 @@
+## v10.22 — This product-hardening build repairs the credentials, authentication, and cracking Tool Builder surfaces as a versioned release. It corrects the earlier shadow-surface implementation by making the repaired builders schema-owned records, restores the shared guard assertions that protect the broader Tool Builder surface, and adds live browser proof for every repaired credential/auth route
+
+- Repaired the credential/auth/cracking Tool Builder family for Hashcat, John, Hydra, Kerbrute, CeWL, crunch, hashid, name-that-hash, NetExec, secretsdump, GetNPUsers, and GetUserSPNs.
+- Added `data/product-hardening/credential-auth-guidance-current.js` as the current owner for credential/auth operator guidance and schema-record enrichment.
+- Added `OBOL_TOOL_BUILDER_SCHEMA.replace(builder)` so current repair owners can replace an existing builder record through the same schema validation path used by registration.
+- Moved field groups, presets, snippets, and operator guidance onto the real builder records returned by `schema.get()`, instead of synthesizing a second surface at render time.
+- Preserved tool identity while adding outcome-labelled mode cards, grouped all-visible fields, useful presets, textarea snippets where appropriate, Reading-the-output proof guidance, and honest missing-field command states.
+- Restored the shared Tool Builder surface guard assertions for Tools library owner behavior, DOM marker preservation, CSS surface rules, and fabricated-value rejection, including `domain.local`.
+- Bumped the visible release identity to v10.22 and loads the credential/auth repair through the current compact Tool Library extension plan.
+
 ## v10.21 — This product-hardening build completes the first Tool Builder operator-surface family repair: every implemented Web discovery / HTTP builder now matches the `tb-ffuf` golden reference instead of rendering as an ungrouped wall of fields, and the surface contract test now enforces that standard across the whole family rather than ffuf alone
 
 - Brought the Web discovery / HTTP builder family up to the `docs/TOOL-BUILDER-SURFACE-STANDARD.md` operator-surface standard: gobuster/feroxbuster, curl, sqlmap, WhatWeb, Nikto, httpx, wfuzz, ZAP, and the Burp Suite guided-workflow builder now declare grouped, all-visible `fieldGroups` with plain-language section descriptions, clickable per-field `presets` (wordlists, status/tuning values, ports, level/risk/tamper, payload lists, spider minutes, and more), and add-a-header `snippets` on the line-split header textareas — the same surface that made `#/tools/ffuf` the golden reference.

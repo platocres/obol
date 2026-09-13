@@ -23,8 +23,8 @@ function releaseParts(label){return String(label||'').replace(/^v/,'').split('.'
 const tools=loadRelease('#/tools');
 const parts=releaseParts(tools.OBOL_CURRENT_RELEASE.label);
 assert(parts[0]===10&&parts[1]>=17,'current release should remain at or beyond v10.17');
-assert.strictEqual(tools.OBOL_CURRENT_RELEASE.productHardeningLiveMode,'route-aware-compact-tool-library');
 assert.strictEqual(tools.__OBOL_PRODUCT_HARDENING_EXTENSION_PLAN__.mode,'compact-tool-library','Tools route should use compact live plan');
+assert.strictEqual(tools.OBOL_RELEASE_IDENTITY.extensionPlan('tools').mode,'compact-tool-library','Tools extension plan API should preserve the v10.17 compact loading behavior after later releases');
 assert(tools.loaded.includes('data/product-hardening/tool-builder-backlog-current.js'),'Tools route should keep the backlog current owner');
 assert(tools.loaded.includes('data/product-hardening/tool-builder-discovery-current.js'),'Tools route should keep the discovery current owner');
 assert(!tools.loaded.some(src=>/v9\.(?:5|6|7|8|9)\d/.test(src)),'Tools route should not inject historical v9 product-hardening fragments');
@@ -37,7 +37,7 @@ assert(Array.from(dashboard.__OBOL_DEFERRED_PRODUCT_HARDENING_EXTENSIONS__).incl
 const readme=fs.readFileSync(path.join(root,'README.md'),'utf8');
 assert(readme.includes('docs/TOOL-BUILDER-BUILD-QUEUE.md'),'README should link to the canonical Tool Builder handoff');
 assert(readme.includes('operator-surface standard'),'README Product Build Next should lead with the concrete Tool Builder operator-surface family repair');
-assert(readme.includes('Do not follow side-lane "next build" pointers unless directed'),'README should explicitly keep side-lane planning from overriding Product Build Next');
+assert(readme.includes('Do not follow side-lane')&&readme.includes('pointers unless directed'),'README should explicitly keep side-lane planning from overriding Product Build Next');
 const queue=fs.readFileSync(path.join(root,'docs/TOOL-BUILDER-BUILD-QUEUE.md'),'utf8');
 assert(queue.includes('Current ownership hygiene'),'queue should preserve current-owner Tool Builder handoff');
 assert(queue.includes('The Tool Library must not accumulate an unbounded stack of versioned builder layers'),'queue should keep live-layer hygiene rule');

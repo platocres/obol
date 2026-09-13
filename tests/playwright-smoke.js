@@ -47,8 +47,9 @@ fs.mkdirSync(outputDir, { recursive: true });
 // the v10.18 credential-helper current owner, the v10.19 privilege-helper
 // current owner, the full Tools inventory visibility completion pass, the database
 // Tool Builder acceleration current owner, the shared Tool Builder plumbing helper,
-// and the Build 3 web discovery/HTTP guidance owner plus existing web scan owner
-// loaded by direct Tools routes.
+// the Build 3 web discovery/HTTP guidance owner plus existing web scan owner
+// loaded by direct Tools routes, and the v10.22 credential/auth schema-record
+// surface owner loaded by current product-hardening routes.
 // The retired v9.77 why-now route stabilizer is intentionally no longer counted
 // as a browser runtime request. These budgets still fail loudly if the historical
 // fragment chain leaks back into loading.
@@ -56,7 +57,7 @@ const routes = [
   { id: 'home', hash: '#/home', marker: /Home/i, requestBudget: 88 },
   { id: 'targets', hash: '#/boxes', marker: /target/i, requestBudget: 99 },
   { id: 'evidence', hash: '#/intake', marker: /evidence/i, requestBudget: 95 },
-  { id: 'next-steps', hash: '#/path', marker: /(next|path|recommend)/i, requestBudget: 94 },
+  { id: 'next-steps', hash: '#/path', marker: /(next|path|recommend)/i, requestBudget: 95 },
   { id: 'report', hash: '#/report', marker: /report/i, requestBudget: 89 },
   { id: 'dashboard', hash: '#/dashboard', marker: /Product Hardening/i, currentDashboard: true, settleMs: 5200, requestBudget: 89 }
 ];
