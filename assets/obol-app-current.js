@@ -11,7 +11,7 @@
  * suppresses historical schedulers and commits current route owners last.
  *
  * Historical fragment order sha256: 40e3006d9423d669acf5869b577ecf56a6ca2ee1629c95fd0fcc5d242d2c5f27
- * Generated body sha256: dce6c8e1cfd3e74d4e31125cbd8a65d945ee6f3b5e2ab5a326150868aa2c3477
+ * Generated body sha256: 7ae170fe89d17a8ea43792631dacd94eca5639c1494ba31653a983152e5310f5
  * First historical fragment: assets/report-v2.js
  * Last historical fragment:  assets/app-v8.8.js
  */
@@ -2218,11 +2218,25 @@ function normalizeReportMarkdown(markdown){
  }
  return lines.join('\n');
 }
+function rerenderToolsRoute(){
+ if(routeName()!=='tools'||typeof document==='undefined')return false;
+ const owner=root.OBOL_TOOLS_LIBRARY_CURRENT;
+ if(!owner)return false;
+ const parts=String(location&&location.hash||'').replace(/^#\/?/,'').split('/').filter(Boolean);
+ try{
+  if(typeof owner.renderTool==='function')owner.renderTool(parts[1]||'__library');
+  else if(typeof owner.render==='function')owner.render();
+  else return false;
+  root.__OBOL_PRODUCT_HARDENING_TOOLS_RERENDERED__=release.label;
+  return true;
+ }catch(err){root.__OBOL_PRODUCT_HARDENING_TOOLS_RERENDER_ERROR__=String(err&&err.message||err);return false;}
+}
 function finalizeProductHardeningExtensions(){
  const api=root.OBOL_NOTE_CARD_DISPOSITION_RECONCILIATION_API_V968;
  if(api&&typeof api.install==='function'){
   try{api.install();root.__OBOL_PRODUCT_HARDENING_FINAL_CARD_DISPOSITION__='v10.22';}catch(_err){root.__OBOL_PRODUCT_HARDENING_FINAL_CARD_DISPOSITION_ERROR__=String(_err&&_err.message||_err);}
  }
+ rerenderToolsRoute();
 }
 function schemaReady(){const schema=root.OBOL_TOOL_BUILDER_SCHEMA;return !!(schema&&typeof schema.register==='function');}
 function authEnumReady(){
@@ -2258,7 +2272,7 @@ function loadProductHardeningExtensions(route){
  if(typeof module!=='undefined'&&module.exports&&typeof require==='function'){sources.forEach(src=>{try{require('./'+src.replace(/^data\//,''));}catch(_err){}});finalizeProductHardeningExtensions();}
 }
 if(typeof window!=='undefined'&&window.addEventListener){window.addEventListener('hashchange',()=>{if(routeName()!=='tools')loadProductHardeningExtensions();});}
-const identity=Object.freeze({release,stampState,normalizeReportMarkdown,loadProductHardeningExtensions,finalizeProductHardeningExtensions,extensionPlan,toolLibraryCompactExtensions:TOOL_LIBRARY_COMPACT_EXTENSIONS});
+const identity=Object.freeze({release,stampState,normalizeReportMarkdown,loadProductHardeningExtensions,finalizeProductHardeningExtensions,extensionPlan,toolLibraryCompactExtensions:TOOL_LIBRARY_COMPACT_EXTENSIONS,rerenderToolsRoute});
 root.OBOL_CURRENT_RELEASE=release;
 root.OBOL_RELEASE_IDENTITY=identity;
 loadProductHardeningExtensions();
