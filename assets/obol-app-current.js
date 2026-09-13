@@ -11,7 +11,7 @@
  * suppresses historical schedulers and commits current route owners last.
  *
  * Historical fragment order sha256: 40e3006d9423d669acf5869b577ecf56a6ca2ee1629c95fd0fcc5d242d2c5f27
- * Generated body sha256: 7ae170fe89d17a8ea43792631dacd94eca5639c1494ba31653a983152e5310f5
+ * Generated body sha256: d4f4ce2e91e4625aa88303d6b93c1f0aa04810c95388562630a2b679ef7ab6af
  * First historical fragment: assets/report-v2.js
  * Last historical fragment:  assets/app-v8.8.js
  */
@@ -2266,8 +2266,9 @@ function loadProductHardeningExtensions(route){
  root.__OBOL_PRODUCT_HARDENING_EXTENSION_PLAN__=plan;
  if(root.__OBOL_DEFER_PRODUCT_HARDENING_EXTENSIONS__){root.__OBOL_DEFERRED_PRODUCT_HARDENING_EXTENSIONS__=Object.freeze(sources.slice());return;}
  if(typeof document!=='undefined'&&typeof document.createElement==='function'){
-  let pending=sources.length;const done=()=>{pending-=1;if(pending<=0)finalizeProductHardeningExtensions();};if(!pending){finalizeProductHardeningExtensions();return;}
-  sources.forEach(src=>loadExtensionSource(src,done,0));
+  let index=0;
+  const next=()=>{if(index>=sources.length){finalizeProductHardeningExtensions();return;}loadExtensionSource(sources[index++],next,0);};
+  next();
  }
  if(typeof module!=='undefined'&&module.exports&&typeof require==='function'){sources.forEach(src=>{try{require('./'+src.replace(/^data\//,''));}catch(_err){}});finalizeProductHardeningExtensions();}
 }
