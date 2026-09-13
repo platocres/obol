@@ -50,7 +50,7 @@ expected.forEach(id=>{
  raw.fieldGroups.forEach(group=>(group.fields||[]).forEach(fid=>claimed.add(fid)));
  assert(!claimed.has(raw.operatorGuide.actionField),id+' should not group its hidden mode-driver field');
  const leftovers=(raw.fields||[]).filter(field=>field.id!==raw.operatorGuide.actionField&&!claimed.has(field.id)).map(field=>field.id);
- assert.deepStrictEqual(leftovers,[],id+' should not leak ungrouped fields into More options');
+ assert.strictEqual(leftovers.length,0,id+' should not leak ungrouped fields into More options: '+leftovers.join(', '));
  assert((raw.fields||[]).some(field=>Array.isArray(field.presets)&&field.presets.length>=2),id+' should provide schema-owned clickable presets');
  const row=snapshot.records.find(r=>r.builderId===id);
  assert(row,id+' should appear in the implemented audit ledger');
