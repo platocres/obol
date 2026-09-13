@@ -118,11 +118,25 @@ function normalizeReportMarkdown(markdown){
  }
  return lines.join('\n');
 }
+function rerenderToolsRoute(){
+ if(routeName()!=='tools'||typeof document==='undefined')return false;
+ const owner=root.OBOL_TOOLS_LIBRARY_CURRENT;
+ if(!owner)return false;
+ const parts=String(location&&location.hash||'').replace(/^#\/?/,'').split('/').filter(Boolean);
+ try{
+  if(typeof owner.renderTool==='function')owner.renderTool(parts[1]||'__library');
+  else if(typeof owner.render==='function')owner.render();
+  else return false;
+  root.__OBOL_PRODUCT_HARDENING_TOOLS_RERENDERED__=release.label;
+  return true;
+ }catch(err){root.__OBOL_PRODUCT_HARDENING_TOOLS_RERENDER_ERROR__=String(err&&err.message||err);return false;}
+}
 function finalizeProductHardeningExtensions(){
  const api=root.OBOL_NOTE_CARD_DISPOSITION_RECONCILIATION_API_V968;
  if(api&&typeof api.install==='function'){
   try{api.install();root.__OBOL_PRODUCT_HARDENING_FINAL_CARD_DISPOSITION__='v10.22';}catch(_err){root.__OBOL_PRODUCT_HARDENING_FINAL_CARD_DISPOSITION_ERROR__=String(_err&&_err.message||_err);}
  }
+ rerenderToolsRoute();
 }
 function schemaReady(){const schema=root.OBOL_TOOL_BUILDER_SCHEMA;return !!(schema&&typeof schema.register==='function');}
 function authEnumReady(){
@@ -158,7 +172,7 @@ function loadProductHardeningExtensions(route){
  if(typeof module!=='undefined'&&module.exports&&typeof require==='function'){sources.forEach(src=>{try{require('./'+src.replace(/^data\//,''));}catch(_err){}});finalizeProductHardeningExtensions();}
 }
 if(typeof window!=='undefined'&&window.addEventListener){window.addEventListener('hashchange',()=>{if(routeName()!=='tools')loadProductHardeningExtensions();});}
-const identity=Object.freeze({release,stampState,normalizeReportMarkdown,loadProductHardeningExtensions,finalizeProductHardeningExtensions,extensionPlan,toolLibraryCompactExtensions:TOOL_LIBRARY_COMPACT_EXTENSIONS});
+const identity=Object.freeze({release,stampState,normalizeReportMarkdown,loadProductHardeningExtensions,finalizeProductHardeningExtensions,extensionPlan,toolLibraryCompactExtensions:TOOL_LIBRARY_COMPACT_EXTENSIONS,rerenderToolsRoute});
 root.OBOL_CURRENT_RELEASE=release;
 root.OBOL_RELEASE_IDENTITY=identity;
 loadProductHardeningExtensions();
