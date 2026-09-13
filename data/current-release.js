@@ -166,8 +166,9 @@ function loadProductHardeningExtensions(route){
  root.__OBOL_PRODUCT_HARDENING_EXTENSION_PLAN__=plan;
  if(root.__OBOL_DEFER_PRODUCT_HARDENING_EXTENSIONS__){root.__OBOL_DEFERRED_PRODUCT_HARDENING_EXTENSIONS__=Object.freeze(sources.slice());return;}
  if(typeof document!=='undefined'&&typeof document.createElement==='function'){
-  let pending=sources.length;const done=()=>{pending-=1;if(pending<=0)finalizeProductHardeningExtensions();};if(!pending){finalizeProductHardeningExtensions();return;}
-  sources.forEach(src=>loadExtensionSource(src,done,0));
+  let index=0;
+  const next=()=>{if(index>=sources.length){finalizeProductHardeningExtensions();return;}loadExtensionSource(sources[index++],next,0);};
+  next();
  }
  if(typeof module!=='undefined'&&module.exports&&typeof require==='function'){sources.forEach(src=>{try{require('./'+src.replace(/^data\//,''));}catch(_err){}});finalizeProductHardeningExtensions();}
 }
