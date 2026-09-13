@@ -21,10 +21,12 @@ vm.createContext(sandbox);
  'data/product-hardening/tool-builder-discovery-current.js',
  'data/product-hardening/credential-helper-tool-builders-current.js',
  'data/product-hardening/privesc-helper-tool-builders-current.js',
+ 'data/product-hardening/remote-exec-tool-builders-current.js',
  'data/product-hardening/tool-builder-shared-plumbing-current.js',
  'data/product-hardening/database-tool-builders-current.js',
  'data/product-hardening/web-tool-guidance-current.js',
  'data/product-hardening/credential-auth-guidance-current.js',
+ 'data/product-hardening/ad-smb-remote-guidance-current.js',
  'data/product-hardening/tool-builder-implemented-audit-current.js'
 ].forEach(file=>vm.runInContext(read(file),sandbox,{filename:file}));
 const schema=sandbox.OBOL_TOOL_BUILDER_SCHEMA;
@@ -61,6 +63,13 @@ for(const id of ['tb-hashcat','tb-john','tb-hydra','tb-kerbrute','tb-cewl','tb-c
  assert.strictEqual(row.status,'passes-guidance-contract',id+' should pass after the credential/auth/cracking guidance repair: '+(row.issues||[]).join(', '));
  assert(row.hasOperatorGuide&&row.hasProfile&&row.proofGateFree,id+' should expose guide/profile and no command proof gate wording');
 }
+for(const id of ['tb-smbclient','tb-smbmap','tb-enum4linux-ng','tb-ldapsearch','tb-ad-rpcclient','tb-responder','tb-evilwinrm','tb-certipy','tb-impacket-psexec','tb-impacket-wmiexec','tb-impacket-smbexec','tb-impacket-dcomexec','tb-impacket-atexec']){
+ const row=snapshot.records.find(r=>r.builderId===id);
+ assert(row,id+' should appear in implemented-builder audit ledger');
+ assert.strictEqual(row.family,'ad-smb-remote-access',id+' should be classified with the AD/SMB/remote-access repair family');
+ assert.strictEqual(row.status,'passes-guidance-contract',id+' should pass after the AD/SMB/remote-access guidance repair: '+(row.issues||[]).join(', '));
+ assert(row.hasOperatorGuide&&row.hasProfile&&row.proofGateFree,id+' should expose guide/profile and no command proof gate wording');
+}
 const nmap=snapshot.records.find(r=>r.builderId==='tb-nmap');
 assert(nmap,'tb-nmap should appear in implemented-builder audit ledger');
 assert.strictEqual(nmap.status,'fails-guidance-contract','network/service enumeration should remain queued until its family repair lands');
@@ -69,7 +78,8 @@ const next=audit.nextRepairBatches();
 assert(next.length>=1,'audit should group remaining failures into repair batches');
 assert(!next.some(batch=>batch.id==='web-discovery-http'),'web discovery/HTTP should no longer be a queued repair family after Build 3');
 assert(!next.some(batch=>batch.id==='credentials-cracking-auth'),'credential/auth/cracking should no longer be a queued repair family after this repair');
-assert(next.some(batch=>batch.id==='ad-smb-remote-access')||next.some(batch=>batch.id==='network-service-enum'),'remaining failing builders should still be grouped by their next repair family');
+assert(!next.some(batch=>batch.id==='ad-smb-remote-access'),'AD/SMB/remote-access should no longer be a queued repair family after this repair');
+assert(next.some(batch=>batch.id==='network-service-enum'),'network/service enumeration should become the next broad repair family');
 assert(next.every(batch=>/without proof-gating command generation/.test(batch.goal)),'repair batches should carry the no-proof-gating rule');
 const psql=runtime.compile(schema.get('tb-psql'),{action:'copyProgramExec',host:'203.0.113.77',port:'5432',username:'postgres',database:'postgres',sslMode:'prefer',osCommand:'id'},{});
 assert(psql.includes('COPY')&&psql.includes('PROGRAM')&&psql.includes('id'),'COPY PROGRAM command generation should not require prior Evidence or a proof checkbox');

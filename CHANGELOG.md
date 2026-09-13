@@ -1,3 +1,14 @@
+## v10.24 — Completes the AD/SMB/remote-access Tool Builder family repair with schema-owned surfaces, GUI command-control proof, Evidence ingestion, and corrected audit classification
+
+- Added `data/product-hardening/ad-smb-remote-guidance-current.js` as the current owner for the AD/SMB/remote-access operator-surface repair.
+- Repaired smbclient, smbmap, enum4linux-ng, ldapsearch, rpcclient, Responder, Evil-WinRM, Certipy, and Impacket psexec/wmiexec/smbexec/dcomexec/atexec as one audited family.
+- Added `tests/run-tool-builder-ad-smb-command-controls-tests.js` so mode-card buttons, visible preset buttons, checkbox toggles, and option fields must generate real commands with expected flags and arguments.
+- Corrected stale command shapes surfaced by that test: `ldapsearch` now emits `-H ldap://host`, and `rpcclient` exposes domain/workgroup plus authenticated/null-session command options.
+- Added AD/SMB Evidence ingestion for shares, permissions, LDAP/RPC/enum facts, Responder captures, Evil-WinRM sessions, Certipy certificate workflows, and Impacket remote-exec artifacts/output/cleanup with conservative states and redaction.
+- Patched current release loading and Evidence lazy loading so the family repair is available on compact Tools routes and Evidence routes.
+- Corrected implemented-builder audit family classification for rpcclient, Evil-WinRM, and Impacket exec builders.
+- Marked `tb-surface-ad-smb` complete and advanced Product Build Next to the network/service enumeration surface repair.
+
 ## v10.23 — This product-hardening build makes the credentials, authentication, and cracking Tool Builder family actually usable. v10.22 gave the family the operator-surface *look* but not a working tool: commands would not generate from common real inputs, a fabricated mask value was seeded, and most of the family had no Evidence ingestion. This build fixes command generation, removes fabricated seeds, adds Evidence ingestion with conservative Next Steps movement for the whole family, and adds a functional CI gate so a structurally-valid-but-unusable builder can no longer ship green
 
 - Fixed Tool Builder command generation. The renderer's placeholder scrub is now touched-aware: a value the operator typed, loaded from a preset/snippet, or restored from a save reaches the command, while auto-seeded and programmatic values are still blocked. A hash file named `hashes.txt` — the value the field's own placeholder suggests — now builds a command instead of silently producing nothing. The anti-fabrication contract (a demo password / fake hash / `domain.local` / `user` can never fake a valid command) is preserved for seeded and programmatic input.

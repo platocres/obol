@@ -4,7 +4,7 @@ Obol is a static, browser-local workspace for OSCP-style labs, Active Directory 
 
 Live site: `https://platocres.github.io/obol/`
 
-Current release: **v10.23**
+Current release: **v10.24**
 
 Open `#/dashboard` for the active Product Hardening Dashboard and Product Build Next queue.
 
@@ -58,7 +58,7 @@ Obol remains a website the user can visit and use: no backend, account system, t
 Generated from the same queue sources as the Product Hardening Dashboard. Do not edit this block manually.
 This block is generated from `data/product-hardening/product-hardening-queue.js`. Do not edit it manually.
 
-**Current product-hardening queue:** 227/663 complete (35%), 13 concrete queued, 9 modeled/standing items.
+**Current product-hardening queue:** 227/663 complete (35%), 12 concrete queued, 9 modeled/standing items.
 **Private notes source:** [`https://github.com/platocres/obol-source-notes/tree/main/sources/raw`](https://github.com/platocres/obol-source-notes/tree/main/sources/raw) — 556 notes and 1326 embedded resources accounted.
 **Private review packets:** `platocres/obol-source-notes@agent/review-packets:data/review-packets/manifest.json` — 556/556 notes, 29 packets, 0 truncated.
 **Complete source packet proof:** 556/556 notes in 29 complete-text packets, 0 truncated, 8,725,188 cleaned text chars.
@@ -69,19 +69,19 @@ This block is generated from `data/product-hardening/product-hardening-queue.js`
 **Source re-mining status:** 556/556 full-spectrum re-mined; 0 old-rubric-only notes remain.
 **Source-note cluster status:** source-note mining complete; no pending cluster review items remain.
 
-**Recommended work package:** **Tool Builder Operator-Surface Family Repair** — 3 concrete live items / 5 tracked.
-**Next concrete entry:** **Bring the AD/SMB/remote-access builder family to the operator-surface standard**
+**Recommended work package:** **Tool Builder Operator-Surface Family Repair** — 2 concrete live items / 5 tracked.
+**Next concrete entry:** **Bring the network/service enumeration builder family to the operator-surface standard**
 **Ownership area:** `tool-builder/operator-surface`
 **Package dependencies:** none.
 **Package detail:** Use the Product Hardening Dashboard for full track ledgers and `data/product-hardening/work-packages.js` for the long-form package guidance.
 **Recommended work-package metadata comes from `data/product-hardening/work-packages.js`.
 
 **Highest-priority concrete live items:**
-1. **Bring the AD/SMB/remote-access builder family to the operator-surface standard** — Apply the surface pattern to smbclient, smbmap, enum4linux-ng, ldapsearch, rpcclient, Evil-WinRM, Certipy, and the Impacket exec builders (psexec/wmiexec/smbexec/dcomexec/atexec). Follow docs/TOOL-BUILDER-SURFACE-STANDARD.md.
-2. **Bring the network/service enumeration builder family to the operator-surface standard** — Apply the surface pattern to Nmap, masscan, Rustscan, naabu, fping, nbtscan, dig/dnsrecon/nslookup, snmpwalk, and onesixtyone. Follow docs/TOOL-BUILDER-SURFACE-STANDARD.md.
-3. **Bring the privesc/local-enumeration builder family to the operator-surface standard** — Apply the surface pattern to linPEAS, winPEAS, pspy, accesschk, and searchsploit. Follow docs/TOOL-BUILDER-SURFACE-STANDARD.md.
-4. **Promote the remaining modeled tools to implemented builders** — Runs after the implemented families meet docs/TOOL-BUILDER-SURFACE-STANDARD.md. Convert the explicit modeled-tool inventory into implemented, schema-driven builders in priority batches, and ship every new builder to the operator-surface standard from the start. Every tool batch must ship command generation and decision-relevant Evidence behavior together: exact paste-back expectations, executable analyzer/parser coverage or a proven shared analyzer, conservative positive/negative/blocked/partial handling, cleanup boundaries, and Next Steps movement or blocking where supported Evidence changes the path. The backlog starts with high-value operator tools that must remain visible in the library and in Path/Card command guidance: nmap, NetExec / nxc, Ligolo-ng, chisel, SSH/plink, proxychains, hydra, kerbrute, BloodHound collection, smbclient/smbmap, enum4linux-ng, ldapsearch, responder, linpeas/winpeas, msfvenom/msfconsole, nc, Penelope, and common file-transfer helpers.
-5. **Post-mining runtime and old-layer retirement audit** — The Tool Library route now uses the compact current Tool Builder extension plan. Dashboard and non-Tools product-hardening routes still need separate current-owner/equivalence retirement proof before this item can close.
+1. **Bring the network/service enumeration builder family to the operator-surface standard** — Apply the surface pattern to Nmap, masscan, Rustscan, naabu, fping, nbtscan, dig/dnsrecon/nslookup, snmpwalk, and onesixtyone. Follow docs/TOOL-BUILDER-SURFACE-STANDARD.md.
+2. **Bring the privesc/local-enumeration builder family to the operator-surface standard** — Apply the surface pattern to linPEAS, winPEAS, pspy, accesschk, and searchsploit. Follow docs/TOOL-BUILDER-SURFACE-STANDARD.md.
+3. **Promote the remaining modeled tools to implemented builders** — Runs after the implemented families meet docs/TOOL-BUILDER-SURFACE-STANDARD.md. Convert the explicit modeled-tool inventory into implemented, schema-driven builders in priority batches, and ship every new builder to the operator-surface standard from the start. Every tool batch must ship command generation and decision-relevant Evidence behavior together: exact paste-back expectations, executable analyzer/parser coverage or a proven shared analyzer, conservative positive/negative/blocked/partial handling, cleanup boundaries, and Next Steps movement or blocking where supported Evidence changes the path. The backlog starts with high-value operator tools that must remain visible in the library and in Path/Card command guidance: nmap, NetExec / nxc, Ligolo-ng, chisel, SSH/plink, proxychains, hydra, kerbrute, BloodHound collection, smbclient/smbmap, enum4linux-ng, ldapsearch, responder, linpeas/winpeas, msfvenom/msfconsole, nc, Penelope, and common file-transfer helpers.
+4. **Post-mining runtime and old-layer retirement audit** — The Tool Library route now uses the compact current Tool Builder extension plan. Dashboard and non-Tools product-hardening routes still need separate current-owner/equivalence retirement proof before this item can close.
+5. **Post-mining regression speed and coverage pass** — With the note queue closed, shorten slow historical/browser checks where proven redundant while keeping exact-head full regression and browser smoke meaningful.
 
 **Queue automation:** `data/product-hardening/product-hardening-queue.js`, `data/product-hardening/build-next-queue-hygiene-current.js`, `data/product-hardening/note-progress-current.js`, `data/product-hardening/source-note-clusters-current.js`, and `data/product-hardening/work-packages.js` are the queue owners. The dashboard and this README projection consume those same sources.
 Generated by `node tools/sync-product-build-next.js --write`. Verify with `node tools/sync-product-build-next.js --check`.

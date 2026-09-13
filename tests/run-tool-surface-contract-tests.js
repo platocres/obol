@@ -59,6 +59,7 @@ function loadToolBuilders() {
     'data/product-hardening/network-discovery-tool-builders-v10.15.js',
     'data/product-hardening/web-tool-guidance-current.js',
     'data/product-hardening/credential-auth-guidance-current.js',
+    'data/product-hardening/ad-smb-remote-guidance-current.js',
   ].forEach((file) => { try { vm.runInContext(read(file), sandbox, { filename: file }); } catch (err) { throw new Error('failed loading ' + file + ': ' + err.message); } });
   return sandbox;
 }
@@ -172,6 +173,16 @@ credentialFamily.builderIds.forEach((id) => {
   const b = schema.get(id);
   assert(b, id + ' must resolve from the raw schema registry after credential/auth repair');
   assertFullSurface(b, credentialFamily, 'credential/auth family');
+});
+
+// ============ AD / SMB / REMOTE-ACCESS FAMILY ============
+const adSmbFamily = sandbox.OBOL_AD_SMB_REMOTE_GUIDANCE_CURRENT;
+assert(adSmbFamily && adSmbFamily.schemaValidated === true && adSmbFamily.installed === true, 'AD/SMB/remote-access family must install as schema-validated records');
+assert(Array.isArray(adSmbFamily.builderIds) && adSmbFamily.builderIds.length >= 13, 'AD/SMB/remote-access family must declare its repaired builder ids');
+adSmbFamily.builderIds.forEach((id) => {
+  const b = schema.get(id);
+  assert(b, id + ' must resolve from the raw schema registry after AD/SMB/remote-access repair');
+  assertFullSurface(b, adSmbFamily, 'AD/SMB/remote-access family');
 });
 
 // ============ UNIVERSAL BASELINE: every registered builder ============

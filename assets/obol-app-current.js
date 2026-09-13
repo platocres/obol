@@ -11,7 +11,7 @@
  * suppresses historical schedulers and commits current route owners last.
  *
  * Historical fragment order sha256: 40e3006d9423d669acf5869b577ecf56a6ca2ee1629c95fd0fcc5d242d2c5f27
- * Generated body sha256: f4591150a48b1b03e1a8f73eb05ad2b9a2deb19fae5887458ac6a62124e5ec61
+ * Generated body sha256: e93d040d1df9f45695395ab3e9aa040a366fecccd34583ff1aebdc33769da382
  * First historical fragment: assets/report-v2.js
  * Last historical fragment:  assets/app-v8.8.js
  */
@@ -2101,12 +2101,12 @@ if(__nativeMutationObserver)root.MutationObserver=__nativeMutationObserver;
 'use strict';
 (function(root){
 const release=Object.freeze({
- version:'10.0.23',
- label:'v10.23',
+ version:'10.0.24',
+ label:'v10.24',
  phase:'product-hardening',
  phaseLabel:'Product Hardening',
  orangeBaseline:'v8.8',
- productHardeningLiveMode:'credential-auth-functional-and-evidence-repair',
+ productHardeningLiveMode:'ad-smb-remote-surface-and-evidence-repair',
  productHardeningExtensions:Object.freeze([
   'data/product-hardening/credentials-auth-remining-v9.58.js',
   'data/product-hardening/proof-safety-controls-v9.58.js',
@@ -2171,7 +2171,9 @@ const release=Object.freeze({
   'data/product-hardening/tool-builder-discovery-current.js',
   'data/product-hardening/web-tool-guidance-current.js',
   'data/product-hardening/credential-helper-tool-builders-current.js',
+  'data/product-hardening/remote-exec-tool-builders-current.js',
   'data/product-hardening/credential-auth-guidance-current.js',
+  'data/product-hardening/ad-smb-remote-guidance-current.js',
   'data/product-hardening/privesc-helper-tool-builders-current.js',
   'data/product-hardening/database-tool-builders-current.js',
   'data/product-hardening/web-tool-guidance-current.js'
@@ -2183,7 +2185,9 @@ const TOOL_LIBRARY_COMPACT_EXTENSIONS=Object.freeze([
  'data/product-hardening/tool-builder-backlog-current.js',
  'data/product-hardening/tool-builder-discovery-current.js',
  'data/product-hardening/credential-helper-tool-builders-current.js',
+ 'data/product-hardening/remote-exec-tool-builders-current.js',
  'data/product-hardening/credential-auth-guidance-current.js',
+ 'data/product-hardening/ad-smb-remote-guidance-current.js',
  'data/product-hardening/privesc-helper-tool-builders-current.js',
  'data/product-hardening/database-tool-builders-current.js'
 ]);
@@ -2234,7 +2238,7 @@ function rerenderToolsRoute(){
 function finalizeProductHardeningExtensions(){
  const api=root.OBOL_NOTE_CARD_DISPOSITION_RECONCILIATION_API_V968;
  if(api&&typeof api.install==='function'){
-  try{api.install();root.__OBOL_PRODUCT_HARDENING_FINAL_CARD_DISPOSITION__='v10.23';}catch(_err){root.__OBOL_PRODUCT_HARDENING_FINAL_CARD_DISPOSITION_ERROR__=String(_err&&_err.message||_err);}
+  try{api.install();root.__OBOL_PRODUCT_HARDENING_FINAL_CARD_DISPOSITION__='v10.24';}catch(_err){root.__OBOL_PRODUCT_HARDENING_FINAL_CARD_DISPOSITION_ERROR__=String(_err&&_err.message||_err);}
  }
  rerenderToolsRoute();
 }
