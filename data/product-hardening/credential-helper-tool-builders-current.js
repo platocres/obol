@@ -181,6 +181,21 @@ function install(attempt){
  if((!installedBuilder||!patchedEvidence||!installedIntake)&&a<40&&root.setTimeout)root.setTimeout(()=>install(a+1),50);
  return api;
 }
+function installCredentialAuthGuidance(attempt){
+ const a=Number(attempt||0),src='data/product-hardening/credential-auth-guidance-current.js';
+ if(root.OBOL_CREDENTIAL_AUTH_GUIDANCE_CURRENT||root.__OBOL_CREDENTIAL_AUTH_GUIDANCE_LOADING__)return true;
+ if(typeof document==='undefined'||typeof document.createElement!=='function')return false;
+ if(document.querySelector&&document.querySelector('script[data-obol-extension="'+src+'"],script[data-obol-credential-auth-guidance="true"]'))return true;
+ if(!root.OBOL_TOOL_BUILDER&&a<40&&root.setTimeout){root.setTimeout(()=>installCredentialAuthGuidance(a+1),50);return false;}
+ root.__OBOL_CREDENTIAL_AUTH_GUIDANCE_LOADING__=true;
+ const script=document.createElement('script');script.src=src;script.async=false;script.dataset.obolExtension=src;script.dataset.obolCredentialAuthGuidance='true';
+ script.onload=()=>{root.__OBOL_CREDENTIAL_AUTH_GUIDANCE_LOADING__=false;rerenderTools();};
+ script.onerror=()=>{root.__OBOL_CREDENTIAL_AUTH_GUIDANCE_LOADING__=false;root.__OBOL_CREDENTIAL_AUTH_GUIDANCE_LOAD_ERROR__='Unable to load '+src;};
+ (document.head||document.documentElement).appendChild(script);
+ return true;
+}
 root.OBOL_CREDENTIAL_HELPER_TOOL_BUILDERS_CURRENT_INSTALL=install;
+root.OBOL_CREDENTIAL_AUTH_GUIDANCE_CURRENT_INSTALL=installCredentialAuthGuidance;
 install(0);
+installCredentialAuthGuidance(0);
 })(typeof window!=='undefined'?window:globalThis);
