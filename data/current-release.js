@@ -69,9 +69,8 @@ const release=Object.freeze({
   'data/product-hardening/route-layer-retirement-current.js',
   'data/product-hardening/tool-builder-backlog-current.js',
   'data/product-hardening/tool-builder-discovery-current.js',
-  'data/product-hardening/web-tool-guidance-current.js',
+ 'data/product-hardening/web-tool-guidance-current.js',
   'data/product-hardening/credential-helper-tool-builders-current.js',
-  'data/product-hardening/credential-auth-guidance-current.js',
   'data/product-hardening/privesc-helper-tool-builders-current.js',
   'data/product-hardening/database-tool-builders-current.js',
   'data/product-hardening/web-tool-guidance-current.js'
@@ -83,7 +82,6 @@ const TOOL_LIBRARY_COMPACT_EXTENSIONS=Object.freeze([
  'data/product-hardening/tool-builder-backlog-current.js',
  'data/product-hardening/tool-builder-discovery-current.js',
  'data/product-hardening/credential-helper-tool-builders-current.js',
- 'data/product-hardening/credential-auth-guidance-current.js',
  'data/product-hardening/privesc-helper-tool-builders-current.js',
  'data/product-hardening/database-tool-builders-current.js'
 ]);
