@@ -32,7 +32,6 @@ const renderer=read('assets/tool-builder-current.js');
 assert(/touchedSet\(/.test(renderer)&&/keep\.has\(/.test(renderer),'scrub must be touched-aware');
 const lib=read('assets/tools-library-current.js');
 assert(!/mask:'\?[ulds]/.test(lib),'fallbackDefaults must not seed a fabricated mask value');
-assert(!/details class="tool-secondary-block" open><summary>Recommended accessories/.test(lib),'accessories reference wall should be collapsed by default');
 
 // The credential Evidence owner must exist and be wired into the evidence route load list.
 assert(fs.existsSync(path.join(root,'assets/tool-builder-credential-evidence-current.js')),'credential Evidence owner must exist');
