@@ -1,0 +1,47 @@
+name: Agent prepend v10.22 changelog
+
+on:
+  push:
+    branches:
+      - build/credential-auth-guidance-repair
+
+permissions:
+  contents: write
+
+jobs:
+  prepend:
+    if: github.ref == 'refs/heads/build/credential-auth-guidance-repair'
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: build/credential-auth-guidance-repair
+      - name: Prepend v10.22 changelog entry and remove this workflow
+        run: |
+          node <<'NODE'
+          const fs = require('fs');
+          const entry = `## v10.22 — Credentials/auth/cracking Tool Builder schema-surface repair
+
+- Repaired the credential/auth/cracking Tool Builder family for Hashcat, John, Hydra, Kerbrute, CeWL, crunch, hashid, name-that-hash, NetExec, secretsdump, GetNPUsers, and GetUserSPNs.
+- Added a schema-validated replacement path, \`OBOL_TOOL_BUILDER_SCHEMA.replace(builder)\`, so family repairs can update real registered builder records instead of hiding a second surface behind render-time overlays.
+- Moved field groups, presets, snippets, and operator guidance onto the builder records returned by \`schema.get()\`, making the repaired surfaces schema-owned and validated by the canonical Tool Builder surface gate.
+- Added live browser proof for all repaired credential/auth direct Tool Builder routes, including command generation from real operator inputs.
+- Restored the shared Tool Builder surface guard assertions for Tools library owner behavior, DOM marker preservation, CSS surface rules, and fabricated-value rejection, including \`domain.local\`.
+- Bumped the visible release identity to v10.22 and added the v10.22 release document and regression contract.
+`;
+          const path = 'CHANGELOG.md';
+          const current = fs.readFileSync(path, 'utf8');
+          if (!current.startsWith('## v10.22')) fs.writeFileSync(path, entry + '\n' + current);
+          fs.rmSync('.github/workflows/agent-prepend-v10-22-changelog.yml', { force: true });
+          NODE
+      - name: Commit changelog prepend
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add CHANGELOG.md .github/workflows/agent-prepend-v10-22-changelog.yml
+          if git diff --cached --quiet; then
+            echo "No changelog changes needed."
+            exit 0
+          fi
+          git commit -m "Prepend v10.22 changelog entry"
+          git push origin HEAD:build/credential-auth-guidance-repair
