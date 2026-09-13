@@ -56,6 +56,7 @@ function loadRuntime() {
     'data/product-hardening/network-discovery-tool-builders-v10.15.js',
     'data/product-hardening/web-tool-guidance-current.js',
     'data/product-hardening/credential-auth-guidance-current.js',
+    'data/product-hardening/ad-smb-remote-guidance-current.js',
   ].forEach((file) => { try { vm.runInContext(read(file), sandbox, { filename: file }); } catch (err) { throw new Error('failed loading ' + file + ': ' + err.message); } });
   return sandbox;
 }

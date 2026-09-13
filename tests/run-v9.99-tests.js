@@ -128,7 +128,8 @@ function assertBefore(html, left, right) { assert(position(html, left) < positio
   const status = root.OBOL_CARD_PROGRESSIVE_DISCLOSURE_V999;
   assert(status, 'v9.99 status should be exposed');
   assert.strictEqual(status.status, 'complete', 'v9.99 should close the Card progressive-disclosure item');
-  assert(status.cardItemClosed && status.retirementQueued && status.packagesPatched, 'v9.99 should close Card cleanup, keep retirement queued, and patch the package');
+  assert(status.cardItemClosed && status.packagesPatched, 'v9.99 should close Card cleanup and patch the package');
+  assert.strictEqual(status.retirementFollowUp, 'post-notes-card-wrapper-decorator-retirement-audit', 'v9.99 should retain its historical retirement follow-up id');
 
   const q = root.OBOL_PRODUCT_HARDENING;
   const card = q.items.find(item => item && item.id === 'post-notes-card-progressive-disclosure-cleanup');
@@ -137,17 +138,16 @@ function assertBefore(html, left, right) { assert(position(html, left) < positio
   assert(card && card.status === 'complete', 'Card progressive-disclosure cleanup should be complete');
   assert.strictEqual(card.completedBy, 'v9.99', 'Card cleanup should be marked complete by v9.99');
   assert(/primary command or GUI action|evidence paste-back|outcome controls/i.test(card.detail), 'card cleanup closeout should preserve the user-visible outcome');
-  assert(retire && retire.status === 'queued', 'wrapper/decorator retirement audit should remain queued after card cleanup');
-  assert.strictEqual(next[0], 'post-notes-card-wrapper-decorator-retirement-audit', 'Build Next should move to the card-wrapper retirement audit');
-  assert(next.includes('post-notes-tools-builder-library-cleanup'), 'Tools cleanup should remain queued after the card retirement audit');
+  if (retire) assert(['queued','complete'].includes(retire.status), 'wrapper/decorator retirement audit should remain queued or completed after later releases');
+  assert(!next.includes('post-notes-card-progressive-disclosure-cleanup'), 'Build Next should not reopen the completed Card cleanup');
 
   const pk = root.OBOL_PRODUCT_HARDENING_WORK_PACKAGES;
   const rec = pk.recommend(q);
-  assert(rec && rec.id === 'post-notes-operator-ui-clarity', 'recommended package remains Post-notes Operator UI Clarity');
-  assert(/run the Card wrapper\/decorator retirement audit before Tools cleanup/i.test(rec.guidance), 'package guidance should keep retirement ahead of Tools cleanup');
+  assert(rec && rec.id, 'recommended package should remain available after later queue movement');
+  assert(String(rec.guidance || '').trim(), 'recommended package should preserve operator guidance text');
 
   const release = fs.readFileSync(path.join(rootDir, 'data/current-release.js'), 'utf8');
-  assert(release.includes("version:'9.99.0'"), 'current release should be v9.99');
+  assert(/label:'v10\.\d+'/.test(release), 'current release should remain on the v10 product-hardening line');
   assert(!release.includes('data/product-hardening/card-progressive-disclosure-cleanup-v9.99.js'), 'v9.99 queue closeout should not add another browser-loaded runtime request');
   assert(fs.existsSync(path.join(rootDir, 'data/product-hardening/card-progressive-disclosure-cleanup-v9.99.js')), 'v9.99 proof ledger should remain in the repo even though it is request-budget neutral');
   assert(fs.readFileSync(path.join(rootDir, 'data/product-hardening/card-wrapper-retirement-queue-v9.98.js'), 'utf8').includes('requestBudgetNeutral'), 'existing card queue owner should expose the v9.99 request-budget-neutral closeout');
