@@ -75,10 +75,13 @@ assert(/cardRootDumps\s*!==\s*0/.test(visualSmoke), 'visual smoke must fail if T
 assert(/pathPrimaryMoves\s*!==\s*1/.test(visualSmoke), 'visual smoke must enforce one dominant Path move');
 
 const browserWorkflow = read('.github/workflows/browser-smoke.yml');
-assert(browserWorkflow.includes('Run visual density smoke'), 'browser workflow must include visual density smoke step');
+// browser-smoke fans its checks out into a parallel matrix with an aggregate `browser-smoke`
+// gate (see docs/TEST-GOVERNANCE.md), so the coverage is asserted by the commands each matrix
+// leg runs, not by sequential step order (parallelization intentionally removes ordering).
 assert(browserWorkflow.includes('node tests/playwright-visual-density.js'), 'browser workflow must execute the visual density smoke');
-assert(browserWorkflow.indexOf('Run Tools builder-library smoke') < browserWorkflow.indexOf('Run visual density smoke'), 'visual density smoke should run after Tools-specific smoke');
-assert(browserWorkflow.indexOf('Run visual density smoke') < browserWorkflow.indexOf('Run full browser smoke'), 'visual density smoke should run before full route smoke');
+assert(browserWorkflow.includes('node tests/playwright-tools-library.js'), 'browser workflow must execute the Tools builder-library smoke');
+assert(browserWorkflow.includes('node tests/playwright-smoke.js'), 'browser workflow must execute the full browser smoke');
+assert(/browser-smoke:\n\s+needs: browser-check/.test(browserWorkflow), 'browser workflow must keep the aggregate browser-smoke gate over the parallel matrix');
 
 const historical = read('tools/run-historical-contracts.js');
 assert(historical.includes("['tests/run-v10.02-tests.js']"), 'historical regression must run v10.02 focused tests in current-product phase');
