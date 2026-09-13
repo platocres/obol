@@ -34,8 +34,10 @@ assert(queue.includes('["tb-surface-web","tool-builders","complete"'),'tb-surfac
 const contracts=read('data/product-hardening/item-test-contracts.js');
 assert(contracts.includes("'tb-surface-web'"),'tb-surface-web must carry an item-specific test contract');
 
-// The credentials/auth/cracking family is the next queued surface repair.
-assert(queue.includes('["tb-surface-credentials","tool-builders","queued"'),'the next surface-repair family (credentials) should remain queued');
+// The operator-surface family-repair package continues after the web family: at least one
+// later surface-repair family remains queued. (Demoted from pinning credentials specifically,
+// which completed in v10.23.)
+assert(/\["tb-surface-(?:credentials|ad-smb|network|privesc)","tool-builders","queued"/.test(queue),'a later surface-repair family should remain queued after the web family');
 
 // The release doc carries authored bullets describing this build.
 const docs=read('docs/v10.21.md');

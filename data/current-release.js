@@ -1,12 +1,12 @@
 'use strict';
 (function(root){
 const release=Object.freeze({
- version:'10.0.22',
- label:'v10.22',
+ version:'10.0.23',
+ label:'v10.23',
  phase:'product-hardening',
  phaseLabel:'Product Hardening',
  orangeBaseline:'v8.8',
- productHardeningLiveMode:'credential-auth-schema-surface-repair',
+ productHardeningLiveMode:'credential-auth-functional-and-evidence-repair',
  productHardeningExtensions:Object.freeze([
   'data/product-hardening/credentials-auth-remining-v9.58.js',
   'data/product-hardening/proof-safety-controls-v9.58.js',
@@ -134,7 +134,7 @@ function rerenderToolsRoute(){
 function finalizeProductHardeningExtensions(){
  const api=root.OBOL_NOTE_CARD_DISPOSITION_RECONCILIATION_API_V968;
  if(api&&typeof api.install==='function'){
-  try{api.install();root.__OBOL_PRODUCT_HARDENING_FINAL_CARD_DISPOSITION__='v10.22';}catch(_err){root.__OBOL_PRODUCT_HARDENING_FINAL_CARD_DISPOSITION_ERROR__=String(_err&&_err.message||_err);}
+  try{api.install();root.__OBOL_PRODUCT_HARDENING_FINAL_CARD_DISPOSITION__='v10.23';}catch(_err){root.__OBOL_PRODUCT_HARDENING_FINAL_CARD_DISPOSITION_ERROR__=String(_err&&_err.message||_err);}
  }
  rerenderToolsRoute();
 }
@@ -147,7 +147,12 @@ function authEnumReady(){
 function shouldSkipSource(src){return src===AUTH_ENUM_SOURCE&&authEnumReady();}
 function appendExtensionSource(src,done){
  if(typeof document==='undefined'||typeof document.createElement!=='function'){done();return;}
- if(document.querySelector&&document.querySelector('script[data-obol-extension="'+src+'"],script[data-obol-dashboard-src="'+src+'"]')){done();return;}
+ // Dedup against every tag that could already be loading this source, not just the ones this
+ // loader tagged. tool-builders-auth-enum-current.js is also loaded by the runtime loader's
+ // loadTunnelBuilders (via appendScripts, which tags data-obol-runtime and matches on src),
+ // so match a plain script[src] too. Without this, the two loaders race and the source can be
+ // appended twice, re-running its schema.register(...) and throwing "Duplicate Tool Builder id".
+ if(document.querySelector&&document.querySelector('script[data-obol-extension="'+src+'"],script[data-obol-dashboard-src="'+src+'"],script[src="'+src+'"]')){done();return;}
  const script=document.createElement('script');script.src=src;script.async=false;script.dataset.obolExtension=src;script.onload=done;script.onerror=done;(document.head||document.documentElement).appendChild(script);
 }
 function loadExtensionSource(src,done,attempt){
