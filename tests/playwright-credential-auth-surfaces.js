@@ -22,7 +22,7 @@ async function pageState(page) {
     text: document.body && document.body.innerText || '',
     builderCount: document.querySelectorAll('[data-tool-builder]').length,
     groupCount: document.querySelectorAll('.tb-group-head').length,
-    modeCount: document.querySelectorAll('.tb-mode-card').length,
+    modeCount: document.querySelectorAll('.tb-mode').length,
     presetCount: document.querySelectorAll('.tb-preset').length,
     readCount: document.querySelectorAll('.tb-read-wrap').length,
     moreOptions: /More options/i.test(document.body && document.body.innerText || ''),
