@@ -24,7 +24,7 @@ const surface=run(['tests/run-tool-surface-contract-tests.js']);
 assert(/operator-surface contract validation passed/.test(surface),'surface contract test should pass with restored shared guards');
 assert(/builders audited/.test(surface),'surface contract output should keep the audited-builder count');
 const credential=run(['tests/run-tool-credential-auth-guidance-tests.js']);
-assert(credential.includes('Credential/auth Tool Builder guidance validation passed.'),'credential/auth guidance regression should pass');
+assert(credential.includes('Credential/auth Tool Builder schema-record guidance validation passed.'),'credential/auth guidance regression should pass: '+credential.trim());
 const audit=run(['tests/run-tool-builder-implemented-audit-ledger-tests.js']);
 assert(audit.includes('Tool Builder implemented audit ledger validation passed.'),'implemented-builder audit ledger should pass');
 
