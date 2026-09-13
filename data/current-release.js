@@ -1,12 +1,12 @@
 'use strict';
 (function(root){
 const release=Object.freeze({
- version:'10.0.21',
- label:'v10.21',
+ version:'10.0.22',
+ label:'v10.22',
  phase:'product-hardening',
  phaseLabel:'Product Hardening',
  orangeBaseline:'v8.8',
- productHardeningLiveMode:'route-aware-compact-tool-library',
+ productHardeningLiveMode:'credential-auth-schema-surface-repair',
  productHardeningExtensions:Object.freeze([
   'data/product-hardening/credentials-auth-remining-v9.58.js',
   'data/product-hardening/proof-safety-controls-v9.58.js',
@@ -69,8 +69,9 @@ const release=Object.freeze({
   'data/product-hardening/route-layer-retirement-current.js',
   'data/product-hardening/tool-builder-backlog-current.js',
   'data/product-hardening/tool-builder-discovery-current.js',
- 'data/product-hardening/web-tool-guidance-current.js',
+  'data/product-hardening/web-tool-guidance-current.js',
   'data/product-hardening/credential-helper-tool-builders-current.js',
+  'data/product-hardening/credential-auth-guidance-current.js',
   'data/product-hardening/privesc-helper-tool-builders-current.js',
   'data/product-hardening/database-tool-builders-current.js',
   'data/product-hardening/web-tool-guidance-current.js'
@@ -82,6 +83,7 @@ const TOOL_LIBRARY_COMPACT_EXTENSIONS=Object.freeze([
  'data/product-hardening/tool-builder-backlog-current.js',
  'data/product-hardening/tool-builder-discovery-current.js',
  'data/product-hardening/credential-helper-tool-builders-current.js',
+ 'data/product-hardening/credential-auth-guidance-current.js',
  'data/product-hardening/privesc-helper-tool-builders-current.js',
  'data/product-hardening/database-tool-builders-current.js'
 ]);
@@ -119,7 +121,7 @@ function normalizeReportMarkdown(markdown){
 function finalizeProductHardeningExtensions(){
  const api=root.OBOL_NOTE_CARD_DISPOSITION_RECONCILIATION_API_V968;
  if(api&&typeof api.install==='function'){
-  try{api.install();root.__OBOL_PRODUCT_HARDENING_FINAL_CARD_DISPOSITION__='v10.21';}catch(_err){root.__OBOL_PRODUCT_HARDENING_FINAL_CARD_DISPOSITION_ERROR__=String(_err&&_err.message||_err);}
+  try{api.install();root.__OBOL_PRODUCT_HARDENING_FINAL_CARD_DISPOSITION__='v10.22';}catch(_err){root.__OBOL_PRODUCT_HARDENING_FINAL_CARD_DISPOSITION_ERROR__=String(_err&&_err.message||_err);}
  }
 }
 function schemaReady(){const schema=root.OBOL_TOOL_BUILDER_SCHEMA;return !!(schema&&typeof schema.register==='function');}
