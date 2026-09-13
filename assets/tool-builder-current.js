@@ -50,15 +50,24 @@ function conditionMatches(condition,values){
  if(Object.prototype.hasOwnProperty.call(condition,'truthy'))return truthy(value)===condition.truthy;
  return false;
 }
-function scrubGeneratedPlaceholders(builder,values){
+function touchedSet(touched){return touched instanceof Set?touched:new Set(Array.isArray(touched)?touched:[]);}
+// Anti-fabrication guard. Auto-seeded demo/workspace values (a demo password, a fake NT
+// hash, `domain.local`, `user`, a placeholder `hashes.txt`) must never make a command look
+// valid on their own — see docs/TOOL-BUILDER-BUILD-QUEUE.md and tests/run-v10.03-tests.js.
+// But a value the operator actually typed, loaded from a preset, or saved earlier is real
+// input and must survive: `keep` carries those field ids so they are never scrubbed. When no
+// touched set is supplied (direct/programmatic compile, Path/Card previews) every field is
+// treated as potentially seeded, preserving the original conservative behavior.
+function scrubGeneratedPlaceholders(builder,values,touched){
+ const keep=touchedSet(touched);
  const out={...(values||{})};
  const placeholderSecrets=new Set(['Password123!','8846f7eaee8fb117ad06bdd830b7586c',':8846f7eaee8fb117ad06bdd830b7586c']);
  for(const key of ['password','authPassword','proxyPassword','hash','bearerToken','cookie']){
-  if(placeholderSecrets.has(String(out[key]||'')))delete out[key];
+  if(!keep.has(key)&&placeholderSecrets.has(String(out[key]||'')))delete out[key];
  }
- if(out.domain==='domain.local')delete out.domain;
- if(out.username==='user')delete out.username;
- if(out.hashOrFile==='hashes.txt')delete out.hashOrFile;
+ if(!keep.has('domain')&&out.domain==='domain.local')delete out.domain;
+ if(!keep.has('username')&&out.username==='user')delete out.username;
+ if(!keep.has('hashOrFile')&&out.hashOrFile==='hashes.txt')delete out.hashOrFile;
  if(builder&&builder.id==='tb-nxc'&&out.authMode==='password'&&!out.username&&!out.password)out.authMode='anonymous';
  return out;
 }
@@ -88,11 +97,11 @@ function minimalDefaultToken(builder,token,values){
  }
  return false;
 }
-function normalizeValues(builder,values,context){
+function normalizeValues(builder,values,context,touched){
  builder=effectiveBuilder(builder);
  const s=schema();
  if(!s)throw new Error('Tool Builder schema is not loaded');
- const scrubbed=scrubGeneratedPlaceholders(builder,values||{});
+ const scrubbed=scrubGeneratedPlaceholders(builder,values||{},touched);
  return s.autofill(builder,context||{},scrubbed);
 }
 function validateRequired(builder,values){
@@ -137,13 +146,13 @@ function concatValue(token,values){
  }
  return out;
 }
-function compile(builder,values,context){
+function compile(builder,values,context,touched){
  builder=effectiveBuilder(builder);
  const s=schema();
  if(!s)throw new Error('Tool Builder schema is not loaded');
  const errors=s.validateBuilder(builder);
  if(errors.length)throw new Error(errors.join('; '));
- const resolved=normalizeValues(builder,values,context);
+ const resolved=normalizeValues(builder,values,context,touched);
  const missing=validateRequired(builder,resolved);
  if(missing.length)throw new Error('Missing required fields: '+missing.join(', '));
  const parts=[shellQuote(commandExecutable(builder,resolved))];
@@ -266,24 +275,24 @@ function highlightCommand(cmd){
   return '<span class="'+cls+'">'+esc(tok)+'</span>';
  }).join(' ');
 }
-function commandHtml(builder,resolved,context){
+function commandHtml(builder,resolved,context,touched){
  let preview='',valid=true;
- try{preview=compile(builder,resolved,context);}catch(err){valid=false;}
+ try{preview=compile(builder,resolved,context,touched);}catch(err){valid=false;}
  const body=valid?highlightCommand(preview):'<span class="tb-cmd-empty">'+esc(missingHint(builder,resolved))+'</span>';
  return '<section class="cmd-block tool-builder-preview tb-command" aria-live="polite"><div class="tb-command-head"><span class="tb-command-lbl"><span class="tb-dot"></span>Generated command</span><button type="button" class="copy-btn tool-builder-copy">Copy</button></div><code data-valid="'+(valid?'true':'false')+'">'+body+'</code><p class="tb-command-foot note">Obol builds the minimal valid command for the selected action and only adds flags through the controls you choose. Review and run it yourself in an authorized environment; it never executes commands. Paste output back into Evidence.</p></section>';
 }
-function html(builder,context,values){
+function html(builder,context,values,touched){
  builder=effectiveBuilder(builder);
  const s=schema();
  if(!s)throw new Error('Tool Builder schema is not loaded');
  const errors=s.validateBuilder(builder);
  if(errors.length)throw new Error(errors.join('; '));
- const resolved=normalizeValues(builder,values,context);
+ const resolved=normalizeValues(builder,values,context,touched);
  const hiddenActionId=guideActionField(builder);
  return '<section class="card tool-builder-current" data-tool-builder="'+esc(builder.id)+'" data-tool="'+esc(builder.tool)+'"><div class="card-body">'+
   '<div class="tool-builder-head"><div><span class="eyebrow30">Tool Builder</span><h3>'+esc(builder.title)+'</h3><p class="hint">'+esc(builder.summary)+'</p></div><span class="badge tool-exec-badge" title="Recommended run environment">'+esc(builder.executionContext||'any')+'</span></div>'+
   renderModeSelector(builder,resolved)+
-  commandHtml(builder,resolved,context)+
+  commandHtml(builder,resolved,context,touched)+
   formHtml(builder,resolved,hiddenActionId)+
   renderReadingOutput(builder,resolved)+
   '<details class="tool-builder-proof"><summary>Evidence and report boundary</summary><p class="hint"><b>Expected Evidence:</b> '+esc(builder.evidence.expectation)+'</p><p class="hint"><b>Proof boundary:</b> '+esc(builder.evidence.proofBoundary)+'</p><p class="hint"><b>Manual outcome:</b> '+esc(builder.manualOutcome.boundary)+'</p></details>'+
@@ -315,10 +324,16 @@ function syncGuide(shell,builder,values){
  const ctx=shell.querySelector('.tb-mode-ctx');if(ctx)ctx.innerHTML='<b>Use when</b> '+esc(active.useWhen||'')+' <b>Requires</b> '+esc(active.requires||'');
  const cells=shell.querySelectorAll('.tb-read-cell p');if(cells.length>=3){cells[0].textContent=active.proves||'';cells[1].textContent=active.notProve||'';cells[2].textContent=active.evidence||'';}
 }
-function mount(container,builder,context,values){
+function mount(container,builder,context,values,options){
  builder=effectiveBuilder(builder);
  if(!container)throw new Error('Tool Builder mount requires a container');
- container.innerHTML=html(builder,context,values);
+ // Fields the operator has actively provided (typed, loaded from a preset/snippet, or
+ // restored from a previous save) are real input and are exempt from the placeholder scrub.
+ // Seed it with any caller-declared touched fields (e.g. values restored from localStorage)
+ // so a saved `hashes.txt`/password survives a reload instead of being scrubbed to empty.
+ const touched=touchedSet(options&&options.touched);
+ const markTouched=id=>{if(id)touched.add(id);};
+ container.innerHTML=html(builder,context,values,touched);
  const hiddenActionId=guideActionField(builder);
  const shell=container.querySelector('[data-tool-builder="'+builder.id+'"]')||container.firstElementChild;
  const form=shell&&shell.querySelector('.tool-builder-form');
@@ -329,14 +344,15 @@ function mount(container,builder,context,values){
  function refresh(){
   if(!form||!code)return;
   const current=collect(form,builder);applyVisibility(form,builder,current,hiddenActionId);
-  try{const cmd=compile(builder,current,context);code.dataset.valid='true';code.innerHTML=highlightCommand(cmd);}
+  try{const cmd=compile(builder,current,context,touched);code.dataset.valid='true';code.innerHTML=highlightCommand(cmd);}
   catch(err){code.dataset.valid='false';code.innerHTML='<span class="tb-cmd-empty">'+esc(missingHint(builder,current))+'</span>';}
   syncGuide(shell,builder,current);
  }
- if(form)form.addEventListener('input',refresh);
- if(form)form.addEventListener('change',refresh);
- presets.forEach(button=>button.addEventListener('click',()=>{if(!form)return;const field=button.dataset.toolBuilderPresetField||'action';const value=button.dataset.toolBuilderPreset;const el=form.elements&&form.elements.namedItem(field);if(!el)return;el.value=value;try{el.dispatchEvent(new Event('change',{bubbles:true}));}catch(_err){}refresh();}));
- snippets.forEach(button=>button.addEventListener('click',()=>{if(!form)return;const field=button.dataset.toolBuilderSnippetField;const value=button.dataset.toolBuilderSnippet;const el=form.elements&&form.elements.namedItem(field);if(!el)return;el.value=(String(el.value).trim()?String(el.value).replace(/\s+$/,'')+'\n':'')+value;try{el.focus();el.dispatchEvent(new Event('input',{bubbles:true}));}catch(_err){}refresh();}));
+ function onEdit(event){const name=event&&event.target&&event.target.name;if(name)markTouched(name);refresh();}
+ if(form)form.addEventListener('input',onEdit);
+ if(form)form.addEventListener('change',onEdit);
+ presets.forEach(button=>button.addEventListener('click',()=>{if(!form)return;const field=button.dataset.toolBuilderPresetField||'action';const value=button.dataset.toolBuilderPreset;const el=form.elements&&form.elements.namedItem(field);if(!el)return;el.value=value;markTouched(field);try{el.dispatchEvent(new Event('change',{bubbles:true}));}catch(_err){}refresh();}));
+ snippets.forEach(button=>button.addEventListener('click',()=>{if(!form)return;const field=button.dataset.toolBuilderSnippetField;const value=button.dataset.toolBuilderSnippet;const el=form.elements&&form.elements.namedItem(field);if(!el)return;el.value=(String(el.value).trim()?String(el.value).replace(/\s+$/,'')+'\n':'')+value;markTouched(field);try{el.focus();el.dispatchEvent(new Event('input',{bubbles:true}));}catch(_err){}refresh();}));
  if(copy)copy.addEventListener('click',()=>{
   if(!code||code.dataset.valid==='false')return;
   const value=code.textContent||'';
@@ -349,7 +365,7 @@ root.OBOL_TOOL_BUILDER=Object.freeze({version:'1.3.0',effectiveBuilder,shellQuot
 const __obolOwnerGuideBase=root.OBOL_TOOL_BUILDER;
 function __obolOwnerGuideProfile(builderId){const keys=Object.keys(root||{});for(const key of keys){const owner=root[key];if(owner&&owner.profiles&&owner.profiles[builderId])return owner.profiles[builderId];}return null;}
 function __obolWithOwnerGuide(builder){const effective=__obolOwnerGuideBase.effectiveBuilder(builder)||builder;const id=(effective&&effective.id)||(builder&&builder.id);const profile=__obolOwnerGuideProfile(id);if(profile&&profile.operatorGuide&&!effective.operatorGuide)return {...effective,operatorGuide:profile.operatorGuide};return effective;}
-function __obolHtmlWithOwnerGuide(builder,context,values){return __obolOwnerGuideBase.html(__obolWithOwnerGuide(builder),context,values);}
-function __obolMountWithOwnerGuide(container,builder,context,values){return __obolOwnerGuideBase.mount(container,__obolWithOwnerGuide(builder),context,values);}
+function __obolHtmlWithOwnerGuide(builder,context,values,touched){return __obolOwnerGuideBase.html(__obolWithOwnerGuide(builder),context,values,touched);}
+function __obolMountWithOwnerGuide(container,builder,context,values,options){return __obolOwnerGuideBase.mount(container,__obolWithOwnerGuide(builder),context,values,options);}
 root.OBOL_TOOL_BUILDER=Object.freeze(Object.assign({},__obolOwnerGuideBase,{effectiveBuilder:__obolWithOwnerGuide,html:__obolHtmlWithOwnerGuide,mount:__obolMountWithOwnerGuide}));
 })(typeof window!=='undefined'?window:globalThis);
