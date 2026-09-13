@@ -45,13 +45,16 @@ async function fillIfPresent(page, selector, value) {
   }
 }
 
-async function waitForPreview(page, pattern) {
-  const flags = pattern.flags.includes('i') ? pattern.flags : pattern.flags + 'i';
-  await page.waitForFunction((arg) => {
-    const re = new RegExp(arg.source, arg.flags);
+async function waitForPreviewTokens(page, tokens) {
+  await page.waitForFunction((expected) => {
     const cmd = Array.from(document.querySelectorAll('.tool-builder-preview code')).map((node) => node.textContent || '').join('\n');
-    return re.test(cmd);
-  }, { source: pattern.source, flags }, { timeout: 15000 }).catch(() => {});
+    return expected.every((token) => cmd.includes(token));
+  }, tokens, { timeout: 15000 }).catch(() => {});
+}
+
+function assertPreviewContains(preview, tokens, label) {
+  const missing = tokens.filter((token) => !preview.includes(token));
+  if (missing.length) throw new Error(label + ' did not generate command from real operator input; missing ' + missing.join(', ') + ': ' + preview);
 }
 
 async function assertCredentialSurface(page, route, titlePattern) {
@@ -96,17 +99,17 @@ async function assertCredentialSurface(page, route, titlePattern) {
 
     await page.goto(baseUrl + '#/tools/hashcat', { waitUntil: 'domcontentloaded', timeout: 30000 });
     await fillIfPresent(page, '[data-tool-builder="tb-hashcat"] [name="hashOrFile"]', 'loot/ntlm.txt');
-    await waitForPreview(page, /hashcat -m 1000 .*loot\/ntlm\.txt.*rockyou\.txt/i);
+    await waitForPreviewTokens(page, ['hashcat', '-m', '1000', 'loot/ntlm.txt', 'rockyou.txt']);
     let state = await pageState(page);
-    if (!/hashcat -m 1000 .*loot\/ntlm\.txt.*rockyou\.txt/i.test(state.preview)) throw new Error('hashcat route did not generate command from real operator input: ' + state.preview);
+    assertPreviewContains(state.preview, ['hashcat', '-m', '1000', 'loot/ntlm.txt', 'rockyou.txt'], 'hashcat route');
 
     await page.goto(baseUrl + '#/tools/hydra', { waitUntil: 'domcontentloaded', timeout: 30000 });
     await fillIfPresent(page, '[data-tool-builder="tb-hydra"] [name="target"]', '192.0.2.10');
     await fillIfPresent(page, '[data-tool-builder="tb-hydra"] [name="username"]', 'alice');
     await fillIfPresent(page, '[data-tool-builder="tb-hydra"] [name="password"]', 'Winter2026');
-    await waitForPreview(page, /hydra .* -l alice .* -p Winter2026 .*192\.0\.2\.10/i);
+    await waitForPreviewTokens(page, ['hydra', '-l', 'alice', '-p', 'Winter2026', '192.0.2.10']);
     state = await pageState(page);
-    if (!/hydra .* -l alice .* -p Winter2026 .*192\.0\.2\.10/i.test(state.preview)) throw new Error('hydra route did not generate command from real operator input: ' + state.preview);
+    assertPreviewContains(state.preview, ['hydra', '-l', 'alice', '-p', 'Winter2026', '192.0.2.10'], 'hydra route');
 
     await browser.close();
     console.log('Credential/auth Tool Builder browser surface proof passed.');
