@@ -56,7 +56,7 @@ fs.mkdirSync(outputDir, { recursive: true });
 const routes = [
   { id: 'home', hash: '#/home', marker: /Home/i, requestBudget: 88 },
   { id: 'targets', hash: '#/boxes', marker: /target/i, requestBudget: 99 },
-  { id: 'evidence', hash: '#/intake', marker: /evidence/i, requestBudget: 95 },
+  { id: 'evidence', hash: '#/intake', marker: /evidence/i, requestBudget: 96 }, // +1 for assets/tool-builder-credential-evidence-current.js (credential/auth Evidence ingestion, v10.23)
   { id: 'next-steps', hash: '#/path', marker: /(next|path|recommend)/i, requestBudget: 95 },
   { id: 'report', hash: '#/report', marker: /report/i, requestBudget: 89 },
   { id: 'dashboard', hash: '#/dashboard', marker: /Product Hardening/i, currentDashboard: true, settleMs: 5200, requestBudget: 89 }
