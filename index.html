@@ -1,0 +1,152 @@
+<!doctype html>
+<html lang="en" class="obol-booting" data-obol-boot="loading">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>OBOL — Offensive Box Operations Ledger</title>
+  <meta name="description" content="Evidence-driven OSCP operator companion. A browser-local, static-site edition of the obol engine: proof-gated next-move coach, conservative parsers, BloodHound analysis, checklist, and OSCP reporting. No backend, no execution.">
+  <link rel="stylesheet" href="assets/css/obol.css?v=8cb40439">
+  <script>
+    /* Pre-paint skin: set before first paint so there is no flash. Tiny + synchronous. */
+    (function () {
+      try {
+        var p = JSON.parse(localStorage.getItem('obol-prefs') || '{}');
+        /* Obol (plain OLED + emerald) is the out-of-the-box skin; a stored choice always wins.
+           Neon (synthwave sunset) and the others remain selectable in the ⚙ panel. */
+        document.documentElement.setAttribute('data-skin', (p && p.skin) || 'obol');
+        var a = parseFloat(localStorage.getItem('obol.surface-alpha'));
+        if (isNaN(a)) a = 0.3; /* fade surfaces so the motion background shows through */
+        if (a >= 0 && a <= 1) document.documentElement.style.setProperty('--surface-alpha', String(a));
+      } catch (e) {}
+    })();
+    /* Boot guard: if boot never commits, reveal the page anyway so it can't hang hidden. */
+    setTimeout(function () {
+      if (document.documentElement.getAttribute('data-obol-boot') === 'loading') {
+        document.documentElement.classList.remove('obol-booting');
+        document.documentElement.setAttribute('data-obol-boot', 'timeout');
+      }
+    }, 8000);
+  </script>
+</head>
+<body>
+  <div id="app">
+    <header class="appbar">
+      <button id="nav-toggle" class="nav-toggle" type="button" aria-label="Open engagement panel" aria-controls="sidebar" aria-expanded="false">
+        <span class="nav-toggle-bars" aria-hidden="true"></span>
+      </button>
+      <div class="brand"><svg class="coin" viewBox="0 0 24 24" width="27" height="27" aria-hidden="true">
+          <defs><radialGradient id="obolCoin" cx="38%" cy="34%" r="72%">
+            <stop offset="0" stop-color="#FFF1A8"/><stop offset="55%" stop-color="#FFD34D"/><stop offset="100%" stop-color="#E6A21C"/>
+          </radialGradient></defs>
+          <circle cx="12" cy="12" r="10" fill="url(#obolCoin)" stroke="#B9770E" stroke-width="1.5"/>
+          <circle cx="12" cy="12" r="7.2" fill="none" stroke="#B9770E" stroke-width="0.8" opacity="0.5"/>
+          <path d="M12 7 L16 12 L12 17 L8 12 Z" fill="#B9770E"/>
+        </svg>
+        <div><h1>OBOL</h1><div class="tagline">Offensive Box Operations Ledger</div></div>
+      </div>
+      <nav class="mainnav" aria-label="Primary">
+        <a data-nav href="#/home">Engagements</a>
+        <a data-nav href="#/targets">Targets</a>
+        <a data-nav href="#/evidence">Evidence</a>
+        <a data-nav href="#/path">Next Steps</a>
+        <a data-nav href="#/playbooks">Playbooks</a>
+        <a data-nav href="#/tools">Tools</a>
+        <a data-nav href="#/map">Map</a>
+        <a data-nav href="#/domain">Domain</a>
+        <a data-nav href="#/creds">Creds</a>
+        <a data-nav href="#/checklist">Checklist</a>
+        <a data-nav href="#/findings">Findings</a>
+        <a data-nav href="#/history">Run Log</a>
+        <a data-nav href="#/scoreboard">Scoreboard</a>
+        <a data-nav href="#/report">Report</a>
+      </nav>
+      <button id="nav-search" class="nav-search" type="button" aria-label="Search commands">
+        <svg viewBox="0 0 24 24" width="20" height="20" aria-hidden="true" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><circle cx="11" cy="11" r="7"/><path d="m20 20-3.6-3.6"/></svg>
+      </button>
+    </header>
+
+    <aside id="sidebar">
+      <div class="side-h">Engagement</div>
+      <div class="eng-row">
+        <select id="eng-select" aria-label="Active engagement"></select>
+        <button id="eng-new" class="btn-mini" title="New engagement">+</button>
+      </div>
+
+      <div class="side-h">Parameters</div>
+      <div id="params"></div>
+
+      <div class="side-h">Credentials <span class="side-h-note">click to use in commands</span></div>
+      <div id="cred-switch" class="cred-switch"></div>
+
+      <div class="side-h">Facts</div>
+      <ul id="facts-list"></ul>
+      <div id="fact-pick" class="fact-pick"></div>
+    </aside>
+
+    <main id="view" role="main"><!-- routes render here (once per navigation) --></main>
+  </div>
+  <div id="nav-scrim" class="nav-scrim" hidden></div>
+
+  <!-- Mobile bottom tab bar (shown only on narrow screens; primary sections + a More sheet). -->
+  <nav id="tabbar" class="tabbar" aria-label="Sections">
+    <a class="tab" href="#/home" data-tab><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M4 11 12 4l8 7"/><path d="M6 10v9h12v-9"/></svg><span>Home</span></a>
+    <a class="tab" href="#/path" data-tab><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="12" cy="12" r="8.5"/><path d="M15.5 8.5 10.5 10.5 8.5 15.5 13.5 13.5Z" fill="currentColor" stroke="none"/></svg><span>Coach</span></a>
+    <a class="tab" href="#/evidence" data-tab><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="6" y="4" width="12" height="16" rx="2"/><path d="M9.5 4h5v2.6h-5z"/><path d="M9 11h6M9 14.5h4"/></svg><span>Evidence</span></a>
+    <a class="tab" href="#/tools" data-tab><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M15 6.4a3.5 3.5 0 0 0-4.6 4.5L4.7 16.6 7.4 19.3 13 13.6a3.5 3.5 0 0 0 4.5-4.6l-2.1 2.1-1.9-.5-.5-1.9z"/></svg><span>Tools</span></a>
+    <button class="tab" id="tab-more" type="button" aria-haspopup="true" aria-expanded="false"><svg viewBox="0 0 24 24" fill="currentColor" stroke="none" aria-hidden="true"><circle cx="5.5" cy="12" r="1.7"/><circle cx="12" cy="12" r="1.7"/><circle cx="18.5" cy="12" r="1.7"/></svg><span>More</span></button>
+  </nav>
+  <div id="more-sheet" class="more-sheet" role="menu" aria-label="More sections" aria-hidden="true">
+    <div class="more-grip" aria-hidden="true"></div>
+    <div class="more-title">More sections</div>
+    <div class="more-grid">
+      <a href="#/targets" role="menuitem">Targets</a>
+      <a href="#/playbooks" role="menuitem">Playbooks</a>
+      <a href="#/map" role="menuitem">Map</a>
+      <a href="#/domain" role="menuitem">Domain</a>
+      <a href="#/creds" role="menuitem">Creds</a>
+      <a href="#/checklist" role="menuitem">Checklist</a>
+      <a href="#/findings" role="menuitem">Findings</a>
+      <a href="#/scoreboard" role="menuitem">Scoreboard</a>
+      <a href="#/report" role="menuitem">Report</a>
+    </div>
+  </div>
+
+  <!-- Critical path only. Everything else is route-lazy (assets/ui/lazy.js). -->
+  <script defer src="assets/engine/facts.js?v=23a86e35"></script>
+  <script defer src="assets/engine/phases.js?v=aa0436b8"></script>
+  <script defer src="assets/engine/pack.js?v=8f2a2296"></script>
+  <script defer src="assets/engine/profile.js?v=5bcfaa2e"></script>
+  <script defer src="assets/engine/command.js?v=79f40783"></script>
+  <script defer src="assets/engine/workspace.js?v=a5ee5f7d"></script>
+  <script defer src="assets/engine/loot.js?v=954b1ab5"></script>
+  <script defer src="assets/engine/chain.js?v=0cdcc927"></script>
+  <script defer src="data/findings-catalog.js?v=17224670"></script>
+  <script defer src="data/narratives.js?v=2750a92a"></script>
+  <script defer src="assets/engine/findings.js?v=074e1a5a"></script>
+  <script defer src="data/packs-bundle.js?v=0a5206ed"></script>
+  <script defer src="assets/engine/packs.js?v=a90dc37a"></script>
+  <script defer src="assets/ui/util.js?v=0684bc04"></script>
+  <script defer src="assets/ui/mobile.js?v=912b45f0"></script>
+  <script defer src="assets/ui/factpick.js?v=012097b2"></script>
+  <script defer src="assets/ui/store.js?v=56727f66"></script>
+  <script defer src="assets/ui/credbar.js?v=6be7d2aa"></script>
+  <script defer src="assets/ui/chainview.js?v=71f88ec4"></script>
+  <script defer src="assets/ui/graphview.js?v=aa1d3a74"></script>
+  <script defer src="assets/ui/graphtip.js?v=bb9b0267"></script>
+  <script defer src="assets/ui/ingest.js?v=f1906daf"></script>
+  <script defer src="assets/ui/router.js?v=df94118b"></script>
+  <script defer src="assets/ui/lazy.js?v=d9bfca41"></script>
+  <script defer src="assets/ui/palette.js?v=801218cc"></script>
+  <script defer src="assets/ui/routes/home.js?v=83862ebb"></script>
+  <script defer src="assets/ui/routes/targets.js?v=80eb464c"></script>
+  <script defer src="assets/ui/routes/evidence.js?v=1f6ca244"></script>
+  <script defer src="assets/ui/routes/path.js?v=2e2d5c98"></script>
+  <script defer src="assets/ui/boot.js?v=3afa85e5"></script>
+
+  <!-- Presentation-only, loaded after the critical path so the boot budget is untouched:
+       motion background, coin bursts on genuine proof, and the ⚙ appearance settings. -->
+  <script defer src="assets/ui/backdrop.js?v=02051310"></script>
+  <script defer src="assets/ui/coin.js?v=fd2d6b47"></script>
+  <script defer src="assets/ui/settings.js?v=ddbf2600"></script>
+</body>
+</html>
