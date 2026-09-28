@@ -752,7 +752,7 @@
       if (items.length) mk(pair[0], { principals: items.slice(), count: items.length });
     });
 
-    // attack paths (the LEAD) — shape matches bloodhound.py:902-908
+    // attack paths (the LEAD)
     var chains = paths || [];
     var first = null;
     if (chains && !Array.isArray(chains)) { first = chains.first || null; chains = chains.paths || []; }
@@ -847,7 +847,7 @@
   }
 
   // Parse one or more uploaded files (a .zip export, or individual .json files) into a domain
-  // summary matching bloodhound.py:741-758. `files` is an array of {name, arrayBuffer|text}.
+  // summary. `files` is an array of {name, arrayBuffer|text}.
   // Async because unzipping is async; the JSON-only path never touches JSZip. The returned
   // summary retains its transient `_graph` so ownedPaths/deriveCensus can read it — call
   // OBOL.bloodhound.dropGraph(summary) before persisting.

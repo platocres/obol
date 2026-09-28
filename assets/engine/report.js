@@ -225,7 +225,7 @@
   }
 
   // ─────────────────────────────────────────────────────────────────────────
-  // 3. proof labels (UI-facing port of proof.py's interactivity discipline)
+  // 3. proof labels (UI-facing interactivity discipline)
   // ─────────────────────────────────────────────────────────────────────────
   function isInteractiveShell(command) {
     var low = String(command || '').toLowerCase();
