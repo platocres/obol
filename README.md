@@ -42,10 +42,12 @@ and panicking about screenshots the night before the exam. Obol takes that load 
 
 - **Shows you the whole path.** A pan-and-zoom attack-path graph lays out what you've proven and what
   each next move would unlock, with hover cards that explain each step and hand you the command.
+  <img width="927" height="810" alt="image" src="https://github.com/user-attachments/assets/044370ca-e4ad-4404-9bad-2f398c9a576c" />
+  
 - **Writes your report.** As you capture flags and findings, Obol assembles an OSCP-style report and
   exports it as Markdown, HTML, PDF, or Word — with the proof discipline and redaction the exam
   requires.
-  <img width="927" height="810" alt="image" src="https://github.com/user-attachments/assets/044370ca-e4ad-4404-9bad-2f398c9a576c" />
+  <img width="654" height="763" alt="image" src="https://github.com/user-attachments/assets/211177e5-d3eb-463c-84e4-43ca25ee599c" />
 
 - **Runs entirely on your machine.** It's a static web page. Your targets, creds, and notes live in
   your browser only. You can even save the page and use it offline.
