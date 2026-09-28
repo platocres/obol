@@ -167,7 +167,7 @@ the console green, amber, or several other themes.
 
 ---
 
-## BloodHound domain analysis
+## BloodHound Domain Analysis
 
 Drop a SharpHound `.zip` (or BloodHound-CE `.json` files) on the **Domain** tab and Obol parses the
 whole collection in your browser, with nothing uploaded anywhere. From that one export it does two
@@ -256,7 +256,7 @@ Tests live in `tests/` (a pure-Node engine suite and a headless-browser smoke of
 
 ---
 
-## Status and direction
+## Status and Direction
 
 Obol is under active development, a growing companion rather than a finished product. The methodology
 packs, parsers, and coaching keep improving, and you should expect the occasional rough edge in the
