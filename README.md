@@ -23,7 +23,7 @@ start.
 
 ---
 
-## What to expect
+## What To Expect
 
 Studying for the OSCP (or grinding HTB / TryHackMe) is really an exercise in *not getting
 lost*: you're staring at an open port wondering what to run, forgetting which creds worked where,
@@ -51,21 +51,21 @@ and panicking about screenshots the night before the exam. Obol takes that load 
 
 ---
 
-## A look inside
+## A Look Inside
 
-**The coach (the site's "Next Steps" tab): your ranked, copy-ready next moves**
+**Next Steps: Your ranked, copy-ready next moves**
 
 <p align="center">
   <img src="https://github.com/user-attachments/assets/3ab788be-066e-4b31-bed6-6ab2f87e33bc" alt="The coach ranking the next moves for a target, each with a copy button and a one-line why" width="92%">
 </p>
 
-**Proof-gated: Obol only records what your output actually shows**
+**Proof-Gated: Obol only records what your output actually shows**
 
 <p align="center">
   <img src="https://github.com/user-attachments/assets/b85ed760-afb8-4b2e-ae40-e26951d59e47" alt="Evidence view turning pasted tool output into proven facts" width="92%">
 </p>
 
-**Everything tracked: hosts, services, credentials, and domain**
+**Everything Tracked: Hosts, services, credentials, and domain**
 
 <p align="center">
   <img src="https://github.com/user-attachments/assets/68b70b94-7450-4ca7-a1d6-58b3d8208c3e" alt="The engagement map of hosts, services, credentials and domain" width="92%">
