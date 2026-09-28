@@ -47,7 +47,7 @@ and panicking about screenshots the night before the exam. Obol takes that load 
 - **Writes your report.** As you capture flags and findings, Obol assembles an OSCP-style report and
   exports it as Markdown, HTML, PDF, or Word — with the proof discipline and redaction the exam
   requires.
-  <img width="654" height="763" alt="image" src="https://github.com/user-attachments/assets/211177e5-d3eb-463c-84e4-43ca25ee599c" />
+  <img width="654" height="763" alt="image" src="https://github.com/user-attachments/assets/bde12604-c628-4950-b96d-ee3b1f255d09" />
 
 - **Runs entirely on your machine.** It's a static web page. Your targets, creds, and notes live in
   your browser only. You can even save the page and use it offline.
