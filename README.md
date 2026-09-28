@@ -81,7 +81,7 @@ and panicking about screenshots the night before the exam. Obol takes that load 
 and the methodology packs:**
 
 <p align="center">
-  <img src="https://github.com/user-attachments/assets/044370ca-e4ad-4404-9bad-2f398c9a576c" alt="Attack-path graph with technique-named nodes, a filter legend, and hover cards" width="100%">
+  <img src="https://github.com/user-attachments/assets/044370ca-e4ad-4404-9bad-2f398c9a576c" alt="Attack-path graph with technique-named nodes, a filter legend, and hover cards" width="75%">
 </p>
 
 ---
@@ -138,7 +138,7 @@ moment you are.
    When you're done, **Report** exports an OSCP-style writeup (secrets redacted by default).
 
 <p align="center">
-  <img src="https://github.com/user-attachments/assets/bde12604-c628-4950-b96d-ee3b1f255d09" alt="An exported OSCP-style report with terminal transcript and redacted secrets" width="100%">
+  <img src="https://github.com/user-attachments/assets/bde12604-c628-4950-b96d-ee3b1f255d09" alt="An exported OSCP-style report with terminal transcript and redacted secrets" width="70%">
 </p>
 
 ---
