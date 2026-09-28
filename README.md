@@ -29,16 +29,24 @@ and panicking about screenshots the night before the exam. Obol takes that load 
 - **Tells you what to do next.** Instead of a giant cheatsheet, Obol looks at what you've proven
   about a target so far and gives you a short, ranked list of the *next* commands worth running —
   each ready to copy, with a one-line "why" and an honest note on what it does **not** prove.
+  <img width="1887" height="932" alt="image" src="https://github.com/user-attachments/assets/3ab788be-066e-4b31-bed6-6ab2f87e33bc" />
+
 - **Keeps you honest.** Obol only marks something as true when your tool output actually shows it.
   An open port is not a shell. A crackable hash is not a login. This is exactly the discipline the
   exam graders (and good pentesters) expect.
+  <img width="1621" height="736" alt="image" src="https://github.com/user-attachments/assets/b85ed760-afb8-4b2e-ae40-e26951d59e47" />
+  
 - **Remembers everything.** Which hosts are up, which services are open, which creds are valid where,
   what you've already tried — all tracked so you don't re-scan the same box at 3am.
+  <img width="1897" height="904" alt="image" src="https://github.com/user-attachments/assets/68b70b94-7450-4ca7-a1d6-58b3d8208c3e" />
+
 - **Shows you the whole path.** A pan-and-zoom attack-path graph lays out what you've proven and what
   each next move would unlock, with hover cards that explain each step and hand you the command.
 - **Writes your report.** As you capture flags and findings, Obol assembles an OSCP-style report and
   exports it as Markdown, HTML, PDF, or Word — with the proof discipline and redaction the exam
   requires.
+  <img width="927" height="810" alt="image" src="https://github.com/user-attachments/assets/044370ca-e4ad-4404-9bad-2f398c9a576c" />
+
 - **Runs entirely on your machine.** It's a static web page. Your targets, creds, and notes live in
   your browser only. You can even save the page and use it offline.
 
