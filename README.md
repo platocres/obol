@@ -197,7 +197,7 @@ edges it can abuse, so a chain like *Exchange Windows Permissions holds WriteDac
 reads at a glance.
 
 <p align="center">
-  <img src="screenshots/bloodhound-graph.png" alt="BloodHound attack-path graph with a hover card showing a group's full name and its abusable relationships" width="100%">
+  <img width="2072" height="884" alt="image" src="https://github.com/user-attachments/assets/3ed9ce5c-0fcf-441e-9151-503e7d35a1a4" />
 </p>
 
 Second, it answers a board of **PlumHound-style high-value queries** from the same data: who can
