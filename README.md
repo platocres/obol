@@ -77,18 +77,12 @@ and panicking about screenshots the night before the exam. Obol takes that load 
   <img src="screenshots/findings.png" alt="The Findings view listing catalogued findings with severity, evidence, and remediation" width="92%">
 </p>
 
-<table>
-  <tr>
-    <td width="50%" valign="top" align="center">
-      <b>The attack-path graph</b><br><br>
-      <img src="https://github.com/user-attachments/assets/044370ca-e4ad-4404-9bad-2f398c9a576c" alt="Attack-path graph with technique-named nodes, a filter legend, and hover cards" width="100%">
-    </td>
-    <td width="50%" valign="top" align="center">
-      <b>OSCP report export</b><br><br>
-      <img src="https://github.com/user-attachments/assets/bde12604-c628-4950-b96d-ee3b1f255d09" alt="An exported OSCP-style report with terminal transcript and redacted secrets" width="100%">
-    </td>
-  </tr>
-</table>
+**The Attack-Path Graph: The Next Steps and per-target pages render a live attack-path graph, projected from your facts
+and the methodology packs:**
+
+<p align="center">
+  <img src="https://github.com/user-attachments/assets/044370ca-e4ad-4404-9bad-2f398c9a576c" alt="Attack-path graph with technique-named nodes, a filter legend, and hover cards" width="100%">
+</p>
 
 ---
 
@@ -143,6 +137,10 @@ moment you are.
 6. **Capture flags and report.** The **Scoreboard** tracks your local/root flags and OSCP points.
    When you're done, **Report** exports an OSCP-style writeup (secrets redacted by default).
 
+<p align="center">
+  <img src="https://github.com/user-attachments/assets/bde12604-c628-4950-b96d-ee3b1f255d09" alt="An exported OSCP-style report with terminal transcript and redacted secrets" width="100%">
+</p>
+
 ---
 
 ## The tabs, in plain terms
@@ -166,21 +164,6 @@ moment you are.
 **Pro tip:** press **⌘K / Ctrl+K** anywhere to fuzzy-search every command; Enter copies it with
 your target and creds already filled in. A skin picker in the settings menu (bottom-right) lets you set
 the console green, amber, or several other themes.
-
----
-
-## The attack-path graph
-
-The **Next Steps** and per-target pages render a live attack-path graph, projected from your facts
-and the methodology packs:
-
-- **Nodes are named for techniques**, not raw fact keys: a milestone reads *DCSync Replication
-  Abuse*, not `loot.ntds`.
-- **A colour legend doubles as filters.** Each of the five node states (do-next, proven, done,
-  pending goal, blocked) is a toggle; click one to hide that category and focus the view.
-- **Hover any node** for a card explaining what it is, why it matters, and the exact command to run,
-  with a one-click copy button.
-- **Pan, zoom, and fit** for large domains, and toggle the whole methodology on to see every branch.
 
 ---
 
