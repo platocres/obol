@@ -11,6 +11,7 @@
 the hacking in your own terminal — Obol is the calm voice next to you that says *"here's the
 next command to try, and here's why,"* keeps track of what you've actually proven about a box,
 and quietly assembles your report as you go.
+<img width="1887" height="937" alt="image" src="https://github.com/user-attachments/assets/9494289d-84bf-4169-86eb-86ad1362e5d9" />
 
 No install. No login. No backend. Nothing you type ever leaves your browser. Open the page and
 start.
