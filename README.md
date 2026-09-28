@@ -1,4 +1,4 @@
-# Obol: your OSCP prep companion in the browser
+# Obol: Your OSCP prep companion in the browser
 
 [![License: AGPL v3](https://img.shields.io/badge/license-AGPL%20v3-2ea44f?style=flat-square)](LICENSE)
 ![Backend: none](https://img.shields.io/badge/backend-none-informational?style=flat-square)
@@ -9,7 +9,7 @@
 
 **Obol is a free, browser-based sidekick for hacking practice boxes and exams.** You still do
 the hacking in your own terminal. Obol is the calm voice next to you that says *"here's the
-next command to try, and here's why,"* keeps track of what you've actually proven about a box,
+next command to try, and here's why,"* as it keeps track of what you've actually proven about a box,
 and quietly assembles your report as you go.
 
 <p align="center">
@@ -117,7 +117,7 @@ moment you are.
 
 ---
 
-## A quick walkthrough
+## A Quick Walkthrough
 
 1. **Start an engagement.** On the **Engagements** screen, pick the platform you're working on:
    HTB, OffSec/OSCP, OffSec Labs (PWK), TryHackMe, HTB CPTS, CTF, or OSWP. Your choice tunes Obol
@@ -276,7 +276,7 @@ engagement.
 
 ---
 
-## Legal and ethics
+## Legal and Ethics
 
 Obol is for **authorized** labs, training, CTFs, exam preparation, and engagements where you have
 explicit permission to test. Don't point it at anything you're not allowed to touch.
