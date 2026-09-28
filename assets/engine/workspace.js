@@ -5,7 +5,7 @@
  * file landed and how to attach it. obol web never touches the filesystem — this only *generates*
  * paths and a one-time scaffold command; the operator runs it and attaches the results.
  *
- * The attacker box is Kali/Linux, so paths are POSIX. The layout
+ * The attacker box is Kali/Linux, so paths are POSIX. The layout follows a `scans/`
  * convention (tool output → scans/). Default root is box-centric on labs, engagement-centric on
  * exams. Pure + self-contained (window / worker / node).
  */
@@ -34,15 +34,12 @@
     return parts.join('/').replace(/([^:])\/{2,}/g, '$1/').replace(/\/+$/, '') || '/';
   }
   // Lab runs are box-centric (a dir per box); exams are engagement-centric (one dir for the exam).
-  function slugFor(eng, isExam) {
-    if (!eng) return 'run';
-    if (!isExam) {
-      var t = (eng.targets || [])[0];
-      if (t && (t.hostname || t.ip)) return slugify(t.hostname || t.ip);
-    }
-    return slugify(eng.name);
+  // Default leaf folder for an engagement: the engagement's own name — neutral and stable, never the
+  // target IP (a box-centric folder was surprising when the operator had named the run).
+  function slugFor(eng) {
+    return eng ? slugify(eng.name) : 'run'; // slugify falls back to 'run' for an empty name
   }
-  function defaultRoot(base, eng, isExam) { return join(base || DEFAULT_BASE, slugFor(eng, isExam)); }
+  function defaultRoot(base, eng) { return join(base || DEFAULT_BASE, slugFor(eng)); }
   function rootFor(eng) { return (eng && eng.workspace && eng.workspace.root) ? sanitizeRoot(eng.workspace.root) : ''; }
   function isConfigured(eng) { return !!rootFor(eng); }
 
@@ -103,6 +100,14 @@
     var d = dirs(eng);
     return 'script -q -f ' + join(d.loot || 'loot', 'session-$(date -u +%Y%m%d-%H%M%S).log');
   }
+  // A one-shot snapshot of the working directory: list every file (path + size + mtime), wrapped in
+  // markers so obol can find the block in a larger paste. The operator runs it and pastes the output
+  // back to fully synchronize the virtual workspace — obol confirms the files it predicted and adopts
+  // any it didn't know about. GNU find (Kali); hidden files skipped so ~/.zshrc etc. stay out.
+  function snapshotCmd(eng) {
+    var r = rootFor(eng) || '.';
+    return 'cd ' + r + " 2>/dev/null && { echo '### OBOL-WS-SNAPSHOT'; find . -type f -not -path '*/.*' -printf '%P\\t%s\\t%TY-%Tm-%TdT%TH:%TM\\n' 2>/dev/null | sort; echo '### END'; }";
+  }
 
   OBOL.workspace = {
     LAYOUT: LAYOUT, DEFAULT_BASE: DEFAULT_BASE,
@@ -110,6 +115,6 @@
     promptStamp: promptStamp, promptStampInstall: promptStampInstall,
     slugify: slugify, sanitizeRoot: sanitizeRoot, join: join, slugFor: slugFor, defaultRoot: defaultRoot,
     rootFor: rootFor, isConfigured: isConfigured, dirs: dirs, tokens: tokens, scaffold: scaffold,
-    captureCmd: captureCmd,
+    captureCmd: captureCmd, snapshotCmd: snapshotCmd,
   };
 })(typeof globalThis !== 'undefined' ? globalThis : this);
