@@ -59,6 +59,12 @@ and panicking about screenshots the night before the exam. Obol takes that load 
   <img src="https://github.com/user-attachments/assets/3ab788be-066e-4b31-bed6-6ab2f87e33bc" alt="The coach ranking the next moves for a target, each with a copy button and a one-line why" width="92%">
 </p>
 
+**Feeding Obol: paste your whole terminal, and only the proven facts are minted.**
+
+<p align="center">
+  <img src="screenshots/evidence.png" alt="The Evidence page: paste a command and its full output, and conservative parsers mint only the facts the output proves" width="92%">
+</p>
+
 **Proof-Gated: Obol only records what your output actually shows**
 
 <p align="center">
@@ -108,12 +114,6 @@ flowchart LR
 The loop is deliberately tight: **run, paste, get the next move**, over and over, until the box
 is rooted. Findings and flags accumulate as you go, so the report is essentially finished the
 moment you are.
-
-**Feeding Obol: paste your whole terminal, and only the proven facts are minted.**
-
-<p align="center">
-  <img src="screenshots/evidence.png" alt="The Evidence page: paste a command and its full output, and conservative parsers mint only the facts the output proves" width="92%">
-</p>
 
 ---
 
