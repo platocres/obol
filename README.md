@@ -207,7 +207,7 @@ count, expands to the exact principals behind it, and hands you copy-ready comma
 your target (and your credentials when you hold them).
 
 <p align="center">
-  <img src="screenshots/bloodhound-queries.png" alt="PlumHound-style query board with counts, expandable principal lists, and copy-ready commands" width="100%">
+  <img width="2072" height="3070" alt="image" src="https://github.com/user-attachments/assets/5d1646c6-5ebd-49d8-98aa-8ebc38f902bc" />
 </p>
 
 ---
