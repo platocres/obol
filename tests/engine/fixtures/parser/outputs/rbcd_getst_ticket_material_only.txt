@@ -1,3 +1,0 @@
-[*] Attribute msDS-AllowedToActOnBehalfOfOtherIdentity modified successfully
-[*] Impersonating administrator
-[*] Saving ticket in administrator.ccache
