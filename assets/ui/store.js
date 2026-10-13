@@ -346,6 +346,22 @@
       var fs = new OBOL.facts.FactSet(arr.map(OBOL.facts.factFromJson));
       return fs;
     },
+    // Active target focus for multi-target engagements: null / '' means engagement-wide ('all'),
+    // while an IP string focuses the coach and command templating on that specific box.
+    activeTarget() {
+      var eng = this.active();
+      return (eng && eng.activeTarget) || null;
+    },
+    setActiveTarget(ip) {
+      this.update(function (eng) {
+        var clean = ip ? String(ip).trim() : null;
+        eng.activeTarget = clean;
+        if (clean) {
+          eng.params = eng.params || {};
+          eng.params.target = clean;
+        }
+      }, 'active-target');
+    },
     // A per-target FactSet: this host's facts + domain-/engagement-scoped facts (mirrors
     // obol ws.facts_for_target so a target ranks by its own progress).
     factSetForTarget(ip) {
@@ -378,8 +394,8 @@
       var fqdn = first('host.fqdn', ['fqdn', 'name']);
       var hostname = (tgt.hostname || first('host.hostname', ['name']) || (fqdn ? fqdn.split('.')[0] : '')).trim();
       var domain = (first('host.domain', ['domain']) || first('ad.domain_known', ['name']) || (params.domain || '')).trim();
-      if (!fqdn && hostname && domain) fqdn = hostname + '.' + domain;
-      return { ip: realIp, hostname: hostname, domain: domain, fqdn: fqdn };
+      var os = (tgt.os || (OBOL.targets && OBOL.targets.hostOs ? OBOL.targets.hostOs(fs, tgt) : '') || '').trim();
+      return { ip: realIp, hostname: hostname, domain: domain, fqdn: fqdn, os: os };
     },
     addFacts(facts, reason) {
       // facts: array of OBOL.facts (or serialized). Returns count actually added (deduped).
@@ -402,6 +418,39 @@
             if (!name) return;
             (eng.targets || []).forEach(function (tg) { if (tg.ip === ip && !tg.hostname) tg.hostname = name; });
           }
+          if ((f.kind === 'host.os_hint' || f.kind === 'host.os' || f.kind === 'host.os_family') && f.state === SUP && String(f.scope).indexOf('host:') === 0) {
+            var ipOs = f.scope.slice(5), ov = f.value || {};
+            var rawOs = ov.os || ov.family || ov.name || '';
+            var clean = (OBOL.targets && OBOL.targets.cleanOs) ? OBOL.targets.cleanOs(rawOs) : rawOs;
+            if (clean && clean.toLowerCase() !== 'windows' && clean.toLowerCase() !== 'linux') {
+              (eng.targets || []).forEach(function (tg) { if (tg.ip === ipOs) tg.os = clean; });
+            } else if (clean) {
+              (eng.targets || []).forEach(function (tg) { if (tg.ip === ipOs && !tg.os) tg.os = clean.charAt(0).toUpperCase() + clean.slice(1); });
+            }
+          }
+          if (f.kind === 'credential.available' && f.state === SUP) {
+            var cv = f.value || {};
+            var u = String(cv.user || cv.username || '').trim();
+            var p = String(cv.secret || cv.password || '').trim();
+            var d = String(cv.domain || '').trim();
+            var st = cv.secretType || cv.secret_type || 'password';
+            if (u && p) {
+              eng.credentials = eng.credentials || [];
+              var exists = eng.credentials.some(function (c) {
+                return (c.user || '').toLowerCase() === u.toLowerCase() && (c.secret || c.password || '') === p;
+              });
+              if (!exists) {
+                eng.credentials.push({
+                  id: uid('cred'),
+                  user: u,
+                  domain: d,
+                  secret: p,
+                  secretType: st,
+                  notes: 'Discovered via ' + (cv.method || f.source || 'evidence')
+                });
+              }
+            }
+          }
         });
       }
       if (added || (facts && facts.length)) {
@@ -419,6 +468,13 @@
       eng.facts = factset.facts.map(OBOL.facts.factToJson);
       scheduleSave();
       emit(reason || 'facts');
+    },
+    retractFactKind(kind) {
+      var eng = this.active();
+      if (!eng) return;
+      var fs = this.factSet();
+      fs.facts = fs.facts.filter(function (f) { return f.kind !== kind; });
+      this.setFacts(fs, 'retract');
     },
 
     // ---- blobs (screenshots / large evidence) ----
