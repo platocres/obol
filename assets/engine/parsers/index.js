@@ -83,16 +83,16 @@
 
     var isNxc = /\b(?:nxc|netexec|crackmapexec|cme)\b/.test(lc)
       || /^(?:SMB|LDAP|WINRM|MSSQL|FTP|SSH|RDP|WMI|VNC|NFS)\s+\d{1,3}(?:\.\d{1,3}){3}\s+\d+\s+\S+/im.test(text)
-      || /^(?:GPP_PASS(?:WORD)?|GPP_AUTOLOGIN|LSASSY|NANODUMP|HANDLEKATZ|PROCDUMP|MASKY|SPIDER_PLUS|WDIGEST|COERCE_PLUS|PETITPOTAM|DFSCOERCE|SHADOWCOERCE|PRINTERBUG|BACKUP_OPERATOR|REG-WINLOGON|REG-QUERY|VEEAM|MREMOTENG|WINSCP|PUTTY|KEEPASS_TRIGGER|INSTALL_ELEVATED|PRE2K|NTLMV1|ENUM_AV|MS17-010|ZEROLOGON|SMBGHOST|RDCMAN|IIS|FIREFOX|POWERSHELL_HISTORY|MET_INJECT|SLINKY|SCUFFY|DACLREAD|GROUP-MEM|ADCS|USER-DESC|GET-DESC-USERS|ENUM_TRUSTS|LDAP-CHECKER|MSSQL_COERCE|WIFI)\s+\d{1,3}(?:\.\d{1,3}){3}\s+\d+\s+\S+/im.test(text);
+      || /^(?:GPP_PASS(?:WORD)?|GPP_AUTOLOGIN|LSASSY|NANODUMP|HANDLEKATZ|PROCDUMP|MASKY|SPIDER_PLUS|WDIGEST|COERCE_PLUS|PETITPOTAM|DFSCOERCE|SHADOWCOERCE|PRINTERBUG|BACKUP_OPERATOR|REG-WINLOGON|REG-QUERY|VEEAM|MREMOTENG|WINSCP|PUTTY|KEEPASS_DISCOVER|KEEPASS_TRIGGER|INSTALL_ELEVATED|PRE2K|NTLMV1|ENUM_AV|SPOOLER|WEBDAV|RUNASPPL|MS17-010|ZEROLOGON|SMBGHOST|NOPAC|PRINTNIGHTMARE|ENUM_CVE|RDCMAN|IIS|FIREFOX|POWERSHELL_HISTORY|MET_INJECT|SLINKY|SCUFFY|DACLREAD|GROUP-MEM|ADCS|USER-DESC|GET-DESC-USERS|ENUM_TRUSTS|LDAP-CHECKER|MAQ|MSSQL_PRIV|MSSQL_COERCE|WIFI)\s+\d{1,3}(?:\.\d{1,3}){3}\s+\d+\s+\S+/im.test(text);
     if (isNxc) {
       C._parse_nxc_common(text, ws, source, facts);
       // Data-driven capability catalog (nxc-catalog.js): fills the switches the hand-written parsers below
       // don't cover (--users on smb, --lsa cleartext, -M gpp_password/lsassy/...). Facts dedupe, so running it
       // alongside the existing parsers is safe. See docs + tests/engine/nxc-switch-parsers.js.
       if (has('_parse_nxc_capability')) C._parse_nxc_capability(text, command, ws, source, facts);
-      if ((C._is_ldap_command(command) || /^LDAP\s+\d+\.\d+\.\d+\.\d+/im.test(text)) && (actionId === 'ad-anon-ldap-enum' || lc.indexOf('--users') >= 0 || /-description-/i.test(text))) {
+      if ((C._is_ldap_command(command) || /^LDAP\s+\d+\.\d+\.\d+\.\d+/im.test(text)) && (actionId === 'ad-anon-ldap-enum' || lc.indexOf('--users') >= 0 || lc.indexOf('--active-users') >= 0 || /-description-/i.test(text))) {
         C._parse_user_list(text, ws, source, facts, { prove_anonymous_ldap: C._looks_anonymous_ldap_command(command, actObj), domain_hint: domainHint });
-        if ((lc.indexOf('--users') >= 0 || /-description-/i.test(text)) && has('_parse_ldap_descriptions')) C._parse_ldap_descriptions(text, ws, source, facts, { domain_hint: domainHint });
+        if ((lc.indexOf('--users') >= 0 || lc.indexOf('--active-users') >= 0 || /-description-/i.test(text)) && has('_parse_ldap_descriptions')) C._parse_ldap_descriptions(text, ws, source, facts, { domain_hint: domainHint });
       }
       if (C._is_smb_command(command) || /^SMB\s+\d+\.\d+\.\d+\.\d+/im.test(text)) {
         C._parse_nxc_smb_session(text, ws, command, source, facts);
@@ -280,7 +280,8 @@
     // LAPS read (nxc -M laps / --laps, ldapsearch/Get-ADComputer ms-MCS-AdmPwd):
     // content-gated on a LAPS signature, and self-gated to require a real
     // Password:/attribute value so the "No result found" failure mints nothing.
-    if (has('_parse_laps') && /ms-?MCS-AdmPwd|msLAPS-Password|Getting LAPS Passwords|Computer:\S+\s+User:.*Password:/i.test(text)) C._parse_laps(text, ws, source, facts);
+    if (has('_parse_laps') && (/ms-?MCS-AdmPwd|msLAPS-Password|Getting LAPS Passwords|Computer:\S+\s+User:.*Password:/i.test(text) || lc.indexOf('--laps') >= 0)) C._parse_laps(text, ws, source, facts);
+    if (has('_parse_laps_material') && lc.indexOf('--laps') >= 0) C._parse_laps_material(text, ws, command, source, facts);
     // NSClient++ nsclient.ini password (web-API privesc on 8443).
     if (has('_parse_nsclient_ini') && (lc.indexOf('nsclient') >= 0 || /nsclient|\[\/settings\//i.test(text))) C._parse_nsclient_ini(text, ws, command, source, facts);
     // KeePass database/dump in hand (.kdbx, $keepass$ hash, master-key dump).

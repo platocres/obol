@@ -124,6 +124,17 @@
   function shotsSection() {
     var eng = OBOL.store.active();
     var shots = (eng && eng.screenshots) || [];
+    var fs = OBOL.store.factSet ? OBOL.store.factSet() : null;
+    var rdpShots = (fs && fs.values ? fs.values('loot.files') : []).filter(function (v) { return v && v.kind === 'rdp_screenshot' && v.path; });
+    var rdpHint = rdpShots.length ? '<div class="ev-rdp-shots" style="margin-bottom:8px">'
+      + '<div class="ev-setup-lbl">Captured NetExec RDP Screenshots (ready to attach)</div>'
+      + rdpShots.map(function (rs, idx) {
+          var cid = 'ev-rdp-shot-' + idx;
+          return '<div class="ev-row" style="margin:4px 0"><code id="' + cid + '">' + esc(rs.path) + '</code> '
+            + '<button class="ev-copy" data-copy="' + cid + '">Copy Path</button></div>';
+        }).join('')
+      + '<span class="ev-file-hint">Click Choose Files below and paste the copied path to attach your NetExec RDP desktop screenshot directly to the report.</span>'
+      + '</div>' : '';
     var grid = shots.length ? shots.map(function (s) {
       return '<figure class="ev-shot"><img src="' + U.attr(s.data_uri) + '" alt="' + U.attr(s.caption || 'proof') + '">'
         + '<figcaption>' + esc(s.caption || '(no caption)') + (s.slot ? ' · <span class="pill">' + esc(s.slot) + '</span>' : '')
@@ -131,6 +142,7 @@
     }).join('') : '<div class="ev-hint">No screenshots yet.</div>';
     return '<div class="ev-shots"><h2 class="coach-sec-h">Proof Screenshots</h2>'
       + '<p class="ev-hint">Attach PNGs (for OSCP: the flag <em>and</em> a host-identity command like <code>ip a</code>/<code>hostname</code> in one frame). They embed into your exported report.</p>'
+      + rdpHint
       + '<div class="ev-row"><input type="file" id="ss-file" accept="image/*" multiple>'
       + '<input id="ss-cap" class="ev-cmd" placeholder="caption (e.g. proof.txt on 10.10.10.10)">'
       + '<select id="ss-slot" class="ev-cmd"><option value="">Slot…</option><option value="local">Local</option><option value="root">Root</option><option value="other">Other</option></select></div>'
@@ -197,12 +209,28 @@
       return;
     }
     var resEl = document.getElementById('ev-result');
-    if (r.arsenal && r.arsenal.ok) {
+    if (r.arsenal && r.arsenal.ok && !r.added) {
       if (resEl) {
         resEl.innerHTML = '<div class="ev-added">Loadout synced: ' + r.arsenal.present + ' tools ready, ' + r.arsenal.staged + ' staged, ' + (r.arsenal.wordlists || 0) + ' wordlists mapped.</div>'
           + '<a class="btn-primary" href="#/loadout">Open Loadout -></a>';
       }
       U.toast('Loadout stocked ' + r.arsenal.present + ' tools, ' + r.arsenal.staged + ' staged');
+      return;
+    }
+    if (r.workspaceSync && r.workspaceSync.ok && !r.added) {
+      if (resEl) {
+        resEl.innerHTML = '<div class="ev-added">Workspace synced: ' + r.workspaceSync.confirmed + ' confirmed, ' + r.workspaceSync.adopted + ' new file' + (r.workspaceSync.adopted === 1 ? '' : 's') + ' adopted.</div>'
+          + '<a class="btn-primary" href="#/home">Open Hub -></a>';
+      }
+      U.toast(r.workspaceSync.confirmed + ' confirmed · ' + r.workspaceSync.adopted + ' new file' + (r.workspaceSync.adopted === 1 ? '' : 's') + ' adopted');
+      return;
+    }
+    if (r.targetsImported && r.targetsImported.ok && (!r.facts || !r.facts.length)) {
+      if (resEl) {
+        resEl.innerHTML = '<div class="ev-added">Targets imported: ' + (r.targetsImported.added || 0) + ' added' + (r.targetsImported.updated ? (', ' + r.targetsImported.updated + ' updated') : '') + '.</div>'
+          + '<a class="btn-primary" href="#/targets">Open Targets -></a>';
+      }
+      U.toast((r.targetsImported.added || 0) + ' target' + (r.targetsImported.added === 1 ? '' : 's') + ' added');
       return;
     }
     var origin = r.fileName ? (esc(r.fileName) + ' · ' + r.lines.toLocaleString() + ' lines') : null;
@@ -288,13 +316,39 @@
     if (oldIp && !remap) { U.toast('Remap needs two different valid IPs, ignoring it', 'err'); }
     var r = OBOL.ingest.importSession(inputs, { source: 'session', target: routeTo, remap: remap });
     if (!r || !r.ok) { U.toast('Could not import that session'); return; }
+    if (r.arsenal && r.arsenal.ok && !r.added) {
+      if (resEl) {
+        resEl.innerHTML = '<div class="ev-added">Loadout synced: ' + r.arsenal.present + ' tools ready, ' + r.arsenal.staged + ' staged, ' + (r.arsenal.wordlists || 0) + ' wordlists mapped.</div>'
+          + '<a class="btn-primary" href="#/loadout">Open Loadout -></a>';
+      }
+      U.toast('Loadout stocked ' + r.arsenal.present + ' tools, ' + r.arsenal.staged + ' staged');
+      return;
+    }
+    if (r.workspaceSync && r.workspaceSync.ok && !r.added) {
+      if (resEl) {
+        resEl.innerHTML = '<div class="ev-added">Workspace synced: ' + r.workspaceSync.confirmed + ' confirmed, ' + r.workspaceSync.adopted + ' new file' + (r.workspaceSync.adopted === 1 ? '' : 's') + ' adopted.</div>'
+          + '<a class="btn-primary" href="#/home">Open Hub -></a>';
+      }
+      U.toast(r.workspaceSync.confirmed + ' confirmed · ' + r.workspaceSync.adopted + ' new file' + (r.workspaceSync.adopted === 1 ? '' : 's') + ' adopted');
+      return;
+    }
+    if (r.targetsImported && r.targetsImported.ok && (!r.facts || !r.facts.length)) {
+      if (resEl) {
+        resEl.innerHTML = '<div class="ev-added">Targets imported: ' + (r.targetsImported.added || 0) + ' added' + (r.targetsImported.updated ? (', ' + r.targetsImported.updated + ' updated') : '') + '.</div>'
+          + '<a class="btn-primary" href="#/targets">Open Targets -></a>';
+      }
+      U.toast((r.targetsImported.added || 0) + ' target' + (r.targetsImported.added === 1 ? '' : 's') + ' added');
+      return;
+    }
     var next = topNextMove();
     if (resEl) {
       resEl.innerHTML = '<div class="ev-added">Imported ' + r.imported + ' command' + (r.imported === 1 ? '' : 's')
         + ' → minted ' + r.added + ' new fact' + (r.added === 1 ? '' : 's')
         + (r.hosts && r.hosts.length > 1 ? (' across ' + r.hosts.length + ' hosts') : '')
         + (r.dupes ? (' · skipped ' + r.dupes + ' duplicate' + (r.dupes === 1 ? '' : 's')) : '')
-        + (r.remapped ? (' · remapped ' + r.remapped + ' IP occurrence' + (r.remapped === 1 ? '' : 's')) : '') + '.'
+        + (r.remapped ? (' · remapped ' + r.remapped + ' IP occurrence' + (r.remapped === 1 ? '' : 's')) : '')
+        + (r.arsenal && r.arsenal.ok ? (' · Loadout synced (' + r.arsenal.present + ' tools)') : '')
+        + (r.workspaceSync && r.workspaceSync.ok ? (' · Workspace synced (' + r.workspaceSync.confirmed + ' confirmed)') : '') + '.'
         + (r.hosts && r.hosts.length ? ('<div class="ev-imp-tools">Hosts: ' + r.hosts.map(function (h) { return '<code>' + esc(h) + '</code>'; }).join(' ') + '</div>') : '')
         + (r.tools && r.tools.length ? ('<div class="ev-imp-tools">Tools seen: ' + r.tools.map(function (t) { return '<code>' + esc(t) + '</code>'; }).join(' ') + '</div>') : '')
         + (next ? ('<div class="ev-imp-next">Next move: <strong>' + esc(next) + '</strong></div>') : '')
@@ -378,7 +432,23 @@
         r.onload = function () {
           OBOL.store.update(function (eng) {
             eng.screenshots = eng.screenshots || [];
-            eng.screenshots.push({ id: 'ss-' + Date.now().toString(36) + Math.random().toString(36).slice(2, 6), data_uri: r.result, caption: cap, slot: slot, target: tgt, at: Date.now() });
+            var fname = String((f && f.name) || '');
+            var ipM = fname.match(/\b(\d{1,3}(?:\.\d{1,3}){3})\b/);
+            var fileTgt = tgt || (ipM ? ipM[1] : '');
+            var fileSlot = slot;
+            if (!fileSlot) {
+              if (/proof|root|system|admin/i.test(fname)) fileSlot = 'root';
+              else if (/local|user/i.test(fname)) fileSlot = 'local';
+              else {
+                var tFs = (OBOL.store.factSetForTarget && fileTgt) ? OBOL.store.factSetForTarget(fileTgt) : (OBOL.store.factSet ? OBOL.store.factSet() : null);
+                var hasRootFact = tFs && tFs.has && (tFs.has('objective.root_flag') || tFs.has('access.admin') || tFs.has('access.system') || tFs.has('access.root'));
+                var hasRootShot = eng.screenshots.some(function (s) { return s.slot === 'root' && (!fileTgt || !s.target || s.target === fileTgt); });
+                var hasLocalShot = eng.screenshots.some(function (s) { return s.slot === 'local' && (!fileTgt || !s.target || s.target === fileTgt); });
+                fileSlot = (hasRootFact && !hasRootShot) ? 'root' : (!hasLocalShot ? 'local' : 'other');
+              }
+            }
+            var fileCap = cap || ((fileSlot === 'root' ? 'proof.txt' : (fileSlot === 'local' ? 'local.txt' : (fname || 'screenshot'))) + (fileTgt ? (' on ' + fileTgt) : ''));
+            eng.screenshots.push({ id: 'ss-' + Date.now().toString(36) + Math.random().toString(36).slice(2, 6), data_uri: r.result, caption: fileCap, slot: fileSlot, target: fileTgt, at: Date.now() });
           }, 'screenshots');
           if (--pending === 0) { U.toast('Screenshot(s) attached'); OBOL.router.render(); }
         };

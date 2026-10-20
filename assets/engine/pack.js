@@ -683,6 +683,12 @@
     'vuln.dirtypipe': 'a DirtyPipe-vulnerable Linux kernel (5.8 - 5.16.10)',
     'vuln.baron_samedit': 'a Baron Samedit-vulnerable sudo version (CVE-2021-3156)',
     'vuln.polkit': 'a PwnKit-vulnerable pkexec version (CVE-2021-4034)',
+    'ad.nopac': 'a noPac-vulnerable DC (CVE-2021-42278/42287)',
+    'vuln.printnightmare': 'a PrintNightmare-vulnerable Spooler (CVE-2021-34527)',
+    'ad.maq_allow': 'a non-zero MachineAccountQuota (>= 1)',
+    'mssql.sysadmin': 'MSSQL sysadmin privilege or impersonation path',
+    'hash.sntp': 'an MS-SNTP Timeroast machine hash',
+    'loot.keepass_dump': 'a discovered KeePass database (.kdbx) or master key dump',
   };
 
   function friendly(kind) {
@@ -942,6 +948,8 @@
     'smb.writable_share': 1, 'access.admin_share': 1, 'share.users_readable': 1,
     'ad.laps': 1, 'ad.rbcd': 1, 'ad.delegation': 1, 'ad.group_joined': 1, 'ad.domain_control': 1,
     'privesc.kernel_exploit': 1,
+    'ad.nopac': 1, 'vuln.printnightmare': 1, 'ad.maq_allow': 1,
+    'mssql.sysadmin': 1, 'hash.sntp': 1, 'loot.keepass_dump': 1,
   };
   var V2_PRIV = { 'access.admin': 1, 'access.system': 1, 'access.root': 1, 'loot.ntds': 1, 'objective.flag': 1, 'objective.local_flag': 1, 'objective.root_flag': 1 };
   // An exploit/foothold move is EVIDENCED (not a bare-port gamble) when the box actually shows a

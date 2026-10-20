@@ -980,9 +980,9 @@
   // learner sees what the command looks like run and the output to expect, without leaving Next Steps. The
   // on/off choice persists (localStorage), so once you turn it on it stays on across every move.
   function exampleOn() { try { var v = localStorage.getItem('obol.show-example'); return v === null ? true : v === '1'; } catch (e) { return true; } }
-  function nsExampleBlock(move) {
+  function nsExampleBlock(move, idx, cmdText) {
     if (!move || !OBOL.study || !OBOL.study.replayFor) return '';
-    var rp = null; try { rp = OBOL.study.replayFor(move.id); } catch (e) { rp = null; }
+    var rp = null; try { rp = OBOL.study.replayFor(move.id, idx, cmdText); } catch (e) { rp = null; }
     if (!rp || !rp.hasOutput || !rp.steps || !rp.steps.length) return ''; // only promise it where real output exists
     var open = exampleOn();
     var promptFor = function (where) { return where === 'host' ? 'C:\\>' : 'kali$'; };
@@ -1024,7 +1024,7 @@
     if (cmdText) html += '<div class="ns-canvas-cmd' + phCls + '"><code>' + esc(cmdText) + '</code></div>';
 
     // "See It Run": toggleable Learn-style example run + expected output for this move.
-    html += nsExampleBlock(move);
+    html += nsExampleBlock(move, idx, cmdText);
 
     var flagsExpl = (OBOL.command && OBOL.command.explainFlags) ? OBOL.command.explainFlags(cmdText) : [];
     var mistakes = (note && note.mistakes) || [];
@@ -2376,6 +2376,21 @@
         actionId: box.getAttribute('data-action') || '', source: 'paste',
         scope: tIp ? ('host:' + tIp) : undefined });
       if (!r.ok) { if (out) out.textContent = r.reason === 'parsers' ? 'Parsers still loading, try again.' : 'Nothing to parse.'; t.disabled = false; return; }
+      if (r.arsenal && r.arsenal.ok && !r.added) {
+        U.toast('Loadout stocked ' + r.arsenal.present + ' tools, ' + r.arsenal.staged + ' staged');
+        OBOL.router.render();
+        return;
+      }
+      if (r.workspaceSync && r.workspaceSync.ok && !r.added) {
+        U.toast(r.workspaceSync.confirmed + ' confirmed · ' + r.workspaceSync.adopted + ' new file' + (r.workspaceSync.adopted === 1 ? '' : 's') + ' adopted');
+        OBOL.router.render();
+        return;
+      }
+      if (r.targetsImported && r.targetsImported.ok) {
+        U.toast((r.targetsImported.added || 0) + ' target' + (r.targetsImported.added === 1 ? '' : 's') + ' imported');
+        OBOL.router.render();
+        return;
+      }
       var factsOnlyBlockers = r.facts && r.facts.length > 0 && r.facts.every(function (f) { return /^(blocker\.|credential\.validation$)/.test(f.kind); });
       if (r.added && !factsOnlyBlockers) {
         // Positive, value-aware feedback: say what obol learned + the next move, so the paste never

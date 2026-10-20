@@ -91,7 +91,7 @@
       scope: tip ? ('host:' + tip) : undefined,
       source: 'paste'
     });
-    return { ok: !!(rr && rr.ok), added: (rr && rr.added) || 0, imported: 1, hosts: tip ? [tip] : [] };
+    return { ok: !!(rr && rr.ok), added: (rr && rr.added) || 0, imported: 1, hosts: tip ? [tip] : [], arsenal: (rr && rr.arsenal) || null };
   }
 
   function mint() {
@@ -108,11 +108,26 @@
       // No prompt-anchored commands found: it is a single raw output paste, not a full session.
       if (r && r.ok && r.imported === 0 && !r.arsenal) { try { r = rawPaste(text, route); } catch (e) { r = { ok: false, reason: (e && e.message) || 'error' }; } }
       if (!r || !r.ok) { resEl.innerHTML = '<span class="qp-err">Could not read that (' + esc((r && r.reason) || 'error') + ').</span>'; return; }
-      if (r.arsenal && r.arsenal.ok) {
+      if (r.arsenal && r.arsenal.ok && !r.added) {
         resEl.innerHTML = '<div class="qp-ok"><b>Loadout synced:</b> ' + r.arsenal.present + ' tools ready, ' + r.arsenal.staged + ' staged, ' + (r.arsenal.wordlists || 0) + ' wordlists mapped. <a href="#/loadout" data-qp-close>Open Loadout -></a></div>';
         if (OBOL.app && OBOL.app.renderSidebar) OBOL.app.renderSidebar();
         if (OBOL.router) OBOL.router.render();
         try { U.toast('Loadout stocked ' + r.arsenal.present + ' tools, ' + r.arsenal.staged + ' staged'); } catch (e) {}
+        return;
+      }
+      if (r.workspaceSync && r.workspaceSync.ok && !r.added) {
+        resEl.innerHTML = '<div class="qp-ok"><b>Workspace synced:</b> ' + r.workspaceSync.confirmed + ' confirmed, ' + r.workspaceSync.adopted + ' new file' + (r.workspaceSync.adopted === 1 ? '' : 's') + ' adopted. <a href="#/home" data-qp-close>Open Hub -></a></div>';
+        if (OBOL.app && OBOL.app.renderSidebar) OBOL.app.renderSidebar();
+        if (OBOL.router) OBOL.router.render();
+        try { U.toast(r.workspaceSync.confirmed + ' confirmed · ' + r.workspaceSync.adopted + ' new file' + (r.workspaceSync.adopted === 1 ? '' : 's') + ' adopted'); } catch (e) {}
+        return;
+      }
+      if (r.targetsImported && r.targetsImported.ok) {
+        var ti = r.targetsImported;
+        resEl.innerHTML = '<div class="qp-ok"><b>Targets imported:</b> ' + (ti.added || 0) + ' added' + (ti.updated ? (', ' + ti.updated + ' updated') : '') + '. <a href="#/targets" data-qp-close>Open Targets -></a></div>';
+        if (OBOL.app && OBOL.app.renderSidebar) OBOL.app.renderSidebar();
+        if (OBOL.router) OBOL.router.render();
+        try { U.toast((ti.added || 0) + ' target' + (ti.added === 1 ? '' : 's') + ' added'); } catch (e) {}
         return;
       }
       var hosts = r.hosts || [];
@@ -122,6 +137,8 @@
       } else {
         msg = '<b>Minted ' + r.added + ' fact' + (r.added === 1 ? '' : 's') + '</b> from ' + r.imported + ' command' + (r.imported === 1 ? '' : 's');
         if (hosts.length) msg += ', filed under ' + hosts.map(function (h) { return '<code>' + esc(h) + '</code>'; }).join(', ');
+        if (r.arsenal && r.arsenal.ok) msg += ' (plus Loadout synced: ' + r.arsenal.present + ' tools)';
+        if (r.workspaceSync && r.workspaceSync.ok) msg += ' (plus Workspace synced)';
         msg += '.';
       }
       resEl.innerHTML = '<div class="qp-ok">' + msg + ' <a href="#/evidence" data-qp-close>Open Evidence -></a></div>';

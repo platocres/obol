@@ -411,9 +411,93 @@
     if (!obj || typeof obj !== 'object' || !obj.tools) return null;
     obj.savedAt = Date.now();
     try { localStorage.setItem('obol.arsenal-profile', JSON.stringify(obj)); } catch (e) {}
+    if (OBOL.store && typeof OBOL.store.update === 'function') {
+      try {
+        OBOL.store.update(function (eng) {
+          if (!eng) return;
+          eng.params = eng.params || {};
+          if (obj.lhost && !eng.params.lhost) {
+            eng.params.lhost = obj.lhost;
+            eng.params.lhost_iface = obj.lhost_iface || 'tun0';
+          }
+          if (obj.tooldir && !eng.params.toolsDir) {
+            eng.params.toolsDir = obj.tooldir;
+          }
+        }, 'arsenal-sync');
+      } catch (e) {}
+    }
+    try { if (OBOL.ctxbar && typeof OBOL.ctxbar.render === 'function') OBOL.ctxbar.render(); } catch (e) {}
+    try { if (OBOL.app && typeof OBOL.app.renderSidebar === 'function') OBOL.app.renderSidebar(); } catch (e) {}
     var present = 0;
     Object.keys(obj.tools || {}).forEach(function (k) { if (obj.tools[k] && obj.tools[k].present) present++; });
-    return { ok: true, present: present, staged: (obj.staged || []).length, wordlists: Object.keys(obj.wordlists || {}).length };
+    return { ok: true, present: present, staged: (obj.staged || []).length, wordlists: Object.keys(obj.wordlists || {}).length, lhost: obj.lhost || '', lhost_iface: obj.lhost_iface || '' };
+  }
+
+  function _tryWorkspaceSnapshot(text) {
+    var s = String(text || '');
+    if (!(OBOL.vfs && typeof OBOL.vfs.parseSnapshot === 'function' && typeof OBOL.vfs.reconcile === 'function')) return null;
+    var hasMarker = /OBOL-WS-SNAPSHOT/i.test(s);
+    var hasTabManifest = /^(?!\s*#)[A-Za-z0-9._\/-]+\t\d+\t\d{4}-\d{2}-\d{2}/m.test(s);
+    if (!hasMarker && !hasTabManifest) return null;
+    var snapText = s;
+    if (hasMarker) {
+      var m = /(?:#{2,}\s*)?OBOL-WS-SNAPSHOT[^\r\n]*\r?\n([\s\S]*?)(?:###\s*END\b|$)/i.exec(s);
+      if (m) snapText = m[1];
+    }
+    var entries = OBOL.vfs.parseSnapshot(snapText);
+    if (!entries || !entries.length) return null;
+    var eng = (OBOL.store && typeof OBOL.store.active === 'function') ? OBOL.store.active() : {};
+    var r = OBOL.vfs.reconcile(eng || {}, entries);
+    if (OBOL.store && typeof OBOL.store.update === 'function') {
+      try {
+        OBOL.store.update(function (e) {
+          if (!e) return;
+          e.workspace = e.workspace || {};
+          e.workspace.overrides = r.overrides;
+        }, 'ws-sync');
+      } catch (e) {}
+    }
+    try { if (OBOL.app && typeof OBOL.app.renderSidebar === 'function') OBOL.app.renderSidebar(); } catch (e) {}
+    return { ok: true, confirmed: r.confirmed || 0, adopted: r.adopted || 0, missing: r.missing || 0, total: r.total || entries.length };
+  }
+
+  function _stripArsenalBlock(text) {
+    return String(text || '')
+      .replace(/OBOL-ARSENAL(?:\s+v\d+)?\r?\n\{[^\r\n]*\}\r?\n?/g, '')
+      .replace(/──\s*Copy these two lines[\s\S]*$/g, '');
+  }
+
+  function _stripWorkspaceSnapshot(text) {
+    return String(text || '')
+      .replace(/^[^\r\n]*echo\s+['"]###\s*OBOL-WS-SNAPSHOT['"][^\r\n]*\r?\n?/gim, '')
+      .replace(/(?:#{2,}\s*)?OBOL-WS-SNAPSHOT[^\r\n]*\r?\n[\s\S]*?(?:###\s*END[^\r\n]*\r?\n?|$)/gi, '');
+  }
+
+  function _hasNonSetupCommands(text) {
+    var s = String(text || '').trim();
+    if (!s) return false;
+    if (/={3,}\s*OBOL STEP\s+\d+:/i.test(s)) return true;
+    var segs = splitSession(s);
+    var realSegs = segs.filter(function (seg) {
+      return seg && seg.command && !/download-loadout\.sh|setup-kali\.sh|OBOL-WS-SNAPSHOT|OBOL-ARSENAL/i.test(seg.command);
+    });
+    if (realSegs.length > 0) return true;
+    if (segs.length > 0) return false;
+    if (/OBOL Loadout|Tools ready:|Wordlists mapped:|~/.test(s) && !recognizesTool('', s)) return false;
+    return recognizesTool('', s);
+  }
+
+  function _tryPureTargetsImport(text) {
+    if (!(OBOL.targets && typeof OBOL.targets.importBulk === 'function')) return null;
+    var lines = String(text || '').split(/\r?\n/).map(function (l) { return l.trim(); }).filter(function (l) { return l && !/^#/.test(l); });
+    if (!lines.length || lines.length > 500) return null;
+    var ipOrHostsRe = /^(?:\d{1,3}\.){3}\d{1,3}(?:\/\d{1,2}|\s+[a-zA-Z0-9][a-zA-Z0-9._-]+(?:\s+[a-zA-Z0-9][a-zA-Z0-9._-]+)*)?$/;
+    if (!lines.every(function (l) { return ipOrHostsRe.test(l); })) return null;
+    var syncRes = null;
+    try {
+      OBOL.targets.importBulk(text, function (res) { syncRes = res; });
+    } catch (e) { return null; }
+    return (syncRes && syncRes.ok && (syncRes.added || syncRes.updated || syncRes.cidrs)) ? syncRes : null;
   }
 
   // Parse + mint + record. No DOM, no toast - the caller renders the outcome.
@@ -423,10 +507,29 @@
     opts = opts || {};
     var text = opts.text || '';
     if (!text.trim()) return { ok: false, reason: 'empty' };
-    var ar = _tryArsenalIngest(text);
-    if (ar && ar.ok) {
-      return { ok: true, arsenal: ar, added: 0, facts: [], cmd: 'obol-arsenal', lines: text.split(/\r?\n/).length,
-        fileName: opts.fileName || '', parseError: '', recognizedTool: true, looksError: false, epoch: 'anon', blockers: [] };
+    var ar = null, ws = null;
+    if (!opts.fromSession) {
+      ar = _tryArsenalIngest(text);
+      if (ar && ar.ok) text = _stripArsenalBlock(text);
+      ws = _tryWorkspaceSnapshot(text);
+      if (ws && ws.ok) text = _stripWorkspaceSnapshot(text);
+      if (((ar && ar.ok) || (ws && ws.ok)) && !_hasNonSetupCommands(text)) {
+        return { ok: true, arsenal: ar, workspaceSync: ws, added: 0, facts: [], imported: 1, commands: 1,
+          cmd: ar ? 'obol-arsenal' : 'obol-workspace', lines: String(opts.text || '').split(/\r?\n/).length,
+          fileName: opts.fileName || '', parseError: '', recognizedTool: true, looksError: false, epoch: 'anon', blockers: [] };
+      }
+      var hasCruiseSteps = /={3,}\s*OBOL STEP\s+\d+:/i.test(text);
+      var rawOptCheck = (opts.command && opts.command.trim()) || '';
+      if (hasCruiseSteps || (!rawOptCheck && !opts.actionId && splitSession(text).length > 1)) {
+        if (!ready()) return { ok: false, reason: 'parsers' };
+        var fixedTarget = (opts.scope && opts.scope.indexOf('host:') === 0) ? opts.scope.slice(5) : 'auto';
+        var sRes = importSession(text, { target: fixedTarget, fileName: opts.fileName || '', source: opts.source || 'paste' });
+        if (sRes && sRes.ok) {
+          if (ar && ar.ok) sRes.arsenal = ar;
+          if (ws && ws.ok) sRes.workspaceSync = ws;
+          return sRes;
+        }
+      }
     }
     if (!ready()) return { ok: false, reason: 'parsers' };
     // Route on what the paste ACTUALLY shows (its prompt/command line) over the move's canned
@@ -440,11 +543,13 @@
     var trimmedText = _trimPriorScrollback(text, rawOptCmd, (eng && eng.activities) || []).replace(/[ \t]+$/gm, '');
     var derived = deriveCommand(trimmedText, rawOptCmd);
     var cmd = derived || rawOptCmd;
+    var lastCopiedFallback = (!rawOptCmd && !opts.actionId && !derived && !sniffCommand(trimmedText)) ? getLastCopied() : null;
+    if (!cmd && lastCopiedFallback && lastCopiedFallback.command) cmd = lastCopiedFallback.command;
     // Widen the DISPATCH label with whatever the paste reveals about its tool, so output-only pastes and
     // out-of-order evidence still reach the right parser. Lineage/tool below stay the honest `cmd`.
     var dispatchCmd = dispatchLabel(rawOptCmd && rawOptCmd !== cmd ? (rawOptCmd + '  ' + cmd) : cmd, trimmedText);
     var firstTok = rawOptCmd.split(/\s+/)[0] || '';
-    var inferredActId = opts.actionId || (/^[a-z0-9]+(?:-[a-z0-9]+)+$/i.test(firstTok) ? firstTok : '');
+    var inferredActId = opts.actionId || (/^[a-z0-9]+(?:-[a-z0-9]+)+$/i.test(firstTok) ? firstTok : '') || (lastCopiedFallback ? lastCopiedFallback.actionId : '');
     if (!inferredActId && cmd) {
       if (/\bbloodyAD\b/i.test(cmd)) inferredActId = 'bloodyad-acl';
       else if (/\bdacledit(?:\.py)?\b|\bowneredit(?:\.py)?\b/i.test(cmd)) inferredActId = 'ad-acl-abuse';
@@ -578,11 +683,21 @@
         }
       }
     }
+    if (!opts.fromSession && added === 0 && !facts.length && !recognized && !looksErr && !rawOptCmd && !opts.actionId) {
+      var tImp = _tryPureTargetsImport(trimmedText);
+      if (tImp && tImp.ok) {
+        if (!opts.quiet && OBOL.app && OBOL.app.renderSidebar) OBOL.app.renderSidebar();
+        return { ok: true, arsenal: ar || null, workspaceSync: ws || null, targetsImported: tImp, added: tImp.added || 0,
+          facts: [], imported: 1, commands: 1, cmd: 'targets-import', lines: lines, fileName: opts.fileName || '',
+          parseError: '', recognizedTool: true, looksError: false, epoch: epoch, blockers: [] };
+      }
+    }
     // `quiet` - a batch session import re-renders ONCE at the end instead of per command.
     if (!opts.quiet && OBOL.app && OBOL.app.renderSidebar) OBOL.app.renderSidebar();
     // Signals for the caller's "this move ran but proved nothing" decision: did a tool obol knows about
     // actually run (recognized), and did it fail rather than simply come up empty (looksError)?
-    return { ok: true, added: added, facts: facts, cmd: cmd, lines: lines, fileName: opts.fileName || '',
+    return { ok: true, arsenal: ar || null, workspaceSync: ws || null, added: added, facts: facts, imported: 1, commands: 1,
+      cmd: cmd, lines: lines, fileName: opts.fileName || '',
       parseError: parseError, recognizedTool: recognized, looksError: looksErr,
       epoch: epoch, blockers: blockers };
   }
@@ -744,23 +859,31 @@
   //   opts = { fileName?, target?, remap? }  target: 'auto' (default) routes each command to the host it
   //   names, and registers any new host it lands facts on; a specific IP forces every command onto that
   //   host. remap: [{from,to}] rewrites an old IP to the current one first (a reverted lab's target changed).
-  function _stripArsenalBlock(text) {
-    return String(text || '').replace(/OBOL-ARSENAL(?:\s+v\d+)?\r?\n\{[^\r\n]*\}\r?\n?/g, '');
-  }
-
   function importSession(inputs, opts) {
     opts = opts || {};
     var texts = Array.isArray(inputs) ? inputs.slice() : [inputs];
-    var arsenalHit = null;
+    var arsenalHit = null, wsHit = null;
     for (var ai = 0; ai < texts.length; ai++) {
       var ar = _tryArsenalIngest(texts[ai]);
       if (ar && ar.ok) {
         arsenalHit = ar;
-        if (/={3,}\s*OBOL STEP\s+\d+/i.test(String(texts[ai] || ''))) {
-          texts[ai] = _stripArsenalBlock(texts[ai]);
-        } else {
-          return { ok: true, arsenal: ar, commands: 1, imported: 1, dupes: 0, added: 0, tools: ['obol-arsenal'], hosts: [], merged: 0, remapped: 0 };
-        }
+        texts[ai] = _stripArsenalBlock(texts[ai]);
+      }
+      var ws = _tryWorkspaceSnapshot(texts[ai]);
+      if (ws && ws.ok) {
+        wsHit = ws;
+        texts[ai] = _stripWorkspaceSnapshot(texts[ai]);
+      }
+    }
+    if ((arsenalHit && arsenalHit.ok) || (wsHit && wsHit.ok)) {
+      var hasRemainingCmds = texts.some(function (t) { return _hasNonSetupCommands(t); });
+      if (!hasRemainingCmds) {
+        var setupTools = [];
+        if (arsenalHit && arsenalHit.ok) setupTools.push('obol-arsenal');
+        if (wsHit && wsHit.ok) setupTools.push('obol-workspace');
+        return { ok: true, arsenal: arsenalHit, workspaceSync: wsHit, commands: 1, imported: 1, dupes: 0, added: 0,
+          facts: [], blockers: [], recognizedTool: true, looksError: false, epoch: 'anon', lines: 1, fileName: opts.fileName || '', parseError: '',
+          tools: setupTools, hosts: [], merged: 0, remapped: 0 };
       }
     }
     if (!ready()) return { ok: false, reason: 'parsers' };
@@ -798,6 +921,7 @@
     // chronological where timestamps exist; stable on original order otherwise
     all.sort(function (a, b) { var at = a.ts == null ? a.ord : a.ts, bt = b.ts == null ? b.ord : b.ts; return at === bt ? a.ord - b.ord : at - bt; });
     var seen = {}, ranTools = {}, hosts = {}, imported = 0, dupes = 0, added = 0, first = null;
+    var allFacts = [], allBlockers = [], anyRecognized = false, allLooksErr = true, lastEpoch = 'anon', totalLines = 0;
     all.forEach(function (s) {
       var firstOut = (s.stdout.split(/\r?\n/).find(function (l) { return l.trim(); }) || '').slice(0, 120);
       var key = s.command.replace(/\s+/g, ' ').trim() + '|' + firstOut;
@@ -806,16 +930,30 @@
       // Route this command to a host: the fixed target, else the one it names, else the active target.
       var tip = fixed || detectTarget(s.command, s.stdout, { lhost: lhost, known: known, self: self }) || params.target || '';
       var scope = tip ? ('host:' + tip) : undefined;
-      var r = run({ text: s.stdout, command: s.command, source: 'session', at: s.ts || undefined, quiet: true, fileName: opts.fileName || '', scope: scope });
+      var r = run({ text: s.stdout, command: s.command, source: opts.source || 'session', at: s.ts || undefined, quiet: true, fileName: opts.fileName || '', scope: scope, fromSession: true });
       if (r && r.ok) {
         imported++; added += (r.added || 0);
-        var tname = extractTool(s.command); if (tname) ranTools[tname] = 1;
-        if (!first) first = s.command;
+        totalLines += (r.lines || 0);
+        if (r.recognizedTool) anyRecognized = true;
+        if (!r.looksError) allLooksErr = false;
+        if (r.epoch) lastEpoch = r.epoch;
+        (r.facts || []).forEach(function (f) { allFacts.push(f); });
+        (r.blockers || []).forEach(function (b) { if (allBlockers.indexOf(b) < 0) allBlockers.push(b); });
+        var tname = extractTool(s.command || r.cmd); if (tname) ranTools[tname] = 1;
+        if (!first) first = s.command || r.cmd;
         // register a host only once we attributed proven facts to it in auto mode - and never the Kali box
         if (tip && r.facts && r.facts.length && !selfSet[tip]) { hosts[tip] = 1; if (!fixed && known.indexOf(tip) < 0) { _ensureTarget(tip); known.push(tip); } }
         else if (tip && fixed && !selfSet[tip]) hosts[tip] = 1;
       }
     });
+    var targetsHit = null;
+    if (all.length === 1 && !all[0].command && added === 0 && !allFacts.length && !anyRecognized) {
+      var tImp = _tryPureTargetsImport(all[0].stdout);
+      if (tImp && tImp.ok) {
+        targetsHit = tImp;
+        added += (tImp.added || 0);
+      }
+    }
     var merged = reconcileTargets();
     // Make active the identity you actually escalated with - the strongest validated command's own
     // credential - so the next commands (flag hunt, PtH exec) fill with what works, not the first cred or a
@@ -832,7 +970,10 @@
       }, 'params');
     }
     if (OBOL.app && OBOL.app.renderSidebar) OBOL.app.renderSidebar();
-    return { ok: true, arsenal: arsenalHit, commands: all.length, imported: imported, dupes: dupes, added: added,
+    return { ok: true, arsenal: arsenalHit, workspaceSync: wsHit, targetsImported: targetsHit,
+      commands: all.length, imported: imported, dupes: dupes, added: added,
+      facts: allFacts, blockers: allBlockers, recognizedTool: anyRecognized, looksError: imported > 0 ? allLooksErr : false,
+      epoch: lastEpoch, cmd: first || '', lines: totalLines, fileName: opts.fileName || '', parseError: '',
       tools: Object.keys(ranTools), hosts: Object.keys(hosts), merged: merged, remapped: remapped };
   }
 

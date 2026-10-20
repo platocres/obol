@@ -670,6 +670,12 @@
       if (r.arsenal && r.arsenal.ok) {
         newKinds.unshift('loadout.synced (' + r.arsenal.present + ' tools)');
       }
+      if (r.workspaceSync && r.workspaceSync.ok) {
+        newKinds.unshift('workspace.synced (' + r.workspaceSync.confirmed + ' confirmed)');
+      }
+      if (r.targetsImported && r.targetsImported.ok) {
+        newKinds.unshift('targets.imported (' + (r.targetsImported.added || 0) + ')');
+      }
       _lastPaste = {
         at: Date.now(),
         added: added,

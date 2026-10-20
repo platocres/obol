@@ -132,6 +132,17 @@
   // A brand-new draft carries an EMPTY name on purpose: the UI shows it as "No Run Yet" and never a
   // fake "Untitled Run" placeholder. The launch flow fills in a real name when the operator sets up.
   function newEngagement(name) {
+    var seedParams = {};
+    try {
+      var ar = JSON.parse(localStorage.getItem('obol.arsenal-profile') || 'null');
+      if (ar && typeof ar === 'object') {
+        if (ar.lhost) {
+          seedParams.lhost = ar.lhost;
+          seedParams.lhost_iface = ar.lhost_iface || 'tun0';
+        }
+        if (ar.tooldir) seedParams.toolsDir = ar.tooldir;
+      }
+    } catch (e) {}
     return {
       id: uid('eng'),
       name: name == null ? '' : name,
@@ -139,7 +150,7 @@
       updatedAt: Date.now(),
       schema: 3,
       profile: { platform: 'custom', machine_type: '', candidate: '', osid: '', scope: [] }, // engagement profile
-      params: {},          // target/domain/username/password/lhost/…
+      params: seedParams,  // target/domain/username/password/lhost/...
       targets: [],         // [{id, ip, hostname, os, ...}]
       credentials: [],     // [{user, secret, secretType, ...}]
       activities: [],      // recorded outcomes (paste-back)

@@ -213,10 +213,12 @@
       ctx.basedn = ctx.domain.split('.').map(function (p) { return 'DC=' + p; }).join(',');
     }
 
-    // lhost: params-pinned, else a listener fact, else leave for operator
+    var arProf = _arsenalProfile();
+    // lhost: params-pinned, else a listener fact, else synced Loadout VPN IP, else leave for operator
     if (!ctx.lhost) {
       var lo = firstVal(facts, 'listener.open');
       if (lo && lo.lhost) ctx.lhost = lo.lhost;
+      else if (arProf && arProf.lhost) ctx.lhost = arProf.lhost;
     }
     // lport: params-pinned (set in the sidebar), else a listener fact, else the 4444 convention so a
     // reverse-shell / listener command is complete out of the box. The operator can change it anywhere.
@@ -225,8 +227,10 @@
       ctx.lport = (lop && lop.lport) || params.lport || '4444';
     }
     // iface: the operator's attacker interface (responder -I, mitm6 -i, ...). Pinned from the engagement's
-    // configured VM interface, defaulting to tun0 - the VPN adapter for HTB/OSCP-style labs.
-    if (!ctx.iface) ctx.iface = params.lhost_iface || 'tun0';
+    // configured VM interface or synced Loadout VPN interface, defaulting to tun0.
+    if (!ctx.iface) ctx.iface = params.lhost_iface || (arProf && arProf.lhost_iface) || 'tun0';
+    if (!ctx.arsenal_www) ctx.arsenal_www = (arProf && arProf.wwwdir) || '~/.obol/arsenal/www';
+    if (!ctx.tooldir) ctx.tooldir = params.toolsDir || (arProf && arProf.tooldir) || '~/tools';
 
     // credentials: prefer credential.available then credential.plaintext. IDENTITY-COHERENT fill - never
     // pair one credential's username with another's secret. `-u svc-alfresco -H <administrator-hash>` just
@@ -509,7 +513,7 @@
         && !facts.has('foothold.windows') && !facts.has('os.windows');
       var _priv = function (u) {
         var s = String(u || '').toLowerCase();
-        return !s || /^(?:administrator|admin|root|system|nt authority\\system|guest|defaultaccount|krbtgt|www-data|apache|nginx|nobody|daemon|http|postgres|mysql|redis|tomcat|iis apppool|network service|local service)$/.test(s) || /\$$/.test(s);
+        return !s || /^(?:administrator|admin|root|system|nt authority\\system|guest|defaultaccount|krbtgt|www-data|apache|nginx|nobody|daemon|http|postgres|mysql|redis|tomcat|iis apppool|network service|local service)$/.test(s) || /^svc[-_]/i.test(s) || /\$$/.test(s);
       };
       // The ROOT/proof flag path is an earned gate token (only filled once located).
       // The USER/local flag path prefers a located path; otherwise, when the active user is an unprivileged
@@ -676,9 +680,9 @@
     return cmd.split(LIT_OPEN).join('{{').split(LIT_CLOSE).join('}}');
   }
 
-  // ── Loadout command-rewrite ──────────────────────────────────────────────────────
+  // -- Loadout command-rewrite ------------------------------------------------------
   // Once the operator has synced their box (Loadout), rewrite a filled command to THEIR box's reality:
-  //   - tool invocation: impacket-psexec ↔ psexec.py ↔ python3 …/psexec.py; nxc ↔ netexec ↔ crackmapexec
+  //   - tool invocation: impacket-psexec <-> psexec.py <-> python3 .../psexec.py; nxc <-> netexec <-> crackmapexec
   //   - wordlist paths: the real rockyou / SecLists location on this box
   // Conservative + reversible: only a recognized ARSENAL variant appearing as a STANDALONE token is
   // swapped, and only for the actual invocation the box reported; anything un-synced or unknown is left
@@ -721,14 +725,31 @@
       }
       var variants = (e.variants && e.variants.length) ? e.variants.slice() : [e.canonical || e.key];
       if (e.canonical && variants.indexOf(e.canonical) < 0) variants.push(e.canonical);
+      var pyVariants = variants.filter(function (x) { return x && x.slice(-3).toLowerCase() === '.py'; });
+      var multiPyRepo = pyVariants.length > 1;
       variants.forEach(function (v) {
         if (!v) return;
-        var isPy = v.slice(-3).toLowerCase() === '.py' || inv.indexOf('python') === 0;
+        var vl = v.toLowerCase();
+        var vInv = inv;
+        if (rec.scripts && rec.scripts[vl]) {
+          var sp = rec.scripts[vl];
+          vInv = (sp.slice(-3).toLowerCase() === '.py' && sp.indexOf('python') !== 0) ? ('python3 ' + sp) : sp;
+        } else if (multiPyRepo && vl.slice(-3) === '.py') {
+          var invBase = inv.split('/').pop().toLowerCase();
+          if (invBase !== vl && inv.indexOf('/') >= 0) {
+            var dirPart = inv.slice(0, inv.lastIndexOf('/'));
+            if (dirPart.indexOf('python') !== 0 && vl.slice(-3) === '.py') dirPart = 'python3 ' + dirPart;
+            vInv = dirPart + '/' + v;
+          } else if (rec.dir) {
+            vInv = 'python3 ' + String(rec.dir).replace(/\/+$/, '') + '/' + v;
+          }
+        }
+        var isPy = vl.slice(-3) === '.py' || vInv.indexOf('python') === 0;
         if (isPy) {
-          var pyRe = new RegExp('(^|\\s)(?:python3?\\s+)?(?:(?:\\$HOME|~|\\/opt|\\/usr\\/local|\\/usr\\/share)\\/[^\\s"\';|&]*\\/)?' + _reEsc(v) + '(?=\\s|$)', 'g');
-          filled = filled.replace(pyRe, '$1' + inv);
-        } else if (v !== inv) {
-          filled = filled.replace(new RegExp('(^|\\s)' + _reEsc(v) + '(?=\\s|$)', 'g'), '$1' + inv);
+          var pyRe = new RegExp('(^|\\s)(?:python3?\\s+)?(?:(?:\\$HOME|~|\\/opt|\\/usr\\/local|\\/usr\\/share|\\/home\\/[^\\s"\';|&\\/]+)\\/[^\\s"\';|&]*\\/)?' + _reEsc(v) + '(?=\\s|$)', 'gi');
+          filled = filled.replace(pyRe, '$1' + vInv);
+        } else if (v !== vInv) {
+          filled = filled.replace(new RegExp('(^|\\s)' + _reEsc(v) + '(?=\\s|$)', 'g'), '$1' + vInv);
         }
       });
     });

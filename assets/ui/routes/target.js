@@ -283,8 +283,23 @@
         if (!okp) { if (out) out.textContent = 'Parsers still loading, try again.'; t.disabled = false; return; }
         var r = OBOL.ingest.run({ text: text, scope: 'host:' + ip, source: 'paste' });
         if (!r || !r.ok) { if (out) out.textContent = (r && r.reason === 'parsers') ? 'Parsers still loading, try again.' : 'Nothing to parse.'; t.disabled = false; return; }
+        if (r.arsenal && r.arsenal.ok && !r.added) {
+          U.toast('Loadout stocked ' + r.arsenal.present + ' tools, ' + r.arsenal.staged + ' staged');
+          OBOL.router.render();
+          return;
+        }
+        if (r.workspaceSync && r.workspaceSync.ok && !r.added) {
+          U.toast(r.workspaceSync.confirmed + ' confirmed · ' + r.workspaceSync.adopted + ' new file' + (r.workspaceSync.adopted === 1 ? '' : 's') + ' adopted');
+          OBOL.router.render();
+          return;
+        }
+        if (r.targetsImported && r.targetsImported.ok) {
+          U.toast((r.targetsImported.added || 0) + ' target' + (r.targetsImported.added === 1 ? '' : 's') + ' imported');
+          OBOL.router.render();
+          return;
+        }
         if (r.added) { U.toast('Minted ' + r.added + ' fact' + (r.added === 1 ? '' : 's') + ', updating this box'); OBOL.router.render(); }
-        else { t.disabled = false; if (out) out.textContent = r.facts.length ? ('Recognized ' + r.facts.length + ', nothing new (already known).') : 'No facts recognized (output saved).'; }
+        else { t.disabled = false; if (out) out.textContent = (r.facts && r.facts.length) ? ('Recognized ' + r.facts.length + ', nothing new (already known).') : 'No facts recognized (output saved).'; }
       });
     });
     // contextual launchers: make this box the active target, then open the global Tools / Playbooks

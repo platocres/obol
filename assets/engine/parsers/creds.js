@@ -748,7 +748,7 @@
   var _SPIDER_PATH_RE = /(?:\/\/|\\\\)[^\s/\\]+[/\\](?:([A-Za-z])\$|Users)[/\\]([^\s\[\]"']*?(?:local|proof|user|root|flag\d?)\.txt)(?=\s|$|\[|"|')/gi;
   function _strip_prompt(line) {
     return String(line)
-      .replace(/^\s*(?:(?:SMB|WINRM|WMI|RPC|SSH)\s+\S+\s+\d+\s+\S+\s+)/i, '')
+      .replace(/^\s*(?:(?:SMB|WINRM|WMI|RPC|SSH|RDP|MSSQL)\s+\S+\s+\d+\s+\S+\s+)/i, '')
       .replace(/^\s*\*?Evil-WinRM\*?\s*PS\s+[A-Za-z]:\\[^>\r\n]*>\s*/i, '')
       .replace(/^\s*PS\s+[A-Za-z]:\\[^>\r\n]*>\s*/i, '')
       .replace(/^\s*[A-Za-z]:\\[^>\r\n]*>\s*/, '')
@@ -768,7 +768,7 @@
       seen[flag] = 1;
       var base = String(path || '').split(/[\\/]/).pop() || '';
       var slot = slotHint || _slot_for_flagfile(base);
-      var isExec = command && /-x\b|wmiexec|psexec|smbclient.*get/i.test(command);
+      var isExec = command && /-[xX]\b|wmiexec|psexec|smbclient.*get/i.test(command);
       var kind = (onHost || isExec) ? _flag_kind(slot) : 'objective.flag_located';
       _add(facts, mkFact(kind, scope, { flag: flag, slot: slot, name: base, path: path || '' }, S, source));
       if (kind === 'objective.local_flag' || kind === 'objective.root_flag' || kind === 'objective.flag') {

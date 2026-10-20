@@ -79,6 +79,8 @@
     { kind: 'blocker.dcsync_denied', re: /DRSUAPI\s+SessionError:\s*code:\s*0x20f7\s*-\s*ERROR_DS_DRA_BAD_DN|ERROR_DS_DRA_BAD_DN|ERROR_DS_DRA_ACCESS_DENIED/i },
     // NetExec --bloodhound blocked by default ~/.nxc/nxc.conf BloodHound-CE setting.
     { kind: 'blocker.nxc_bh_config', re: /Your configuration has BloodHound-CE enabled,\s*however this version is currently unsupported/i },
+    // MachineAccountQuota is 0: domain users cannot create a machine account without GenericAll/CreateChild on an OU.
+    { kind: 'blocker.maq_zero', re: /MachineAccountQuota\s*[:=]\s*0\b/i },
   ];
 
   function _parse_op_blockers(text, ws, command, source, facts) {
