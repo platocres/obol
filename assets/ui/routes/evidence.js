@@ -36,27 +36,25 @@
     var docs = OBOL.FIELD_DOCTORS;
     var cards = [];
     var act = OBOL.store ? OBOL.store.active() : null;
-    var f = facts || (act && act.facts) || [];
-    var ctx = (OBOL.command && OBOL.command.buildContext) ? OBOL.command.buildContext(f, { params: (act && act.params), profile: (act && act.profile), workspace: (OBOL.workspace && act) ? OBOL.workspace.tokens(act) : {} }) : {};
 
     Object.keys(docs).forEach(function (k) {
       if (facts.has && facts.has(k)) {
+        var scopes = {};
+        (facts.facts || []).forEach(function (f) { if (f.kind === k && f.state === 'supported') scopes[f.scope] = true; });
+        Object.keys(scopes).forEach(function (scope) {
         var d = docs[k];
-        var code = d.code || '';
-        if (code && ctx) {
-          if (ctx.target) code = code.replace(/<target(?:-ip)?>/g, ctx.target);
-          if (ctx.domain) code = code.replace(/<domain>/g, ctx.domain);
-          if (ctx.share) code = code.replace(/<share>/g, ctx.share);
-          if (ctx.user) code = code.replace(/<user(?:name)?>/g, ctx.user);
-        }
+        var params = Object.assign({}, (act && act.params) || {}, /^host:/.test(scope) ? { target: scope.slice(5) } : {});
+        var code = String(d.code || '').replace(/<(?:dc-ip|target-ip|target)>/g, '{{target}}')
+          .replace(/<(?:user|username)>/g, '{{user}}').replace(/<domain>/g, '{{domain}}').replace(/<share>/g, '{{share}}');
+        if (code && OBOL.command) code = OBOL.command.fillTemplate(code, facts, { params: params });
         cards.push(
           '<div class="fix-card" data-blocker="' + esc(k) + '">'
           + '<div class="fix-card-header">'
           + '<div class="fix-card-title-group">'
           + '<span class="fix-card-badge">DIAGNOSTIC DETECTED</span>'
-          + '<h3 class="fix-card-title">' + esc(d.title || k) + '</h3>'
+          + '<h3 class="fix-card-title">' + esc(d.title || k) + ' (' + esc(scope.replace(/^host:/, '')) + ')</h3>'
           + '</div>'
-          + '<button type="button" class="fix-card-dismiss" data-dismiss-blocker="' + esc(k) + '" title="Dismiss this diagnostic">✓ Resolved</button>'
+          + '<button type="button" class="fix-card-dismiss" data-dismiss-blocker="' + esc(k) + '" data-fact-scope="' + esc(scope) + '" title="Dismiss this diagnostic">✓ Resolved</button>'
           + '</div>'
           + '<div class="fix-card-body">'
           + (d.why ? ('<div class="fix-card-why"><strong>Root Cause:</strong> ' + esc(d.why) + '</div>') : '')
@@ -69,6 +67,7 @@
           + '</div>'
           + '</div>'
         );
+        });
       }
     });
     if (!cards.length) return '';
@@ -233,33 +232,21 @@
       U.toast((r.targetsImported.added || 0) + ' target' + (r.targetsImported.added === 1 ? '' : 's') + ' added');
       return;
     }
-    var origin = r.fileName ? (esc(r.fileName) + ' · ' + r.lines.toLocaleString() + ' lines') : null;
-    var fixHtml = renderFixCards(OBOL.store.factSet());
+    var origin = r.fileName ? (esc(r.fileName) + ' · ' + r.lines.toLocaleString() + ' lines') : '';
+    var target = r.context && r.context.target;
+    var scopedFacts = target && OBOL.store.factSetForTarget ? OBOL.store.factSetForTarget(target) : OBOL.store.factSet();
+    var fixHtml = renderFixCards(scopedFacts);
     if (resEl) {
-      if (!r.facts.length) {
-        resEl.innerHTML = fixHtml + '<div class="ev-none">' + (origin ? ('Read ' + origin + ', no ') : 'No ')
-          + 'facts recognized (output saved; nothing invented). '
-          + (r.parseError ? 'The parser skipped part of this output (see the browser console). ' : '')
-          + 'Set the command above if the output is on its own, or add a fact manually.</div>';
-      } else {
-        // Plain-language, value-aware lead (shared with the coach's paste flash): say what obol LEARNED
-        // before the raw kind list, so the summary reads to a human, not just a fact dump.
-        var sum = (OBOL.coach && OBOL.coach.pasteSummary) ? OBOL.coach.pasteSummary(r.facts) : null;
-        var plain = sum ? ('<ul class="ev-learned">' + sum.phrases.map(function (p) { return '<li>' + esc(p) + '</li>'; }).join('')
-          + (sum.extra ? ('<li class="ev-learned-more">and ' + sum.extra + ' more</li>') : '') + '</ul>'
-          + (sum.next ? ('<div class="ev-imp-next">Next move: <strong>' + esc(sum.next) + '</strong></div>') : '')) : '';
-        resEl.innerHTML = fixHtml + '<div class="ev-added">Minted ' + r.added + ' new fact' + (r.added === 1 ? '' : 's') + ' (' + r.facts.length + ' recognized)'
-          + (origin ? (' from ' + origin) : '') + ':</div>'
-          + plain
-          + '<details class="ev-factraw"' + (sum ? '' : ' open') + '><summary>Fact details</summary>'
-          + '<ul class="ev-factlist">' + r.facts.map(function (f) {
-            return '<li class="' + esc(f.state) + '"><code>' + esc(f.kind) + '</code> <span class="ev-fscope">' + esc(f.scope) + '</span></li>';
-          }).join('') + '</ul></details>'
-          + '<a class="btn-primary" href="#/path">See Updated Coach →</a>';
-      }
+      resEl.innerHTML = fixHtml + OBOL.ingest.renderOutcome(r.outcome)
+        + '<div class="ev-hint">' + r.added + ' new fact' + (r.added === 1 ? '' : 's') + (origin ? (' from ' + origin) : '') + '.</div>'
+        + (r.facts.length ? '<details class="ev-factraw"><summary>Recorded observation details</summary><ul class="ev-factlist">'
+          + r.facts.map(function (f) { return '<li class="' + esc(f.state) + '"><code>' + esc(f.kind) + '</code> <span class="ev-fscope">' + esc(f.scope) + '</span></li>'; }).join('')
+          + '</ul></details>' : '')
+        + '<a class="btn-primary" href="#/path">See Updated Coach →</a>';
     }
-    U.toast(r.added ? ('Minted ' + r.added + ' fact' + (r.added === 1 ? '' : 's') + (meta.fileName ? ' from file' : '')) : 'No new facts');
+    U.toast(OBOL.ingest.outcomeMessage(r));
   }
+
   function runParse() {
     ingest((document.getElementById('ev-text') || {}).value || '',
       (document.getElementById('ev-cmd') || {}).value || '', { source: 'paste' });
@@ -287,12 +274,7 @@
       // exactly (report-only writeup checks already excluded there).
       if (OBOL.coach && OBOL.coach.topMove) { var m0 = OBOL.coach.topMove(); return m0 ? m0.title : ''; }
       var eng = OBOL.store.active(), facts = OBOL.store.factSet(), pack = OBOL.packs.actions();
-      var doneIds = {};
-      function moveEverProduced(id) { return (eng.activities || []).some(function (a) { return a && a.action_id === id && (a.produced || []).length > 0; }); }
-      Object.keys((eng && eng.checklist) || {}).forEach(function (k) {
-        var st = eng.checklist[k];
-        if (st === 'done' || (st === 'empty' && !moveEverProduced(k))) doneIds[k] = true;
-      });
+      var doneIds = OBOL.store.doneIdsForTarget ? OBOL.store.doneIdsForTarget((eng.params || {}).target, facts, eng) : {};
       var focus = (OBOL.profile && eng && eng.profile) ? OBOL.profile.machineFocus(eng.profile.machine_type) : [];
       var ranked = OBOL.pack.nextActions(facts, pack, { doneIds: doneIds, focusPrefixes: focus }) || [];
       var top = ranked.find(function (a) { return OBOL.phases.prematurity(a, facts) === 0; }) || ranked[0];
@@ -340,21 +322,15 @@
       U.toast((r.targetsImported.added || 0) + ' target' + (r.targetsImported.added === 1 ? '' : 's') + ' added');
       return;
     }
-    var next = topNextMove();
     if (resEl) {
-      resEl.innerHTML = '<div class="ev-added">Imported ' + r.imported + ' command' + (r.imported === 1 ? '' : 's')
-        + ' → minted ' + r.added + ' new fact' + (r.added === 1 ? '' : 's')
-        + (r.hosts && r.hosts.length > 1 ? (' across ' + r.hosts.length + ' hosts') : '')
-        + (r.dupes ? (' · skipped ' + r.dupes + ' duplicate' + (r.dupes === 1 ? '' : 's')) : '')
-        + (r.remapped ? (' · remapped ' + r.remapped + ' IP occurrence' + (r.remapped === 1 ? '' : 's')) : '')
-        + (r.arsenal && r.arsenal.ok ? (' · Loadout synced (' + r.arsenal.present + ' tools)') : '')
-        + (r.workspaceSync && r.workspaceSync.ok ? (' · Workspace synced (' + r.workspaceSync.confirmed + ' confirmed)') : '') + '.'
-        + (r.hosts && r.hosts.length ? ('<div class="ev-imp-tools">Hosts: ' + r.hosts.map(function (h) { return '<code>' + esc(h) + '</code>'; }).join(' ') + '</div>') : '')
-        + (r.tools && r.tools.length ? ('<div class="ev-imp-tools">Tools seen: ' + r.tools.map(function (t) { return '<code>' + esc(t) + '</code>'; }).join(' ') + '</div>') : '')
-        + (next ? ('<div class="ev-imp-next">Next move: <strong>' + esc(next) + '</strong></div>') : '')
-        + '</div><a class="btn-primary" href="#/path">See Updated Coach →</a>';
+      resEl.innerHTML = OBOL.ingest.renderOutcome(r.outcome)
+        + '<div class="ev-hint">Imported ' + r.imported + ' command' + (r.imported === 1 ? '' : 's')
+        + '; ' + r.added + ' new fact' + (r.added === 1 ? '' : 's')
+        + (r.dupes ? '; ' + r.dupes + ' duplicate capture' + (r.dupes === 1 ? '' : 's') + ' skipped' : '') + '.</div>'
+        + (r.outcomes && r.outcomes.length > 1 ? '<details><summary>Outcomes by command</summary>' + r.outcomes.map(function (o) { return OBOL.ingest.renderOutcome(o); }).join('') + '</details>' : '')
+        + '<a class="btn-primary" href="#/path">See Updated Coach →</a>';
     }
-    U.toast(r.added ? ('Imported ' + r.imported + ' commands · ' + r.added + ' new facts') : ('Imported ' + r.imported + ' commands · no new facts'));
+    U.toast(OBOL.ingest.outcomeMessage(r));
   }
 
   function mounted(ctx) {
@@ -412,7 +388,7 @@
     U.on(mount, 'click', '[data-dismiss-blocker]', function (e, t) {
       var k = t.getAttribute('data-dismiss-blocker');
       if (k && OBOL.store && OBOL.store.retractFactKind) {
-        OBOL.store.retractFactKind(k);
+        OBOL.store.retractFactKind(k, t.getAttribute('data-fact-scope'));
         U.toast('Diagnostic resolved');
         OBOL.router.render();
       }

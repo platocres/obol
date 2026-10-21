@@ -9222,7 +9222,7 @@
   ],
   "validate-credential": [
     {
-      "when": "You hold a credential you FOUND (a config password, a reused guess), not one you cracked.",
+      "when": "You hold recovered credential material that has not been validated on this target and service, including an offline-cracked password.",
       "land": [
         "Run the switchless nxc check: proto, target, user, secret, nothing else."
       ],
@@ -9232,7 +9232,7 @@
       "win": "You know the credential authenticates before you spend a single move on it.",
       "mistakes": [
         "Building a whole attack on a credential you never confirmed, then blaming the exploit when it was the password all along.",
-        "Re-validating a credential you cracked or already logged in with, that one is already proven, so this step hides for it."
+        "Treating offline recovery or a login on another host or service as proof here. A result applies to the exact credential, target, and service; a changed secret requires its own evidence."
       ]
     },
     {

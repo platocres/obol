@@ -79,12 +79,12 @@
     'secretsdump': {
       looksFor: 'secretsdump / mimikatz / pypykatz dumps - NTLM hashes, the full NTDS, the krbtgt key, cached (DCC2) hashes, Linux /etc/shadow, and any cleartext.',
       regex: 'user:rid:lm:nt:::, $DCC2$, krbtgt:502',
-      emits: ['hash.ntlm', 'loot.ntds', 'hash.krbtgt', 'hash.mscache', 'credential.plaintext', 'loot.shadow', 'credential.admin', 'loot.sam'],
+      emits: ['hash.ntlm', 'loot.ntds', 'hash.krbtgt', 'hash.mscache', 'credential.plaintext', 'loot.shadow', 'loot.sam'],
     },
     'cracked': {
       looksFor: "john/hashcat cracked lines - a recovered 'hash:password' pair, plus hash identifier output (hashid/nth) and IKE PSK / IPMI RAKP hash captures.",
       regex: '<hash>:<password> (Cracked)',
-      emits: ['credential.available', 'credential.candidate', 'credential.validated', 'hash.type', 'hash.ike_psk', 'hash.candidate'],
+      emits: ['credential.available', 'credential.plaintext', 'credential.candidate', 'hash.type', 'hash.ike_psk', 'hash.candidate'],
     },
     'auth-validation': {
       looksFor: "nxc / evil-winrm auth results - the '[+] domain\\\\user:secret (Pwn3d!)' success and the failure lines, over SMB, WinRM, and RDP.",
@@ -153,7 +153,7 @@
     'database': {
       looksFor: "a database session's output - a version/current-user banner or engine prompt that proves the login (db.session), listed databases and tables, and dumped credential rows.",
       regex: 'mysql>, SQL>, List of databases, Server version:',
-      emits: ['db.session', 'db.creds', 'db.databases', 'db.tables', 'db.hashes', 'db.linked_server', 'mssql.linked_servers', 'mssql.sysadmin', 'oracle.sid', 'loot.material', 'credential.candidate', 'foothold.windows'],
+      emits: ['db.session', 'db.admin', 'db.creds', 'db.databases', 'db.tables', 'db.hashes', 'db.linked_server', 'mssql.linked_servers', 'mssql.sysadmin', 'oracle.sid', 'loot.material', 'credential.candidate', 'foothold.windows'],
     },
     'snmp': {
       looksFor: 'snmpwalk / snmp-check output - the community string that worked, running processes and users, and any credentials in the MIB.',
