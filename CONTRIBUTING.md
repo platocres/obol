@@ -46,9 +46,19 @@ third-party code under a license incompatible with the above.
 
 ## Practical notes
 
-- Keep changes focused, and match the surrounding code style.
-- The engine is pure and UI-independent; prefer adding logic there with a test in `tests/`.
-- Run the test suite before opening a pull request.
+- Keep changes focused, and match the surrounding code style (plain ES5/ES6 browser scripts, zero
+  build dependencies at runtime, no em or en dashes in shipped copy, and no decorative emoji).
+- The engine (`assets/engine/`) is pure and UI-independent; methodology definitions live in the
+  bundled packs (`data/packs-bundle.js`) and reference catalogs (`data/`), while DOM rendering and
+  IndexedDB persistence live in `assets/ui/`. See [ARCHITECTURE.md](ARCHITECTURE.md),
+  [INFERENCE.md](INFERENCE.md), and [RANKING.md](RANKING.md) before modifying ranking or parser
+  contracts.
+- Every fact minted by a parser (`assets/engine/parsers/`) must correspond to real terminal output,
+  and every move prerequisite must remain deterministic and explainable.
+- **Terminology note (`Cockpit = coach / path` in code):** The primary operator workspace at
+  `#/path` is called **Cockpit** in the UI and documentation (formerly *Coach* / *Next Steps*). In
+  the codebase, its route module (`assets/ui/routes/path.js`), global namespace (`OBOL.coach`), and
+  CSS selectors (`.coach-*`, `.ns-*`) retain their historical names for compatibility.
 
 ---
 
