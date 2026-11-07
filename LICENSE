@@ -1,0 +1,22 @@
+OBOL Source-Available Personal, Academic & Authorized Security Testing License
+
+Copyright (c) 2026 Brandon Jones. All Rights Reserved.
+
+1. Grant of Personal, Academic, and Authorized Testing Use
+Subject to the terms and conditions of this License, the copyright holder hereby grants you a revocable, non-exclusive, non-transferable, royalty-free license to access, view, and use the OBOL web application, client interface, and accompanying technical documentation solely for:
+  (a) Personal learning, cybersecurity education, and certification preparation;
+  (b) Academic teaching, research, and university instruction; and
+  (c) Authorized penetration testing and security assessments for which you hold explicit, verifiable written permission from the target system owner.
+
+2. Restrictions and Reserved Rights
+Except as expressly permitted above, you may not, without prior written permission from the copyright holder:
+  (a) Sell, sublicense, rent, lease, or offer the software or any portion of it as a commercial or hosted service;
+  (b) Redistribute, republish, or incorporate the software, methodology data, or documentation into a competing product, commercial training platform, or third-party distribution;
+  (c) Scrape, bulk-harvest, reverse-engineer, decompile, or attempt to extract the proprietary server-side parsing, ranking, or report-synthesis modules hosted on the OBOL evaluation edge service; or
+  (d) Remove or alter any copyright, trademark, attribution, or legal notice contained in the software or documentation.
+
+3. Authorized Targets Only & Operator Responsibility
+OBOL is a zero-execution methodology and note-keeping companion. It generates zero target network traffic and executes zero commands against target systems. Every command, payload, or request you copy and execute in an external terminal, browser, or tool is executed solely at your own election, risk, and legal responsibility in compliance with all applicable laws (including 18 U.S.C. Section 1030 / CFAA and applicable local equivalents).
+
+4. Disclaimer of Warranty and Limitation of Liability
+THE SOFTWARE, DOCUMENTATION, AND HOSTED SERVICES ARE PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE, AND NONINFRINGEMENT. IN NO EVENT SHALL THE AUTHOR OR COPYRIGHT HOLDER BE LIABLE FOR ANY CLAIM, DAMAGES, OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT, OR OTHERWISE, ARISING FROM, OUT OF, OR IN CONNECTION WITH THE SOFTWARE, TARGET DISRUPTION, ACCOUNT LOCKOUTS, DATA LOSS, EXAM OR ENGAGEMENT OUTCOMES, OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.

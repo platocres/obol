@@ -1,0 +1,210 @@
+<!doctype html>
+<html lang="en" class="obol-booting" data-obol-boot="loading">
+<head>
+  <meta charset="utf-8">
+    <meta http-equiv="Content-Security-Policy" content="default-src 'self'; connect-src 'self' https://obol.platocres.workers.dev; img-src 'self' data: blob:; style-src 'self' 'unsafe-inline'; script-src 'self' 'unsafe-inline'; font-src 'self' data:; worker-src 'self' blob:;">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>OBOL: Offensive Box Operations Ledger</title>
+  <meta name="description" content="Evidence-driven OSCP operator companion. A browser-local, static-site edition of the OBOL engine: proof-gated operator cockpit, conservative parsers, BloodHound analysis, checklist, and OSCP reporting. No backend, no execution.">
+  <link rel="stylesheet" href="assets/css/obol.css?v=ea57c921">
+  <script>
+    /* Pre-paint skin: set before first paint so there is no flash. Tiny + synchronous. */
+    (function () {
+      try {
+        var p = JSON.parse(localStorage.getItem('obol-prefs') || '{}');
+        /* Obol (plain OLED + emerald) is the out-of-the-box skin; a stored choice always wins.
+           Neon (synthwave sunset) and the others remain selectable in the settings panel. */
+        document.documentElement.setAttribute('data-skin', (p && p.skin) || 'obol');
+        var a = parseFloat(localStorage.getItem('obol.surface-alpha'));
+        if (isNaN(a)) a = 0.5; /* fade surfaces so the motion background shows through, but keep panels readable */
+        if (a >= 0 && a <= 1) document.documentElement.style.setProperty('--surface-alpha', String(a));
+        document.documentElement.setAttribute('data-motion', localStorage.getItem('obol.motion') === 'off' ? 'off' : 'full');
+        if (localStorage.getItem('obol.params-collapsed') === '1') document.documentElement.setAttribute('data-params-collapsed', '1');
+      } catch (e) {}
+    })();
+    /* Boot guard: if boot never commits, reveal the page anyway so it can't hang hidden. */
+    setTimeout(function () {
+      if (document.documentElement.getAttribute('data-obol-boot') === 'loading') {
+        document.documentElement.classList.remove('obol-booting');
+        document.documentElement.setAttribute('data-obol-boot', 'timeout');
+      }
+    }, 8000);
+  </script>
+</head>
+<body>
+  <div id="app">
+    <header class="appbar">
+      <button id="nav-toggle" class="nav-toggle" type="button" aria-label="Open engagement panel" aria-controls="sidebar" aria-expanded="false">
+        <span class="nav-toggle-bars" aria-hidden="true"></span>
+      </button>
+      <div class="brand"><svg class="coin" viewBox="0 0 24 24" width="27" height="27" aria-hidden="true">
+          <defs><radialGradient id="obolCoin" cx="38%" cy="34%" r="72%">
+            <stop offset="0" stop-color="#FFF1A8"/><stop offset="55%" stop-color="#FFD34D"/><stop offset="100%" stop-color="#E6A21C"/>
+          </radialGradient></defs>
+          <circle cx="12" cy="12" r="10" fill="url(#obolCoin)" stroke="#B9770E" stroke-width="1.5"/>
+          <circle cx="12" cy="12" r="7.2" fill="none" stroke="#B9770E" stroke-width="0.8" opacity="0.5"/>
+          <path d="M12 7 L16 12 L12 17 L8 12 Z" fill="#B9770E"/>
+        </svg>
+        <div><h1>OBOL</h1><div class="tagline">Offensive Box Operations Ledger</div></div>
+      </div>
+      <nav class="mainnav" aria-label="Primary">
+        <a data-nav href="#/start">Start Here</a>
+        <a data-nav href="#/study">Learn</a>
+        <a data-nav data-nav-match="home loadout targets target evidence path map domain creds checklist findings history scoreboard report graph" href="#/home">Engagements</a>
+        <a data-nav href="#/tools">Tools</a>
+        <a data-nav href="#/workbench">Workbench</a>
+        <a data-nav data-nav-match="stuck" href="#/library">Library</a>
+        <a data-nav data-nav-match="cruise playbooks" href="#/cruise" class="nav-cruise">Cruise<span class="nav-exp">Experimental</span></a>
+        <a data-nav href="#/help">Help</a>
+      </nav>
+      <div id="tip-slot" class="tip-slot"><!-- calm tip feed (assets/ui/tips.js) --></div>
+      <button id="nav-search" class="nav-search" type="button" aria-label="Search commands" title="Search commands, tools, and moves (Ctrl + K)">
+        <svg viewBox="0 0 24 24" width="18" height="18" aria-hidden="true" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><circle cx="11" cy="11" r="7"/><path d="m20 20-3.6-3.6"/></svg>
+        <span class="nav-search-l">Search</span>
+        <kbd class="nav-search-kbd">Ctrl + K</kbd>
+      </button>
+      <button id="nav-focus" class="nav-focus" type="button" aria-pressed="false" title="Focus mode: hide secondary panels for low-distraction work">
+        <svg viewBox="0 0 24 24" width="18" height="18" aria-hidden="true" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 3v2M12 19v2M3 12h2M19 12h2M5.6 5.6l1.4 1.4M17 17l1.4 1.4M18.4 5.6 17 7M7 17l-1.4 1.4"/><circle cx="12" cy="12" r="3.2"/></svg>
+        <span class="nav-focus-l">Focus</span>
+      </button>
+      <button id="nav-paste" class="nav-paste" type="button" aria-label="Paste evidence" title="Paste evidence (mint facts from any output)">
+        <svg viewBox="0 0 24 24" width="19" height="19" aria-hidden="true" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="8" y="3" width="8" height="4" rx="1"/><path d="M9 5H6a2 2 0 0 0-2 2v12a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V7a2 2 0 0 0-2-2h-3"/><path d="M9 12h6M9 16h4"/></svg>
+        <span class="nav-paste-l">Paste</span>
+      </button>
+    </header>
+
+    <div id="ctxbar" class="ctxbar" aria-label="Engagement context"><!-- global context strip: engagement · credential · target + engagement sub-nav (ctxbar.js) --></div>
+
+    <aside id="sidebar">
+      <button id="params-collapse" class="params-collapse" type="button" title="Collapse the parameter bar" aria-label="Collapse the parameter bar">
+        <svg viewBox="0 0 24 24" width="16" height="16" aria-hidden="true" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="m14 6-6 6 6 6"/></svg>
+      </button>
+      <div class="side-h">Engagement</div>
+      <div class="eng-row">
+        <select id="eng-select" aria-label="Active engagement"></select>
+        <button id="eng-new" class="btn-mini" title="New engagement">+</button>
+      </div>
+
+      <div class="side-h">Parameters</div>
+      <div id="params"></div>
+
+      <details id="creds-panel" class="side-creds" open>
+        <summary class="side-h side-creds-h">Credentials<span id="creds-count" class="side-creds-n"></span></summary>
+        <div id="cred-switch" class="cred-switch"></div>
+      </details>
+
+      <details id="facts-panel" class="side-facts">
+        <summary class="side-h side-facts-h">Facts<span id="facts-count" class="side-facts-n"></span></summary>
+        <ul id="facts-list"></ul>
+        <div id="fact-pick" class="fact-pick"></div>
+      </details>
+    </aside>
+
+    <button id="params-reopen" class="params-reopen" type="button" title="Show the parameter bar" aria-label="Show the parameter bar">
+      <svg viewBox="0 0 24 24" width="16" height="16" aria-hidden="true" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="m10 6 6 6-6 6"/></svg>
+      <span class="params-reopen-l">Parameters</span>
+    </button>
+
+    <main id="view" role="main"><!-- routes render here (once per navigation) --></main>
+  </div>
+  <div id="nav-scrim" class="nav-scrim" hidden></div>
+
+  <!-- Mobile bottom tab bar (shown only on narrow screens; primary sections + a More sheet). -->
+  <nav id="tabbar" class="tabbar" aria-label="Sections">
+    <a class="tab" href="#/home" data-tab><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M4 11 12 4l8 7"/><path d="M6 10v9h12v-9"/></svg><span>Home</span></a>
+    <a class="tab" href="#/path" data-tab><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="12" cy="12" r="8.5"/><path d="M15.5 8.5 10.5 10.5 8.5 15.5 13.5 13.5Z" fill="currentColor" stroke="none"/></svg><span>Cockpit</span></a>
+    <a class="tab" href="#/evidence" data-tab><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="6" y="4" width="12" height="16" rx="2"/><path d="M9.5 4h5v2.6h-5z"/><path d="M9 11h6M9 14.5h4"/></svg><span>Evidence</span></a>
+    <a class="tab" href="#/tools" data-tab><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M15 6.4a3.5 3.5 0 0 0-4.6 4.5L4.7 16.6 7.4 19.3 13 13.6a3.5 3.5 0 0 0 4.5-4.6l-2.1 2.1-1.9-.5-.5-1.9z"/></svg><span>Tools</span></a>
+    <button class="tab" id="tab-more" type="button" aria-haspopup="true" aria-expanded="false"><svg viewBox="0 0 24 24" fill="currentColor" stroke="none" aria-hidden="true"><circle cx="5.5" cy="12" r="1.7"/><circle cx="12" cy="12" r="1.7"/><circle cx="18.5" cy="12" r="1.7"/></svg><span>More</span></button>
+  </nav>
+  <div id="more-sheet" class="more-sheet" role="menu" aria-label="More sections" aria-hidden="true">
+    <div class="more-grip" aria-hidden="true"></div>
+    <div class="more-title">More sections</div>
+    <div class="more-grid">
+      <a href="#/study" role="menuitem">Learn</a>
+      <a href="#/loadout" role="menuitem">Loadout</a>
+      <a href="#/workbench" role="menuitem">Workbench</a>
+      <a href="#/library" role="menuitem">Library</a>
+      <a href="#/targets" role="menuitem">Targets</a>
+      <a href="#/cruise" role="menuitem">Cruise</a>
+      <a href="#/map" role="menuitem">Map</a>
+      <a href="#/domain" role="menuitem">Domain</a>
+      <a href="#/creds" role="menuitem">Creds</a>
+      <a href="#/checklist" role="menuitem">Checklist</a>
+      <a href="#/findings" role="menuitem">Findings</a>
+      <a href="#/scoreboard" role="menuitem">Flags</a>
+      <a href="#/report" role="menuitem">Report</a>
+      <a href="#/help" role="menuitem">Help</a>
+    </div>
+  </div>
+
+  <dialog id="aup-dialog" class="aup-dialog" closedby="none" aria-labelledby="aup-title">
+    <div class="aup-kicker">Authorized Use &amp; Legal Notice</div>
+    <h2 id="aup-title" class="aup-title">Authorized Security Testing &amp; Assumption of Risk</h2>
+    <p class="aup-lead">OBOL is a zero-execution methodology and note-keeping companion for authorized penetration testing, security assessments, and educational lab environments. Before continuing, confirm that you understand and agree to the following terms:</p>
+    <ul class="aup-list">
+      <li><strong>Authorized Targets Only:</strong> You represent and warrant that you own the target environment or hold explicit, verifiable written authorization from the system owner for every IP address, hostname, domain, credential, or artifact you enter into or test alongside OBOL.</li>
+      <li><strong>Zero-Execution Companion - Sole Operator Responsibility:</strong> OBOL runs locally in your browser, generates zero network traffic, and executes zero commands. Every command, payload, or request you copy and run in an external terminal, browser, or tool is executed solely at your own election, risk, and legal responsibility in compliance with all applicable laws (including <code>18 U.S.C. &sect; 1030</code> / CFAA and local equivalents).</li>
+      <li><strong>Provided &quot;AS IS&quot; - No Warranty or Liability:</strong> Under the OBOL Source-Available License, OBOL is provided <code>&quot;AS IS&quot;</code> without warranty of any kind for personal, academic, and authorized security testing use. The authors and copyright holders assume zero liability for target disruption, service instability, account lockouts, data loss, exam or engagement outcomes, or unlawful misuse.</li>
+      <li><strong>Independent Project - Third-Party Trademarks:</strong> OBOL is an independent research project and is not affiliated with, endorsed by, or sponsored by OffSec, PortSwigger, SpecterOps, Hack The Box, or any other third-party vendor. Referenced tool and platform names (including Nmap, NetExec, Impacket, BloodHound, SharpHound, Hashcat, Chisel, Ligolo-ng, GTFOBins, and Burp Suite) are trademarks or projects of their respective owners and are named solely for interoperability and instructional reference.</li>
+    </ul>
+    <form method="dialog" class="aup-actions">
+      <p id="aup-esc-hint" class="aup-esc-hint">Click &quot;I Understand &amp; Agree&quot; to continue into OBOL.</p>
+      <button type="submit" id="aup-agree-btn" class="btn-primary aup-btn" value="agree" aria-describedby="aup-esc-hint" autofocus>I Understand &amp; Agree</button>
+    </form>
+  </dialog>
+
+  <!-- Critical path only. Everything else is route-lazy (assets/ui/lazy.js). -->
+  <script defer src="assets/engine/facts.js?v=48429c28"></script>
+  <script defer src="assets/engine/phases.js?v=d64edd0c"></script>
+  <script defer src="assets/engine/pack.js?v=27972800"></script>
+  <script defer src="assets/engine/profile.js?v=9e4a6e49"></script>
+  <script defer src="assets/engine/context.js?v=0a3238d9"></script>
+  <script defer src="assets/engine/command.js?v=4723c3e6"></script>
+  <script defer src="assets/engine/workspace.js?v=df6b7730"></script>
+  <script defer src="assets/engine/vfs.js?v=ebe16ab3"></script>
+  <script defer src="assets/engine/loot.js?v=5eac70b0"></script>
+  <script defer src="assets/engine/playbook.js?v=73750f11"></script>
+  <script defer src="assets/engine/cloud-bridge.js"></script>
+  <script defer src="data/packs-bundle.js?v=569c7f16"></script>
+  <script defer src="data/tools-install.js?v=95946739"></script>
+  <script defer src="data/tunnels.js?v=9f49c482"></script>
+  <script defer src="data/pivot-troubleshooter.js?v=ecfa947a"></script>
+  <script defer src="data/field-notes.js?v=2a8c9c9b"></script>
+  <script defer src="data/tool-staging.js?v=a93ac8e5"></script>
+  <script defer src="assets/engine/pivotdoctor.js?v=bbbf8383"></script>
+  <script defer src="assets/engine/packs.js?v=a90dc37a"></script>
+  <script defer src="data/gtfobins.js?v=ff786d3f"></script>
+  <script defer src="assets/engine/resolve.js?v=5200880c"></script>
+  <script defer src="assets/ui/util.js?v=c972ce66"></script>
+  <script defer src="assets/ui/icons.js?v=03d2117e"></script>
+  <script defer src="assets/ui/mobile.js?v=912b45f0"></script>
+  <script defer src="assets/ui/factpick.js?v=012097b2"></script>
+  <script defer src="assets/ui/store.js?v=5c65bb3f"></script>
+  <script defer src="assets/ui/credbar.js?v=f9c56f48"></script>
+  <script defer src="data/tips.js?v=0ce10649"></script>
+  <script defer src="assets/ui/tips.js?v=e7c9d4f3"></script>
+  <script defer src="assets/ui/ctxbar.js?v=eb188a0b"></script>
+  <script defer src="assets/ui/quickpaste.js?v=09a98712"></script>
+  <script defer src="assets/ui/chainview.js?v=3b7e3f4c"></script>
+  <script defer src="assets/ui/graphview.js?v=87e3677a"></script>
+  <script defer src="assets/ui/graphtip.js?v=86afaf65"></script>
+  <script defer src="assets/engine/outcomes.js?v=27d7a785"></script>
+  <script defer src="assets/ui/ingest.js?v=e4fed0a8"></script>
+  <script defer src="assets/ui/router.js?v=15b04eaa"></script>
+  <script defer src="assets/ui/lazy.js?v=a7c95366"></script>
+  <script defer src="assets/ui/palette.js?v=5d1537c0"></script>
+  <script defer src="assets/ui/routes/home.js?v=91637044"></script>
+  <script defer src="assets/ui/routes/targets.js?v=c2d8e8f4"></script>
+  <script defer src="assets/ui/routes/evidence.js?v=2cad4328"></script>
+  <script defer src="assets/ui/burp-copilot.js?v=db3274bb"></script>
+  <script defer src="assets/ui/routes/path.js?v=898ccaa7"></script>
+  <script defer src="assets/ui/boot.js?v=725c1ab5"></script>
+
+  <!-- Presentation-only, loaded after the critical path so the boot budget is untouched:
+       motion background, coin bursts on genuine proof, and the appearance settings. -->
+  <script defer src="assets/ui/backdrop.js?v=783933d7"></script>
+  <script defer src="assets/ui/coin.js?v=8ac33e12"></script>
+  <script defer src="assets/ui/settings.js?v=a1ee25b0"></script>
+</body>
+</html>

@@ -1,0 +1,405 @@
+/*!
+ * obol ui — boot.js — app entrypoint. Inits the store, wires the shell (engagement picker,
+ * params, facts panel), registers routes, and starts the router. Route bundles beyond the
+ * critical path are loaded lazily by the router's ensure() hooks (see lazy.js).
+ */
+(function (root) {
+  'use strict';
+  var OBOL = root.OBOL = root.OBOL || {};
+  var U = OBOL.util;
+
+  var PARAM_FIELDS = [
+    { key: 'target', label: 'Target', ph: '10.10.10.10' },
+    { key: 'domain', label: 'Target domain', ph: 'corp.local' },
+    { key: 'authRealm', label: 'Account realm', ph: 'account domain or local host' },
+    { key: 'username', label: 'User', ph: 'administrator' },
+    { key: 'password', label: 'Password', ph: '', secret: true },
+    { key: 'nthash', label: 'NT hash', ph: '', secret: true },
+    { key: 'lhost', label: 'LHOST', ph: '10.10.14.2' },
+    { key: 'lport', label: 'LPORT', ph: '4444' },
+  ];
+
+  function esc(s) { return U.esc(s); }
+
+  // The sidebar Target switcher: a compact dropdown of the engagement's known targets (plus the current
+  // value if it is not among them). Shown only when there are two or more to switch between; otherwise the
+  // text field alone is enough. Selecting one makes it the active target (fills {{target}} everywhere).
+  function targetSwitcherHtml(eng, cur) {
+    var raw = ((eng && eng.targets) || []).map(function (t) { return t.ip || t.target || ''; }).filter(Boolean);
+    if (cur && raw.indexOf(cur) < 0) raw.unshift(cur);
+    var seen = {}, uniq = [];
+    raw.forEach(function (ip) { if (!seen[ip]) { seen[ip] = 1; uniq.push(ip); } });
+    if (uniq.length < 2) return '';
+    var opts = uniq.map(function (ip) {
+      return '<option value="' + U.attr(ip) + '"' + (ip === cur ? ' selected' : '') + '>' + esc(ip) + '</option>';
+    }).join('');
+    return '<select class="param-target-switch" aria-label="Switch active target" title="Switch active target">' + opts + '</select>';
+  }
+
+  function renderSidebar() {
+    var eng = OBOL.store.active();
+    if (!eng) return;
+    var configured = !OBOL.store || typeof OBOL.store.isConfigured !== 'function' || OBOL.store.isConfigured(eng);
+    try { document.documentElement.setAttribute('data-eng-configured', configured ? '1' : '0'); } catch (e) {}
+    var params = eng.params || {};
+
+    // engagement picker
+    var engSel = document.getElementById('eng-select');
+    if (engSel) {
+      engSel.innerHTML = OBOL.store.listEngagements().map(function (e) {
+        return '<option value="' + esc(e.id) + '"' + (e.id === OBOL.store.activeId() ? ' selected' : '') + '>' + esc(OBOL.store.runLabel(e)) + '</option>';
+      }).join('');
+    }
+
+    // params
+    var paramsEl = document.getElementById('params');
+    // renderSidebar() runs on EVERY store change, and typing in a param fires a store update per
+    // keystroke, so rebuilding these inputs mid-type would blow away focus and the caret (the field
+    // "deselects" after every character). When the user is typing in one of them, leave the block
+    // alone, its values are already current; rebuild only when focus is elsewhere.
+    var typingInParams = paramsEl && document.activeElement && paramsEl.contains(document.activeElement);
+    if (paramsEl && !typingInParams) {
+      // Redaction is opt-in across obol: a secret you recovered shows in cleartext by default so you can
+      // read the password you just selected, and is masked (type=password) only when the report's Redact
+      // Secrets toggle is on. This matches the credential switcher and the coach rail — no field hides a
+      // value you own unless you asked it to.
+      var redact = !!(eng.ui || {}).reportRedact;
+      paramsEl.innerHTML = PARAM_FIELDS.map(function (f) {
+        var v = params[f.key] || '';
+        var input = '<input data-param="' + esc(f.key) + '" type="' + (f.secret && redact ? 'password' : 'text') + '" '
+          + 'value="' + U.attr(v) + '" placeholder="' + esc(f.ph) + '" autocomplete="off" spellcheck="false"'
+          + (f.secret ? ' data-secret="1"' : '') + '>';
+        // The Target field carries the engagement's target switcher (the dropdown promoted here from the
+        // old context strip): pick any known target to make it active and re-fill every {{target}}.
+        if (f.key === 'target') {
+          return '<label class="param param-target"><span>' + esc(f.label) + '</span>'
+            + '<div class="param-target-row">' + input + targetSwitcherHtml(eng, v) + '</div></label>';
+        }
+        return '<label class="param"><span>' + esc(f.label) + '</span>' + input + '</label>';
+      }).join('');
+    }
+
+    // credential switcher (collected creds → click to fill commands)
+    if (OBOL.credbar) OBOL.credbar.render();
+    var credsCountEl = document.getElementById('creds-count');
+    if (credsCountEl) { var nc = (OBOL.creds && OBOL.creds.gather) ? OBOL.creds.gather().length : 0; credsCountEl.textContent = nc ? String(nc) : ''; }
+
+    // facts panel (collapsible, collapsed by default: a dev/power-user surface, kept but out of the way)
+    var factsEl = document.getElementById('facts-list');
+    if (factsEl) {
+      var fs = OBOL.store.factSet();
+      var countEl = document.getElementById('facts-count');
+      if (countEl) countEl.textContent = fs.facts.length ? String(fs.facts.length) : '';
+      if (!fs.facts.length) {
+        factsEl.innerHTML = '<li class="facts-empty">No facts yet. Add one below, or paste tool output on Evidence.</li>';
+      } else {
+        // Collapse by (kind, scope): several facts can share a claim but differ in an incidental
+        // value — ldap.reachable proven by nmap AND nxc, or service.msrpc seen on six high ports —
+        // so one row per claim (with an ×N count) reads far cleaner than a pile of identical labels.
+        var groups = {}, order = [];
+        fs.facts.forEach(function (f) {
+          var key = f.kind + '\x00' + f.scope;
+          if (!groups[key]) { groups[key] = { kind: f.kind, scope: f.scope, facts: [], newest: f.created_at }; order.push(key); }
+          var g = groups[key];
+          g.facts.push(f);
+          if (f.created_at > g.newest) g.newest = f.created_at;
+        });
+        factsEl.innerHTML = order.map(function (k) { return groups[k]; })
+          .sort(function (a, b) { return b.newest - a.newest; })
+          .map(function (g) {
+            var newest = g.facts.slice().sort(function (a, b) { return b.created_at - a.created_at; })[0];
+            var cls = newest.state === 'refuted' ? 'refuted' : (newest.state === 'inconclusive' ? 'incon' : 'ok');
+            // distinct ports (or other small ids) across the group, for the tooltip
+            var ports = g.facts.map(function (f) { return (f.value || {}).port; }).filter(function (p) { return p != null; });
+            var uports = ports.filter(function (p, i) { return ports.indexOf(p) === i; }).sort(function (a, b) { return a - b; });
+            var count = g.facts.length;
+            var title = g.scope + (uports.length ? ' · ports ' + uports.join(', ') : '') + (count > 1 ? ' · ' + count + ' observations' : '');
+            return '<li class="fact-item ' + cls + '" title="' + esc(title) + '">'
+              + '<code>' + esc(g.kind) + '</code>'
+              + (count > 1 ? '<span class="fact-count" aria-label="' + count + ' observations">×' + count + '</span>' : '')
+              + '<button class="fact-del" data-fact-kind="' + esc(g.kind) + '" data-fact-scope="' + esc(g.scope) + '" title="Remove">×</button></li>';
+          }).join('');
+      }
+    }
+  }
+
+  function setParamsCollapsed(on) {
+    try { on ? localStorage.setItem('obol.params-collapsed', '1') : localStorage.removeItem('obol.params-collapsed'); } catch (e) {}
+    if (on) document.documentElement.setAttribute('data-params-collapsed', '1');
+    else document.documentElement.removeAttribute('data-params-collapsed');
+  }
+
+  function wireShell() {
+    // collapse / re-open the parameter bar (persisted; the pre-paint script applies it on load)
+    var pc = document.getElementById('params-collapse');
+    if (pc) pc.addEventListener('click', function (e) { e.preventDefault(); setParamsCollapsed(true); });
+    var pr = document.getElementById('params-reopen');
+    if (pr) pr.addEventListener('click', function (e) { e.preventDefault(); setParamsCollapsed(false); });
+
+    // engagement switch / new
+    var engSel = document.getElementById('eng-select');
+    if (engSel) engSel.addEventListener('change', function () {
+      OBOL.store.setActive(engSel.value).then(function () {
+        renderSidebar();
+        if (OBOL.store.isConfigured && !OBOL.store.isConfigured()) OBOL.router.go('home');
+        else OBOL.router.render();
+      });
+    });
+    var engNew = document.getElementById('eng-new');
+    if (engNew) engNew.addEventListener('click', function () {
+      // The full new-run setup (platform profile, machine type, scope, Kali working directory) lives
+      // in the home screen's "New Engagement" drawer. Route there, open the drawer, and focus it.
+      if (OBOL.routes && OBOL.routes.home && OBOL.routes.home.openNewSetup) OBOL.routes.home.openNewSetup();
+      OBOL.router.go('home');
+      var tries = 0;
+      (function focusSetup() {
+        var setup = document.getElementById('eng-setup');
+        if (!setup) { if (tries++ < 20) return void setTimeout(focusSetup, 30); return; }
+        var drawer = document.getElementById('eng-setup-drawer');
+        if (drawer) { drawer.hidden = false; drawer.removeAttribute('hidden'); }
+        setup.scrollIntoView({ behavior: 'smooth', block: 'start' });
+        var nameEl = document.getElementById('eng-name');
+        if (nameEl) { try { nameEl.focus({ preventScroll: true }); } catch (e) { try { nameEl.focus(); } catch (e2) {} } }
+        setup.classList.add('eng-setup-flash');
+        setTimeout(function () { setup.classList.remove('eng-setup-flash'); }, 1400);
+      })();
+    });
+
+    // params (input -> store)
+    function sanitizeParamValue(key, raw) {
+      var v = String(raw == null ? '' : raw);
+      if (key === 'target') {
+        return v.trim().replace(/^https?:\/\//i, '').replace(/(?::\d+)?(?:\/.*)?$/, '').trim();
+      }
+      if (key === 'lhost') {
+        return v.trim().replace(/\/\d{1,2}$/, '').trim();
+      }
+      return v;
+    }
+    var paramsEl = document.getElementById('params');
+    if (paramsEl) paramsEl.addEventListener('input', function (e) {
+      var t = e.target.closest('[data-param]'); if (!t) return;
+      var key = t.getAttribute('data-param'), val = sanitizeParamValue(key, t.value);
+      OBOL.store.update(function (eng) {
+        eng.params = eng.params || {};
+        eng.params[key] = val;
+        if (key === 'target') eng.activeTarget = val ? String(val).trim() : null;
+      }, 'params');
+    });
+    // target switcher (dropdown) or committed [data-param] edit -> sync global chrome + active route
+    if (paramsEl) paramsEl.addEventListener('change', function (e) {
+      var pInput = e.target.closest('[data-param]');
+      if (pInput) {
+        var pKey = pInput.getAttribute('data-param');
+        var pVal = sanitizeParamValue(pKey, pInput.value);
+        if (pVal !== pInput.value) pInput.value = pVal;
+        OBOL.store.update(function (eng) {
+          eng.params = eng.params || {};
+          eng.params[pKey] = pVal;
+          if (pKey === 'target') eng.activeTarget = pVal ? String(pVal).trim() : null;
+        }, 'params');
+        if (OBOL.ctxbar && OBOL.ctxbar.render) OBOL.ctxbar.render();
+        renderSidebar();
+        if (OBOL.router && OBOL.router.render) OBOL.router.render();
+        return;
+      }
+      var sel = e.target.closest('.param-target-switch'); if (!sel) return;
+      if (OBOL.store.setActiveTarget) {
+        OBOL.store.setActiveTarget(sel.value);
+      } else {
+        OBOL.store.update(function (eng) { eng.params = eng.params || {}; eng.params.target = sel.value; eng.activeTarget = sel.value || null; }, 'params');
+      }
+      if (OBOL.ctxbar && OBOL.ctxbar.render) OBOL.ctxbar.render();
+      renderSidebar(); OBOL.router.render();
+    });
+
+    // guided fact picker (sidebar) — friendly labels + an advanced raw-kind escape hatch
+    var fpEl = document.getElementById('fact-pick');
+    if (fpEl && OBOL.factpick) OBOL.factpick.mount(fpEl, function (kind) {
+      var scope = 'host:' + ((OBOL.store.active().params || {}).target || 'target');
+      OBOL.store.addFacts([OBOL.facts.makeFact({ kind: kind, scope: scope, source: 'manual' })], 'facts');
+      renderSidebar(); OBOL.router.render();
+      U.toast('Fact added: ' + kind);
+    });
+
+    // remove fact
+    var factsEl = document.getElementById('facts-list');
+    if (factsEl) U.on(factsEl, 'click', '.fact-del', function (e, t) {
+      var kind = t.getAttribute('data-fact-kind'), scope = t.getAttribute('data-fact-scope');
+      OBOL.store.update(function (eng) {
+        eng.facts = (eng.facts || []).filter(function (f) { return !(f.kind === kind && f.scope === scope); });
+      }, 'facts');
+      renderSidebar(); OBOL.router.render();
+    });
+
+    // credential switcher click/keyboard handling (delegated, wired once)
+    if (OBOL.credbar) OBOL.credbar.mount();
+
+    // (skin/motion/opacity live in the bottom-right settings panel — see settings.js)
+
+    // re-render sidebar whenever state that affects sidebar inputs/creds/facts changes
+    var SIDEBAR_SKIP_REASONS = { playbook: 1, checklist: 1, ws: 1 };
+    OBOL.store.onChange(function (reason) {
+      if (reason && SIDEBAR_SKIP_REASONS[reason]) return;
+      renderSidebar();
+    });
+  }
+
+  function registerRoutes() {
+    var R = OBOL.router;
+    // Coach + evidence + home + targets are in the critical bundle.
+    ['home', 'targets', 'evidence', 'path'].forEach(function (name) {
+      if (OBOL.routes[name]) R.register(name, OBOL.routes[name]);
+    });
+    // Lazy routes (tools, domain, checklist, report, graph) register themselves when loaded.
+    if (OBOL.lazy) OBOL.lazy.registerLazyRoutes(R);
+    // First-run routing: a brand-new visitor (no synced Loadout AND no engagement work yet) lands on
+    // Start Here - the onramp front door (place yourself, set up a practice box, find where to practice,
+    // then into Learn or an engagement). Anyone who has synced a box or started an engagement lands on
+    // Engagements as before. A specific hash in the URL always wins over this default.
+    R.setDefault(isFirstRun() ? 'start' : 'home');
+  }
+
+  function isFirstRun() {
+    try {
+      if (JSON.parse(localStorage.getItem('obol.arsenal-profile') || 'null')) return false; // already set up a box
+    } catch (e) {}
+    var engs = (OBOL.store.listEngagements && OBOL.store.listEngagements()) || [];
+    if (engs.length > 1) return false;
+    var e = engs[0];
+    if (!e) return true;
+    var touched = (e.targets && e.targets.length) || (e.facts && e.facts.length)
+      || (e.activities && e.activities.length) || (e.credentials && e.credentials.length);
+    return !touched;
+  }
+
+  var AUP_KEY = 'obol.aup-accepted';
+  var AUP_VERSION = 'v1';
+  var _aupAcceptedMem = false;
+  var _aupBound = false;
+
+  function isAupAccepted() {
+    if (_aupAcceptedMem) return true;
+    try {
+      var v = localStorage.getItem(AUP_KEY) || '';
+      return v.indexOf(AUP_VERSION + ':') === 0;
+    } catch (e) {
+      return false;
+    }
+  }
+
+  function recordAupAccepted() {
+    _aupAcceptedMem = true;
+    try {
+      localStorage.setItem(AUP_KEY, AUP_VERSION + ':' + new Date().toISOString());
+    } catch (e) {}
+  }
+
+  function syncAupDialogMode(dlg, accepted) {
+    if (!dlg) return;
+    dlg.setAttribute('closedby', accepted ? 'any' : 'none');
+    var hint = dlg.querySelector('#aup-esc-hint');
+    if (hint) hint.classList.remove('is-visible');
+    var btn = dlg.querySelector('#aup-agree-btn');
+    if (btn) btn.textContent = accepted ? 'Close' : 'I Understand & Agree';
+  }
+
+  function openAupDialog() {
+    var dlg = document.getElementById('aup-dialog');
+    if (!dlg || typeof dlg.showModal !== 'function') return;
+    bindAupDialog(dlg);
+    syncAupDialogMode(dlg, isAupAccepted());
+    if (!dlg.open) {
+      try { dlg.showModal(); } catch (e) {}
+    }
+  }
+
+  function bindAupDialog(dlg) {
+    if (!dlg || _aupBound) return;
+    _aupBound = true;
+    function showRequiredHint() {
+      var hint = dlg.querySelector('#aup-esc-hint');
+      if (hint) hint.classList.add('is-visible');
+      var btn = dlg.querySelector('#aup-agree-btn');
+      if (btn && btn.focus) btn.focus();
+    }
+    dlg.addEventListener('keydown', function (e) {
+      if (e.key === 'Escape' && !isAupAccepted()) showRequiredHint();
+    });
+    dlg.addEventListener('submit', function (e) {
+      var sub = e.submitter || dlg.querySelector('#aup-agree-btn');
+      if (sub && sub.value === 'agree' && !isAupAccepted()) recordAupAccepted();
+    });
+    dlg.addEventListener('cancel', function (e) {
+      if (!isAupAccepted()) {
+        e.preventDefault();
+        showRequiredHint();
+      }
+    });
+    dlg.addEventListener('close', function () {
+      var rv = dlg.returnValue;
+      dlg.returnValue = '';
+      if (rv === 'agree' && !isAupAccepted()) {
+        recordAupAccepted();
+      }
+      if (!isAupAccepted()) {
+        setTimeout(function () {
+          if (!isAupAccepted() && !dlg.open && typeof dlg.showModal === 'function') {
+            syncAupDialogMode(dlg, false);
+            try { dlg.showModal(); } catch (e) {}
+            var hint = dlg.querySelector('#aup-esc-hint');
+            if (hint) hint.classList.add('is-visible');
+          }
+        }, 0);
+      } else {
+        syncAupDialogMode(dlg, true);
+      }
+    });
+    if (!('closedBy' in root.HTMLDialogElement.prototype)) {
+      var outside = function (ev) {
+        var r = dlg.getBoundingClientRect();
+        return ev.clientX < r.left || ev.clientX > r.right || ev.clientY < r.top || ev.clientY > r.bottom;
+      };
+      var pressedOutside = false;
+      dlg.addEventListener('pointerdown', function (ev) { pressedOutside = outside(ev); });
+      dlg.addEventListener('pointerup', function (ev) {
+        if (isAupAccepted() && pressedOutside && outside(ev)) dlg.close();
+      });
+    }
+  }
+
+  function boot() {
+    var view = document.getElementById('view');
+    OBOL.router.mount(view);
+    OBOL.store.init().then(function () {
+      // pre-paint skin already applied by inline head script; ensure sidebar + routes.
+      renderSidebar();
+      wireShell();
+      registerRoutes();
+      if (OBOL.palette) OBOL.palette.init();
+      OBOL.router.start();
+      if (OBOL.ctxbar) OBOL.ctxbar.init();   // global engagement context strip (after the route is known)
+      if (OBOL.tips) OBOL.tips.mount();       // calm tip feed in the header (next to Focus)
+      var activeEng = OBOL.store.active && OBOL.store.active();
+      if (activeEng && (activeEng.activities || []).some(function (a) { return a && /\benum4linux(?:-ng)?\b/i.test(a.command || a.dispatch || ''); }) && OBOL.ingest && OBOL.ingest.ensureParsers) {
+        OBOL.ingest.ensureParsers().then(function () { renderSidebar(); if (OBOL.router && OBOL.router.render) OBOL.router.render(); });
+      }
+      var aupDlg = document.getElementById('aup-dialog');
+      if (aupDlg) {
+        bindAupDialog(aupDlg);
+        if (!isAupAccepted()) openAupDialog();
+      }
+      document.documentElement.classList.remove('obol-booting');
+      document.documentElement.setAttribute('data-obol-boot', 'ready');
+    }).catch(function (err) {
+      document.documentElement.setAttribute('data-obol-boot', 'failed');
+      if (view) view.innerHTML = '<div class="boot-error">Boot failed: ' + esc(err && err.message) + '</div>';
+    });
+  }
+
+  if (document.readyState === 'loading') document.addEventListener('DOMContentLoaded', boot);
+  else boot();
+
+  OBOL.aup = { isAccepted: isAupAccepted, open: openAupDialog };
+  OBOL.app = { renderSidebar: renderSidebar };
+})(typeof globalThis !== 'undefined' ? globalThis : this);

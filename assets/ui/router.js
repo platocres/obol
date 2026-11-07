@@ -1,0 +1,122 @@
+/*!
+ * obol ui — router.js
+ * A tiny deterministic hash router. Each navigation renders the target route into #view
+ * EXACTLY ONCE (no setTimeout double-paint, no historical wrapper chain — the old
+ * #/path-rendered-twice bug is the anti-pattern this avoids). Routes may be lazy: a route
+ * can declare an async `ensure()` that loads its bundle once before first render.
+ */
+(function (root) {
+  'use strict';
+  var OBOL = root.OBOL = root.OBOL || {};
+
+  var _routes = {};        // name -> {render(ctx), ensure?()}
+  var _default = 'path';
+  var _mount = null;       // the #view element
+  var _rendering = false;
+  var _pending = null;
+  var _lastRoute = null;   // to scroll to top only on a real route change, not in-place re-renders
+  var _lastRouteDef = null;
+  var GATED_ENG_ROUTES = ['targets', 'target', 'path', 'evidence', 'map', 'domain', 'creds', 'checklist', 'findings', 'history', 'scoreboard', 'report', 'graph'];
+
+  function parseHash() {
+    var h = (location.hash || '').replace(/^#\/?/, '');
+    var qIdx = h.indexOf('?');
+    var pathPart = qIdx >= 0 ? h.slice(0, qIdx) : h;
+    var queryPart = qIdx >= 0 ? h.slice(qIdx + 1) : '';
+    var parts = pathPart.split('/').filter(Boolean);
+    return { name: parts[0] || _default, args: parts.slice(1), query: queryPart, raw: h };
+  }
+
+  function register(name, def) { _routes[name] = def; }
+  function setDefault(name) { _default = name; }
+  function mountEl(el) { _mount = el; }
+
+  function current() { return parseHash(); }
+
+  async function render() {
+    if (_rendering) { _pending = true; return; }
+    _rendering = true;
+    try {
+      var route = parseHash();
+      var isConfigured = !OBOL.store || typeof OBOL.store.isConfigured !== 'function' || OBOL.store.isConfigured();
+      if (!isConfigured && GATED_ENG_ROUTES.indexOf(route.name) >= 0 && _routes.home) {
+        try { location.replace('#/home'); } catch (e) {}
+        route = { name: 'home', args: [], query: '', raw: 'home' };
+        if (OBOL.util && OBOL.util.toast) OBOL.util.toast('Set up your engagement first to unlock operational views');
+      }
+      var def = _routes[route.name] || _routes[_default];
+      if (!def) return;
+      if (def.ensure && !def._ensured) {
+        try { await def.ensure(); def._ensured = true; }
+        catch (e) { /* surfaced by the route's own render */ }
+      }
+      if (_pending) return;
+      if (_lastRouteDef && _lastRouteDef !== def && typeof _lastRouteDef.unmount === 'function') {
+        try { _lastRouteDef.unmount(); } catch (e) {}
+      }
+      _lastRouteDef = def;
+      // Single write into #view. The route's markup goes inside a FRESH per-render host (a
+      // display:contents <div>, so it adds no box and the layout is exactly as if the route's section
+      // were a direct child of #view). mounted() binds its delegated click/keydown handlers to THIS host,
+      // not to the shared, persistent #view. Because a new host is created on every render, a route's
+      // handlers can never stack across revisits (the previous host and its listeners are discarded with
+      // it) and can never fire for a different route (that route's host no longer exists). This is the
+      // systemic cure for the "buttons stop responding until a full reload" class: a delegated handler
+      // left on #view used to accumulate every visit, so a toggle fired an even number of times and
+      // netted to a no-op, and a broad selector from one route could hijack another's elements. The host
+      // is an ANCESTOR of the route's content, so mounted()'s own `mount.querySelector('.<root>')` calls
+      // (several routes look up their own root that way) keep resolving.
+      if (_mount && def.render) {
+        var out = def.render({ name: route.name, args: route.args, mount: _mount });
+        // render() may return an HTML string (we wrap + set it) or manage the DOM itself (returns undefined).
+        var host = _mount;
+        if (typeof out === 'string') { _mount.innerHTML = '<div class="route-host">' + out + '</div>'; host = _mount.firstElementChild || _mount; }
+        if (def.mounted) { try { def.mounted({ name: route.name, args: route.args, mount: host }); } catch (e) {} }
+      }
+      // reflect active nav + expose the route name for layout (e.g. the full-bleed Learn front door)
+      reflectNav(route.name);
+      if (OBOL.app && OBOL.app.renderSidebar) { try { OBOL.app.renderSidebar(); } catch (e) {} }
+      if (OBOL.credbar && OBOL.credbar.render) { try { OBOL.credbar.render(); } catch (e) {} }
+      if (OBOL.ctxbar && OBOL.ctxbar.render) { try { OBOL.ctxbar.render(); } catch (e) {} }
+      try { document.documentElement.setAttribute('data-route', route.name); } catch (e) {}
+      if (OBOL.settings && OBOL.settings.syncHint) { try { OBOL.settings.syncHint(route.name); } catch (e) {} }
+      // On a real route change (e.g. launch → coach), land at the top; leave scroll alone on the
+      // in-place re-renders that happen after minting a fact or marking a move done.
+      if (route.name !== _lastRoute) {
+        _lastRoute = route.name;
+        try { if (_mount) _mount.scrollTop = 0; if (root.scrollTo) root.scrollTo(0, 0); } catch (e) {}
+      }
+    } finally {
+      _rendering = false;
+      if (_pending) { _pending = false; render(); }
+    }
+  }
+
+  function reflectNav(name) {
+    var links = document.querySelectorAll('[data-nav]');
+    for (var i = 0; i < links.length; i++) {
+      var el = links[i];
+      var target = (el.getAttribute('href') || '').replace(/^#\/?/, '').split('/')[0];
+      // a nav item may also light up for a set of related routes (e.g. Engagements covers every
+      // per-engagement surface) via data-nav-match="home targets evidence …".
+      var match = el.getAttribute('data-nav-match');
+      var covered = match ? (' ' + match + ' ').indexOf(' ' + name + ' ') >= 0 : false;
+      var on = target === name || covered;
+      el.classList.toggle('active', on);
+      if (on) el.setAttribute('aria-current', 'page'); else el.removeAttribute('aria-current');
+    }
+  }
+
+  function go(hash) { location.hash = hash.charAt(0) === '#' ? hash : ('#/' + hash.replace(/^#?\/?/, '')); }
+
+  function start() {
+    window.addEventListener('hashchange', render);
+    if (!location.hash) location.replace('#/' + _default);
+    render();
+  }
+
+  OBOL.router = {
+    register: register, setDefault: setDefault, mount: mountEl,
+    render: render, start: start, go: go, current: current,
+  };
+})(typeof globalThis !== 'undefined' ? globalThis : this);
