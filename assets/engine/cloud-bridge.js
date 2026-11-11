@@ -258,7 +258,23 @@
       var byId = Object.create(null);
       pack.forEach(function (a) { if (a && a.id) byId[a.id] = a; });
       return (bundle.opens || []).map(function (it) {
-        return byId[it.id] ? { action: byId[it.id], gate: it.gate, need: it.need } : null;
+        var act = byId[it.id];
+        if (!act) return null;
+        var needs = Array.isArray(it.needs) ? it.needs : null;
+        var steps = typeof it.steps === "number" ? it.steps : 0;
+        if (!needs) {
+          needs = [];
+          steps = 0;
+          var hasFn = function (k) { return !!(facts && typeof facts.has === "function" && facts.has(k)); };
+          (act.requires_all || []).forEach(function (k) { if (!hasFn(k)) { needs.push(k); steps++; } });
+          var anyGroup = act.requires_any || [];
+          if (anyGroup.length && !anyGroup.some(hasFn)) {
+            anyGroup.forEach(function (k) { if (needs.indexOf(k) < 0) needs.push(k); });
+            steps++;
+          }
+          steps = Math.max(1, steps);
+        }
+        return { action: act, needs: needs, steps: steps };
       }).filter(Boolean);
     };
     OBOL.pack._cloudPlanPath = function (facts, pack, opts) {

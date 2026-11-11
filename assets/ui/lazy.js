@@ -14,25 +14,25 @@
     graph: ['assets/engine/graph.js?v=5f845ab4', 'assets/ui/routes/graph.js?v=42b74dc8'],
     domain: ['assets/jszip.min.js?v=c96375d5', 'assets/engine/bloodhound.js?v=9c4aaa25', 'assets/ui/bhgraph.js?v=b3d6a062', 'assets/ui/routes/domain.js?v=ae756bb6'],
     report: ['assets/jszip.min.js?v=c96375d5', 'assets/ui/routes/report.js?v=0e6a070b'],
-    tools: ['assets/engine/toolbuilder.js?v=8e642c14', 'data/toolset.js?v=12c2716e',
+    tools: ['assets/engine/toolbuilder.js?v=8e642c14', 'data/toolset.js?v=c03f4836',
       'data/tool-glossary.js?v=cf257324', 'data/tool-recipes.js?v=cafd6372', 'data/tool-stations.js?v=3f1621c8',
-      'assets/engine/toolkit.js?v=cb14c479', 'assets/engine/shellkit.js?v=8289e51a', 'assets/engine/pivotkit.js?v=e59dbec6', 'assets/ui/pivotstation.js?v=697a8be7', 'assets/engine/workbench.js?v=23e5f918', 'assets/ui/bind.js?v=70d1fd1b', 'assets/ui/routes/tools.js?v=06c46c73'],
+      'assets/engine/toolkit.js?v=cb14c479', 'assets/engine/shellkit.js?v=8289e51a', 'assets/engine/pivotkit.js?v=e59dbec6', 'assets/ui/pivotstation.js?v=697a8be7', 'assets/engine/workbench.js?v=e79a1216', 'assets/ui/bind.js?v=70d1fd1b', 'assets/ui/routes/tools.js?v=06c46c73'],
     loadout: ['assets/engine/arsenal.js?v=631dc795', 'assets/ui/routes/loadout.js?v=7f4451b5'],
-    workbench: ['assets/engine/workbench.js?v=23e5f918', 'assets/ui/routes/workbench.js?v=2fc389a6'],
+    workbench: ['assets/engine/workbench.js?v=e79a1216', 'assets/ui/routes/workbench.js?v=2fc389a6'],
     stuck: ['data/stuck-catalog.js?v=0e28d317', 'assets/engine/stuck.js?v=9f3ec324', 'assets/ui/routes/stuck.js?v=1a559f6b'],
     // Library folds Stuck? in as a sub-lens, so it carries Stuck?'s data+engine+route plus the ATT&CK
     // catalog/map (for the ATT&CK lens) and the library engine itself.
     library: ['data/stuck-catalog.js?v=0e28d317', 'assets/engine/stuck.js?v=9f3ec324', 'assets/ui/routes/stuck.js?v=1a559f6b',
       'data/attack-catalog.js?v=f2aa133a', 'data/attack-move-map.js?v=3e72e0fb',
       'data/tool-glossary.js?v=cf257324', 'data/tool-recipes.js?v=cafd6372', 'data/tool-stations.js?v=3f1621c8',
-      'assets/engine/toolbuilder.js?v=8e642c14', 'data/toolset.js?v=12c2716e', 'assets/engine/toolkit.js?v=cb14c479', 'assets/ui/bind.js?v=70d1fd1b',
+      'assets/engine/toolbuilder.js?v=8e642c14', 'data/toolset.js?v=c03f4836', 'assets/engine/toolkit.js?v=cb14c479', 'assets/ui/bind.js?v=70d1fd1b',
       'assets/engine/library.js?v=cc552212', 'assets/ui/routes/library.js?v=bfb32361'],
     study: ['data/tool-glossary.js?v=cf257324', 'data/study-fixtures.js?v=23029800', 'assets/engine/study.js?v=f8aac721', 'assets/ui/routes/study.js?v=10e4e326'],
     // data-only slice of the study group (the ~1MB sample-output fixtures + the replay engine, no Learn
     // route UI). The coach background-loads this after mount so "See It Run" can show real example output
     // in Next Steps without putting the fixtures on the critical boot path.
     studydata: ['data/tool-glossary.js?v=cf257324', 'data/study-fixtures.js?v=23029800', 'assets/engine/study.js?v=f8aac721'],
-    decisionmap: ['data/decision-forks.js?v=3aaa2f1c', 'data/parser-signatures.js?v=e7f3a606', 'data/coverage-expected.js?v=acc4df5e', 'data/flag-reach.js?v=f91ede7b', 'assets/engine/decisionmap.js?v=3a57f6be', 'assets/ui/decisiontree.js?v=0f23b0f7'],
+    decisionmap: ['data/decision-forks.js?v=3aaa2f1c', 'data/parser-signatures.js?v=e7f3a606', 'data/coverage-expected.js?v=acc4df5e', 'data/flag-reach.js?v=51b16819', 'assets/engine/decisionmap.js?v=3a57f6be', 'assets/ui/decisiontree.js?v=0f23b0f7'],
     checklist: ['data/oscp-scope.js?v=47e64691', 'assets/ui/routes/checklist.js?v=7ea32b01'],
     target: ['assets/engine/graph.js?v=5f845ab4', 'assets/ui/routes/target.js?v=95dc44d8'],
     creds: ['assets/ui/routes/creds.js?v=21745ab9'],

@@ -2117,8 +2117,116 @@
   var V2_GOALS = ["objective.flag", "objective.local_flag", "objective.root_flag", "access.admin", "access.system", "access.root", "loot.ntds"];
   var V2_GOALS_NO_FLAGS = ["access.admin", "access.system", "access.root", "loot.ntds"];
   var V2_PRIV = { "access.admin": 1, "access.system": 1, "access.root": 1, "loot.ntds": 1, "objective.flag": 1, "objective.local_flag": 1, "objective.root_flag": 1 };
+  var V2_FOOTHOLD = { "foothold.linux": 1, "foothold.windows": 1, "foothold.webshell": 1, "access.shell": 1, "access.admin": 1, "access.system": 1, "access.root": 1 };
+  var _V2_EMPTY_I32 = typeof Int32Array === "function" ? new Int32Array(0) : [];
+  var _v2ActionMetaCache = typeof WeakMap === "function" ? new WeakMap() : null;
+  var _v2ActionMetaSeq = 0;
+  function v2GetActionMeta(a) {
+    var prod = a.produces || [], ra = a.requires_all || [], ry = a.requires_any || [], cmds = a.commands || [];
+    var cmd0Run = cmds.length && cmds[0] ? String(cmds[0].run || "") : "";
+    var sigLen = (prod.length << 16) ^ (ra.length << 8) ^ ry.length ^ (cmds.length << 24);
+    var canCache = !!(_v2ActionMetaCache && a && typeof a === "object");
+    var m = canCache ? _v2ActionMetaCache.get(a) : null;
+    if (m && m.sigLen === sigLen && m.cmd0Run === cmd0Run && m.locus === a.locus && m.aid === a.id) return m;
+    var adviceOnly = prod.length > 0;
+    var isObjectiveFlagOnly = prod.length > 0;
+    var producesFoothold = false, producesCred = false, producesPriv = false, i, k;
+    var primaryPk = [];
+    for (i = 0; i < prod.length; i++) {
+      k = prod[i];
+      if (adviceOnly && !/^advice\./.test(k)) adviceOnly = false;
+      if (isObjectiveFlagOnly && !/^(?:objective\.(?:flag|local_flag|root_flag)|proof\.captured)$/.test(k)) isObjectiveFlagOnly = false;
+      if (!AUX_PRODUCED_RE.test(k)) primaryPk.push(k);
+      if (V2_FOOTHOLD[k] || /_confirmed$/.test(k)) producesFoothold = true;
+      if (k === "credential.available" || k === "credential.plaintext") producesCred = true;
+      if (V2_PRIV[k]) producesPriv = true;
+    }
+    var settledPk = primaryPk.length ? primaryPk : prod;
+    var onlyGenericMulti = true, onlyGenericCred = true;
+    for (i = 0; i < settledPk.length; i++) {
+      if (!GENERIC_MULTI_KINDS[settledPk[i]]) onlyGenericMulti = false;
+      if (!GENERIC_CRED_ONLY_KINDS[settledPk[i]]) onlyGenericCred = false;
+    }
+    var reqAllCtx = new Array(ra.length), reqAnyCtx = new Array(ry.length);
+    var hasCtxGate = false, reqHasFoot = false, reqHasAdmin = false;
+    var aid = String(a.id || "");
+    var isCrackMove = ((aid.indexOf("crack-") === 0 && aid !== "crack-identify" && aid !== "crack-hash-troubleshoot") || aid === "hashcat" || aid === "john");
+    var reqHashes = isCrackMove ? [] : _V2_EMPTY_I32;
+    var reqHasTgs = false, reqHasAsrep = false;
+    for (i = 0; i < ra.length; i++) {
+      k = ra[i];
+      var ctxA = CONTEXT_SENSITIVE_KIND_RE.test(k);
+      reqAllCtx[i] = ctxA;
+      if (ctxA) hasCtxGate = true;
+      if (k === "foothold.linux" || k === "foothold.windows") reqHasFoot = true;
+      if (k === "access.admin" || k === "access.system" || k === "access.root") reqHasAdmin = true;
+      if (isCrackMove && (k.indexOf("hash.") === 0 || k === "credential.netntlm" || k === "db.hashes" || k === "loot.shadow" || k === "loot.material")) {
+        reqHashes.push(k);
+        if (k === "hash.tgs") reqHasTgs = true;
+        if (k === "hash.asrep") reqHasAsrep = true;
+      }
+    }
+    for (i = 0; i < ry.length; i++) {
+      k = ry[i];
+      var ctxY = CONTEXT_SENSITIVE_KIND_RE.test(k);
+      reqAnyCtx[i] = ctxY;
+      if (ctxY) hasCtxGate = true;
+      if (k === "foothold.linux" || k === "foothold.windows") reqHasFoot = true;
+      if (k === "access.admin" || k === "access.system" || k === "access.root") reqHasAdmin = true;
+      if (isCrackMove && (k.indexOf("hash.") === 0 || k === "credential.netntlm" || k === "db.hashes" || k === "loot.shadow" || k === "loot.material")) {
+        reqHashes.push(k);
+        if (k === "hash.tgs") reqHasTgs = true;
+        if (k === "hash.asrep") reqHasAsrep = true;
+      }
+    }
+    var cmdPrefixes = [], cmdPrefixWildcard = false;
+    var cmdList = cmds.length ? cmds : [{ run: a.web_command || a.command || "" }];
+    for (i = 0; i < cmdList.length; i++) {
+      var rawCmd = String((cmdList[i] && (cmdList[i].web || cmdList[i].run)) || a.web_command || a.command || "").trim();
+      if (!rawCmd) continue;
+      var w0 = rawCmd.split(/\s+/)[0].replace(/^['"]+|['"]+$/g, "").toLowerCase();
+      if (!w0 || w0.indexOf("<") >= 0 || w0.indexOf("{") >= 0 || w0.indexOf("$") >= 0) {
+        cmdPrefixWildcard = true;
+        break;
+      }
+      if (cmdPrefixes.indexOf(w0) < 0) cmdPrefixes.push(w0);
+    }
+    m = {
+      sigLen: sigLen,
+      cmd0Run: cmd0Run,
+      cacheKey: (++_v2ActionMetaSeq) * 4,
+      aid: a.id,
+      locus: a.locus,
+      locusCost: locusRank(a.locus) * 0.3,
+      adviceOnly: adviceOnly,
+      isObjectiveFlagOnly: isObjectiveFlagOnly,
+      hasPrimaryPk: primaryPk.length > 0,
+      settledPk: settledPk,
+      onlyGenericMulti: onlyGenericMulti,
+      onlyGenericCred: onlyGenericCred,
+      alwaysSpecProd: false,
+      producesFoothold: producesFoothold,
+      producesCred: producesCred,
+      producesPriv: producesPriv,
+      earnedGates: [],
+      evidenceGates: [],
+      reqAllCtx: reqAllCtx,
+      reqAnyCtx: reqAnyCtx,
+      hasCtxGate: hasCtxGate,
+      reqHasFoot: reqHasFoot,
+      reqHasAdmin: reqHasAdmin,
+      isCrackMove: isCrackMove,
+      reqHashes: reqHashes,
+      reqHasTgs: reqHasTgs,
+      reqHasAsrep: reqHasAsrep,
+      cmdPrefixes: cmdPrefixes,
+      cmdPrefixWildcard: cmdPrefixWildcard
+    };
+    if (canCache) _v2ActionMetaCache.set(a, m);
+    return m;
+  }
   function v2EvidenceFact(g) { return false; }
-  function v2ProducesFoothold(a) { return false; }
+  function v2ProducesFoothold(a) { return v2GetActionMeta(a).producesFoothold; }
   function v2Indicated(a, haveObj) { return false; }
   function v2Earned(a, haveObj) { return false; }
   function accessEpoch(facts) {
